@@ -182,6 +182,7 @@ import {
 import { shouldYieldAiOwnerProgressFrame } from './ui/aiOwnerProgressFrame';
 import { createDirtyRenderSync } from './game/dirtyRenderSync';
 import { trimSidePanelEventLog } from './game/retained-side-panel-events';
+import { worldDiploNewsKind, worldDiploNewsVisible } from './game/diplo-world-news';
 import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, DRAG_THRESHOLD_PX, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
@@ -12259,6 +12260,9 @@ async function boot(): Promise<void> {
         // R-WEB-DIPLO-WAR-BATTLE-COUNTER-Q1: koniec wojny — licznik nieczytelny (zerowany).
         if (meta.wojnaBitwyPkt !== undefined) setDiploPairMeta(a, b, resetWarBattlePoints(getDiploPairMeta(a, b)) as DiploPairMeta);
       }
+      // R-WEB-DIPLO-WORLD-WAR-PEACE-NEWS-Q1: wojna/pokój między dwiema odkrytymi cywilizacjami AI
+      // (bez gracza) → wpis w dzienniku Wydarzeń. Jedno miejsce dla wszystkich ścieżek zmiany statusu.
+      if (prevStatus !== undefined && prevStatus !== rel.status) recordAiAiWarPeaceNews(a, b, prevStatus, rel.status);
       refreshCityMapOutlines();
       // R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1: wewnętrzna obwódka granicy koduje relację
       // gracz↔właściciel, więc musi się przemalować natychmiast po wypowiedzeniu wojny /
@@ -27023,6 +27027,36 @@ async function boot(): Promise<void> {
         (given > 0 ? (humanIsLoser ? 'Oddajemy miasta: ' : 'Otrzymujemy miasta: ') + given : 'Pokój bez wymiany miast'));
       refreshD1bHud();
       showNextPendingForcedPeace();
+    }
+
+    /**
+     * R-WEB-DIPLO-WORLD-WAR-PEACE-NEWS-Q1: wpis w dzienniku Wydarzeń o wojnie / pokoju między
+     * DWIEMA cywilizacjami AI (żadna nie jest graczem). Wołane z setDiploRelation przy realnej
+     * zmianie statusu. Widoczne tylko, gdy gracz ma odkryte OBIE strony pary (brak przecieku).
+     * Pary z graczem pomijamy — ich wpisy robią recordWarDeclarationEvent / logPeaceVazne.
+     * Tekst PO polsku (jak pozostałe wpisy warEventLog w main.ts); brak wariantu EN — zob. raport.
+     */
+    function recordAiAiWarPeaceNews(a: number, b: number, prevStatus: string, nextStatus: string): void {
+      const kind = worldDiploNewsKind(prevStatus, nextStatus);
+      if (kind === null) return;
+      if (isMe(a) || isMe(b)) return;
+      if (isBarbarian(a) || isBarbarian(b)) return;
+      if (!worldDiploNewsVisible(a, b, getDiplomaticContacts())) return;
+      const evId = `ai-diplo-news-${turn}-${diploPairKey(a, b)}-${kind}`;
+      if (warEventLog.some(e => e.id === evId)) return;
+      const pairLabel = ownerDiploLabel(a) + ' i ' + ownerDiploLabel(b);
+      const isWar = kind === 'wojna';
+      warEventLog.unshift({
+        id: evId,
+        icon: isWar ? '⚔' : '☮',
+        title: (isWar ? 'Wojna: ' : kind === 'sojusz' ? 'Sojusz: ' : 'Pokój: ') + pairLabel,
+        subtitle: isWar
+          ? 'Wojna między innymi cywilizacjami'
+          : kind === 'sojusz' ? 'Sojusz zawarty po wojnie między innymi cywilizacjami' : 'Zawarcie pokoju między innymi cywilizacjami',
+        kind: 'diplo',
+        turnCreated: turn,
+      });
+      trimWarEventLog();
     }
 
     /** DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1 (Z7): trwały wpis „Ważne" o zawarciu pokoju/rozejmu z udziałem gracza (dedup: tura + para). */
