@@ -248,7 +248,11 @@ function idsOf(items) { return items.map(i => i.id); }
     epoch: 3,
     builtBuildingIds: [],
     isCapital: true,
-    empireResourceStock: { drewno: 99, kamien: 99, cegla: 99 },
+    // R-WEB-TEST-DEBT-Q14 (STARY-PIN): koszt_surowce Sądu (50 ×2 FALA2 ×4 era III = 400 na
+    // zasób, wg AF4 00b1b391b „ery ×1/×2/×4” + R_STAWKI_FALA2_MULT) przekraczał stary zapas 99,
+    // więc status był 'locked' z powodu surowców, nie lokalizacji. Zapas podniesiony tak, by
+    // pokrył obowiązujący koszt; asercja (ready, brak blokady lokalizacji) bez zmian.
+    empireResourceStock: { drewno: 1000, kamien: 1000, cegla: 1000 },
   }).find(e => e.id === 'sad');
   ok(sadEntry && sadEntry.status === 'ready' && !sadEntry.locationBlocked, 'Sąd w stolicy: ready, brak blokady lokalizacji');
 }

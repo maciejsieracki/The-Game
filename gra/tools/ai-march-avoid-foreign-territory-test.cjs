@@ -371,7 +371,11 @@ async function main() {
   const M_ALLOW = await makeBundle('mut-allow', [MUT_ALLOW]);
   const M_ALLOW_KEYS = await makeBundle('mut-allow-keys', [MUT_ALLOW_KEYS]);
   const M_REQ = await makeBundle('mut-req', [MUT_REQ]);
-  const M_REQ_WAR = await makeBundle('mut-req-war', [MUT_REQ_WAR]);
+  // R-WEB-TEST-DEBT-Q14 (HARNESS): prosba no-route w scenariuszu wojennym ma drugie źródło
+  // (guardedMarchPath, ogon `deferred++ ; requestPassage('no-route') ; return []`), które
+  // MUT_REQ_WAR sam nie wycina -- mutacja była niepełna (got 1). Dokładamy MUT_REQ (ten sam
+  // wzorzec, już używany w C6), by C7 mierzyło zniknięcie WSZYSTKICH prób no-route.
+  const M_REQ_WAR = await makeBundle('mut-req-war', [MUT_REQ_WAR, MUT_REQ]);
   const M_CDF = await makeBundle('mut-cdf', [MUT_COOLDOWN_FUTURE]);
   const M_NOSEA_WAR = await makeBundle('mut-nosea-war', [MUT_NOSEA_WAR]);
   const M_NOSEA = await makeBundle('mut-nosea', [MUT_NOSEA]);

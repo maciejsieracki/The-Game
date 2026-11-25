@@ -150,14 +150,16 @@ console.log('1. Jedyny podział: 100 Pracy przy 50% budynków → 50 budynki + 5
 console.log('2. Major AI: po wydaniu 50 na budynki nadal ma cap ulepszeń 50');
 {
   const picks = runPlanner({ ownerId: 7, defensiveCopy: false, improvementBudgetCap: 50 });
-  eq(picks.length, 1, 'major AI wybiera farmę z absolutnego budżetu 50');
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): farma ma koszt_praca 20 (data/terrain-improvements.json);
+  // budżet 50 mieści 2 farmy (40), trzecia (60) już nie. Stary pin 1 nie odpowiadał danym.
+  eq(picks.length, 2, 'major AI wybiera 2 farmy z absolutnego budżetu 50 (2×20 <= 50 < 3×20)');
   if (picks[0]) eq(picks[0].key, 'farma', 'major AI wybiera farma');
 }
 
 console.log('3. Miasto-państwo defensiveCopy: identyczny routing i wynik');
 {
   const picks = runPlanner({ ownerId: 8, defensiveCopy: true, improvementBudgetCap: 50 });
-  eq(picks.length, 1, 'defensiveCopy wybiera farmę z absolutnego budżetu 50');
+  eq(picks.length, 2, 'defensiveCopy wybiera 2 farmy z absolutnego budżetu 50 (2×20 <= 50 < 3×20)');
   if (picks[0]) eq(picks[0].key, 'farma', 'defensiveCopy wybiera farma');
 }
 
@@ -165,8 +167,8 @@ console.log('4. Mutacja capu 50 → 25 musi zostać wykryta (negacja drugiego sp
 {
   const expected = runPlanner({ ownerId: 7, defensiveCopy: false, improvementBudgetCap: 50 });
   const mutated = runPlanner({ ownerId: 7, defensiveCopy: false, improvementBudgetCap: 25 });
-  eq(expected.length, 1, 'wariant kanoniczny nadal planuje 1 ulepszenie');
-  eq(mutated.length, 0, 'mutacja do capu 25 nie przechodzi jako pełny budżet 50');
+  eq(expected.length, 2, 'wariant kanoniczny planuje 2 ulepszenia (farmy 2×20 <= 50), R-WEB-TEST-DEBT-Q14');
+  eq(mutated.length, 1, 'mutacja do capu 25 daje tylko 1 farmę (20 <= 25 < 40), nie pełny budżet 50');
   assert(
     JSON.stringify(expected) !== JSON.stringify(mutated),
     'mutacja zmienia wynik — test nie jest tautologią',

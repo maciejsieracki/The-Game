@@ -27,8 +27,16 @@ function ok(condition, message) {
   if (condition) pass++;
   else { fail++; console.error('FAIL:', message); }
 }
+// R-WEB-TEST-DEBT-Q14 (STARY-PIN): itemCost mnoży koszt przez mnożnik ery budynku (production.ts:407,
+// buildingEraCostMultiplier, AF4 00b1b391b „ery ×1/×2/×4”). Oczekiwanie uwzględnia ten mnożnik; baza JSON bez zmian.
+function eraMultiplierExpected(epoka) {
+  const era = Number.isFinite(epoka) ? Math.floor(epoka) : 1;
+  if (era >= 3) return 4;
+  if (era >= 2) return 2;
+  return 1;
+}
 function expectedRawCost(b, level) {
-  return Math.round(b.kosztBudowy + b.przyrostKosztu * (level - 1));
+  return Math.round((b.kosztBudowy + b.przyrostKosztu * (level - 1)) * eraMultiplierExpected(b.epokaWejscia));
 }
 
 // Pełne pokrycie: każdy rekord i każdy poziom, bez ręcznej listy budynków.
@@ -47,7 +55,9 @@ for (const b of buildings) {
 }
 ok(checkedLevels > buildings.length, `pokryto wszystkie poziomy (${checkedLevels} poziomów, ${buildings.length} budynków)`);
 // R-WEB-BUILDING-EMPORION-Q1 (2026-11-06): 42 -> 43 (+ Emporion, decyzja właściciela 2026-11-05).
-ok(buildings.length === 43, `pełny katalog budynków ma 43 rekordy (ma ${buildings.length})`);
+// R-WEB-TEST-DEBT-Q14 (STARY-PIN): rekord mury_kamienne (koszt_surowce drewno 80 + kamień 80; commit a33354586,
+// tiery murów kamiennych/ceglanych) dodany po ostatnim przepisaniu pinów; katalog ma 44 rekordy.
+ok(buildings.length === 44, `pełny katalog budynków ma 44 rekordy (ma ${buildings.length})`);
 
 // Niezależny, zamrożony fingerprint kosztów surowcowych — nie wolno go wyliczać
 // z oczekiwanego wyniku tej samej mutacji ani go przepisywać po zmianie mnożnika.
@@ -60,7 +70,9 @@ ok(buildings.length === 43, `pełny katalog budynków ma 43 rekordy (ma ${buildi
 // zmian) — wartości pilnuje koszty-surowcowe-test. Poprzednia wartość: 033cb1b7...e5a4.
 // R-WEB-DATA-TARGOWISKO-REMOVE-STONE-COST-Q1 (2026-11-09): fingerprint przepisany WYŁĄCZNIE z powodu
 // zmiany koszt_surowce Targowiska (drewno 30 + kamień 30 -> samo drewno 30). Poprzednia wartość: 71bed287...d542.
-const RESOURCE_BASELINE_SHA256 = '4855006679bf59f7a1a1e5709ff44374bf76a611acfa15c76bd7a7a4e4b07dea';
+// R-WEB-TEST-DEBT-Q14 (STARY-PIN): przepisane WYŁĄCZNIE z powodu dodania rekordu mury_kamienne (diff vs 331b8bf5e:
+// jedyna zmiana to NEW mury_kamienne {drewno 80, kamien 80}). Poprzednia wartość: 4855006679...07dea.
+const RESOURCE_BASELINE_SHA256 = 'db5dbfaab7b2d6936a66d1acf3c3b39ba24a43ed4247231149318ed4c2da7523';
 const resourceCanonical = buildings.map(b => `${b.id}\t${JSON.stringify(b.koszt_surowce ?? null)}`).join('\n');
 const resourceSha = crypto.createHash('sha256').update(resourceCanonical).digest('hex');
 ok(resourceSha === RESOURCE_BASELINE_SHA256, `koszt_surowce wszystkich budynków bez zmian (sha256 ${resourceSha})`);

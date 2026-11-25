@@ -177,7 +177,9 @@ const yldWaluta = E.cityYieldPerTurn(city, workedTilesEfekt1, noBuildings, param
 // handelNetto = 10 * mennicaMnoznikPoWalucie(1.5, normal) = 15
 // pieniadzZHandlu = floor(15 * 0.70) = floor(10.5) = 10; naukaZHandlu = floor(15*0.20) = 3
 eq(yldWaluta.pieniadzZPracy, 0, 'waluta+mennica (no targowisko): pieniadzZPracy = 0');
-eq(yldWaluta.pieniadz, 10,      'efekt1 scalony (normal x1.5): pieniadz = 10 (floor(15*0.70))');
+// R-WEB-TEST-DEBT-Q14 (STARY-PIN): podział handlu = metoda największych reszt (splitHandelLargestRemainder,
+// economy.ts, R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1 r2), nie floor() na część: 15 -> 10.5/3/1.5 -> 11/3/1.
+eq(yldWaluta.pieniadz, 11,      'efekt1 scalony (normal x1.5): pieniadz = 11 (largest-remainder z 10,5)');
 eq(yldWaluta.nauka, 3,          'efekt1 scalony (normal x1.5): nauka = 3 (floor(15*0.20)) -- wariant A, nauka tez rosnie');
 // nauka z handlu powinna wzrosnac wzgledem baseline (mnoznik dziala na cala pule, wariant A)
 assert(yldWaluta.nauka > yldBase10.nauka,

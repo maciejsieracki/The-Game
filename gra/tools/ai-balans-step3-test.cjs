@@ -69,7 +69,9 @@ console.log('\n--- T1: loadAiWonderParams — throttle per poziom ---');
   eq(l1.throttleTur, 8, 'T1a: L1 throttle = 8');
   eq(l2.throttleTur, 5, 'T1b: L2 throttle = 5');
   eq(l3.throttleTur, 2, 'T1c: L3 throttle = 2 (było 3)');
-  eq(l3.progKosztX, 70, 'T1d: L3 prog_koszt_x bez zmian = 70');
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): data/ai-params.json cuda_poziom3_prog_koszt_x = 80
+  // (STEP4: 70→80, opis w tym samym wpisie). Pin zaktualizowany do obowiązującej wartości.
+  eq(l3.progKosztX, 80, 'T1d: L3 prog_koszt_x = 80 (STEP4: 70→80)');
 }
 
 console.log('\n--- T2: decideAiWonderBuild — throttle 2 vs stary 3 (edge tura 4) ---');

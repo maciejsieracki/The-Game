@@ -30,7 +30,8 @@ async function main() {
     check('w stackVitals flaga wodza obejmuje dowolnego członka stosu',
       /hasCommander:\s*stack\.some\(unit\s*=>\s*unit\.isGeneral\s*===\s*true\)/.test(mergeSource));
     check('renderer uwzględnia zarówno dowódcę w reprezentancie, jak i w reszcie stosu',
-      /applyUnitCommanderStar\(tokenObj,\s*vitals\s*\?\s*vitals\.hasCommander\s*:\s*unit\.isGeneral\s*===\s*true\)/.test(unitsSource));
+      // R-WEB-TEST-DEBT-Q14 (HARNESS): wartość przeniesiona do zmiennej `hasCmd` (units.ts ~6211); ten sam warunek.
+      /const hasCmd\s*=\s*vitals\s*\?\s*vitals\.hasCommander\s*:\s*unit\.isGeneral\s*===\s*true;[\s\S]{0,120}?applyUnitCommanderStar\(tokenObj,\s*hasCmd\)/.test(unitsSource));
     check('w epoce Kamienia wybór modelu dowódcy zależy od wynalezienia Koła',
       /const epoch = empireEpochForOwner\(ownerId\)[\s\S]*?if \(epoch === 1\)[\s\S]*?const hasWheel = techs\.includes\('Koło'\)[\s\S]*?stoneGeneralUnitId\(hasWheel\)/.test(mainSource));
 
