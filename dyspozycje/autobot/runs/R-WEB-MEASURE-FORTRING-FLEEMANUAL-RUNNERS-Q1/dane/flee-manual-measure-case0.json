@@ -13,16 +13,16 @@
     "2": 2,
     "3": 2,
     "4": 2,
-    "5": 1
+    "5": 2
    },
+   "bitwaTury": 5,
+   "rundyMax": 4,
    "maxPerRound": 2,
    "totalSteps": 9,
    "kroki": 9,
    "pozycjaStart": {
-    "firstCel": {
-     "col": 30,
-     "row": 74
-    }
+    "col": 31,
+    "row": 74
    },
    "pozycjaKoniec": {
     "col": 22,

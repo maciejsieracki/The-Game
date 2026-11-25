@@ -15,14 +15,14 @@
     "4": 3,
     "5": 1
    },
+   "bitwaTury": 5,
+   "rundyMax": 4,
    "maxPerRound": 3,
    "totalSteps": 13,
    "kroki": 13,
    "pozycjaStart": {
-    "firstCel": {
-     "col": 30,
-     "row": 76
-    }
+    "col": 31,
+    "row": 76
    },
    "pozycjaKoniec": {
     "col": 18,

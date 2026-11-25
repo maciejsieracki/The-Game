@@ -1,0 +1,53 @@
+{
+ "schema": "fortring-measure-v1",
+ "variant": "on",
+ "seed": 4242,
+ "turnsRequested": 60,
+ "turnsDone": 59,
+ "ringOff": false,
+ "msMedian": 12108.6,
+ "msP95": 26846.7,
+ "msMax": 28112.6,
+ "msTotal": 823295.2999999999,
+ "fortsFirst": 0,
+ "fortsLast": 0,
+ "fortsMax": 0,
+ "hashes": [
+  {
+   "turn": 30,
+   "sha256": "92824409c4f90b13a259d50f490ea80222ffd8916a7a084dc9b6a0e6e2aa736b"
+  },
+  {
+   "turn": 60,
+   "sha256": "48227e74f4e8d51e76fe5c8c3f831e1d16d87e228deb320fa161287047fcc951"
+  }
+ ],
+ "roundTrip": {
+  "saved": true,
+  "shaBefore": "48227e74f4e8d51e76fe5c8c3f831e1d16d87e228deb320fa161287047fcc951",
+  "shaAfter": "5d80f64ead0bf26095fae95c2fb3dfe316b566711011e1c86c15cd0a05eaea10",
+  "identical": false,
+  "fortsBefore": 0,
+  "fortsAfter": 0,
+  "fortsEqual": true,
+  "diffTopKeys": [
+   "cityProd"
+  ],
+  "diff": [
+   {
+    "key": "cityProd",
+    "firstDiffAt": 9182,
+    "beforeCtx": "},\"city104\":{\"kolejka\":[],\"postep\":0},\"city105\":{\"kolejka\":[{\"kind\":\"budynek\",\"id\":\"__wonder__:hamonga\",\"nazwa\":\"[Cud] Kamień Ha'amonga\",\"ko",
+    "afterCtx": "},\"city104\":{\"kolejka\":[],\"postep\":0},\"city105\":{\"kolejka\":[],\"postep\":0},\"city106\":{\"kolejka\":[{\"kind\":\"budynek\",\"id\":\"biblioteka\",\"nazwa\":"
+   }
+  ]
+ },
+ "counters": {
+  "gateBypass": 1,
+  "battlesAuto": 0,
+  "offersRejected": 0,
+  "forcedPeaceAccepted": 0
+ },
+ "resumedChunks": 6,
+ "pageErrors": []
+}
