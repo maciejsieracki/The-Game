@@ -610,7 +610,11 @@ eq(withTrade.pH.pieniadz, base.pH.pieniadz + TRADE_AMOUNT, 'H2c: full route amou
 
 // One capital Mint multiplies tax empire-wide without changing route cash.
 const builtWithMint = new Map([['pH', ['targowisko', 'mennica']], ['fH', ['targowisko']]]);
+// Populacja 8 (nie 4): przy 4 mieszkancach Podatek miasta jest tak maly, ze
+// mnoznik Mennicy (x1.5 na Handel) zostaje zjedzony przez floor()/podzial 30% --
+// Nauka rosnie 3->5, ale Podatek 2->2. Zmienia tylko wejscie scenariusza, nie asercje.
 const secondOwnerCity = makeRuntimeCity('pH2', 0, 205);
+secondOwnerCity.population = 8;
 builtWithMint.set('pH2', ['targowisko']);
 const withMintAndRoute = runTickH(
   new Map([['pH', TRADE_AMOUNT], ['fH', TRADE_AMOUNT]]), new Map(),
@@ -624,6 +628,9 @@ eq(withMintAndRoute.pH.pieniadzZTras, withTrade.pH.pieniadzZTras, 'H2d: route pr
 assert(mintWithoutRoute.pH.pieniadzBrutto > base.pH.pieniadzBrutto, 'H2e: capital Mint raises local tax cash');
 assert(mintWithoutRoute.pH2.pieniadzBrutto > withoutMintSecondCity.pH2.pieniadzBrutto, `H2e: one capital Mint raises tax cash in another city of the owner (mint=${mintWithoutRoute.pH2.pieniadzBrutto}, noMint=${withoutMintSecondCity.pH2.pieniadzBrutto})`);
 eq(withMintAndRoute.pH.pieniadz - mintWithoutRoute.pH.pieniadz, TRADE_AMOUNT, 'H2f: route cash remains a separate additive credit despite Mint');
+// H2g (negatywna): Mennica nalezy do wlasciciela 0 -- miasto obcej cywilizacji (owner 1,
+// bez Mennicy) nie dostaje bonusu. Porownanie z runem bez zadnej Mennicy.
+eq(mintWithoutRoute.fH.pieniadzBrutto, base.fH.pieniadzBrutto, 'H2g: foreign civ without Mint in its capital gets no Mint bonus');
 
 // H3: premiaHandluTrasHandlowych>0 w tym samym wywolaniu podnosi tez Handel-z-pol
 // (osobny kanal) -- pieniadzBrutto (przed dochodem z tras) powinien byc >= baseline.
