@@ -667,7 +667,7 @@ import {
   resolveMapUnitCursor,
   CURSOR_MAP_DEFAULT,
 } from './ui/mapUnitCursor';
-import { isInTerritory, territoryOwnerAt, isPlayerTerritoryHex, cityTerritoryRadius, territoryNodesContentId, axialDistance, fortRingShield, fortRingHasOwnImprovement, fortRingBuildBlockReason, resolveImprovementOwners } from './map/territory';
+import { isInTerritory, territoryOwnerAt, isPlayerTerritoryHex, cityTerritoryRadius, territoryNodesContentId, axialDistance, fortRingShield, fortRingHasOwnImprovement, fortRingBuildBlockReason, resolveImprovementOwners, setCivTestFortRingOff } from './map/territory';
 import { isTerritoryHexOwnedBy, isReczneKeyLegal, cityCenterKeys } from './map/territory-work';
 import type { CityNode, TerritoryNode } from './map/territory';
 import type { GameMap } from './types/map';
@@ -34228,7 +34228,7 @@ async function boot(): Promise<void> {
       (window as any).__settingsLive = {
         startNewGame: (menuParams: NewGameParams): void => { void doStartGame(menuParams); },
         /** R-WEB-MEASURE-FORTRING-FLEEMANUAL-RUNNERS-Q1: przełącznik pierścienia fortów (false = ON = reguła gry). Tylko ?civTest=1. */
-        setFortRingOff: (off: boolean): void => { _civTestFortRingOff = off; },
+        setFortRingOff: (off: boolean): void => { _civTestFortRingOff = off; setCivTestFortRingOff(civTestFortRingOffFlag()); },
         fortRingOff: (): boolean => civTestFortRingOffFlag(),
         /** Liczba postawionych fortów/posterunków (odczyt, stan realny). */
         fortCount: (): number => fortNodes.length,

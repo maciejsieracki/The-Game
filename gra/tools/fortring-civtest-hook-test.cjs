@@ -27,7 +27,13 @@ check('civTestFortRingOffFlag wymaga location.search z civTest=1',
 const assigns = src.match(/_civTestFortRingOff\s*=[^=][^;]*;/g) || [];
 const nonDecl = assigns.filter(a => a !== '_civTestFortRingOff = false;');
 check('przypisanie flagi tylko w haku setFortRingOff (poza deklaracja: 1 raz)',
-  nonDecl.length === 1 && /setFortRingOff:\s*\(off: boolean\): void => \{ _civTestFortRingOff = off; \}/.test(src));
+  nonDecl.length === 1 && /setFortRingOff:\s*\(off: boolean\): void => \{ _civTestFortRingOff = off; setCivTestFortRingOff\(civTestFortRingOffFlag\(\)\); \}/.test(src));
+
+const terr = fs.readFileSync(path.join(path.dirname(file), 'map', 'territory.ts'), 'utf8');
+check('territory.ts: przełącznik reguły (civTestFortRingOff) ustawiany tylko przez setCivTestFortRingOff',
+  (terr.match(/civTestFortRingOff\s*=[^=][^;]*;/g) || []).filter(a => a !== 'civTestFortRingOff = false;').length === 1 && /export function setCivTestFortRingOff\(off: boolean\): void \{ civTestFortRingOff = off; \}/.test(terr));
+check('territory.ts: fortRingBuildBlockReason zwraca null przy przełączniku OFF',
+  /export function fortRingBuildBlockReason[\s\S]*?if \(civTestFortRingOff\) return null;/.test(terr));
 
 check('haki setFortRingOff / fortRingOff / fortCount sa w bloku __settingsLive',
   (() => {
