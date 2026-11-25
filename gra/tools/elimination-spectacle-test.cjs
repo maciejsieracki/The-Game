@@ -197,7 +197,10 @@ async function main() {
   ok(/noteCityCapture\(civChronicleByOwner, oldOwner, atkOwner, turn\)/.test(main), 'zdobycie miasta (bitwa/szturm): noteCityCapture');
   ok(/noteCityCapture\(civChronicleByOwner, oldOwner, newOwner, turn\)/.test(main), 'zdobycie miasta (kapitulacja głodowa): noteCityCapture');
   ok(/noteWonderBuilt\(civChronicleByOwner, site\.ownerId, turn\)/.test(main), 'cud: noteWonderBuilt');
-  ok(/turn\+\+;\s*\n\s*chronicleTickEmpireSizes\(\)/.test(main), 'tick rekordów tuż po turn++');
+  // R-WEB-TEST-DEBT-Q14 (HARNESS): między turn++ a tickiem wstawiono później aiUpkeepTickTurnOverride
+  // (R-WEB-AI-FREE-UNIT-UPKEEP-40-TURNS-Q1) i showNextPendingForcedPeace (PENDING-FORCED-PEACE-Q1).
+  // Sprawdzamy: tick występuje po turn++ w tym samym bloku, bez innego turn++ pomiędzy (moc zachowana).
+  ok(/turn\+\+;(?:(?!turn\+\+)[\s\S]){0,800}?chronicleTickEmpireSizes\(\)/.test(main), 'tick rekordów po turn++ (ten sam blok tury)');
   ok(/civChronicleByOwner: serializeChronicles\(civChronicleByOwner\)/.test(main), 'zapis: meta.civChronicleByOwner');
   ok(/restoreChronicles\(civChronicleByOwner, saved\.meta\?\.civChronicleByOwner\)/.test(main) && /newChronicle\(undefined, true\)/.test(main), 'wczytanie: restore + legacy dla starych zapisów');
   const iBuild = main.indexOf('buildSpectacleForElimination(city, oldOwner, newOwner');

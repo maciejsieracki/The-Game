@@ -132,6 +132,13 @@ function __factory(deps: any) {
     buildNegotiationWorldCtx, getDiploRelation } = deps;
   let seatsFinishedThisRound: Set<number> = new Set<number>();
   ${stateDecl}
+  // R-WEB-TEST-DEBT-Q14 (HARNESS): canPlayerInitiateEndTurn w main.ts wywołuje (od PENDING-FORCED-PEACE-Q1
+  // i R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1) prunePendingForcedPeace() i nnsGateForPlayer(). Sandbox nie ma
+  // tych identyfikatorów, więc klik rzucał ReferenceError i test widział sztuczny deadlock. Stuby: brak
+  // wiszącego pokoju wymuszonego i brak blokady NNS -- test bada wyłącznie siatkę kolejki/bitwy.
+  let pendingForcedPeaceTreaties: any[] = [];
+  function prunePendingForcedPeace(): void { /* sandbox: brak pokoju wymuszonego */ }
+  function nnsGateForPlayer(): { blokada: boolean; komunikat: string } { return { blokada: false, komunikat: '' }; }
   ${bodies.join('\n\n')}
   return {
     api: { ${present.join(', ')} },

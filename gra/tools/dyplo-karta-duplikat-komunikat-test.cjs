@@ -54,7 +54,11 @@ console.log('A. enqueueNegotiationFromAiCmd — źródło main.ts');
 
 const mainSrc = fs.readFileSync(path.join(GRA, 'src', 'main.ts'), 'utf8');
 
-const fnName = 'function enqueueNegotiationFromAiCmd(';
+// R-WEB-TEST-DEBT-Q14 (HARNESS): po refaktorze (R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1 r2) ciało
+// zawierające push karty i brak toastu siedzi w enqueueNegotiationFromAiCmdImpl; wrapper
+// enqueueNegotiationFromAiCmd(...args) jest tylko delegacją z withDiplomacyTradeEra. Asercje A
+// dotyczą więc ciała Impl (ta sama moc dowodowa — push i brak showHintMessage).
+const fnName = 'function enqueueNegotiationFromAiCmdImpl(';
 const start = mainSrc.indexOf(fnName);
 ok(start > 0, 'main.ts: funkcja enqueueNegotiationFromAiCmd istnieje');
 // Ciało wycięte do pierwszego zamknięcia na wcięciu funkcji (4 spacje) — ten sam wzorzec co
@@ -181,7 +185,7 @@ try { fs.unlinkSync(BUNDLE); } catch (_) { /* ignore */ }
 // pokazała, że da się w pełni przywrócić duplikat z TRZECIEGO miejsca w main.ts (np. pętla
 // dyspozytora komend AI), a test i tak przejdzie 14/14. Ten blok zamienia dwie sondy w jeden
 // niezmiennik na całym źródle main.ts: dokładna liczba wystąpień wzorca
-// `showHintMessage(DIPLOMACY_MSG_PREFIX` w CAŁYM pliku. Dziś to 3, NIE 2 (Evaluator policzył
+// `showHintMessage(DIPLOMACY_MSG_PREFIX` w CAŁYM pliku. Dziś to 4 (Q14: było 3 przed R-WEB-DIPLO-TRUCE-IMPL-Q1), NIE 2 (Evaluator policzył
 // tylko żywe wystąpienia w wariancie „propozycja wygasła" — pominął, że wzorzec występuje też
 // wewnątrz martwej funkcji `enqueueDiplomacyPending`, sekcja C wyżej, jako tekst źródłowy,
 // mimo że nigdy się nie wykonuje). Jeśli liczba kiedykolwiek wzrośnie — ktoś dodał nowy toast
@@ -189,11 +193,16 @@ try { fs.unlinkSync(BUNDLE); } catch (_) { /* ignore */ }
 console.log('\nE. Niezmiennik całego pliku — liczba wystąpień wzorca toastu dyplomacji');
 {
   const allOccurrences = (mainSrc.match(/showHintMessage\(DIPLOMACY_MSG_PREFIX/g) || []).length;
-  ok(allOccurrences === 3,
-    `E1: showHintMessage(DIPLOMACY_MSG_PREFIX występuje dokładnie 3× w całym main.ts (znaleziono ${allOccurrences}) — ` +
-    `2 żywe w wariancie „propozycja wygasła" (linie ok. 13990, 14109) + 1 martwe wewnątrz ` +
-    `enqueueDiplomacyPending (linia ok. 14749, sekcja C wyżej potwierdza 0 wywołań tej funkcji). ` +
-    `Wzrost tej liczby ponad 3 = nowy toast dodany gdzie indziej w pliku, do świadomej oceny.`);
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): pin 3 -> 4 po R-WEB-DIPLO-TRUCE-IMPL-Q1 (B), który dodał toast
+  // w enqueueTruceEndOffer (wpis skrzynki decyzji gracza po rozejmie, NIE karta stołu AI — brak
+  // duplikatu z negotiationTable). Rozkład: enqueueTruceEndOffer (1, żywe), pruneInvalidNegotiations
+  // i resolveNegotiationEntryAt (2, żywe, wariant „propozycja wygasła"), enqueueDiplomacyPending (1,
+  // martwe — sekcja C: 0 wywołań). Wzrost ponad 4 nadal wymaga świadomej oceny.
+  ok(allOccurrences === 4,
+    `E1: showHintMessage(DIPLOMACY_MSG_PREFIX występuje dokładnie 4× w całym main.ts (znaleziono ${allOccurrences}) — ` +
+    `1 żywe w enqueueTruceEndOffer (skrzynka po rozejmie), 2 żywe w wariancie „propozycja wygasła" ` +
+    `(pruneInvalidNegotiations, resolveNegotiationEntryAt), 1 martwe w enqueueDiplomacyPending ` +
+    `(sekcja C wyżej: 0 wywołań). Wzrost tej liczby ponad 4 = nowy toast dodany gdzie indziej w pliku, do świadomej oceny.`);
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

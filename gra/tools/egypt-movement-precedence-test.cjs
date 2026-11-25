@@ -51,8 +51,12 @@ async function compile(chariotValue) {
     const water = { terenBazowy: api.TerenBazowy.PlytkieMorze, nakladka: null, q: 0, r: 0 };
     const egyptMove = api.moveCostFnFor({ typeId: 'Rydwan', category: 'piechota' }, true, egypt);
     near(egyptMove(water), 1, 'Egyptian battle bonus never reduces shallow-sea entry cost');
+    // R-WEB-TEST-DEBT-Q14 (HARNESS): fixture musi mieć kształt wpisu z civMatrixBonusyForCivKey
+    // (realizuje 'walka' + matrixCivKey, jak w civ-bonuses.ts:294/307). Bez tych pól isKnownMatrixCombatEntry
+    // odrzuca wpis i test mierzył 1/1.23 zamiast 1/1.48. Asercja i wartości bez zmian.
     const dedicated = [{ typ: 'bonus_walka', cel: 'piechota', wartosc: 0.25,
-      matrixParamId: 'walka_ruch_piechota_teren_plytkie_morze' }];
+      opis: 'Matrix:walka_ruch_piechota_teren_plytkie_morze', realizuje: 'walka',
+      matrixParamId: 'walka_ruch_piechota_teren_plytkie_morze', matrixCivKey: 'test_dedicated' }];
     const infantryMove = api.moveCostFnFor({ typeId: 'Wojownik', category: 'piechota' }, true,
       [...greek.filter(b => b.matrixParamId === 'walka_ruch_bitwa_proc'), ...dedicated]);
     near(infantryMove(water), 1 / 1.48, 'other civilizations retain general and dedicated shallow-sea bonuses');

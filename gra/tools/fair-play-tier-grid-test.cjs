@@ -42,10 +42,13 @@ function ok(cond, msg) {
   }
 }
 
+// R-WEB-TEST-DEBT-Q14 (STARY-PIN): siatka gór (iron) zmieniona przez 4de68b3ec (FALA 110: relief medium
+// 15x15, suwak Relief Mało=21 · Normalnie=15 · Dużo=12 -- ta sama siatka co wzgórza). Pin 35/25/20 był
+// z 2026-07-06 (f2df10f2a). Pozostałe pola (rzeki, wzgórza, las) bez zmian.
 const expect = {
-  low: { river: 15, iron: 35, copper: 21, forest: 15 },
-  medium: { river: 10, iron: 25, copper: 15, forest: 10 },
-  high: { river: 5, iron: 20, copper: 12, forest: 5 },
+  low: { river: 15, iron: 21, copper: 21, forest: 15 },
+  medium: { river: 10, iron: 15, copper: 15, forest: 10 },
+  high: { river: 5, iron: 12, copper: 12, forest: 5 },
 };
 
 for (const tier of ['low', 'medium', 'high']) {

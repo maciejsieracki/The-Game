@@ -180,14 +180,16 @@ console.log('\n-- C. Targowisko -> Pieniadz (decyzja 67B: dzieli sie suwakiem, n
   // podzial suwakiem 70/20/10 Pieniadz/Nauka/Luksus):
   //   handelBazowy (bez budynku) = handelTerenu(4) + pieniadzZPracy(0) + 0            = 4
   //   handelBazowy (z budynkiem) = handelTerenu(4) + pieniadzZPracy(0) + budynek(5)   = 9
-  //   pieniadzZHandlu (bez) = floor(4 * 0.70) = floor(2.8) = 2  (yldNone.pieniadz)
-  //   pieniadzZHandlu (z)   = floor(9 * 0.70) = floor(6.3) = 6
-  //   delta = 6 - 2 = 4   (NIE 5 -- 30% Pieniadza budynku "idzie" do Nauki/Luksusu
-  //   przez suwak, dokladnie jak reszta Daniny; NIE jest to prosta proporcja 0.7*5=3.5
-  //   bo floor() dziala na SUMIE polaczonej z Danina terenowa, nie osobno na budynku)
+  //   R-WEB-TEST-DEBT-Q14 (D2): podział suwakiem = splitHandelLargestRemainder
+  //   (metoda największych reszt, economy.ts, R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1 r2),
+  //   a NIE floor() na każdej części osobno. Stara ręczna wartość "floor(x*0.70)" była nieaktualna.
+  //   pula (bez budynku) = 4 : pieniadz 2.8, nauka 0.8, luksus 0.4 -> LR: pieniadz 3, nauka 1, luksus 0
+  //   pula (z budynkiem) = 9 : pieniadz 6.3, nauka 1.8, luksus 0.9 -> LR: pieniadz 6, nauka 2, luksus 1
+  //   (yldNone.pieniadz = 3, yldNone.nauka = 1 -- potwierdzone surowym wyjściem referencji A)
+  //   delta Pieniadza = 6 - 3 = 3 (NIE surowe 5 -- część Pieniadza budynku przechodzi suwakiem do Nauki/Luksusu)
   const actualDelta = yld.pieniadz - yldNone.pieniadz;
-  eq(actualDelta, 4,
-    'Targowisko: delta finalnego Pieniadza = 4 (NIE surowe 5) -- decyzja 67B: Pieniadz budynku dzieli sie suwakiem 70/20/10 z reszta Daniny, nie trafia 1:1 do skarbca');
+  eq(actualDelta, 3,
+    'Targowisko: delta finalnego Pieniadza = 3 (NIE surowe 5) -- decyzja 67B: Pieniadz budynku dzieli sie suwakiem 70/20/10 (LR) z reszta Daniny, nie trafia 1:1 do skarbca');
 
   // Dowod, ze reszta NIE zniknela -- wzrosla tez Nauka (20% suwaka), bo budynek
   // wszedl do WSPOLNEJ puli Daniny: naukaZHandlu(bez)=floor(4*0.20)=0,
@@ -302,18 +304,21 @@ console.log('\n-- H0. Akademia +20% / Biblioteka +30% do Nauki (PYTANIE 75=C) --
 
   const cbsBib = M.cityBuildingEntriesFromBuiltIds(['biblioteka'], buildings, bibRec.epokaWejscia, []);
   const yldBib = M.cityYieldPerTurn(city, worked4, cbsBib, params, makeCtx({ maBiblioteka: true }));
-  eq(yldBib.nauka, Math.floor(bibNauka * 1.3), `Biblioteka: +30% do Nauki -- floor(${bibNauka}*1.3)=${Math.floor(bibNauka * 1.3)} (PYTANIE 75=C, bylo +50%/floor(3*1.5)=4)`);
+  // R-WEB-TEST-DEBT-Q14 (D2): premia liczona od PULI Nauki (teren + budynek), nie od samego budynku.
+  // Teren ROWNINA daje yldNone.nauka (=1 w referencji A), wiec stara oczekiwana wartosc (bez terenu) byla nieaktualna.
+  const bazaNaukiTeren = yldNone.nauka;
+  eq(yldBib.nauka, Math.floor((bazaNaukiTeren + bibNauka) * 1.3), `Biblioteka: +30% do puli Nauki -- floor((${bazaNaukiTeren}+${bibNauka})*1.3)=${Math.floor((bazaNaukiTeren + bibNauka) * 1.3)} (PYTANIE 75=C, bylo +50%)`);
 
   const cbsAka = M.cityBuildingEntriesFromBuiltIds(['akademia'], buildings, akaRec.epokaWejscia, []);
   const yldAka = M.cityYieldPerTurn(city, worked4, cbsAka, params, makeCtx({ maAkademia: true }));
-  const expectedAka = Math.floor(akaNauka * 1.20);
+  const expectedAka = Math.floor((bazaNaukiTeren + akaNauka) * 1.20);
   eq(yldAka.nauka, expectedAka,
     `Akademia: +20% do Nauki -- floor(${akaNauka}*1.20)=${expectedAka} (PYTANIE 75=C, bylo +10%/floor(6*1.10)=6; mnozy TAKZE wlasne 6 pkt Nauki)`);
   console.log(`   Akademia realnie daje ${yldAka.nauka} Nauki/ture (6 wlasnej produkcji + ${yldAka.nauka - akaNauka} z premii +20% na cala pule -- w tym mieście, bez innych zrodel Nauki).`);
 
   const cbsOba = M.cityBuildingEntriesFromBuiltIds(['biblioteka', 'akademia'], buildings, 1, []);
   const yldOba = M.cityYieldPerTurn(city, worked4, cbsOba, params, makeCtx({ maBiblioteka: true, maAkademia: true }));
-  const expectedOba = Math.floor((bibNauka + akaNauka) * 1.50);
+  const expectedOba = Math.floor((bazaNaukiTeren + bibNauka + akaNauka) * 1.50);
   eq(yldOba.nauka, expectedOba,
     `Biblioteka + Akademia razem: +50% do Nauki (addytywnie 30%+20%) -- floor((${bibNauka}+${akaNauka})*1.50)=${expectedOba} (PYTANIE 75=C, bylo +60%/floor(9*1.60)=14)`);
 }

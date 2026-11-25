@@ -44,6 +44,7 @@ process.on('exit', cleanup);
 fs.writeFileSync(ENTRY, `
 export { applyPostCentralPopulationGrowth } from '${popModule}';
 export { buildTerritoryNodesFromCities } from '../src/game/okolica';
+export { setEraRebalanceEnabledForTest } from '../src/game/econ-era-rebalance';
 `, 'utf8');
 const BUNDLE = path.join(TMP, 'bundle.cjs');
 esbuild.buildSync({
@@ -92,9 +93,18 @@ ok(c1.population === 2, `pop wzrosla 1->2 (era1), got=${c1.population}`);
 ok(keys(c1).join('|') === ['0,1', '1,0'].join('|'), `Kamien: top2 = zloto(1,0)+miedz(0,1), got=${keys(c1)}`);
 const cU = runGrowth(undefined);
 ok(keys(cU).join('|') === keys(c1).join('|'), `brak ownerEraByOwner = Kamien (zgodnosc wsteczna), got=${keys(cU)}`);
+// R-WEB-TEST-DEBT-Q14: od ECONREBAL (e3898a7be, FALA 871) dane maja eraRebalansAktywny=true oraz
+// przychodyUlepszenStałeEpoka1=true, wiec plony ulepszen sa STALE w kazdej epoce (applyImprovementBonus ->
+// improvementYieldForEra). Test sprawdza PRZEKAZANIE epoki wlasciciela do rankingu, a nie decyzje
+// o stalych plonach -- dlatego przypina flage na OFF (stan sprzed rebalansu, ze skalowaniem po epoce).
+// Osobna asercja nizej dokumentuje zachowanie przy fladze ON (plony stale = ranking jak w epoce 1).
+M.setEraRebalanceEnabledForTest(false);
 const c3 = runGrowth(3);
 ok(c3.population === 2, `pop wzrosla 1->2 (era3), got=${c3.population}`);
-ok(keys(c3).join('|') === ['-1,1', '1,0'].join('|'), `Zelazo: top2 = zloto(1,0)+oboz(-1,1) (epoka wlasciciela w rankingu), got=${keys(c3)}`);
+ok(keys(c3).join('|') === ['-1,1', '1,0'].join('|'), `Zelazo: top2 = zloto(1,0)+oboz(-1,1) (epoka wlasciciela w rankingu, flaga OFF), got=${keys(c3)}`);
+M.setEraRebalanceEnabledForTest(null);
+const c3on = runGrowth(3);
+ok(keys(c3on).join('|') === keys(c1).join('|'), `flaga ON (dane): plony stale -> ranking era3 = era1 (zloto+miedz), got=${keys(c3on)}`);
 
 console.log(`manual-rebalance-owner-era: pass=${pass} fail=${fail}`);
 process.exit(fail ? 1 : 0);

@@ -20,7 +20,11 @@ const main = fs.readFileSync(path.resolve(__dirname, '../src/main.ts'), 'utf8');
 t('W2: okno aiDiploRatesCache/aiDiploTyAll -- otwarcie, zamkniecia, uzycie', () => {
   const open = main.indexOf("const relacjeDip: DiplomacjaInputs['relacje'] = [];");
   const openMark = main.indexOf('aiDiploRatesCache = new Map();', open);
-  assert.ok(open > 0 && openMark > open && openMark - open < 200, 'otwarcie okna tuz po deklaracji relacjeDip');
+  // R-WEB-TEST-DEBT-Q14 (HARNESS): między deklaracją relacjeDip a resetem cache wstawiono domknięcie
+  // blokSojusznicyDla (R-WEB-DIPLO-WAR-BY-ALLIANCE-STRENGTH-Q1, czysta funkcja). Sprawdzamy treść zamiast
+  // odległości w znakach: w tym przedziale nie ma wstawienia do relacjeDip ani odczytu cache.
+  assert.ok(open > 0 && openMark > open && !/relacjeDip\.push\(|aiDiploRatesCache\.(get|set)\(/.test(main.slice(open, openMark)),
+    'otwarcie okna tuz po deklaracji relacjeDip (bez wstawień do relacjeDip i odczytu cache między nimi)');
   const close = main.indexOf('if (relacjeDip.length > 0) {', open);
   const closeMark = main.lastIndexOf('aiDiploRatesCache = null;', close);
   assert.ok(closeMark > openMark && close - closeMark < 120, 'zamkniecie okna tuz przed uzyciem relacjeDip');

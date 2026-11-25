@@ -29,15 +29,25 @@ assert.equal(visualSide('atk', 'def'), 'enemy-right-red');
 checks += 4;
 
 has(battle, /function sideColor\(side: 'atk' \| 'def', playerSide: 'atk' \| 'def'\)/, 'kolor jednostki przyjmuje stronę gracza');
-has(battle, /return side === playerSide \? 0x3a6ad0 : 0xc84040;/, 'gracz niebieski, przeciwnik czerwony');
+// R-WEB-TEST-DEBT-Q14 (HARNESS): kolory stron wyniesione do battleHudTheme.ts (BATTLE_PLAYER / BATTLE_ENEMY,
+// cfa7447d6); sideColor zwraca teraz SIDE_COLOR_PLAYER/ENEMY z tych stałych. Sprawdzamy oba: wiązanie w
+// battleScene.ts oraz wartości hex w motywie (gracz niebieski #3a6ad0, przeciwnik czerwony #c84040).
+has(battle, /return side === playerSide \? SIDE_COLOR_PLAYER : SIDE_COLOR_ENEMY;/, 'gracz niebieski, przeciwnik czerwony (wiązanie z motywem)');
+const battleHudTheme = read('src/battle/battleHudTheme.ts');
+has(battleHudTheme, /export const BATTLE_PLAYER = '#3a6ad0';/, 'motyw: BATTLE_PLAYER = niebieski #3a6ad0');
+has(battleHudTheme, /export const BATTLE_ENEMY = '#c84040';/, 'motyw: BATTLE_ENEMY = czerwony #c84040');
 has(battle, /const playerSide = this\._playerControlSide\(\);/, 'panel zna stronę gracza');
 has(battle, /mkCommanderCard\(playerSide\);/, 'lewa karta to gracz');
 has(battle, /const enemySide = playerSide === 'atk' \? 'def' : 'atk';/, 'panel wyznacza przeciwnika');
 has(battle, /mkCommanderCard\(enemySide\);/, 'prawa karta to przeciwnik');
-has(battle, /color: this\._isPlayerSide\(ru\.side\) \? BATTLE_PLAYER : BATTLE_ENEMY,/, 'minimapa używa właściciela');
+// R-WEB-TEST-DEBT-Q14 (HARNESS): po refaktorze kart dowódców kolor wybiera zmienna isPlayer
+// (= this._isPlayerSide(side)) -- ta sama reguła strony gracza, inny zapis.
+has(battle, /const isPlayer = this\._isPlayerSide\(side\);[\s\S]{0,200}?const sideColor = isPlayer \? BATTLE_PLAYER : BATTLE_ENEMY;/, 'kolor strony wybiera właściciel (_isPlayerSide)');
 has(battle, /this\._armyMoraleRatio\(playerSide\)/, 'pasek przewagi używa strony gracza');
 has(battle, /sideColor\(side, this\._playerControlSide\(\)\)/, 'obwódki jednostek używają strony gracza');
-lacks(battle, /FACTION_ATK|FACTION_DEF|SIDE_COLOR/, 'brak rolowej tabeli kolorów');
+// R-WEB-TEST-DEBT-Q14 (HARNESS): SIDE_COLOR_PLAYER/ENEMY to stałe stron (gracz/przeciwnik), nie tabela
+// rolowa -- zakaz zawęża się do nazw rolowych (atak/obrona), żeby nie zabraniać wiązania stron.
+lacks(battle, /FACTION_ATK|FACTION_DEF|SIDE_COLOR_ATK|SIDE_COLOR_DEF/, 'brak rolowej tabeli kolorów');
 
 assert.equal((preBattle.match(/const posCls = isYou \? 'pb-l' : 'pb-r';/g) || []).length, 2);
 checks += 1;

@@ -71,7 +71,7 @@ const surrenderSource = extractFunction(
 );
 
 function hasSurrenderMigration(source) {
-  return /const prodSurrender = cityProd\.get\(city\.id\);[\s\S]*?const migrated = sanitizeBuildQueue\(prodSurrender\);[\s\S]*?setOwnerPracaPool\(oldOwner, ownerPracaPool\(oldOwner\) \+ migrated\.refundedPraca\);[\s\S]*?cityProd\.set\(city\.id, sanitizeProductionQueue\(newOwner, migrated\.prod\)\);/.test(source);
+  return /const prodSurrender = cityProd\.get\(city\.id\);[\s\S]*?const migrated = sanitizeBuildQueue\(prodSurrender\);[\s\S]*?setOwnerPracaPool\(oldOwner, ownerPracaPool\(oldOwner\) \+ migrated\.refundedPraca\);[\s\S]*?const sanitizedSurrenderProd = sanitizeProductionQueue\(newOwner, migrated\.prod\);[\s\S]*?cityProd\.set\(city\.id, capitalFilteredSurrenderProd\);/.test(source);
 }
 
 console.log('\n-- kontrakt resolveSiegeSurrender --');

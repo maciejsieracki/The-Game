@@ -377,7 +377,10 @@ function fakeSave(overrides) {
       get length() { return Object.keys(localStorageStore).length; },
     };
     const mod = freshModule(BUNDLE_MAIN);
-    const staleSave = fakeSave({ tura: 200, meta: { label: 'Rzym', savedAt: '2020-01-01T00:00:00.000Z' } });
+    // R-WEB-TEST-DEBT-Q14 (STARY-PIN): zapis wersja 2 jest odrzucany przez deserializeGame (SAVE_VERSION=3,
+    // brak migracji v2->v3, R-HOTSEAT-ETAP7-SAVELOAD-Q1), więc wiersz nie trafiał na listę. Stary zapis
+    // w scenariuszu musi mieć aktualną wersję; „stary" dotyczy tu znacznika czasu i tury, nie formatu.
+    const staleSave = fakeSave({ wersja: 3, tura: 200, meta: { label: 'Rzym', savedAt: '2020-01-01T00:00:00.000Z' } });
     localStorageStore[mod.SAVE_PREFIX + 'rzym'] = JSON.stringify(staleSave);
 
     ok((await mod.isIdbAvailable()) === false, '(setup) IndexedDB całkowicie niedostępne w tym scenariuszu -> isIdbAvailable()===false');
