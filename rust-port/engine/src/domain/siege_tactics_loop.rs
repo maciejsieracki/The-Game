@@ -9336,6 +9336,45 @@ mod march_incremental_tests {
         );
     }
 
+    /// Pin `_fleeStep` (`:9847`): `ru.dead` (np. zabicie przez wieżę przed wejściem z zegara przerwy) kończy ucieczkę bez
+    /// kroku, niezależnie od `removed`/`fadingOut`.
+    #[test]
+    fn ucieczka_martwy_przed_wejsciem_bez_kroku() {
+        let (mut b, mut st) = setup(3.0);
+        place(&mut b, A0, 5);
+        st.atk[0].c.routed = true;
+        st.atk[0].c.dead = true;
+        b.set_now(1000.0);
+        pend(&mut b, false);
+        let mut c = cont(MarchKind::Flee, 3.0);
+        assert_eq!(b.flee_enter(&mut st, &mut c), MarchNext::Done);
+        assert_eq!(b.cell_of(A0), (5, 0), "bez kroku");
+    }
+
+    /// MARCH-RESZTA-Q1 (D-MR-2): skutki ucieczki z `start` (tu: zejście z pola na krawędzi własnej strony, `_fleeStep`
+    /// `:9851-9852`) trafiają do stanu sterownika w [`LoopBody::after_start`], czyli w chwili aktywacji jak w pinie, a nie
+    /// w `complete`; zmiana stanu przez zegar między `start` a `complete` zostaje (bez łączenia i bez tagu konfliktu).
+    #[test]
+    fn ucieczka_skutki_start_w_stanie_od_razu() {
+        let (mut b, mut st) = setup(3.0);
+        place(&mut b, A0, 0);
+        st.atk[0].c.routed = true;
+        b.set_now(1000.0);
+        let _ = b.start(A0, &st);
+        assert!(
+            !st.atk[0].c.removed,
+            "start nie zmienia stanu (tylko odczyt)"
+        );
+        b.after_start(A0, &mut st);
+        assert!(st.atk[0].c.removed, "zejście z pola w chwili start");
+        // Zegar w oknie start..complete (np. trafienie wieży) zmienia pole jednostki.
+        st.atk[0].c.hp = 5.0;
+        b.complete(A0, &mut st);
+        assert!(st.atk[0].c.removed);
+        assert_eq!(st.atk[0].c.hp, 5.0, "zmiana zegara zostaje");
+        assert!(b.unported.is_empty(), "bez konfliktu: {:?}", b.unported);
+    }
+
     /// Pin `_cavManeuverStep` (`:6489-6500`): callback kroku decyduje o KOLEJNYM kroku od razu (nowy `_doMove` w fazie
     /// kroków, bez `_schedule`); `done()` gdy dobry sąsiad.
     #[test]
@@ -9496,6 +9535,28 @@ mod march_incremental_tests {
             arrive_base: Some(2),
             wall_col: 9,
         }
+    }
+
+    /// Pin `_siegeApproachRestricted` (`:7953`) czyta `ru.routed` w chwili KAŻDEGO wejścia `_siegeWalkTo` (jednostka
+    /// rozbita przez wieżę w trakcie marszu nie dostaje już odmowy bramki), więc wejście marszu ustawia flagę
+    /// czytaną przez odmowę ze stanu w tej chwili, nie z poprzedniej aktywacji.
+    #[test]
+    fn marsz_routed_z_chwili_wejscia() {
+        let (mut b, mut st) = setup(2.0);
+        let kind = ram(&mut b);
+        place(&mut b, A0, 0);
+        place(&mut b, D0, 9);
+        b.set_now(1000.0);
+        pend(&mut b, false);
+        st.atk[0].c.routed = true;
+        b.mover_routed = false;
+        let mut c = cont(kind, 2.0);
+        let _ = b.walk_enter(&st, &mut c);
+        assert!(b.mover_routed, "routed z chwili wejścia");
+        st.atk[0].c.routed = false;
+        let mut c = cont(kind, 2.0);
+        let _ = b.walk_enter(&st, &mut c);
+        assert!(!b.mover_routed, "nie-routed z chwili wejścia");
     }
 
     /// Pin `_siegeWalkTo`: krok od razu, callback `moveLeft <= 0` = `done` (`arrive` wieży: `towerAtWallRows.add`),
