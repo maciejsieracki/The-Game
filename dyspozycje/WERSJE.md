@@ -1,3 +1,9 @@
+## ROBOCZA 9678dc3c -- 2026-11-25 -- FALA 900: HUD hotseat: ranking Mocy, nakładka religii, lista zwycięstwa dla aktywnego gracza (testowa)
+
+- ranking Mocy (nazwa i znacznik gracza), zasięg religii i lista graczy zwycięstwa czytają aktywnego gracza (ME()) zamiast stałego gracza 0 (7 linii main.ts)
+- Weryfikacja: tsc 0; logic 213/213; hud-me-literal-zero 73/0; hud-owner-hotseat-source 48/0; hud-moc 28/0; moc-ranking 19/0; main-guard 21/0; hotseat e-source 77/0, B 48/0, D 46/0, E 24/0; ai-test 297/0; vite 0
+- Limity: Runtime hotseat NIE ZMIERZONO; getEmpireHud nadal literał 0 (temat EMPIREHUD); typCywilizacji innych foteli ludzkich bez zmian
+
 ## ROBOCZA 9767a2f8 -- 2026-11-25 -- FALA 899: HUD hotseat: pozostałe dane dla aktywnego gracza (testowa)
 
 - HUD pobór/religia/zasoby/kolor/nazwa przywódcy czytają aktywnego gracza (ME()/ownerId) zamiast stałego gracza 0 (14 podstawień w main.ts)
