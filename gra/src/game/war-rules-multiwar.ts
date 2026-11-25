@@ -274,17 +274,26 @@ export function eraWarCounterEpoch(tagEpoch: number | undefined, ownerEpoch: num
 }
 
 /**
+ * Czas czekania (tury) dla zapisów legacy bez znaczników wejścia w epokę: przed zmianą
+ * R-WEB-ERA-WAR-START-AT-ERA-ENTRY-Q1 wojna Brązu/Żelaza startowała po 40 turach, więc
+ * legacy zapis dostaje TEN SAM harmonogram od wczytania (bez nagłej serii wojen przy wczytaniu).
+ */
+export const LEGACY_ERA_ENTRY_WAIT_TURNS = 40;
+
+/**
  * Legacy saves may lack per-owner era-entry timestamps. Since their historical
- * entry turn cannot be recovered, start the required wait at load time. Existing
- * timestamps are preserved, and only owners already in Bronze/Iron are backfilled.
+ * entry turn cannot be recovered, the wait starts at load time (`currentTurn + waitTurns`).
+ * Existing timestamps are preserved, and only owners already in Bronze/Iron are backfilled.
+ * `waitTurns = 0` (domyślne, ścieżka runtime) = wejście w turze `currentTurn`.
  */
 export function backfillMissingEraEntryTurns(
   entryTurns: Map<number, number>,
   ownerEpochs: ReadonlyMap<number, number>,
   currentTurn: number,
+  waitTurns = 0,
 ): void {
   for (const [ownerId, epoch] of ownerEpochs) {
-    if (epoch >= 2 && epoch <= 3 && !entryTurns.has(ownerId)) entryTurns.set(ownerId, currentTurn);
+    if (epoch >= 2 && epoch <= 3 && !entryTurns.has(ownerId)) entryTurns.set(ownerId, currentTurn + waitTurns);
   }
 }
 

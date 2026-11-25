@@ -112,14 +112,15 @@ try {
   assert(!eligibility({ isAlreadyAtWarAnyRole: true }), 'brak dla ownera już w wojnie (dowolna rola)');
 
   console.log('--- R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1 + R-WEB-ERA-DELAY-Q1: próg 20 tur od WEJŚCIA W ŻELAZO ---');
-  eq(startTuryOdEpoki, 40, 'próg startu Żelaza = 40 tur od wejścia w epokę (z war-rules-params.json, z JSON)');
+  // R-WEB-ERA-WAR-START-AT-ERA-ENTRY-Q1 (decyzja właściciela 2026-11-25): próg Żelaza 0 (było 40).
+  eq(startTuryOdEpoki, 0, 'próg startu Żelaza = 0 tur od wejścia w epokę (z war-rules-params.json, z JSON; było 40)');
 
   // Kryterium końca 1 (dispatch): 0 tur po wejściu w Żelazo -> NIE kwalifikuje się, mimo że
   // wszystkie pozostałe warunki (główna cywilizacja AI, brak wojny) są spełnione -- dziś (przed
   // naprawą) zwracałoby true, po naprawie false.
   assert(
-    !eligibility({ currentTurn: 40, eraEnterTurn: 40 }),
-    'kryterium 1: 0 tur po wejściu w Żelazo (currentTurn === eraEnterTurn) NIE kwalifikuje się',
+    eligibility({ currentTurn: 40, eraEnterTurn: 40 }),
+    'kryterium 1 (R-WEB-ERA-WAR-START-AT-ERA-ENTRY-Q1): 0 tur po wejściu w Żelazo (currentTurn === eraEnterTurn) KWALIFIKUJE się (próg 0)',
   );
   assert(
     !eligibility({ currentTurn: 40 + startTuryOdEpoki - 1, eraEnterTurn: 40 }),
@@ -130,7 +131,7 @@ try {
   // się (próg spełniony, granica włącznie: >=).
   assert(
     eligibility({ currentTurn: 40 + startTuryOdEpoki, eraEnterTurn: 40 }),
-    'kryterium 2: dokładnie 40 tur po wejściu w Żelazo KWALIFIKUJE się (próg spełniony, granica >=)',
+    'kryterium 2: dokładnie próg (0 tur) po wejściu w Żelazo KWALIFIKUJE się (granica >=)',
   );
   assert(
     eligibility({ currentTurn: 40 + startTuryOdEpoki + 10, eraEnterTurn: 40 }),

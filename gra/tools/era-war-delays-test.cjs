@@ -63,8 +63,8 @@ function main() {
   console.log('--- P: parametry w data/war-rules-params.json ---');
   eq(M.WAR_RULES_PARAMS.delayInterCivWarsUntilTurn, 40, 'R1 zostaje: delayInterCivWarsUntilTurn = 40');
   eq(M.WAR_RULES_PARAMS.eraForcedWarStartTurnsFromEra.stone, 40, 'próg Kamienia = 40 (z JSON)');
-  eq(M.WAR_RULES_PARAMS.eraForcedWarStartTurnsFromEra.bronze, 40, 'próg Brązu = 40 (z JSON)');
-  eq(M.WAR_RULES_PARAMS.eraForcedWarStartTurnsFromEra.iron, 40, 'próg Żelaza = 40 (z JSON)');
+  eq(M.WAR_RULES_PARAMS.eraForcedWarStartTurnsFromEra.bronze, 0, 'próg Brązu = 0 (z JSON; R-WEB-ERA-WAR-START-AT-ERA-ENTRY-Q1, było 40)');
+  eq(M.WAR_RULES_PARAMS.eraForcedWarStartTurnsFromEra.iron, 0, 'próg Żelaza = 0 (z JSON; R-WEB-ERA-WAR-START-AT-ERA-ENTRY-Q1, było 40)');
   eq(JSON.stringify(M.WAR_RULES_PARAMS.eraForcedWarIgnoreR1), '["bronze","iron"]', 'eraForcedWarIgnoreR1 = [bronze, iron]');
   eq(M.isEraForcedWarIgnoringR1('stone'), false, 'Kamień NIE omija R1');
   eq(M.isEraForcedWarIgnoringR1('bronze'), true, 'Brąz omija R1');
@@ -72,8 +72,8 @@ function main() {
   eq(M.isEraForcedWarIgnoringR1(null), false, 'zwykłe wypowiedzenie (null) NIE omija R1');
   eq(M.WOJNA_WYMUSZONA_ODPOCZYNEK_TUR, 20, 'odpoczynek po wojnie nietknięty = 20');
   eq(M.WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR, 20, 'cooldown tej samej cywilizacji nietknięty = 20');
-  eq(M.WOJNA_WYMUSZONA_START_TURY_OD_EPOKI, 40, 'stała Brązu czyta JSON = 40');
-  eq(M.WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI, 40, 'stała Żelaza czyta JSON = 40');
+  eq(M.WOJNA_WYMUSZONA_START_TURY_OD_EPOKI, 0, 'stała Brązu czyta JSON = 0');
+  eq(M.WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI, 0, 'stała Żelaza czyta JSON = 0');
 
   console.log('--- G1: bramka R1 (tura 30, przed 40) ---');
   eq(M.evaluateInterCivWarGate(gateInput({ eraTag: 'stone' })), 'delay_r1', 'Kamień przed turą 40 = zablokowany (R1)');
@@ -96,29 +96,31 @@ function main() {
   eq(gateEra('bronze'), 'ok', 'evaluateEraForcedWarGate(bronze) = ok');
   eq(gateEra('iron'), 'ok', 'evaluateEraForcedWarGate(iron) = ok');
 
-  console.log('--- E1: próg 40 tur od wejścia w epokę, niezależnie od tury gry ---');
+  console.log('--- E1: próg Brązu/Żelaza 0 tur od wejścia w epokę (R-WEB-ERA-WAR-START-AT-ERA-ENTRY-Q1), niezależnie od tury gry ---');
   const bronzeIn = (turn, enter) => M.isEligibleForBronzeForcedWar({
     isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: turn, eraEnterTurn: enter,
   });
   const ironIn = (turn, enter) => M.isEligibleForIronForcedWar({
     isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: turn, eraEnterTurn: enter,
   });
-  eq(bronzeIn(49, 10), false, 'Brąz: tura 49, wejście 10 (39 tur) = NIE eligible');
-  eq(bronzeIn(50, 10), true, 'Brąz: tura 50, wejście 10 (40 tur) = eligible');
-  eq(ironIn(49, 10), false, 'Żelazo: tura 49, wejście 10 (39 tur) = NIE eligible');
-  eq(ironIn(50, 10), true, 'Żelazo: tura 50, wejście 10 (40 tur) = eligible');
-  eq(bronzeIn(219, 180), false, 'przykład ownera: global 219, wejście 180 (39 tur) = NIE eligible');
-  eq(bronzeIn(220, 180), true, 'przykład ownera: global 220, wejście 180 (40 tur) = eligible');
+  eq(bronzeIn(9, 10), false, 'Brąz: tura 9, wejście 10 (przed wejściem) = NIE eligible');
+  eq(bronzeIn(10, 10), true, 'Brąz: tura 10 = tura wejścia (0 tur) = eligible');
+  eq(ironIn(9, 10), false, 'Żelazo: tura 9, wejście 10 (przed wejściem) = NIE eligible');
+  eq(ironIn(10, 10), true, 'Żelazo: tura 10 = tura wejścia (0 tur) = eligible');
+  eq(bronzeIn(180, 180), true, 'przykład ownera: global 180, wejście 180 (0 tur) = eligible');
+  eq(bronzeIn(181, 180), true, 'przykład ownera: global 181, wejście 180 (1 tura) = eligible');
 
   console.log('--- E2: legacy save timestamps begin conservatively at load ---');
   const legacyBronzeEntries = new Map();
   const legacyIronEntries = new Map();
   const loadedOwnerEras = new Map([[0, 2], [7, 2], [8, 3], [9, 1]]);
-  M.backfillMissingEraEntryTurns(legacyBronzeEntries, loadedOwnerEras, 219);
-  M.backfillMissingEraEntryTurns(legacyIronEntries, loadedOwnerEras, 219);
-  eq(JSON.stringify([...legacyBronzeEntries]), JSON.stringify([[0, 219], [7, 219], [8, 219]]), 'missing legacy timestamps are initialized at load only for Bronze/Iron owners');
-  eq(JSON.stringify([...legacyIronEntries]), JSON.stringify([[0, 219], [7, 219], [8, 219]]), 'legacy Iron map receives same conservative load turn');
-  eq(bronzeIn(258, legacyBronzeEntries.get(7)), false, 'legacy Bronze owner remains blocked after 39 turns');
+  // R-WEB-ERA-WAR-START-AT-ERA-ENTRY-Q1 (zarzut 2): zapis legacy startuje 40-turowe czekanie od wczytania
+  // (LEGACY_ERA_ENTRY_WAIT_TURNS = 40, jak przed zmianą) -- brak nagłej serii wojen przy wczytaniu.
+  M.backfillMissingEraEntryTurns(legacyBronzeEntries, loadedOwnerEras, 219, 40);
+  M.backfillMissingEraEntryTurns(legacyIronEntries, loadedOwnerEras, 219, 40);
+  eq(JSON.stringify([...legacyBronzeEntries]), JSON.stringify([[0, 259], [7, 259], [8, 259]]), 'missing legacy timestamps = wczytanie + 40 tur (tylko Brąz/Żelazo)');
+  eq(JSON.stringify([...legacyIronEntries]), JSON.stringify([[0, 259], [7, 259], [8, 259]]), 'legacy Iron map: wczytanie + 40 tur');
+  eq(bronzeIn(258, legacyBronzeEntries.get(7)), false, 'legacy Bronze owner remains blocked after 39 turns (brak serii przy wczytaniu)');
   eq(bronzeIn(259, legacyBronzeEntries.get(7)), true, 'legacy Bronze owner opens after 40 turns');
   const knownEntries = new Map([[7, 180], [8, 190]]);
   M.backfillMissingEraEntryTurns(knownEntries, loadedOwnerEras, 219);

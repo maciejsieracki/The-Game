@@ -134,7 +134,8 @@ console.log(`S1 gracz bez zapisanego wejścia w Brąz: bramka po backfillu (pró
 {
   const entryMap = new Map();
   const at80 = playerEligibleAt(80, entryMap);
-  assert(at80 === false, `S1: tura 80 (3 tury po wejściu) -> gracz NIEdopuszczony (got ${at80})`);
+  // R-WEB-ERA-WAR-START-AT-ERA-ENTRY-Q1: próg 0 -> brakujące wejście = pierwsza tura bramki, gracz dopuszczony od razu.
+  assert(at80 === true, `S1: tura 80 (brak zapisu wejścia, próg ${delay}) -> gracz dopuszczony od pierwszej tury bramki (got ${at80})`);
   const at116 = isPlayerEligibleForEraWarPool(poolInput(PLAYER_ENTRY_OBSERVED_TURN + delay - 1, entryMap.get(0)), WAR_RULES_PARAMS);
   assert(at116 === false, `S1: tura ${PLAYER_ENTRY_OBSERVED_TURN + delay - 1} -> nadal NIE`);
   const at117 = isPlayerEligibleForEraWarPool(poolInput(PLAYER_ENTRY_OBSERVED_TURN + delay, entryMap.get(0)), WAR_RULES_PARAMS);
@@ -159,7 +160,8 @@ console.log('S3 fallback pending Brązu AI: gracz tylko po progu');
   const eligible80 = playerEligibleAt(80, entryMap);
   const r80 = assignForcedWarPairings(lone, [], { ...base, freeTargetCandidates: [far, ...(eligible80 ? [player] : [])] });
   const a80 = r80.assignments.find(a => a.ownerId === 2);
-  assert(a80 && a80.targetId === 5, `S3: tura 80 -> cel = 5 (nie gracz), got ${JSON.stringify(a80)}`);
+  // R-WEB-ERA-WAR-START-AT-ERA-ENTRY-Q1 (próg Brązu 0): gracz od tury 80 jest w puli i najbliższy -> cel 0.
+  assert(a80 && a80.targetId === 0, `S3: tura 80 -> cel = 0 (gracz, próg 0), got ${JSON.stringify(a80)}`);
   // Tura 117: gracz przechodzi bramkę i jest najbliższy -> cel = gracz 0.
   const eligible117 = isPlayerEligibleForEraWarPool(poolInput(PLAYER_ENTRY_OBSERVED_TURN + delay, entryMap.get(0)), WAR_RULES_PARAMS);
   const r117 = assignForcedWarPairings(lone, [], { ...base, freeTargetCandidates: [far, ...(eligible117 ? [player] : [])] });
@@ -240,15 +242,15 @@ console.log('S6-S8 sekwencja: Kamień trwa -> Brąz pending -> pokój -> start w
   const natFirst = fallbackStep(PEACE_TURN + 1, 0);
   assert(natFirst && natFirst.era === 'bronze' && natFirst.targetId === 3, `S7: pierwsza tura po pokoju naturalnym -> Brąz startuje (cel 3), got ${JSON.stringify(natFirst)}`);
   const natEarly = fallbackStep(51, 0);
-  assert(natEarly === undefined, 'S7: kontrola opóźnienia (t51, 10 tur po wejściu) -> brak startu');
+  assert(natEarly && natEarly.targetId === 3, 'S7: próg 0 -> start Brązu już w t51 (10 tur po wejściu, cel 3)');
   // S7b: AI w wojnie naturalnej Z GRACZEM nie jest partnerem pary gracza (pin main.ts w S9; tu lustro gate).
   const atWarWithPlayer = turnStep(PEACE_TURN + 1, { stoneWarActive: false, natural1: 1, pairAtWarWithPlayer: true });
   assert(atWarWithPlayer === undefined, 'S7b: AI 1 w wojnie z graczem nie dostaje pary z graczem (kandydat odrzucony przez gate)');
   const early = turnStep(51, { stoneWarActive: false, natural1: 0, pairAtWarWithPlayer: false });
-  assert(early === undefined, `S8: tura 51 (10 tur po wejściu AI) -> brak celu mimo braku wojny, got ${JSON.stringify(early)}`);
+  assert(early && early.targetId === 0, `S8: tura 51 (10 tur po wejściu AI, próg 0) -> cel gracz 0, got ${JSON.stringify(early)}`);
   // S8b: gracz już dopuszczony (wejście t5), ale kandydat-AI 1 wszedł w t41 -- w t51 opóźnienie AI blokuje parę; w t81 otwiera (mutacja delay czerwona).
   const aiDelayed = turnStep(51, { stoneWarActive: false, natural1: 0, pairAtWarWithPlayer: false, playerEnter: 5 });
-  assert(aiDelayed === undefined, `S8b: gracz dopuszczony, ale AI 1 (wejście t41) w t51 jeszcze za wcześnie -> brak pary, got ${JSON.stringify(aiDelayed)}`);
+  assert(aiDelayed && aiDelayed.targetId === 0, `S8b: próg 0 -> AI 1 (wejście t41) w t51 już gotowe, para z graczem, got ${JSON.stringify(aiDelayed)}`);
   const d = params.eraForcedWarStartTurnsFromEra.bronze;
   const at81 = turnStep(BRONZE_ENTER_AI + d, { stoneWarActive: false, natural1: 0, pairAtWarWithPlayer: false });
   assert(at81 && at81.targetId === 0, `S8: tura ${BRONZE_ENTER_AI + d} (próg ${d} tur po wejściu) -> cel gracz 0, got ${JSON.stringify(at81)}`);

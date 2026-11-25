@@ -135,30 +135,31 @@ assert(
 );
 
 console.log('\n--- R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A) + R-WEB-ERA-DELAY-Q1: próg 20 tur OD WEJŚCIA W BRĄZ ---');
-eq(WOJNA_WYMUSZONA_START_TURY_OD_EPOKI, 40, 'stała progu = 40 tur (z war-rules-params.json; R-WEB-ERA-DELAY-Q1 zaktualizowane)');
+// R-WEB-ERA-WAR-START-AT-ERA-ENTRY-Q1 (decyzja właściciela 2026-11-25): Brąz startuje od pierwszej tury wejścia w epokę -> próg 0 (z JSON).
+eq(WOJNA_WYMUSZONA_START_TURY_OD_EPOKI, 0, 'stała progu Brązu = 0 tur od wejścia w epokę (z war-rules-params.json; R-WEB-ERA-WAR-START-AT-ERA-ENTRY-Q1, było 40)');
 assert(
-  !isEligibleForBronzeForcedWar({
-    isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: 139, eraEnterTurn: 100,
+  isEligibleForBronzeForcedWar({
+    isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: 100, eraEnterTurn: 100,
   }),
-  'tura 139, wejście w Brąz w turze 100 → 39 tur < 40, NIE eligible',
+  'tura 100 = tura wejścia w Brąz (0 tur od wejścia) → eligible (próg 0, R-WEB-ERA-WAR-START-AT-ERA-ENTRY-Q1)',
 );
 assert(
   isEligibleForBronzeForcedWar({
     isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: 140, eraEnterTurn: 100,
   }),
-  'tura 140, wejście w Brąz w turze 100 → dokładnie 40 tur, eligible',
+  'tura 140, wejście w Brąz w turze 100 → 40 tur, eligible',
 );
 assert(
   isEligibleForBronzeForcedWar({
     isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: 275, eraEnterTurn: 235,
   }),
-  'cywilizacja, która weszła w Brąz PÓŹNIEJ (tura 235) → próg mierzony NIEZALEŻNIE od startu gry, 40 tur od TEJ tury wystarcza',
+  'cywilizacja, która weszła w Brąz PÓŹNIEJ (tura 235) → próg mierzony NIEZALEŻNIE od startu gry, od TEJ tury wystarcza',
 );
 assert(
-  !isEligibleForBronzeForcedWar({
+  isEligibleForBronzeForcedWar({
     isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: 274, eraEnterTurn: 235,
   }),
-  'ta sama cywilizacja tuż wcześniej (274, 39 tur od 235) → jeszcze NIE eligible',
+  'ta sama cywilizacja (274, 39 tur od 235) → eligible (próg 0)',
 );
 assert(
   isEligibleForBronzeForcedWar({

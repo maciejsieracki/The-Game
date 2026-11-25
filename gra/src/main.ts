@@ -1526,6 +1526,7 @@ import {
   forcedEraTagForEpoch,
   eraWarCounterEpoch,
   backfillMissingEraEntryTurns,
+  LEGACY_ERA_ENTRY_WAIT_TURNS,
   isPlayerEligibleForEraWarPool,
   isEraWarTargetDelayOk,
   isPlayerEraWarSlotFree,
@@ -52514,11 +52515,12 @@ async function boot(): Promise<void> {
       if (savedOwnerEra?.length) {
         for (const [oid, e] of savedOwnerEra) ownerEraByOwner.set(oid, e);
       }
-      // Legacy saves have no trustworthy historical Bronze/Iron entry turn. Begin
-      // their 40-turn wait at load time, preserving every timestamp that was saved.
+      // Legacy saves have no trustworthy historical Bronze/Iron entry turn. Their wait
+      // starts at load time + LEGACY_ERA_ENTRY_WAIT_TURNS (40, jak przed R-WEB-ERA-WAR-START-AT-ERA-ENTRY-Q1),
+      // so loading does not start a burst of era wars; saved timestamps are preserved.
       const restoredEraOwners = new Map(ownerEraByOwner);
       restoredEraOwners.set(0, player.era ?? 1);
-      backfillMissingEraEntryTurns(bronzeEraEnterTurnByOwner, restoredEraOwners, turn);
+      backfillMissingEraEntryTurns(bronzeEraEnterTurnByOwner, restoredEraOwners, turn, LEGACY_ERA_ENTRY_WAIT_TURNS);
       // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1 r4 (zarzut 5): wejście w Żelazo backfilluje się TYLKO
       // właścicielom faktycznie w epoce Żelaza (3). Wcześniej właściciel w Brązie (2) dostawał sztuczny wpis
       // Żelaza = tura wczytania, co zawyżało/zaniżało przyszłe opóźnienie. Zgodne z backfillem w bramce puli.
@@ -52526,6 +52528,7 @@ async function boot(): Promise<void> {
         ironEraEnterTurnByOwner,
         new Map([...restoredEraOwners].filter(([, e]) => e === 3)),
         turn,
+        LEGACY_ERA_ENTRY_WAIT_TURNS,
       );
       // R-WEB-ERA-WAR-COUNTER-Q1 (7): licznik wojen epoki per (cywilizacja, epoka). Zapis bez pola
       // (stary zapis) → odtwórz z AKTYWNYCH par wojen wymuszonych (obie strony = 1 w bieżącej
