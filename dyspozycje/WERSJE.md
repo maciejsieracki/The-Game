@@ -1,3 +1,9 @@
+## ROBOCZA 2325253d -- 2026-11-25 -- FALA 903: HUD hotseat: ostatnie miejsca gracza 0 → aktywny gracz (testowa)
+
+- Ostatnie 12 literałów gracza 0 w roli gracza aktywnego (cuda w budowie, cywilizacja, zasoby miast, bramka badań, drzewo technologii) czytają aktywnego gracza (ME()); w grze jednoosobowej bez zmian
+- Weryfikacja: tsc 0; logic 213/213; hud-me-literal-zero 150/0; hud-owner-hotseat-source 58/0; hud-moc 28/0; moc-ranking 19/0; main-guard 21/0; hotseat e-source 77/0, B 48/0, D 46/0, E 24/0; disband-refund 45/0; unit-replace-multitype 25/0; recruitment-batch 17/0; fortring-hook 8/0; bramki-tmpdir 18/0; ai-test 297/0; vite 0
+- Limity: Runtime hotseat NIE ZMIERZONO; kilkadziesiąt dodatkowych literałów 0 (drzewo technologii, bramka badań) w osobnym temacie; 6 testów z długu sprzed tematu padających identycznie na bazie
+
 ## ROBOCZA ec0e9401 -- 2026-11-25 -- FALA 902: Hak testowy pierścienia fortów (civTest) + runnery pomiarowe (testowa)
 
 - Hak civTest do wyłączania pierścienia fortów (domyślnie wyłączony, gra bez ?civTest=1 bez zmian), runner pomiaru FORTRING i FLEEMANUAL, dokument pomiarowy
