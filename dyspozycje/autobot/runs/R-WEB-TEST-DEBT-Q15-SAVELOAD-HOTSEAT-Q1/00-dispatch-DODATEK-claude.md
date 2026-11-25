@@ -26,3 +26,10 @@ Runda 1: Evaluator FAIL (7 zarzutów), FC FAIL — hotseat B/D/E nadal czerwone,
 6. resource-ledger-realpath-mutation: dołóż usuwanie osieroconych kopii civ-ledger-mut-backup-*.ts z os.tmpdir() przy starcie i po zakończeniu (tylko własne, po pidzie martwego procesu); SIGKILL — NIE-ZMIERZONO z powodem lub test z kill -KILL własnego dziecka (PID dziecka, bez pkill).
 ZAKAZ statusu BLOCK/INCOMPLETE bez blokady technicznej; każdy punkt kończy się klasyfikacją z dowodem albo NIE-ZMIERZONO z konkretnym powodem.
 Allowlista poprawiona: gra/tools/save-load-deserialize-fields-audit.cjs (bez -test).
+
+## DODATEK rundy 3/5 (orkiestrator, 2026-11-25) — BAZA = 9141031f495b0ac4bd8b6a2a55dab78bd2a35165 (potomek bc71c7481; w main częściowo: 7d2057a40). Zawężony zakres — NIE RUSZAJ rzeczy zielonych (hotseat-B 48/0, hotseat-E 24/0, roundtrip exit 0, deserialize-audit z --dist, realpath przywracanie SIGTERM/SIGKILL).
+1. hotseat-etap6d-podetap-d-exec: blok B nie dochodzi do końca (UNMOCKED diploMilitarySideOf; potem kolejne symbole — dostarczaj je pętlą: uruchom, weź nazwę z ReferenceError, wytnij symbol z main.ts na bieżącym SHA po sygnaturze funkcji albo dodaj mock zgodny z kontraktem, powtórz; limit 12 iteracji; po każdej commit); 3 asercje „PRAWDZIWY ME()” czerwone — ustal przyczynę z dowodem (czy zwrot [] wynika z brakującego symbolu, czy z logiki); mutacja ME()→0 w bloku B musi dawać czerwień; docelowo D zielony, asercji nie osłabiaj. Jeśli po 12 iteracjach nadal nie dochodzi — NIE-ZMIERZONO z pełną listą dostarczonych i brakujących symboli.
+2. roundtrip: mutacja czerwona (np. pominięcie jednego pola zapisu w kopii bundla poza repo → test czerwony) albo NIE-ZMIERZONO z powodem.
+3. realpath-mutation: pełny bieg --ids m01 w tle (setsid nohup timeout 1500 … i czekanie Monitor/until-pętlą), z ubiciem dziecka vite przez PID dziecka (nie pkill po nazwie) → po tym md5 gra/src/main.ts == HEAD.
+4. unit-replace i bramki ogólne uruchom na kandydacie (raport rundy 2 miał NIE-ZMIERZONO).
+ZAKAZ BLOCK/INCOMPLETE bez blokady technicznej.
