@@ -344,6 +344,7 @@ console.log('\n4. enqueueNegotiationFromAiCmd — realne wykonanie\n');
       ownerBasketAffordCtx: [],
       aiCommandToPendingProposal: [],
       hasPendingNegotiationForPair: [],
+      planAiOfferOnTable: [],
       createNegotiation: [],
       pnBalanceOpts: null,
     };
@@ -365,6 +366,12 @@ console.log('\n4. enqueueNegotiationFromAiCmd — realne wykonanie\n');
       // Stan modułu main.ts (let ... = null w stanie domyślnym, main.ts ~L25043): cache wyłączony.
       aiDiploTradeGoodsCache: null,
       aiDiploRatesCache: null, // main.ts ~L3747, stan domyślny (cache wyłączony poza oknem tury)
+      // R-WEB-TEST-DEBT-Q15 (runda 3): main.ts `empireConverterResourceRatesForOwner` (L4001-4006)
+      // czyta `data.econParams` (moduł-poziomu, `data` z src/data/loader.ts, JSON gra/data/econ-params.json)
+      // i woła `loadThroughput(raw, ...)` z `raw.budynki` (src/game/converters.ts L37). Bez tego mocka:
+      // TypeError "reading 'budynki'" (r2 BLOKADA a). Realny JSON z repo, bez stuba kształtu.
+      data: { econParams: JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'econ-params.json'), 'utf8')) },
+      _menuDifficulty: 'normal',
       // R-WEB-TEST-DEBT-Q15 (runda 2): main.ts `tradableGoodsIndexForOwner` -> ... ->
       // `empireActiveResourceLabelsForOwner` czyta moduły-poziomu `hudPureScope` / `ownerScope`
       // (createScopeMemo z frame-memo, main.ts ~L3739). Bez mocka: TypeError `.cached`. Pass-through
@@ -415,6 +422,14 @@ console.log('\n4. enqueueNegotiationFromAiCmd — realne wykonanie\n');
         calls.hasPendingNegotiationForPair.push(playerId);
         return false;
       },
+      // R-WEB-TEST-DEBT-Q15 (runda 3): main.ts L21743 woła `planAiOfferOnTable(table, ownerId, ME(), actionId)`
+      // (src/game/diplomacy-proposals.ts, DIPLO-5 474ef9561), a NIE bezpośrednio `hasPendingNegotiationForPair`
+      // (ta jest wołana WEWNĄTRZ modułu, poza zasięgiem mocków). Spy na realnej `planAiOfferOnTable` z bundla
+      // rejestruje 3. argument (playerOwnerId = ME()) bez zmiany wykonania.
+      planAiOfferOnTable: (table, aiId, playerId, actionId) => {
+        calls.planAiOfferOnTable.push(playerId);
+        return loadRealModuleCached('src/game/diplomacy-proposals.ts').planAiOfferOnTable(table, aiId, playerId, actionId);
+      },
       isOfferRejectedOnCooldown: () => false,
       rejectedOfferCooldowns: new Map(),
       negotiationTable: [],
@@ -451,7 +466,7 @@ console.log('\n4. enqueueNegotiationFromAiCmd — realne wykonanie\n');
   ok(realTrade.ownerBasketAffordCtx[1] === PLAYER, `PRAWDZIWY ME() L16001 (ownerBasketAffordCtx dla theirCtx): 2. wywołanie = ME() = ${PLAYER}, otrzymano ${JSON.stringify(realTrade.ownerBasketAffordCtx)}`);
   ok(!!realTrade.pnBalanceOpts && realTrade.pnBalanceOpts.playerOwnerId === PLAYER, `PRAWDZIWY ME() L16054 (pnBalanceOpts.playerOwnerId) = ${PLAYER}, otrzymano ${JSON.stringify(realTrade.pnBalanceOpts)}`);
   ok(realTrade.aiCommandToPendingProposal[0] === PLAYER, `PRAWDZIWY ME() L15982: aiCommandToPendingProposal 3. arg (playerId) = ${PLAYER}, otrzymano ${JSON.stringify(realTrade.aiCommandToPendingProposal)}`);
-  ok(realTrade.hasPendingNegotiationForPair[0] === PLAYER, `PRAWDZIWY ME() L16085: hasPendingNegotiationForPair 2. arg = ${PLAYER}, otrzymano ${JSON.stringify(realTrade.hasPendingNegotiationForPair)}`);
+  ok(realTrade.planAiOfferOnTable[0] === PLAYER, `PRAWDZIWY ME() L21743 (planAiOfferOnTable 3. arg = playerOwnerId): = ${PLAYER}, otrzymano ${JSON.stringify(realTrade.planAiOfferOnTable)}`);
   ok(realTrade.createNegotiation[0] === PLAYER, `PRAWDZIWY ME() L16090: createNegotiation entry.responderOwnerId = ${PLAYER}, otrzymano ${JSON.stringify(realTrade.createNegotiation)}`);
 
   mutationExpected = true;
@@ -539,6 +554,9 @@ console.log('\n6. currentVisibleForOwner — realne wykonanie\n');
     const mocks = {
       computePlayerVisibility: () => new Set(['h1']),
       map: {}, units: [], cities: [], unitSight: {},
+      // R-WEB-TEST-DEBT-Q15 (runda 3): main.ts L14184 `fortSightSources(fortNodes, ownerId)` czyta moduł-poziomu
+      // `fortNodes` (pusty świat testu, bez fortów; realna funkcja z src/game/fort-territory.ts).
+      fortNodes: [],
       allianceFormalKindBetween: (deals, a, b) => {
         calls.allianceFormalKindBetween.push(a);
         return a === PLAYER ? 'sojusz' : null;
@@ -571,10 +589,18 @@ console.log('\n7. peacefulArchetypeForOwner — realne wykonanie\n');
   function run(isMe, ME) {
     const mocks = {
       aiOwnerCivMap: new Map([[4, 'grecy']]),
+      // R-WEB-TEST-DEBT-Q15 (runda 3): civKeyForOwnerId (main.ts L10547) czyta _menuCivIdByOwner (Map, L2192)
+      // i playerCivTypeByHuman; bez nich: TypeError `.get is not a function` (stan modułu nie zainicjowany).
+      _menuCivIdByOwner: new Map([[PLAYER, 'grecy']]),
+      playerCivTypeByHuman: new Map(),
+      // R-WEB-TEST-DEBT-Q15 (runda 3): effectiveGameDifficultyForOwner (main.ts L10283) -> Pure(typCityCopyOwners.has)
+      _menuDifficulty: 'normal', _menuCityStateDifficulty: 'normal', typCityCopyOwners: new Set(),
+      effectiveGameDifficultyForOwner: () => 'normal',
       civAiProfileForTyp: () => ({ sklonnoscDoPodboju: 2, agresywnosc: 1, tolerancjaRyzyka: 1 }),
       resolveArchetypeAggression: () => 0.5,
       ARCHETYPE_AGGRESSION: {},
-      data: {},
+      // R-WEB-TEST-DEBT-Q15 (runda 3): civKeyForOwnerId czyta data.civs.cywilizacje (gra/data/civs.json, realny JSON).
+      data: { civs: JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'civs.json'), 'utf8')) },
       resolveDiplomacyCivBias: () => ({ peaceful: true }),
       isMe, ME,
     };
