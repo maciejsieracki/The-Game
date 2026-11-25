@@ -62,7 +62,7 @@ Zmiana prędkości w trakcie bitwy jest dozwolona (`:9535` „Safe to call mid-b
 | 512 | 32 | 70/128 | **126/128** | 24/45 | **44/45** | `124`, `156` — #402 (ucieczka, tag `ucieczka-konflikt-zegara`) |
 | 1024 | 64 | NIE_ZMIERZONO | 126/128 | NIE_ZMIERZONO | **45/45** | `144`, `147` — #402 (kawaleria, ślady §4) |
 | 2048 | 128 | — | 124/128 | — | (speed_vectors) | `143`, `147`, `176`, `211` — wszystkie „jazda”; klasa #402 przez analogię, ślad tylko `147`@1024 |
-| 4096 / 8192 | 256 / 512 | — | NIE_ZMIERZONO (c1) | — | speed_vectors: `111` rozbieżny | `111` — #402 (kawaleria, ślad §4) |
+| 4096 / 8192 | 256 / 512 | — | 127/128 / 127/128 | — | (speed_vectors) | `111` (c1 i wektor) — #402 (kawaleria, ślad §4) |
 
 \* przy `ms < 16` 2 wektory czasu rzeczywistego pominięte (`speedMul < 1` nie istnieje w pinie).
 
@@ -137,6 +137,7 @@ bitwy z pinem (`speedAt` 8/8), klatka renderera z opcji. `bridge.rs` i `CONTRACT
 | `renderer/src/battle/playback.rs` | `PlaybackOpts::frame_ms`, `is_pin_event_time(frame, …)`, `Move` na siatce klatki, dokumentacja |
 | `renderer/tests/battle_playback.rs` | nowa sygnatura; testy `fq_speed_event_time_follows_the_session_frame`, `fq_speed_melee_scene_at_speed_1_4_16`, `fq_speed_tower_shot_at_speed_16` |
 | `client/src/lib.rs` | `SIEGE_BATTLE_START_SPEED_MUL`, `siege_battle_frame_ms`, `playback_opts_of`, `scene_of` |
+| `renderer/tests/battle_playback_move_shot.rs` | `fq_speed_move_arrives_on_the_session_frame_grid` |
 | `client/tests/siege_battle_client.rs` | `fq_speed_klatka_playbacku_z_predkosci_sesji` (sesja ×1/×4/×16 → playback z opcjami klienta; z 16 ms przy ×4/×16 odrzucone) |
 | `dyspozycje/autobot/runs/R-RUSTPORT-P4-FQ-SPEED-Q1/` | raport, `01-operator-r1-mutanty.py` |
 
@@ -155,17 +156,34 @@ Nie ruszano: `bridge.rs`, `bridge_contract.rs`, `siege_tactics_fastforward.rs`, 
 | client `cargo clippy --all-targets -- -D warnings` | EXIT 0 |
 | client `cargo test --all-targets --no-fail-fast` | EXIT 0 (41 = 18 + 23; było 40) |
 | engine `p6_k5loop_wiring_a_pin` (release) | 13/13 ok (45 wektorów bajt w bajt, 351 bitew prędkości) |
-| engine pełny `cargo test --release --all-targets --no-fail-fast` | §8a |
-| renderer (gpu OFF) clippy + test | §8a |
-| generator: pełna regeneracja `vectors.json` | §8a |
+| engine pełny `cargo test --release --all-targets --no-fail-fast` (w tle, kod `c3d9f922c`) | **EXIT 0**: 556 × `test result: ok`, **4279 passed / 0 failed / 1 ignored** (istniejący, spoza diffu; było 4276) |
+| renderer (gpu OFF, domyślne cechy) `cargo clippy --all-targets -- -D warnings` | EXIT 0 (wolne 13 GB przed bramką, bez równoległego builda renderera) |
+| renderer `cargo test --all-targets --no-fail-fast` | **EXIT 0: 750 passed / 0 failed** (było 747); po dopisaniu `fq_speed_move_arrives_on_the_session_frame_grid` (`aaf935c68`) `battle_playback_move_shot` 8/8 + clippy EXIT 0 |
+| `renderer/Cargo.lock` po buildzie | przywrócony (`git checkout`), nie w commitach |
+| generator: pełna regeneracja (`node tests/p6_k5loop_wiring_a_gen.mjs`) | `vectors.json` MD5 **`dae3e46efdffe94061347f93e7fc1038`**, `pin_data.json` `432eed76e34a0e8cc96ec548e88eae64` — **bajt w bajt jak baza** (45 wektorów bez zmian) |
+| `speed_vectors.json` (`WIRING_A_SPEED_VECTORS=32,64,128,256,512,1024,2048,4096,8192`) | MD5 `d764f078f08aa5df274e3f74d09df14b` |
 
-### 8a. Bramki długie
+## 9. Mutanty (`01-operator-r1-mutanty.py`; podmiana w źródle, build, testy, przywrócenie; `git status` czysty po przebiegu)
 
-(uzupełnione niżej po zakończeniu)
+| ID | Mutant | Wynik |
+|---|---|---|
+| S1 | `BodyDone` strzału odkładany do `_raf` (dawny model D-PIN3-3) | ZABITY (`predkosc_bitwy_wektory_pinu_bajt_w_bajt`) |
+| S2 | strzał w chwili wywołania z czasem skwantyzowanym zamiast nominalnego `due` | ZABITY (jw.) |
+| S3 | strzał z wejścia marszu (`MarchNext::Shot`) bez flagi zegara | **PRZEŻYŁ** — nieodróżnialny na 128 c1 × 12 klatek (1..8192), 45 wektorach i 351 bitwach prędkości; brak przypadku, w którym trafienie takiego strzału dzieli klatkę z innym zegarem/krokiem w kolejności rozstrzygającej rzut (NIE_ZMIERZONO-czułość, zostaje do Evaluatora) |
+| S4 | strzał po krokach atomowych (`attack_pre > 0`) też jako zegar nominalny | **PRZEŻYŁ** — jw. (te same zbiory); gałąź `attack_pre > 0` ze strzałem w sesji z marszem krok po kroku praktycznie nieosiągalna (strzelec z amunicją idzie `_rangedAction`), zostawiona w dawnym modelu |
+| S5 | flaga strzału nie czyszczona w `complete` | **RÓWNOWAŻNY**: flagę czyści też `start`, a każdy kolejny `BodyDone` jednostki poprzedza jej `start` |
+| S6 | `set_speed_idx` nie przelicza klatki ciała | ZABITY (wektory prędkości) |
+| S7 | `set_speed_idx` nie zmienia `speedMul` zegara | ZABITY (wektory prędkości, `predkosc_sesji_…`) |
+| S8 | zawinięcie bez `+ n` (ujemne idx) | ZABITY (`set_speed_idx_zawija_albo_przycina_jak_pin`) |
+| S9 | panel ± zawija zamiast przycinać | ZABITY (jw.) |
+| S10 | `frame_ms()` sesji stałe 16 | ZABITY (wektory prędkości, `predkosc_sesji_…`) |
+| S11 | `SPEED_STEPS` 128 → 100 | ZABITY (`speed_steps_jak_pin`) |
+| R1 | renderer: siatka ze stałej 16 ms zamiast `PlaybackOpts::frame_ms` | ZABITY (3 testy `fq_speed_*`) |
+| R2 | renderer: `Move` tylko nominalnie | ZABITY (`fq_speed_move_arrives_on_the_session_frame_grid`; w pierwszym przebiegu przeżył — test dopisany, `aaf935c68`) |
+| R3 | renderer: domyślna klatka 0 | ZABITY (`fq_speed_event_time…`, `hitat_fq_melee…`, `landat_tb_tower_shot…`) |
+| C1 | klient: klatka playbacku stała niezależnie od prędkości | ZABITY (`fq_speed_klatka_playbacku_z_predkosci_sesji`) |
 
-## 9. Mutanty (`01-operator-r1-mutanty.py`)
-
-(uzupełnione niżej po przebiegu)
+**15 mutantów: 12 zabitych, 1 równoważny (S5), 2 przeżyłe bez przypadku rozróżniającego (S3, S4 — jawnie, z pomiarem).**
 
 ## 10. Decyzje techniczne (do `REJESTR-RUST.md`, wpis orkiestratora)
 
@@ -175,6 +193,17 @@ Nie ruszano: `bridge.rs`, `bridge_contract.rs`, `siege_tactics_fastforward.rs`, 
 - **D-FQS-3** — prędkość z produkcyjnego API sesji (`set_speed_idx` = `_setSpeedIdx`), start zawsze 1x (`:3370`);
   klient buduje playback z `siege_battle_frame_ms(SIEGE_BATTLE_START_SPEED_MUL)`.
 - **D-FQS-4** — komenda mostu = dług FQ-SPEED-BRIDGE (§6).
+
+## 10a. Commity (gałąź `rust-port-wip/R-RUSTPORT-P4-FQ-SPEED-Q1`, nad `ee1ceda3e`)
+
+| SHA | Treść |
+|---|---|
+| `b040d687a` | WIP: API prędkości sesji, `PlaybackOpts.frame_ms`, klient, pomiar w generatorze |
+| `4f59f74f5` | D-FQS-1, `Move` na siatce, `speed_vectors.json` ×2..×512 |
+| `c3d9f922c` | lista #402 w teście prędkości, `cargo fmt` |
+| `6bca051d7` | raport (wersja robocza), skrypt mutantów |
+| `aaf935c68` | test `Move` ×4 (mutant R2) |
+| (commit raportu) | ten raport — SHA końcowy w wyniku Workflow |
 
 ## 11. Zamknięte / zostaje długiem
 
@@ -188,4 +217,3 @@ Nie ruszano: `bridge.rs`, `bridge_contract.rs`, `siege_tactics_fastforward.rs`, 
 | FQ-SPEED-BRIDGE (komenda mostu, pole klatki w odpowiedzi, `set_frame_ms` playbacku) | **DŁUG** (§6, poza allowlistą) |
 | MARCH-INCREMENTAL-RESZTA (#402) | **DŁUG** — wszystkie pozostałe rozbieżności (§4); nowe przypadki do testu: 155×2, 156×32, 111×256/×512, c1 144/147@1024, 143/147/176/211@2048 |
 | PRE-SKIP-RAF (#405) | bez zmian: oś tury 1 w przewijaniu pinu przesunięta o porcję FF generatora (992 ms @32, 2240 ms @64), wynik bez wpływu |
-| c1 przy 4096/8192 | NIE_ZMIERZONO (tylko wektory `speed_vectors`) |
