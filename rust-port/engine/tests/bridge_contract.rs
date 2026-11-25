@@ -31,7 +31,7 @@ fn state_from(result: &BridgeResult) -> &bridge::EngineState {
 /// `COMMAND_KINDS.len()` is the declared number of variants: a new variant needs a new arm in
 /// `command_index` (compile error otherwise), a new entry here and a new sample in `every_command`
 /// (the completeness test fails otherwise).
-const COMMAND_KINDS: [&str; 16] = [
+const COMMAND_KINDS: [&str; 18] = [
     "create_session",
     "add_player",
     "select_unit",
@@ -48,6 +48,8 @@ const COMMAND_KINDS: [&str; 16] = [
     "skip_siege_battle",
     "finish_siege_battle",
     "abort_siege_battle",
+    "save_game",
+    "load_game",
 ];
 
 /// Position of every `EngineCommand` variant in [`COMMAND_KINDS`]. Exhaustive on purpose (no
@@ -70,6 +72,8 @@ fn command_index(command: &EngineCommand) -> usize {
         EngineCommand::SkipSiegeBattle => 13,
         EngineCommand::FinishSiegeBattle => 14,
         EngineCommand::AbortSiegeBattle => 15,
+        EngineCommand::SaveGame => 16,
+        EngineCommand::LoadGame { .. } => 17,
     }
 }
 
@@ -132,6 +136,10 @@ fn every_command() -> Vec<EngineCommand> {
         EngineCommand::SkipSiegeBattle,
         EngineCommand::FinishSiegeBattle,
         EngineCommand::AbortSiegeBattle,
+        EngineCommand::SaveGame,
+        EngineCommand::LoadGame {
+            save: "{}".to_owned(),
+        },
     ]
 }
 
