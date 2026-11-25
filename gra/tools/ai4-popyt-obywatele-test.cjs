@@ -504,8 +504,10 @@ console.log('Q2. R4-Q2 — przelacznik „wolno wycinac las" automatu GRACZA');
   // straznik konfiguracji main.ts
   const i2 = mainSrc.indexOf('const picks = pickAutoImprovements({');
   const blok = i2 >= 0 ? mainSrc.slice(i2, i2 + 3000) : '';
-  ok(/getSkipWyrab:\s*c\s*=>\s*!effectiveUlepszeniaForCity\(c as City\)\.wolnoWycinacLas/.test(blok),
-    'Q2n: main.ts (AI GRACZA) podaje `getSkipWyrab` z przelacznika, nie stala');
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): przelacznik usuniety 2026-11-04 — main.ts (AI GRACZA) NIE podaje `getSkipWyrab`
+  // ani `skipWyrab: true` (wycinka zawsze dozwolona pod farme, patrz Q2m).
+  ok(!/getSkipWyrab/.test(blok) && !/skipWyrab:\s*true/.test(blok),
+    'Q2n: main.ts (AI GRACZA) NIE podaje `getSkipWyrab` ani `skipWyrab: true` (przelacznik usuniety)');
   ok(/demandDriven:\s*true/.test(blok) && /resourceDeficitKeys:\s*resourceDeficitKeysForOwner\((0|hOid)\)/.test(blok),
     'Q2o: main.ts (AI GRACZA) podaje Zasade 1 i realne niedobory panstwa (R3: per fotel hOid zamiast stalej 0 — wielu graczy, main.ts)');
   ok(/typ\s*===\s*'wycinka'/.test(mainSrc.slice(i2, i2 + 6000)),
