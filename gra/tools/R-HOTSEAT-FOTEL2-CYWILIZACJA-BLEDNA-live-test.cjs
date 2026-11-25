@@ -46,6 +46,7 @@
  * Run (z katalogu gra/): node tools/R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-live-test.cjs
  */
 
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -57,7 +58,7 @@ const DOWODY_DIR = path.join(REPO_DIR, 'dowody');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-fotel2-cywilizacja-${RUN_ID}`);
+const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-fotel2-cywilizacja-${RUN_ID}-${TMPDIR_RUN_ID}`);
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html');
 
 process.on('exit', () => {

@@ -24,6 +24,7 @@
  *   WDBR_TAG   -- etykieta w logu.
  * Usage (z gra/): TMPDIR=/dev/shm node tools/wall-defenders-bonus-range-test.cjs
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -38,7 +39,7 @@ const GRA = path.resolve(__dirname, '..');
 const SRC_DIR = process.env.WDBR_SRC ? path.resolve(process.env.WDBR_SRC) : path.join(GRA, 'src');
 const TAG = process.env.WDBR_TAG || 'WDBR';
 const RUN = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const TMP_ROOT = path.join(os.tmpdir(), `civ-wdbr-${RUN}`);
+const TMP_ROOT = path.join(os.tmpdir(), `civ-wdbr-${RUN}-${TMPDIR_RUN_ID}`);
 fs.mkdirSync(TMP_ROOT, { recursive: true });
 process.on('exit', () => { try { fs.rmSync(TMP_ROOT, { recursive: true, force: true }); } catch { /* best-effort */ } });
 

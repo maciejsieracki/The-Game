@@ -15,6 +15,7 @@
  * CLI:  node tools/ai-army-replacement-sim.cjs [--seeds 1,2,3,4,5,6] [--worlds flat,kontynenty,pangea] [--turns 150]
  *       [--label pre] [--out plik.json]
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -57,7 +58,7 @@ const ready = esbuild.build({
   entryPoints: [ENTRY], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
   outfile: BUNDLE, loader: { '.ts': 'ts', '.json': 'json' }, absWorkingDir: GRA, logLevel: 'silent', plugins: [mutatePlugin],
 }).then(() => { E = require(BUNDLE); R = E.ARMY_CONCENTRATION_RADIUS; MIN = E.ARMY_CONCENTRATION_MIN_UNITS; });
-const MAPCACHE = process.env.ARS_MAPCACHE || path.join(os.tmpdir(), 'ars-mapcache');
+const MAPCACHE = process.env.ARS_MAPCACHE || path.join(os.tmpdir(), `ars-mapcache-${TMPDIR_RUN_ID}`);
 
 const mulberry = (a) => () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 const key = (q, r) => q + ',' + r;

@@ -30,6 +30,7 @@
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const http = require('node:http');
 const crypto = require('node:crypto');
 const { pathToFileURL } = require('node:url');
@@ -40,7 +41,7 @@ const MUTANT = process.argv.includes('--mutant');
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
 const OUT = process.env.CIV_SAVE_TEST_OUT
   ? path.resolve(process.env.CIV_SAVE_TEST_OUT, MUTANT ? 'mutant' : 'real')
-  : path.join(os.tmpdir(), `civ-save-disabled-${RUN_ID}${MUTANT ? '-mutant' : ''}`);
+  : path.join(os.tmpdir(), `civ-save-disabled-${RUN_ID}-${TMPDIR_RUN_ID}${MUTANT ? '-mutant' : ''}`);
 const EVIDENCE = process.env.CIV_SAVE_TEST_EVIDENCE
   ? path.resolve(process.env.CIV_SAVE_TEST_EVIDENCE)
   : path.resolve(ROOT, '..', 'dyspozycje/autobot/runs/R-WEB-BATTLE-SAVE-DISABLED-DURING-BATTLE-Q1/evidence');

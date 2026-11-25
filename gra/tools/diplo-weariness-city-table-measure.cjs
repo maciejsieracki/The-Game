@@ -10,13 +10,14 @@
  *   - sprawdzenie minimalnosci liczby miast planu (brute force na losowych pulach).
  * Uzycie (z gra/):  node tools/diplo-weariness-city-table-measure.cjs
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const path = require('path');
 
 const GRA_ROOT = path.resolve(__dirname, '..');
 const esbuild = require(process.env.WEAR_ESBUILD_PATH || path.resolve(GRA_ROOT, 'node_modules', 'esbuild'));
 const SRC = path.resolve(GRA_ROOT, 'src', 'game');
-const TMP = process.env.WEAR_MEASURE_TMP || '/tmp/wear-q1';
+const TMP = process.env.WEAR_MEASURE_TMP || `${require('os').tmpdir()}/wear-q1-${TMPDIR_RUN_ID}`;
 fs.mkdirSync(TMP, { recursive: true });
 const ENTRY = path.join(TMP, `measure-entry-${process.pid}.ts`);
 const BUNDLE = path.join(TMP, `measure-bundle-${process.pid}.cjs`);

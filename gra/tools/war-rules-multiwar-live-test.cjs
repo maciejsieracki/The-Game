@@ -20,6 +20,7 @@
  * Użycie (z katalogu gra/): node tools/war-rules-multiwar-live-test.cjs [tury=46]
  */
 
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -28,7 +29,7 @@ const { execSync } = require('child_process');
 const GRA_DIR = path.resolve(__dirname, '..');
 const TURNS = parseInt(process.argv[2] || '46', 10);
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const TMP_ROOT = path.join(os.tmpdir(), `war-rules-live-${RUN_ID}`);
+const TMP_ROOT = path.join(os.tmpdir(), `war-rules-live-${RUN_ID}-${TMPDIR_RUN_ID}`);
 const FLAG_FILE = path.join(GRA_DIR, 'src', 'game', 'war-rules-multiwar.ts');
 const FLAG_ON_LINE = 'export const WAR_RULES_MULTIWAR_ENABLED = true;';
 const FLAG_OFF_LINE = 'export const WAR_RULES_MULTIWAR_ENABLED = false;';

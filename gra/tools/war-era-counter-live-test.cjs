@@ -48,6 +48,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const { execSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
@@ -292,7 +293,7 @@ async function main() {
       () => /Wojna epoki \(Kamień\)/.test(document.body.innerText || ''),
     );
     assert('powód "Wojna epoki (Kamień)" widoczny w DOM (panel Wydarzeń, nie tylko dane)', domEraCardVisible, { domEraCardVisible });
-    const shotPath = process.env.WAR_ERA_SHOT || path.join(require('os').tmpdir(), 'war-era-counter-hint.png');
+    const shotPath = process.env.WAR_ERA_SHOT || path.join(require('os').tmpdir(), `war-era-counter-hint-${TMPDIR_RUN_ID}.png`);
     await page.screenshot({ path: shotPath, fullPage: false });
     assert('zrzut Chromium po wypowiedzeniu zapisany', fs.existsSync(shotPath), { shotPath });
     console.log('   zrzut:', shotPath);

@@ -21,6 +21,7 @@
  *   Pojedyncze polecenie Bash < 590 s: dlugi bieg uruchamiaj w odcinkach (--turns N --from-jsonl-resume nie istnieje;
  *   kazdy odcinek to osobny start gry z tym samym ziarnem).
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -46,9 +47,9 @@ const WALL_LIMIT_MS = parseInt(arg('wall-limit', '520'), 10) * 1000;
 const GOLD = parseInt(arg('gold', '200'), 10);
 const FOOD = parseInt(arg('food', '200'), 10);
 const BYPASS = arg('bypass', '1') !== '0';
-const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), 'era-war-dist')));
-const PROFILE = path.resolve(arg('profile', path.join(os.tmpdir(), 'era-war-profile-' + SEED)));
-const OUT = path.resolve(arg('out', path.join(os.tmpdir(), 'era-war-out')));
+const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), `era-war-dist-${TMPDIR_RUN_ID}`)));
+const PROFILE = path.resolve(arg('profile', path.join(os.tmpdir(), `era-war-profile--${TMPDIR_RUN_ID}` + SEED)));
+const OUT = path.resolve(arg('out', path.join(os.tmpdir(), `era-war-out-${TMPDIR_RUN_ID}`)));
 const PW_DIR = path.resolve(arg('pw', GRA_DIR));
 const CHROME = process.env.CHROME_PATH || ['/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium'].find(p => fs.existsSync(p)) || '/usr/bin/google-chrome';
 const TURN_TIMEOUT_MS = 300000;

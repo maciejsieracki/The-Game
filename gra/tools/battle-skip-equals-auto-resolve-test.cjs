@@ -17,6 +17,7 @@
  * Usage (z gra/): TMPDIR=/dev/shm node tools/battle-skip-equals-auto-resolve-test.cjs
  * Env: WSKIP_SEEDS="1,2" (domyslnie "1,2,3,7"), WSKIP_AUTO_SPEED_IDX (domyslnie 3 = 8x), WSKIP_DIST (gotowy build).
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -26,7 +27,7 @@ const { execSync } = require('child_process');
 const GRA = path.resolve(__dirname, '..');
 const CHROME = process.env.WSKIP_CHROMIUM || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');
 const RUN = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const TMP_ROOT = path.join(os.tmpdir(), `civ-wskip-${RUN}`);
+const TMP_ROOT = path.join(os.tmpdir(), `civ-wskip-${RUN}-${TMPDIR_RUN_ID}`);
 fs.mkdirSync(TMP_ROOT, { recursive: true });
 process.on('exit', () => { try { fs.rmSync(TMP_ROOT, { recursive: true, force: true }); } catch { /* best-effort */ } });
 

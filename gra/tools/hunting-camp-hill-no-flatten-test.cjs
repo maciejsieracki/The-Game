@@ -15,6 +15,7 @@
  *
  * Uruchom z gra/: node tools/hunting-camp-hill-no-flatten-test.cjs --shots <katalog> [--outroot <katalog>]
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const http = require('http');
 const os = require('os');
@@ -29,7 +30,7 @@ const FALLBACK_CHROME = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
     : fs.existsSync((require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium')) ? (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium') : '/opt/pw-browsers/chromium');
 const argOf = (f) => { const i = process.argv.indexOf(f); return i > -1 ? process.argv[i + 1] : null; };
 const OUTROOT = argOf('--outroot') || (fs.existsSync('/dev/shm') ? '/dev/shm' : os.tmpdir());
-const SHOTS = argOf('--shots') || path.join(os.tmpdir(), `hunting-camp-shots-${RUN_ID}`);
+const SHOTS = argOf('--shots') || path.join(os.tmpdir(), `hunting-camp-shots-${RUN_ID}-${TMPDIR_RUN_ID}`);
 const dirs = [];
 process.on('exit', () => {
   for (const d of dirs) { try { fs.rmSync(d, { recursive: true, force: true }); } catch { /* best-effort */ } }

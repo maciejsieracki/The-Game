@@ -5,14 +5,15 @@
  * sequential acceptance order and owner/metadata cleanliness.
  */
 
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const esbuild = require('esbuild');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
 const GRA = path.resolve(__dirname, '..');
-const ENTRY = path.join(os.tmpdir(), 'cluster-start-recovery2-entry.ts');
-const BUNDLE = path.join(os.tmpdir(), 'cluster-start-recovery2-bundle.cjs');
+const ENTRY = path.join(os.tmpdir(), `cluster-start-recovery2-entry-${TMPDIR_RUN_ID}.ts`);
+const BUNDLE = path.join(os.tmpdir(), `cluster-start-recovery2-bundle-${TMPDIR_RUN_ID}.cjs`);
 
 fs.writeFileSync(ENTRY, `
 export { buildClusterStartPlan } from ${JSON.stringify(path.join(GRA, 'src/game/cluster-start.ts'))};

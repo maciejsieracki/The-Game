@@ -16,13 +16,14 @@
  * Usage (z gra/):  BUNDLE_DIR=<abs> node tools/diplomacy-relation-value-mismatch-live-test.cjs
  *   SKIP_BUILD=1 pomija budowe; DRVM_EVIDENCE=<abs dir> zrzuty; DRVM_RESULT=<abs file> JSON.
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
-const BUNDLE = process.env.BUNDLE_DIR || path.join(os.tmpdir(), 'drvm-live-dist');
+const BUNDLE = process.env.BUNDLE_DIR || path.join(os.tmpdir(), `drvm-live-dist-${TMPDIR_RUN_ID}`);
 const EVIDENCE_DIR = process.env.DRVM_EVIDENCE || '';
 const RESULT_FILE = process.env.DRVM_RESULT || '';
 const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa&civTest=1';

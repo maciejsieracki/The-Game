@@ -21,6 +21,7 @@
  *   node tools/battle-banner-retreat-overlap-live-test.cjs [--vp 1024x640] [--dist <katalog>] [--shots <katalog>] [--mutant] [--reuse]
  *   Kolejne viewporty bez ponownego builda: --dist <katalog z pierwszego uruchomienia> --reuse --vp 1280x720
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -32,10 +33,10 @@ const argv = process.argv.slice(2);
 const arg = (k, d) => (argv.includes(k) ? argv[argv.indexOf(k) + 1] : d);
 const [VW, VH] = String(arg('--vp', '1024x640')).split('x').map(Number);
 const runId = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const shotsDir = path.resolve(arg('--shots', path.join(os.tmpdir(), `battle-banner-retreat-shots-${runId}`)));
+const shotsDir = path.resolve(arg('--shots', path.join(os.tmpdir(), `battle-banner-retreat-shots-${runId}-${TMPDIR_RUN_ID}`)));
 const REUSE = argv.includes('--reuse');
 const MUTANT = argv.includes('--mutant');
-const DIST = path.resolve(arg('--dist', path.join(os.tmpdir(), `battle-banner-retreat-dist-${runId}${MUTANT ? '-mutant' : ''}`)));
+const DIST = path.resolve(arg('--dist', path.join(os.tmpdir(), `battle-banner-retreat-dist-${runId}-${TMPDIR_RUN_ID}${MUTANT ? '-mutant' : ''}`)));
 const MAP_BOOT_MS = Math.max(10000, Number(process.env.BANNER_TEST_MAP_BOOT_MS || 150000));
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 

@@ -46,6 +46,7 @@
  * Czas: ~3 realne generacje świata (mała mapa) w headless Chromium, rząd wielkości minuty.
  */
 
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -53,7 +54,7 @@ const { execSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const OUT_DIR = path.join(os.tmpdir(), `civ-city-state-start-units-live-${RUN_ID}`);
+const OUT_DIR = path.join(os.tmpdir(), `civ-city-state-start-units-live-${RUN_ID}-${TMPDIR_RUN_ID}`);
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html');
 const FALLBACK_CHROME = process.env.CS_CHROME_PATH || '/home/ubuntu/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome';
 

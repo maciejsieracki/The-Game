@@ -1,5 +1,6 @@
 'use strict';
 /** R-START-MAP-SEED-REMOVE-Q1: browser and generator regression. */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -8,7 +9,7 @@ const { execFileSync } = require('child_process');
 const { chromium } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..');
-const OUT = path.join(os.tmpdir(), 'r-start-map-seed-remove-q1');
+const OUT = path.join(os.tmpdir(), `r-start-map-seed-remove-q1-${TMPDIR_RUN_ID}`);
 let passed = 0;
 function ok(label, condition) {
   if (!condition) throw new Error('FAIL: ' + label);
@@ -75,7 +76,7 @@ async function runBrowser() {
 }
 
 function runGeneratorRegression() {
-  const bundle = path.join(os.tmpdir(), 'r-start-map-seed-generator-q1.cjs');
+  const bundle = path.join(os.tmpdir(), `r-start-map-seed-generator-q1-${TMPDIR_RUN_ID}.cjs`);
   execFileSync(process.execPath, ['./node_modules/esbuild/bin/esbuild', 'src/map/generator.ts', '--bundle', '--platform=node', '--format=cjs', `--outfile=${bundle}`], { cwd: ROOT, stdio: 'inherit' });
   const { generateMap } = require(bundle);
   const snapshot = map => JSON.stringify(Object.keys(map.hexes).sort().map(key => {

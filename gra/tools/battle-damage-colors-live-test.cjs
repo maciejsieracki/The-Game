@@ -19,6 +19,7 @@
  *   node tools/battle-damage-colors-live-test.cjs [--vp 1440x900] [--dist <katalog buildu>] [--shots <katalog>]
  *   Drugi viewport bez ponownego builda: --dist <katalog z pierwszego uruchomienia> --vp 1024x640
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -30,9 +31,9 @@ const argv = process.argv.slice(2);
 const arg = (k, d) => (argv.includes(k) ? argv[argv.indexOf(k) + 1] : d);
 const [VW, VH] = String(arg('--vp', '1440x900')).split('x').map(Number);
 const runId = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const shotsDir = path.resolve(arg('--shots', path.join(os.tmpdir(), `battle-dmg-colors-shots-${runId}`)));
+const shotsDir = path.resolve(arg('--shots', path.join(os.tmpdir(), `battle-dmg-colors-shots-${runId}-${TMPDIR_RUN_ID}`)));
 const REUSE = argv.includes('--dist');
-const DIST = path.resolve(arg('--dist', path.join(os.tmpdir(), `battle-dmg-colors-dist-${runId}`)));
+const DIST = path.resolve(arg('--dist', path.join(os.tmpdir(), `battle-dmg-colors-dist-${runId}-${TMPDIR_RUN_ID}`)));
 const MAP_BOOT_MS = Math.max(10000, Number(process.env.BATTLE_DMG_MAP_BOOT_MS || 150000));
 const EXPECT = { enemy: 'rgb(143, 182, 224)', player: 'rgb(255, 112, 112)' }; // #8fb6e0 / #ff7070
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));

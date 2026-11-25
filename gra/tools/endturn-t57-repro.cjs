@@ -32,6 +32,7 @@
  *
  * Limity: pojedyncze polecenie Bash < 590 s, dlatego przebieg uruchamiac w tle (setsid nohup ... &) i odpytywac log.
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -55,8 +56,8 @@ const BYPASS = arg('bypass', '1') !== '0';
 const RESUME_TEST = arg('resume-test', '0') === '1';
 const HASH = arg('hash', '0') === '1' || RESUME_TEST;
 const FAST = arg('fast', '1') !== '0';
-const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), 'ai-economy-dist')));
-const PROFILE = path.resolve(arg('profile', path.join(os.tmpdir(), 'ai-economy-profile')));
+const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), `ai-economy-dist-${TMPDIR_RUN_ID}`)));
+const PROFILE = path.resolve(arg('profile', path.join(os.tmpdir(), `ai-economy-profile-${TMPDIR_RUN_ID}`)));
 const OUT = path.resolve(arg('out', path.join(GRA_DIR, 'ai-economy-out')));
 const PW_DIR = path.resolve(arg('pw', GRA_DIR));
 const SAVE_AT = parseInt(arg('save-at', '40'), 10);

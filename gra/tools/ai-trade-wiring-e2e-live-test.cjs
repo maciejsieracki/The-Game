@@ -35,13 +35,14 @@
  *   gracza). Przecieciem jest oferta „rowne za rowne” (np. 10 zelaza = 200 PW za 40 cegly = 200 PW). Podglad „Przyjmij” gracza NIE zmieniony.
  *   Akceptacja w tym tescie idzie PRZYCISKIEM „Przyjmij” w oknie dyplomacji (bez forceAccept).
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
-const BUNDLE = process.env.BUNDLE_DIR || path.join(os.tmpdir(), 'ai-trade-wiring-e2e-dist');
+const BUNDLE = process.env.BUNDLE_DIR || path.join(os.tmpdir(), `ai-trade-wiring-e2e-dist-${TMPDIR_RUN_ID}`);
 const EVIDENCE_DIR = process.env.AITW_EVIDENCE || '';
 const RESULT_FILE = process.env.AITW_RESULT || '';
 const URL_HTML = 'file://' + path.join(BUNDLE, 'index.html') + '?playtest=mapa&civTest=1';

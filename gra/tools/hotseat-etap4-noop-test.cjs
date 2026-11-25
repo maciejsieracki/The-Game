@@ -71,6 +71,7 @@
  * procesu).
  */
 
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -83,7 +84,7 @@ const TURNS = 30; // BINARNE KRYTERIUM SUKCESU (dispatch) -- dokładnie 30, bez 
 const RNG_SEED = 424242; // dowolna, stała wartość -- ten sam seed w obu uruchomieniach (A i B)
 
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap4-noop-${RUN_ID}`);
+const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap4-noop-${RUN_ID}-${TMPDIR_RUN_ID}`);
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html');
 const CITY_STATES_COUNT = 2; // parametr hooka startNewGame -- wartość dowolna, spójna A/B
 

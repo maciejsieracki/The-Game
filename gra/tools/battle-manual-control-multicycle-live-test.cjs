@@ -9,6 +9,7 @@
  *
  * Run from gra/: node tools/battle-manual-control-multicycle-live-test.cjs
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -19,7 +20,7 @@ const { chromium } = require('playwright');
 
 const root = path.resolve(__dirname, '..');
 const id = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const out = path.join(os.tmpdir(), `battle-manual-control-multicycle-${id}`);
+const out = path.join(os.tmpdir(), `battle-manual-control-multicycle-${id}-${TMPDIR_RUN_ID}`);
 const evidenceDir = path.join(root, '..', 'dyspozycje', 'autobot', 'runs', 'R-BITWA-MANUAL-CONTROL-LARGE-ARMY-Q1', `live-multicycle-${id}`);
 const mapBootTimeoutMs = Math.max(10000, Number(process.env.BATTLE_RETURN_MAP_BOOT_MS || 120000));
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));

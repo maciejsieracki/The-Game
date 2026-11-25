@@ -14,6 +14,7 @@
  * Opcje: --candidate <ref> (domyslnie refs/keep/R-WEB-AI-UPKEEP-Q2-r2-fc), --keep 1 (nie usuwaj worktree).
  * Limit Bash 590 s: dwa przebiegi + dwa buildy trwaja dluzej -> uruchom w tle (setsid nohup ... &) i odpytuj log.
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const path = require('path');
 const { execSync, spawnSync } = require('child_process');
@@ -24,7 +25,7 @@ function arg(name, def) {
 }
 const GRA = path.resolve(__dirname, '..');
 const REPO = path.resolve(GRA, '..');
-const WORK = path.resolve(arg('work', '/tmp/upkeep-onoff'));
+const WORK = path.resolve(arg('work', `${require('os').tmpdir()}/upkeep-onoff-${TMPDIR_RUN_ID}`));
 const CAND = arg('candidate', 'refs/keep/R-WEB-AI-UPKEEP-Q2-r2-fc');
 const SEED = arg('seed', '4242');
 const TURNS = arg('turns', '100');

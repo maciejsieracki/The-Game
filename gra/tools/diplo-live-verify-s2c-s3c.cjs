@@ -15,13 +15,14 @@
  *   node tools/diplo-live-verify-s2c-s3c.cjs --scenario=3c
  * Build (poza repo): CIV_LIVE_BUILD_DIR=<katalog> node ./node_modules/vite/bin/vite.js build --outDir <katalog> --emptyOutDir
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const fs = require('fs');
 const { chromium } = require('playwright');
 
 const GRA_DIR = path.resolve(__dirname, '..');
 const REPO_ROOT = path.resolve(GRA_DIR, '..');
-const BUILD_DIR = process.env.CIV_LIVE_BUILD_DIR || '/tmp/civ-live-verify';
+const BUILD_DIR = process.env.CIV_LIVE_BUILD_DIR || `${require('os').tmpdir()}/civ-live-verify-${TMPDIR_RUN_ID}`;
 const EVIDENCE = process.env.CIV_LIVE_EVIDENCE
   || path.join(REPO_ROOT, 'dyspozycje', 'autobot', 'runs', 'R-WEB-DIPLO-LIVE-VERIFY-STEPS-1-4-Q1', 'evidence');
 const GAME_URL = 'file://' + path.join(BUILD_DIR, 'index.html') + '?playtest=mapa&civTest=1';

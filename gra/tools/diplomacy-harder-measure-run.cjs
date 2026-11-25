@@ -35,6 +35,7 @@
  *
  * Limity: pojedyncze polecenie Bash < 590 s. Dlugie biegi dziel na odcinki --stop-at (np. 30, 60, 90).
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -69,9 +70,9 @@ const PLAYER_AI = arg('player-ai', '1') !== '0';
 const GOLD = parseInt(arg('gold', '200'), 10);
 const FOOD = parseInt(arg('food', '200'), 10);
 const BYPASS = arg('bypass', '1') !== '0';
-const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), 'diplo-harder-dist')));
-const PROFILE = path.resolve(arg('profile', path.join(os.tmpdir(), 'diplo-harder-profile-' + (HARDER ? 'on' : 'off'))));
-const OUT = path.resolve(arg('out', path.join(os.tmpdir(), 'diplo-harder-out')));
+const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), `diplo-harder-dist-${TMPDIR_RUN_ID}`)));
+const PROFILE = path.resolve(arg('profile', path.join(os.tmpdir(), `diplo-harder-profile--${TMPDIR_RUN_ID}` + (HARDER ? 'on' : 'off'))));
+const OUT = path.resolve(arg('out', path.join(os.tmpdir(), `diplo-harder-out-${TMPDIR_RUN_ID}`)));
 const PW_DIR = path.resolve(arg('pw', GRA_DIR));
 /** Przegladarka: CHROME_PATH; bez niego pierwsza istniejaca z listy (brak /usr/bin/chromium nie wywala launchu). */
 const CHROME = process.env.CHROME_PATH || [(require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'), '/usr/bin/chromium-browser', '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable'].find(p => fs.existsSync(p)) || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');

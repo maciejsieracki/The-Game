@@ -8,6 +8,7 @@
  *   node tools/ai-ai-alliance-limit-audit.cjs [plik.jsonl ...] [--limit 2] [--co 5]
  *   domyślnie: /tmp/allflags-keep/seed*-all1.jsonl oraz seed*-all0.jsonl, limit 2, co 5 tur.
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const path = require('path');
 
@@ -21,7 +22,7 @@ for (let i = 0; i < args.length; i++) {
   else files.push(args[i]);
 }
 if (files.length === 0) {
-  const dir = '/tmp/allflags-keep';
+  const dir = `${require('os').tmpdir()}/allflags-keep-${TMPDIR_RUN_ID}`;
   if (fs.existsSync(dir)) {
     for (const f of fs.readdirSync(dir).sort()) if (/^seed\d+-all[01]\.jsonl$/.test(f)) files.push(path.join(dir, f));
   }

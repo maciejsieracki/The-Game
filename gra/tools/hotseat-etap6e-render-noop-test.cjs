@@ -79,6 +79,7 @@
  *            wyżej; NIE traktować jako PASS ani jako dowód no-op)
  */
 
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -93,11 +94,11 @@ const RNG_SEED = 246813;
 const CITY_STATES_COUNT = 2;
 
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const OLD_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6e-render-OLD-${RUN_ID}`);
-const OLD_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6e-render-OLD-dist-${RUN_ID}`);
-const NEW_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6e-render-NEW-dist-${RUN_ID}`);
-const MUTATED_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6e-render-MUT-${RUN_ID}`);
-const MUTATED_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6e-render-MUT-dist-${RUN_ID}`);
+const OLD_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6e-render-OLD-${RUN_ID}-${TMPDIR_RUN_ID}`);
+const OLD_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6e-render-OLD-dist-${RUN_ID}-${TMPDIR_RUN_ID}`);
+const NEW_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6e-render-NEW-dist-${RUN_ID}-${TMPDIR_RUN_ID}`);
+const MUTATED_GRA_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6e-render-MUT-${RUN_ID}-${TMPDIR_RUN_ID}`);
+const MUTATED_OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap6e-render-MUT-dist-${RUN_ID}-${TMPDIR_RUN_ID}`);
 
 process.on('exit', () => {
   for (const d of [OLD_GRA_DIR, OLD_OUT_DIR, NEW_OUT_DIR, MUTATED_GRA_DIR, MUTATED_OUT_DIR]) {

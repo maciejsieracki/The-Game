@@ -16,6 +16,7 @@
  * Uzycie (z gra/): node tools/diplomacy-harder-measure-hook-test.cjs [--dist <abs>] [--build 1]
  * Bundle budowany POZA repo: --dist domyslnie <os.tmpdir()>/diplo-harder-test-dist.
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -27,7 +28,7 @@ function arg(name, def) {
 }
 
 const GRA_DIR = path.resolve(__dirname, '..');
-const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), 'diplo-harder-test-dist')));
+const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), `diplo-harder-test-dist-${TMPDIR_RUN_ID}`)));
 const PW_DIR = path.resolve(arg('pw', GRA_DIR));
 /** Przegladarka: CHROME_PATH; bez niego pierwsza istniejaca (poprawka obrony: brak /usr/bin/chromium nie wywala testu). */
 const CHROME = process.env.CHROME_PATH || [(require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium'), '/usr/bin/chromium-browser', '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable'].find(p => fs.existsSync(p)) || (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium');

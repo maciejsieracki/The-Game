@@ -20,6 +20,7 @@
  *   Bez --dist bundle budowany do os.tmpdir() (vite, poza repo). Wyjscie: 0 = zielone, 1 = czerwone.
  *   Brak przegladarki (CHROME_PATH / /usr/bin/google-chrome / /usr/bin/chromium) -> SKIP, kod 0.
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -81,8 +82,8 @@ async function main() {
     process.exit(0);
   }
   let dist = arg('dist', '');
-  dist = dist ? path.resolve(dist) : buildDist(path.join(os.tmpdir(), 'player-ai-autopilot-dist'));
-  if (MUTANT) dist = makeMutant(dist, path.join(os.tmpdir(), 'player-ai-autopilot-mutant'));
+  dist = dist ? path.resolve(dist) : buildDist(path.join(os.tmpdir(), `player-ai-autopilot-dist-${TMPDIR_RUN_ID}`));
+  if (MUTANT) dist = makeMutant(dist, path.join(os.tmpdir(), `player-ai-autopilot-mutant-${TMPDIR_RUN_ID}`));
   const url = 'file://' + path.join(dist, 'index.html');
   const browser = await chromium.launch({
     headless: true,

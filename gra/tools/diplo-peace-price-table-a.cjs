@@ -7,13 +7,14 @@
  *   cena PN (wearinessPeaceCashPn), liczba oddanych miast, nadplata PN, pokrycie.
  * Uzycie (z gra/):  node tools/diplo-peace-price-table-a.cjs
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const path = require('path');
 
 const GRA_ROOT = path.resolve(__dirname, '..');
 const esbuild = require(path.resolve(GRA_ROOT, 'node_modules', 'esbuild'));
 const SRC = path.resolve(GRA_ROOT, 'src', 'game');
-const TMP = process.env.PRICE_TABLE_TMP || '/tmp/peace-price-table-a';
+const TMP = process.env.PRICE_TABLE_TMP || `${require('os').tmpdir()}/peace-price-table-a-${TMPDIR_RUN_ID}`;
 fs.mkdirSync(TMP, { recursive: true });
 const ENTRY = path.join(TMP, `table-a-entry-${process.pid}.ts`);
 const BUNDLE = path.join(TMP, `table-a-bundle-${process.pid}.cjs`);

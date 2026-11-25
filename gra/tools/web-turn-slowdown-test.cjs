@@ -42,6 +42,7 @@
  *      testów mutacyjnych bramki; drzewo repo nietknięte).
  * Czas: 2–3 buildy Vite + 2–3 przebiegi Chromium po 40 tur (~25–40 min na swiftshader).
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -51,7 +52,7 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const MAIN_REL = path.join('src', 'main.ts');
 const TURNS = Number(process.env.TURN_SLOWDOWN_TEST_TURNS || 40);
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const TMP_ROOT = path.join(os.tmpdir(), `civ-turn-slowdown-test-${RUN_ID}`);
+const TMP_ROOT = path.join(os.tmpdir(), `civ-turn-slowdown-test-${RUN_ID}-${TMPDIR_RUN_ID}`);
 process.on('exit', () => { try { fs.rmSync(TMP_ROOT, { recursive: true, force: true }); } catch { /* best-effort */ } });
 
 let pass = 0, fail = 0;

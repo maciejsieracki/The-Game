@@ -33,6 +33,7 @@
  * Bramka (z katalogu gra/): node tools/hotseat-etap5-no-leak-test.cjs — exit 0 = zielona.
  */
 
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -43,7 +44,7 @@ const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 const CITY_STATES_COUNT = 2;
 
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap5-noleak-${RUN_ID}`);
+const OUT_DIR = path.join(os.tmpdir(), `civ-hotseat-etap5-noleak-${RUN_ID}-${TMPDIR_RUN_ID}`);
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html');
 
 process.on('exit', () => {

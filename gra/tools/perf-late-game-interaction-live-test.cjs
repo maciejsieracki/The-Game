@@ -7,6 +7,7 @@
  * City objects placed on real land hexes; economic turns and rendering remain real.
  * Usage: node tools/perf-large-empire-stress-live-test.cjs [turns=100]
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('node:fs');
 const assert = require('node:assert/strict');
 const os = require('node:os');
@@ -18,7 +19,7 @@ const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
 const id = `${process.pid}-${Math.random().toString(36).slice(2,8)}`;
 const root = path.resolve(__dirname, '..');
-const out = process.env.PERF_BUILD_DIR || path.join(os.tmpdir(), `large-empire-stress-${id}`);
+const out = process.env.PERF_BUILD_DIR || path.join(os.tmpdir(), `large-empire-stress-${id}-${TMPDIR_RUN_ID}`);
 const abSequence = ['all', 'coalesced', 'coalesced', 'all', 'all', 'coalesced', 'coalesced', 'all'];
 const abMode = process.env.STRESS_AB === '1';
 const compactMode = process.env.STRESS_COMPACT === '1';
@@ -68,7 +69,7 @@ function boundPageEvaluations(page, evaluateTimeoutMs = PAGE_EVALUATE_TIMEOUT_MS
         const info = { at: new Date().toISOString(), id, phase, details: page.__largeEmpirePhaseDetails ?? {}, elapsedMs: Date.now() - startedAt, error: String(error) };
         console.error('[large-empire] page-evaluate failure:', JSON.stringify(info));
         const evidence = { evaluateFailure: info, phaseHistory: page.__largeEmpirePhaseHistory ?? [], errors: page.__largeEmpireCapturedErrors ?? [], warnings: page.__largeEmpireCapturedWarnings ?? [] };
-        const screenshotPath = path.join(os.tmpdir(), `large-empire-page-eval-timeout-${id}-${Date.now()}.png`);
+        const screenshotPath = path.join(os.tmpdir(), `large-empire-page-eval-timeout-${id}-${Date.now()}-${TMPDIR_RUN_ID}.png`);
         try {
           await deadline(page.screenshot({ path: screenshotPath, timeout: screenshotTimeoutMs }), screenshotTimeoutMs + 500, 'timeout screenshot');
           evidence.screenshot = screenshotPath;
@@ -86,7 +87,7 @@ function boundPageEvaluations(page, evaluateTimeoutMs = PAGE_EVALUATE_TIMEOUT_MS
         } catch (stateError) {
           evidence.stateError = String(stateError);
         }
-        const evidencePath = path.join(os.tmpdir(), `large-empire-page-eval-timeout-${id}-${Date.now()}.json`);
+        const evidencePath = path.join(os.tmpdir(), `large-empire-page-eval-timeout-${id}-${Date.now()}-${TMPDIR_RUN_ID}.json`);
         fs.writeFileSync(evidencePath, JSON.stringify(evidence, null, 2));
         page.__largeEmpireLatestEvidencePath = evidencePath;
         console.error('[large-empire] page-evaluate timeout evidence:', evidencePath);
@@ -338,7 +339,7 @@ async function build() {
 
 
 // ---------------------------------------------------------------- MAIN (interaction probe)
-const OUT_JSON = process.env.PERF_OUT || path.join(os.tmpdir(), `late-game-interaction-${id}.json`);
+const OUT_JSON = process.env.PERF_OUT || path.join(os.tmpdir(), `late-game-interaction-${id}-${TMPDIR_RUN_ID}.json`);
 const REPEAT = Math.max(1, Number(process.env.PERF_REPEAT) || 6);
 const PROFILE = process.env.PERF_PROFILE !== '0';
 

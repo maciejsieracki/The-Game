@@ -9,6 +9,7 @@
  * Run from gra/:
  *   STARTING_ARMY_CHROME_PATH=/path/to/chrome node tools/starting-army-first-city-live-test.cjs
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -17,7 +18,7 @@ const { chromium } = require('playwright');
 
 const GRA_DIR = path.resolve(__dirname, '..');
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const OUT_DIR = path.join(os.tmpdir(), `civ-starting-army-first-city-${RUN_ID}`);
+const OUT_DIR = path.join(os.tmpdir(), `civ-starting-army-first-city-${RUN_ID}-${TMPDIR_RUN_ID}`);
 const OUT_HTML = `file://${path.join(OUT_DIR, 'index.html')}`;
 const FALLBACK_CHROME = process.env.STARTING_ARMY_CHROME_PATH
   || '/opt/pw-browsers/chromium';

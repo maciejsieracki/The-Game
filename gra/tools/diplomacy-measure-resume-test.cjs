@@ -15,6 +15,7 @@
  *   --run 1 uruchamia runner 3 razy (ok. 5 min lacznie w Chromium); pojedyncze polecenie Bash < 590 s, wiec
  *   przy wolnej maszynie uruchom pinowanie + porownanie z gotowych katalogow.
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -28,8 +29,8 @@ function arg(name, def) {
 const GRA_DIR = path.resolve(__dirname, '..');
 const RUNNER = path.join(GRA_DIR, 'tools', 'diplomacy-harder-measure-run.cjs');
 const RUN = arg('run', '0') === '1';
-const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), 'diplo-harder-dist')));
-const BASE = path.resolve(arg('base', path.join(os.tmpdir(), 'diplo-resume-test')));
+const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), `diplo-harder-dist-${TMPDIR_RUN_ID}`)));
+const BASE = path.resolve(arg('base', path.join(os.tmpdir(), `diplo-resume-test-${TMPDIR_RUN_ID}`)));
 const DIR_A = path.resolve(arg('a', path.join(BASE, 'A')));
 const DIR_B = path.resolve(arg('b', path.join(BASE, 'B')));
 const TAG = 'seed4242-harder0';

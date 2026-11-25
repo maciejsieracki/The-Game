@@ -26,11 +26,12 @@
  *  - NIE uwzglednia: spadku populacji, capu spichlerza (cap 1000 w t30-t90, 3000 t120, 5000 t150
  *    w seed 4242), zmiany liczby miast/jednostek, sprzezenia zwrotnego.
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const path = require('path');
 
 const args = process.argv.slice(2);
-const dir = args.find(a => !a.startsWith('--')) || '/tmp/econ-final';
+const dir = args.find(a => !a.startsWith('--')) || `${require('os').tmpdir()}/econ-final-${TMPDIR_RUN_ID}`;
 const CSV = args.includes('--csv');
 
 const TURNS = [30, 60, 90, 120, 150];

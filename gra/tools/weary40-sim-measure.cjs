@@ -26,6 +26,7 @@
  * Wynik: JSON w stdout (dwa wiersze na ziarno i wariant: skrot + zdarzenia pokoju). Bez zapisu poza gra/tools.
  * Wymaga gra/node_modules/esbuild (i three dla lancucha importow silnika), zgodnych z gra/package.json.
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const S = require('./ai-war-defend-home-sim.cjs');
 const { WAR_WEARINESS_PARAMS } = (() => {
@@ -42,7 +43,7 @@ const TURNS = parseInt(arg('turns', '150'), 10);
 const SEEDS = parseInt(arg('seeds', '3'), 10);
 const FROM = parseInt(arg('from', '1'), 10);
 const VARIANT = arg('variant', 'both');
-const BASE_ROOT = path.resolve(arg('basesrc', '/tmp/basegra/gra'));
+const BASE_ROOT = path.resolve(arg('basesrc', `${require('os').tmpdir()}/basegra/gra-${TMPDIR_RUN_ID}`));
 const CITY_PN_REAL = 1840;
 
 function rng(seed) { let x = seed >>> 0 || 1; return () => { x ^= x << 13; x >>>= 0; x ^= x >> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; }; }

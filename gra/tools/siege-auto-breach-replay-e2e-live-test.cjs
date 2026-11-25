@@ -37,6 +37,7 @@
  *       3 = ZNALEZISKO-DEFEKTU gry (tylko wpisy DEFEKT, brak innych FAIL) -- patrz raport, osobny temat.
  * Nie wymaga npm run build/dev (vite build --outDir poza repo).
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -48,7 +49,7 @@ const CHROME = process.env.SABR_CHROME
   || ['/opt/pw-browsers/chromium', (require('./_chrome-path.cjs').resolveChromePath() || '/usr/bin/chromium')].find((p) => fs.existsSync(p));
 const LIMIT_MS = parseInt(process.env.SABR_LIMIT_S || '120', 10) * 1000;
 const RUN = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const TMP_ROOT = path.join(os.tmpdir(), `civ-sabr-${RUN}`);
+const TMP_ROOT = path.join(os.tmpdir(), `civ-sabr-${RUN}-${TMPDIR_RUN_ID}`);
 fs.mkdirSync(TMP_ROOT, { recursive: true });
 process.on('exit', () => { try { fs.rmSync(TMP_ROOT, { recursive: true, force: true }); } catch { /* best-effort */ } });
 

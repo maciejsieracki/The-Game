@@ -7,6 +7,7 @@
  * layout; it must fail the positive layout assertions while the clean source passes.
  * Bundles and screenshots stay outside the repository.
  */
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -14,7 +15,7 @@ const path = require('path');
 const GRA = path.resolve(__dirname, '..');
 const CITY_TS = path.resolve(GRA, 'src/ui/cityPanel.ts');
 const TMP_RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
-const TMP = path.join(os.tmpdir(), `civ-recruitment-panel-height-${TMP_RUN_ID}`);
+const TMP = path.join(os.tmpdir(), `civ-recruitment-panel-height-${TMP_RUN_ID}-${TMPDIR_RUN_ID}`);
 const FALLBACK_CHROMIUM_CANDIDATES = [
   process.env.CHROME_PATH,
   '/opt/pw-browsers/chromium',
@@ -37,7 +38,7 @@ const NO_SHOTS = ARGV.includes('--no-shots');
 const shotsArg = ARGV.indexOf('--shots-dir');
 const SHOTS_DIR = shotsArg >= 0 && ARGV[shotsArg + 1]
   ? path.resolve(ARGV[shotsArg + 1])
-  : path.join(os.tmpdir(), `civ-shots-recruitment-panel-height-${TMP_RUN_ID}`);
+  : path.join(os.tmpdir(), `civ-shots-recruitment-panel-height-${TMP_RUN_ID}-${TMPDIR_RUN_ID}`);
 
 process.on('exit', () => {
   try { fs.rmSync(TMP, { recursive: true, force: true }); } catch { /* best effort */ }

@@ -18,6 +18,7 @@
  */
 'use strict';
 
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -27,8 +28,8 @@ const GRA_DIR = path.resolve(__dirname, '..');
 const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
 const ESBUILD_BIN = process.env.ESBUILD_BIN || path.join(GRA_DIR, 'node_modules/.bin/esbuild');
 const N = Number(process.env.N || 200);
-const BUNDLE = path.join(os.tmpdir(), `barb-audit-bundle-${RUN_ID}.cjs`);
-const ENTRY = path.join(os.tmpdir(), `barb-audit-entry-${RUN_ID}.ts`);
+const BUNDLE = path.join(os.tmpdir(), `barb-audit-bundle-${RUN_ID}-${TMPDIR_RUN_ID}.cjs`);
+const ENTRY = path.join(os.tmpdir(), `barb-audit-entry-${RUN_ID}-${TMPDIR_RUN_ID}.ts`);
 
 process.on('exit', () => {
   try { fs.rmSync(BUNDLE, { force: true }); fs.rmSync(ENTRY, { force: true }); } catch { /* best-effort */ }
