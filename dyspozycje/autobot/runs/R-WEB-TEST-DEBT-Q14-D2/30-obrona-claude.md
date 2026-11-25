@@ -1,79 +1,48 @@
-# R-WEB-TEST-DEBT-Q14-D2 — obrona Operatora (runda 2/5, odpowiedź na raport Evaluatora r1)
+# R-WEB-TEST-DEBT-Q14-D2 — obrona Operatora (runda 3/5, odpowiedź na FAIL r2 Evaluatora i Final Control)
 
 STATUS: FAIL
 DOMAIN: GAME (testy)
-TEMAT: R-WEB-TEST-DEBT-Q14-D2 (kat. D, 2. połowa: 25 wierszy z 43-stan-156-r5.md)
-GOAL: przy każdym teście z połowy ustalić przyczynę, sklasyfikować i naprawić tam, gdzie STARY-PIN lub HARNESS, bez osłabiania asercji.
-BAZA: kandydat d20de05bdaef7d78db185d20240adaf82106446c (origin/main f96787fb7 + raport r1). Zero zmian w gra/src i gra/data.
+TEMAT: R-WEB-TEST-DEBT-Q14-D2 (kat. D, 2. połowa; zarzuty 1–7 z rundy 2)
+GOAL: każdy z 5 czerwonych testów z zarzutu 1 ma klasyfikację z dowodem albo jest naprawiony; asercje nie osłabione; bramki zielone.
+BAZA: kandydat c25dc4b8ff6ebbb4d4283d85cad66f2cb47fbc71 (raport r2). Zero zmian w gra/src i gra/data.
 
-## Odpowiedzi na zarzuty Evaluatora
+## Odpowiedzi na zarzuty
 
-1. PRZYJMUJĘ — kandydat nie zawierał zmian testów. Naprawiono 4 testy wskazane przez Operatora r1 jako STARY-PIN (json-descriptions-sync, plony-budynkow, rydwan-konnica-x2, wojna-wymuszona-parowanie). Każda zmiana ma powołanie na commit/decyzję (niżej). Asercje nie osłabione: dodano wyłącznie jawne wyjątki dla pól zmienionych decyzją, a nie usunięto żadnego porównania.
-2. PRZYJMUJĘ — analiza przyczyn dla 20 testów NIE NASTĄPIŁA w tej rundzie. Nie wykonano git log -S ani diffu pinów dla tych testów. Pozostają klasyfikowane jako NIE-ZMIERZONO (bez zgadywania). Zostaje to do rundy 3 (podział na 2–3 paczki, zgodnie z sugestią Evaluatora).
-3. PRZYJMUJĘ — json-descriptions-sync: przyczyna była w komunikacie testu. Pola `pwPrzezMoc` i `ogonPokoju` (nowe, celowe) nie były wyjaśnione w teście. Naprawiono (wynik niżej).
-4. PRZYJMUJĘ — wojna-wymuszona-parowanie: TypeError (`assignments[0].ownerId` przy pustym wyniku) był skutkiem FAIL S2/S7, nie osobnym błędem. Klasyfikacja STARY-PIN potwierdzona dowodem (commit 69c7a0a25 i 8df9ac864). Naprawiono, TypeError zniknął.
-5. PRZYJMUJĘ — klasyfikacje BŁĄD-GRY z r1 (endturn-battle-deadlock-exec, eliminacja-lup-kwoty, zelazo-gate, rydwan-bierny-atak, surrender-rekrutacja, trade-routes-income, fortify-pole) są wyłącznie KANDYDATAMI, bez minimalnego odtworzenia i bez weryfikacji reguły. Oznaczam je jako NIE-ZMIERZONO (kandydat BŁĄD-GRY do weryfikacji), nie jako potwierdzone.
-6. PRZYJMUJĘ — unit-stock-cost-test: w tej rundzie uruchomiony ponownie, wynik 58 passed / 0 failed (exit 0). Co go zazieleniło (zmiana na main po Q13 czy #67) NIE ZMIERZONO. Test nie był modyfikowany.
-7. PRZYJMUJĘ w części — BLOCK nie miał blokady technicznej (środowisko działało, bramki zielone). Status zmieniam na FAIL: zadanie nie jest zakończone (20 z 25 testów bez klasyfikacji przyczyny).
+1. PRZYJMUJĘ — 5 czerwonych testów. Stan po rundzie 3: zelazo-gate 24/24 (naprawiony), manual-rebalance-owner-era 6/0 (naprawiony), pozostałe 3 nadal czerwone z klasyfikacją (rydwan-bierny-atak, trade-routes-income H2e, war-allin-capital) — patrz pkt 3, 4, 5. Status FAIL, bo war-allin nie ma klasyfikacji z dowodem.
+2. PRZYJMUJĘ i NAPRAWIONO — zelazo-gate-test. Przyczyna z dowodem: od commita e06ad53c8 `availableProduction` (src/game/production.ts, blok „Koszary gate") wymaga `koszary` w `builtBuildingIds` dla jednostek epoki Brązu i wyższych. Fixture (`builtBuildingIds: ['odlewnia_zelaza']` / `[]`) nie zawierał `koszary`, więc Legionista i Procarz odpadały przed bramką żelaza. Sprawdzone: fixture z samą zmianą `Epoka: 'Żelazo'` nadal daje 4/24 (więc nazwa epoki NIE jest przyczyną — `EPOCH_BY_NAME` zawiera 'Zelazo' = 3). Dodanie `koszary` do wszystkich fixture'ów: 24/24 zielone. Asercje nie zmienione. Klasyfikacja: HARNESS (fixture). Commit feff53ab6.
+   Nie wykonano mutacji zelaza (brak sprawdzenia, że negatywne asercje padają po usunięciu bramki) — NIE-ZMIERZONO.
+3. PRZYJMUJĘ i NAPRAWIONO — manual-rebalance-owner-era-test. Przyczyna z dowodem: dane `gra/data/econ-era-rebalance-params.json` mają `eraRebalansAktywny: true` i `przychodyUlepszenStałeEpoka1: true` (commit e3898a7be / FALA 871), więc `isEraRebalanceImprovementFlat()` = true i `improvementYieldForEra` zwraca plony stałe. Probe `yieldOfMapHex` dla kopalnia_zlota/kopalnia_miedzi/oboz_lowiecki daje ten sam wynik dla epoki undefined, 1, 2, 3 (zloto praca 4/handel 11; miedz praca 4/handel 6; oboz praca 3/handel 4), więc ranking era3 = era1 jest zgodny z flagą, a nie błędem przekazania epoki. Naprawa: test przypina flagę OFF (`setEraRebalanceEnabledForTest(false)`) dla asercji przekazania epoki i dodaje asercję z flagą ON (ranking era3 = era1). Wynik: `pass=6 fail=0`; mutacja `MUTATE=noera` daje `FAIL` (exit 1). Klasyfikacja: HARNESS (konfiguracja flagi). Commit feff53ab6.
+4. PRZYJMUJĘ — war-allin-capital-test 6b. Obie czerwone asercje podaję w całości: `aiVsAi: got d28c8b7ffce7a3ec, want 20a5bc2c7abcba1b` i `noLandPath: got e565af36b3773765, want 3484217518ceb4ba`. Wynik surowy: `96 passed, 2 failed`. Bisect (git bisect, ręczny, predykat z ustalonymi kopiami plików testu z HEAD, tylko gra/src i gra/data się zmieniają): punkt odniesienia 24ab89a1e zweryfikowany — `98 passed, 0 failed`, aiVsAi OFF = 20a5bc2c7abcba1b. Punkt HEAD — czerwony. Pierwsze dwa punkty pośrednie (7d8ba4d32 — czerwony; 0a6746fdb — test się nie uruchamia, bo harness nie pasuje do silnika tamtej epoki; pominięto). Kolejny punkt pośredni też nie uruchamia testu. Bisect NIEROZSTRZYGNIĘTY w ~3 krokach, bo harness przestaje działać na starszych drzewach (błąd uruchomienia, nie wynik). Klasyfikacja: NIE-ZMIERZONO. Nie zmieniono pinów (zgadywanie). Stan repo po bisect: `git bisect reset`, worktree czysty (HEAD feff53ab6).
+5. PRZYJMUJĘ — rydwan-bierny-atak-test i trade-routes-income H2e nie mają jeszcze cytatu reguły w poprzedniej rundzie; poniżej dowody.
+   - rydwan-bierny-atak (2 asercje: C „wróg poza zasięgiem nie wymusza zbliżenia”, D „rydwan z 1 punktem nie goni”). Test i kod dodane w tym samym commicie 64d5ac663 („rydwany aktywnie atakują/okrążają”, 2026-09-27). Opis commita mówi: rydwan bez celu-miasta „aktywnie zbliża się do najbliższej wrogiej jednostki w zasięgu ruchu”. Asercja C zakazuje zbliżenia do wroga w odległości 8 (zasięg ruchu rydwanu = 4). Asercja D zakazuje ruchu o 1 heks przy ruchLeft=1, a sam tytuł testu mówi „uses remaining points”; ruch o dokładnie 1 heks respektuje ten tytuł. Żadna reguła w docs/PORADNIK-GRACZA nie opisuje pościgu rydwanów (sprawdzone grep-em). Wniosek: intencja zapisana w commicie i asercje testu są sprzeczne. Klasyfikacja: DECYZJA WŁAŚCICIELA (nie BŁĄD-GRY bez reguły, nie STARY-PIN bez decyzji). Test zostaje czerwony; kod nie zmieniony.
+   - trade-routes-income H2e (`one capital Mint raises tax cash in another city of the owner (mint=2, noMint=2)`). Cytat obowiązującej reguły: docs/PORADNIK-GRACZA/08-ekonomia-imperium.md §49.3b, linia 71: „Gdy cywilizacja odkryje Walutę i zbuduje Mennicę w stolicy, dzieją się dwie rzeczy naraz, dla **całej** cywilizacji (wszystkich miast tego właściciela)”. Commit 8ad10c70a zmienił tylko wartość mnożnika (per civ), NIE zasięg — zakres „całej cywilizacji” zostaje w przewodniku (diff 8ad10c70a tego akapitu nie dotyka). Test H2e (fixture: pH z Mennicą + Waluta, pH2 bez Mennicy, zysk podatku pH2 mint=2 = noMint=2) łamie tę regułę. Klasyfikacja: BŁĄD-GRY (kandydat z cytatem reguły i odtworzeniem w teście H2e). Test zostaje czerwony; kod gry NIE poprawiany (zakaz). Do potwierdzenia przez właściciela, że cytowany przewodnik jest obowiązujący.
+6. PRZYJMUJĘ jako notę — stone-research-costs-test. Dowód zmiany pinu: skrót 3b7ab35b… (prefiks) był stanem tech.json przed commitami d3216eb2a / 0764ab4d6 (2026-11-10). Późniejsze commity zmieniające gra/data/tech.json (`git log -- gra/data/tech.json`): 0764ab4d6, d3216eb2a (2026-11-10), a33354586 (mury/cegła), 38d6ba0ec (kawaleria/oblężnicze za Żelazem), 2ca45a090 (ID/gramatyka), 361b35c11 i 2b15ae891 (merge, wikiBundle). Zmiany są zamierzone (opisy commitów). Pin zaktualizowany do db84a9b6…c795 pozostaje w rundzie 2 — ta runda nie zmienia testu.
+7. PRZYJMUJĘ — kosmetyka. W raporcie r2 sekcja „Podsumowanie klasyfikacji” miała błędną liczbę. Prawidłowo wg numeracji r2: STARY-PIN 6 testów (#1, #3, #8, #10, #11, #16) + E1 w #2; HARNESS 9 (#2-A, #4, #5, #6, #7, #9, #13, #14, #17); BŁĄD-GRY kandydat 1 (#18 H2e, z cytatem); DECYZJA WŁAŚCICIELA 1 (#15 rydwan); NIE-ZMIERZONO 1 (#19 war-allin). Zielone: 15 z r2 + #20 zelazo (HARNESS w tej rundzie) = 16, a #12 manual-rebalance (HARNESS w tej rundzie) = 17. Czerwone: #15, #18, #19 (3). Suma: 17 + 3 = 20.
 
-## Zmiany (allowlista: gra/tools/*-test.cjs z połowy + raport)
+## Tabela (test | przed | przyczyna z dowodem | klasyfikacja | co zmieniono | po)
 
-| test | przed (r1, solo) | klasyfikacja | co zmieniono | po (solo, surowe) |
-|---|---|---|---|---|
-| json-descriptions-sync-test | exit 1, 18/1 (a1: war-weariness-params.json) | STARY-PIN | a1: dodano wyjątek dla sekcji `pwPrzezMoc` (R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1, ABC 2026-11-18) i `ogonPokoju` (R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1, ABC 2026-11-18); komentarz R-WEB-TEST-DEBT-Q14 | exit 0, **19 pass / 0 fail** |
-| plony-budynkow-test | exit 1, 64/4 | STARY-PIN ×2 (różne przyczyny) | H0 (Biblioteka/Akademia/razem): oczekiwana wartość liczona od PULI Nauki (teren + budynek), bo referencja terenu daje `yldNone.nauka = 1` (stary komentarz „0” był nieaktualny); asercje procentów 30%/20%/50% bez zmian. C (Targowisko): delta Pieniądza 4 → 3, bo podział suwakiem to splitHandelLargestRemainder (R-WEB-ECONOMY-CONVERTERS-MENNICA-CLAY-ORDER-Q1 r2), a nie floor() na części; ręczny rachunek w komentarzu przepisany | exit 0, **68 passed / 0 failed** |
-| rydwan-konnica-x2-test | exit 1, 4 niezgodności | STARY-PIN | dodano jawną tabelę `DECYZJE_NADPISANIA` z powołaniami: Rydwan (woły) Surowiec/Utrzymanie surowiec = Drewno (e06ad53c8d, Maciej 2026-10-28); Rydwan egipski Atak dystansowy = 10 i Jeździec z oszczepami Atak dystansowy = 14 (fb17e765a, R-WEB-DATA-RANGED-HEALTH-HALF-AND-CARDS-ALIGN-Q1). Migawka BEFORE nietknięta, reszta asercji x2 bez zmian | exit 0, **13 jednostek, 548 asercji, PASS** |
-| wojna-wymuszona-parowanie-test | exit 1, S2 i S7 FAIL + TypeError | STARY-PIN | S2 i S7: para istniejąca zmieniona z `stone` na `bronze` (reguła 8df9ac864 r3: Brąz/Żelazo NIE dołącza do pary Kamienia; S5 już używa bronze). Dodano S2b (negatywny przypadek: Żelazo nie dołącza do pary Kamienia, trafia do unresolved, inwariant ECHO sprawdzony) | exit 0, **50 / 0** |
+| test | przed (r2, solo) | przyczyna z dowodem | klasyfikacja | co zmieniono | po (solo, surowe) |
+|---|---|---|---|---|---|
+| zelazo-gate-test | exit 1, `NIEUDANE: 4/24` | brak `koszary` w fixture; bramka koszar (e06ad53c8) | HARNESS | `koszary` w builtBuildingIds (7 miejsc) | exit 0, `WSZYSTKIE TESTY ZIELONE (24/24)` |
+| manual-rebalance-owner-era-test | exit 1, `pass=4 fail=1` | flaga ECONREBAL (dane) = plony stale; ranking era3 = era1 | HARNESS | przypięcie flagi OFF dla asercji epoki + asercja ON | exit 0, `pass=6 fail=0`; MUTATE=noera exit 1 |
+| rydwan-bierny-atak-test | exit 1, `4 passed, 2 failed` | sprzeczne asercje vs opis commita 64d5ac663 | DECYZJA WŁAŚCICIELA | — (test czerwony) | exit 1, `4 passed, 2 failed` |
+| trade-routes-income-test (H2e) | exit 1, `133 passed, 1 failed` | docs 08 §49.3b l.71: Mennica dla całej cywilizacji | BŁĄD-GRY (kandydat z cytatem) | — (test czerwony) | exit 1, `133 passed, 1 failed` |
+| war-allin-capital-test | exit 1, `96 passed, 2 failed` | NIE ZMIERZONO (bisect nierozstrzygnięty, harness nie działa na starszych drzewach) | NIE-ZMIERZONO | — | exit 1, `96 passed, 2 failed` |
 
-Nazwy zmienionych plików testów: gra/tools/json-descriptions-sync-test.cjs, gra/tools/plony-budynkow-test.cjs, gra/tools/rydwan-konnica-x2-test.cjs, gra/tools/wojna-wymuszona-parowanie-test.cjs.
-
-## Tabela pozostałych testów (bez zmian w tej rundzie)
-
-| test | stan (z r1, nieruszony) | klasyfikacja | uwagi |
-|---|---|---|---|
-| drewno-gate-test | czerwony 1/20 | NIE-ZMIERZONO | kandydat BŁĄD-GRY do weryfikacji (dostępność Wojownika bez stocku) |
-| dyplo-karta-duplikat-komunikat-test | czerwony 12/3 | NIE-ZMIERZONO | E1: 4. wystąpienie prefiksu w main.ts — do decyzji (martwy kod vs oczekiwana liczba) |
-| dyplo-pakt-ekspansja-granica-test | czerwony 22/26 | NIE-ZMIERZONO | możliwy STARY-PIN po FALACH 847–892, nie zbadano |
-| egypt-movement-precedence-test | czerwony | NIE-ZMIERZONO | bonus płytkiego morza 0,813 vs 0,676 — nie zbadano |
-| eliminacja-lup-kwoty-test | czerwony 34/4 | NIE-ZMIERZONO | kandydat BŁĄD-GRY (brak pozycji raportu eliminacji), nieweryfikowany |
-| elimination-spectacle-test | czerwony 83/1 | NIE-ZMIERZONO | „tick rekordów po turn++” — nie zbadano |
-| endturn-battle-deadlock-exec-test | czerwony 40/9 | NIE-ZMIERZONO | kandydat BŁĄD-GRY, nieweryfikowany |
-| epoka-merge-recruit-test | czerwony 5/13 | NIE-ZMIERZONO | możliwy STARY-PIN (lista jednostek bazowych) — nie zbadano |
-| fair-play-tier-grid-test | czerwony 9/3 | NIE-ZMIERZONO | możliwy STARY-PIN (progi tieru) — nie zbadano |
-| fortify-pole-test | czerwony 39/2 | NIE-ZMIERZONO | hitChance 39 vs 41 — HARNESS lub BŁĄD-GRY, nie zbadano |
-| idb-b1b2b3-test | czerwony 19/1 | NIE-ZMIERZONO | środowiskowe (stan localStorage/IDB w Node) — nie zbadano |
-| manual-rebalance-owner-era-test | czerwony 4/1 | NIE-ZMIERZONO | ranking epoki właściciela — nie zbadano |
-| perf-endturn-ai-phase-equiv-test | czerwony | NIE-ZMIERZONO | asercja w fazie AI — nie zbadano |
-| r-bitwa-kolory-gracz-przeciwnik-q1-test | czerwony | NIE-ZMIERZONO | HARNESS lub zmiana kolorów frakcji — nie zbadano |
-| rydwan-bierny-atak-test | czerwony 4/2 | NIE-ZMIERZONO | kandydat BŁĄD-GRY (pościg rydwanu), nieweryfikowany |
-| stone-research-costs-test | czerwony 47/1 | NIE-ZMIERZONO | możliwy STARY-PIN (lista zatwierdzeń kosztów) — nie zbadano |
-| surrender-rekrutacja-build-gate-test | czerwony 10/1 | NIE-ZMIERZONO | kandydat BŁĄD-GRY (zwrot Pracy po surrender), nieweryfikowany |
-| trade-routes-income-test | czerwony 133/1 | NIE-ZMIERZONO | H2e: Mennica stolicy — kandydat BŁĄD-GRY lub STARY-PIN, nieweryfikowany |
-| unit-stock-cost-test | zielony 58/0 | ZIELONY | przyczyna zazielenienia NIE ZMIERZONO (patrz zarzut 6) |
-| war-allin-capital-test | czerwony 96/2 | NIE-ZMIERZONO | możliwy STARY-PIN (hashe po FALACH 891/892) — nie zbadano |
-| zelazo-gate-test | czerwony 4/24 | NIE-ZMIERZONO | kandydat BŁĄD-GRY (dostępność Legionisty), nieweryfikowany |
-
-Liczby po rundzie 2: STARY-PIN 4 (naprawione), HARNESS 0, BŁĄD-GRY 0 potwierdzonych (7 kandydatów NIE-ZMIERZONO), OBCIĄŻENIE 0, NIE-ZMIERZONO 19 (w tym 7 kandydatów BŁĄD-GRY), ZIELONY 1, testy zmienione i zielone: 4 (json, plony, rydwan-konnica, wojna). Tabela wiersza `climate-band-test.cjs` nie dotyczy (osobny temat).
-
-## Bramki (surowe wyjście, worktree na d20de05 + zmiany tej rundy)
-- tsc --noEmit: exit 0
-- logic-test: exit 0, „LOGIC OK (213/213)”
-- tech-tree-test: exit 0, „tech-tree-test: 20 pass, 0 fail”
-- research-test: exit 0, „ALL GREEN”
-- unit-replace-test: exit 0, „WSZYSTKIE TESTY ZIELONE (21/21)”
-- combat-test: exit 0, „All sanity checks passed.”
-- ai-test: exit 0, „ai-test: 297 passed, 0 failed”
-- era-war-pairing-alliance-test: exit 0, „19 pass, 0 fail”
-- ai-ai-alliance-surcharge-test: exit 0, „RESULT: ALL GREEN (live + mutants detected)”
+## Bramki
+Ta runda zmienia wyłącznie gra/tools/zelazo-gate-test.cjs i gra/tools/manual-rebalance-owner-era-test.cjs (zero zmian w src/data). Bramki tsc/logic/tech-tree/research/unit-replace/combat/ai-test/era-war/ai-ai nie były ponownie uruchamiane w tej rundzie — NIE-ZMIERZONO w tej rundzie (wynik r2 zachowany: zielone na bazie Operatora). Przed integracją: orkiestrator powinien uruchomić je na SHA czubka.
 
 ## BLOKADY
-Brak blokady technicznej. Blokada procesowa: 19 testów NIE-ZMIERZONO wymaga analizy przyczyn, której nie wykonano w tej rundzie.
+- Techniczna: brak.
+- Procesowa: (a) rydwan-bierny-atak wymaga decyzji właściciela (która zasada obowiązuje: brak pościgu poza zasięgiem vs aktywne zbliżenie z commita 64d5ac663); (b) H2e wymaga potwierdzenia, że przewodnik §49.3b (zasięg Mennicy na całe imperium) obowiązuje; (c) war-allin-capital 6b nie ma klasyfikacji z dowodem — wymaga bisecta na innym środowisku/harnessie zgodnym z historią albo akceptacji NIE-ZMIERZONO przez orkiestratora.
 
 ## UWAGI-DLA-ORKIESTRATORA
-- Kandydaci BŁĄD-GRY (do weryfikacji w osobnym tematu R-WEB-*, nie potwierdzone): endturn-battle-deadlock-exec, eliminacja-lup-kwoty, zelazo-gate, rydwan-bierny-atak, surrender-rekrutacja, trade-routes-income, drewno-gate. Fortify-pole: HARNESS lub BŁĄD-GRY.
-- Zmiana wartości Rydwana egipskiego/Jeźdźca z oszczepami (fb17e765a) i Surowca woła (e06ad53c8d) to decyzje, których autor nie ma tu zaznaczonych w KOLEJKA-WEB — pinowanie do obecnych wartości opiera się na commitach, nie na zapisie decyzji właściciela w KOLEJKA.
-- Połowa 1/2 (wiersze 16–40 kat. D) nie była objęta tym raportem.
+- Pytanie ABC do właściciela (proponowana rekomendacja): (1) rydwan — rekomendacja: zachować obecny kod (aktywne zbliżenie do wroga w zasięgu ruchu, zgodnie z commitem 64d5ac663) i przepisać asercje C/D do tej reguły; (2) Mennica H2e — rekomendacja: potwierdzić zasięg „cała cywilizacja” z przewodnika; jeśli tak, to BŁĄD-GRY do R-WEB-*.
+- Kandydat BŁĄD-GRY: trade-routes-income H2e (repro: test H2e, cytat docs/PORADNIK-GRACZA/08-ekonomia-imperium.md l.71).
+- Bisect war-allin: zapisane zerowe punkty: 24ab89a1e good (98/0), HEAD bad; punkt 7d8ba4d32 bad; dwa kolejne punkty pośrednie nieuruchamialne (harness). Ręczny bisect wymaga sprawdzenia harnessu na starszych drzewach.
+- Mutacja zelazo nie wykonana (NIE-ZMIERZONO).
+- Po tej rundzie w gra/ zostaje node_modules (sprzątane przed zakończeniem).
 
-NASTĘPNY KROK: runda 3 Operatora do TEGO SAMEGO ID, na 19 testach NIE-ZMIERZONO, w 2–3 paczkach (git log -S na pinowanych wartościach, diff pinów, weryfikacja kandydatów BŁĄD-GRY względem reguł).
-RUNDY: 2/5
+NASTĘPNY KROK: orkiestrator decyduje o pytaniach ABC (rydwan, H2e) i ewentualnie o war-allin (akceptacja NIE-ZMIERZONO albo kolejny temat bisecta). Operator r4 (jeśli orkiestrator zleci) — tylko war-allin i mutacja zelaza; rydwan/H2e zostają czerwone do decyzji.
+RUNDY: 3/5
 DEPLOY/PUSH: NIE WYKONANO
