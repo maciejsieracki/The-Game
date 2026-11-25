@@ -26,7 +26,13 @@ const EXPECTED = {
   // R-WEB-HORSE-RESOURCE-TERRAIN-Q1 (2026-11-03): hashe `hexes` zmienione CELOWO - relocateForestHorses przenosi
   // zloze konia z lasu na najblizsza wolna Rownine. Dowod: gate-hexes-diff-fast.txt (12/12 map: liczba koni rowna,
   // 0 koni na lesie, roznice wylacznie w polach zloze/nakladka/nakladki). Poprzednie (baza 57a7ada40) w komentarzu run-u.
-  'kontynenty:1': 'd4129ac5a700b221', 'kontynenty:42': '4db90d6e807ceb5f', 'kontynenty:99': 'be3f9c573ab42d05', 'kontynenty:7777': 'eac663ea51e76718',
+  // R-WEB-MAP-POLAR-RESTORE-CONTINENTS-Q1 (A1, 2026-11-25) re-pin TYLKO kontynentów: przywrócenie pasu polarnego
+  // (ochrona pasa przy erozji lądu, applyLandFractionByContinent/enforceTarget/rebalance gated na typ 'kontynenty').
+  // Przed: d4129ac5a700b221 / 4db90d6e807ceb5f / be3f9c573ab42d05 / eac663ea51e76718 (baza aa96cfc, polar 0).
+  // Po: d7684fe0975e74e5 / 2d321c9b3ea215d5 / a84baa20de2c56d4 / e53c36f4d1e8d64e (polar 387/404/381/449).
+  // Zmiana rozkłada się po całej mapie (3805–5103 heksów z 20160 różnych, wiersze 3–116) — skutek mechanizmu
+  // erozji, nie tylko pasa; wyspy, ziemia i pangea są bajt-identyczne z bazą (zmierzone).
+  'kontynenty:1': 'd7684fe0975e74e5', 'kontynenty:42': '2d321c9b3ea215d5', 'kontynenty:99': 'a84baa20de2c56d4', 'kontynenty:7777': 'e53c36f4d1e8d64e',
   'wyspy:1': '5af15091eec73d5d', 'wyspy:42': '58191dcbaf2f237f', 'wyspy:99': '90a0b2438aa2c44d', 'wyspy:7777': 'aea744461a035d68',
   'ziemia:1': '37a4b9d4c5f56da8', 'ziemia:42': 'c9f78b075f353f11', 'ziemia:99': 'a70a97fd31536d74', 'ziemia:7777': 'fdfb833fbe69dff9',
 };
