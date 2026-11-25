@@ -174,7 +174,7 @@ try {
   assert(!stoneCommand({ stanWojny: true }).some(c => c.type === 'wypowiedz_wojne'), 'target w wojnie blokuje DOW');
   assert(stoneCommand({ peaceLocked: true }).some(c => c.type === 'wypowiedz_wojne'), 'peace lock NIE blokuje wojny epoki (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1)');
   assert(stoneCommand({ hasNapTreaty: true }).some(c => c.type === 'wypowiedz_wojne'), 'NAP NIE blokuje wojny epoki (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1)');
-  assert(!stoneCommand({ hasAllianceTreaty: true }).some(c => c.type === 'wypowiedz_wojne'), 'sojusz z celem blokuje DOW');
+  assert(stoneCommand({ hasAllianceTreaty: true }).some(c => c.type === 'wypowiedz_wojne'), 'sojusz z celem NIE blokuje wojny epoki (R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1)');
 
   console.log('--- save/load i mutacje stanu ---');
   const pending = new Set([2]);

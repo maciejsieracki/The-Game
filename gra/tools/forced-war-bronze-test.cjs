@@ -315,8 +315,8 @@ const dipNoForceAlliance = decideAIDiplomacy({
   bronzeForceWarTargetId: 7,
 });
 assert(
-  !dipNoForceAlliance.some(c => c.type === 'wypowiedz_wojne'),
-  'T10a: hasAllianceTreaty=true z celem → brak wymuszonej wojny (nie zrywamy własnych sojuszy)',
+  dipNoForceAlliance.some(c => c.type === 'wypowiedz_wojne'),
+  'T10a: hasAllianceTreaty=true z celem → wymuszona wojna DOSTĘPNA (R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1: sojusz nie blokuje)',
 );
 const dipForceNoAlliance = decideAIDiplomacy({
   myPlayerId: '1',

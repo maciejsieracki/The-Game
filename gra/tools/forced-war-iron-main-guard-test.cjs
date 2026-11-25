@@ -123,7 +123,7 @@ check(
   'wybór celu (wszystkich trzech epok naraz, w tym Żelaza) przechodzi przez assignForcedWarPairings '
     + 'z isForcedWarPairBlocked i hexDistanceFn: hexDistance',
   // R-WEB-ERA-WAR-COUNTER-Q1: dodana opcja isEraWarExhausted (licznik wojen epoki per cywilizacja).
-  /const forcedWarPairingResult = assignForcedWarPairings\(\s*\n\s*triggeredSubjects,\s*\n\s*existingActivePairsForJoin,\s*\n\s*\{\s*\n\s*isPairBlocked: isForcedWarPairBlocked,\s*\n\s*hexDistanceFn: hexDistance,\s*\n\s*totalActiveForcedWarsByOwner(?:: totalActiveForcedWarsForPairing)?,\s*\n\s*(isEraWarExhausted: [^\n]*,\s*\n\s*)?(?:\/\/[^\n]*\n\s*)*(freeTargetCandidates: (?:[^\n]*,\s*\n\s*|\[[\s\S]*?\]\.filter\([^\n]*\),\s*\n\s*))?(\.\.\.forcedWarPlayerFirstOpt,\s*\n\s*)?\},\s*\n\s*\);/.test(main),
+  /const forcedWarPairingResult = assignForcedWarPairings\(\s*\n\s*triggeredSubjects,\s*\n\s*existingActivePairsForJoin,\s*\n\s*\{\s*\n\s*isPairBlocked: isForcedWarPairBlocked,[\s\S]{0,400}?hexDistanceFn: hexDistance,\s*\n\s*totalActiveForcedWarsByOwner(?:: totalActiveForcedWarsForPairing)?,\s*\n\s*(isEraWarExhausted: [^\n]*,\s*\n\s*)?(?:\/\/[^\n]*\n\s*)*(freeTargetCandidates: (?:[^\n]*,\s*\n\s*|\[[\s\S]*?\]\.filter\([^\n]*\),\s*\n\s*))?(\.\.\.forcedWarPlayerFirstOpt,\s*\n\s*)?\},\s*\n\s*\);/.test(main),
 );
 check(
   'R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1: gracz w freeTargetCandidates wyłącznie przy bramce puli gracza (playerEraPoolEligible) i opcji K2',
@@ -148,7 +148,7 @@ check(
 );
 check(
   'ai.ts: guard Żelaza to wczesny return z wypowiedz_wojne (stanWojny + sojusz; NAP/peaceLock nie blokują)',
-  /if \(inp\.ironForceWarTargetId != null\) \{[\s\S]{0,400}?!forcedRel\.stanWojny[\s\S]{0,200}?!forcedRel\.hasAllianceTreaty[\s\S]{0,300}?type:\s*'wypowiedz_wojne'/.test(ai),
+  /if \(inp\.ironForceWarTargetId != null\) \{[\s\S]{0,400}?!forcedRel\.stanWojny[\s\S]{0,300}?type:\s*'wypowiedz_wojne'/.test(ai) && !/if \(inp\.ironForceWarTargetId != null\) \{[\s\S]{0,400}?!forcedRel\.hasAllianceTreaty/.test(ai),
 );
 check(
   'ai.ts: guard Żelaza stoi PRZED ogólnymi regułami wojny (przed budową DiplomacjaParams `const p:`)',
@@ -174,8 +174,8 @@ check(
   count('ironForceWarPendingOwners\\.delete\\(ownerId\\)') === 2, // 1x sukces DOW + 1x eliminacja ownera
 );
 check(
-  'komenda DOW ma finalny guard sojuszu dla celu Żelaza',
-  /ironForceWarTargetId != null\s*\n\s*&& targetId === ironForceWarTargetId\s*\n\s*&& allianceFormalKindBetween\(activeDeals, ownerId, targetId\) !== null\s*\n\s*\) \{\s*\n\s*(?:emRej\('[a-z-]+'\);\s*\n\s*)?continue;/.test(main),
+  'R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1: komenda DOW NIE ma guardu sojuszu dla celu Żelaza (sojusz nie blokuje)',
+  !/ironForceWarTargetId != null\s*\n\s*&& targetId === ironForceWarTargetId\s*\n\s*&& allianceFormalKindBetween/.test(main),
 );
 
 // ---------------------------------------------------------------------------
