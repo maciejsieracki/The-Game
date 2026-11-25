@@ -207,6 +207,11 @@ pub trait LoopBody {
     fn march_pending(&self, _unit: UnitRef) -> bool {
         false
     }
+    /// MARCH-RESZTA-Q1 (D-MR-2): wołane przez sterownik tuż po [`LoopBody::start`] tej samej aktywacji, w tej samej chwili
+    /// (przed jakimkolwiek innym zegarem), ze stanem do zapisu: skutki, które pin wykonuje synchronicznie w
+    /// `_activateUnit` (np. `_startRout` z okrążenia i pierwsze wejście `_fleeStep`, `:6055`, `:6117`, `:9845-9897`), trafiają
+    /// do stanu od razu, więc zegary z okna marszu (trafienia wież) czytają je jak w pinie. Domyślnie bez efektu.
+    fn after_start(&mut self, _unit: UnitRef, _st: &mut TurnSeqState) {}
     /// MARCH-INCREMENTAL-Q1 (D-MI-1): `done()` marszu krok po kroku zgłoszone w ostatnim [`LoopBody::fire_timer`]:
     /// jednostka i czas (ms) od bieżącej chwili do [`LoopTimer::BodyDone`] (`0` = teraz; cios/strzał = chwila skutku).
     /// Domyślnie brak.
@@ -1039,6 +1044,7 @@ impl<B: LoopBody> SiegeLoop<B> {
                         .push(format!("act:{}@{}", unit_tag(u), clock.v_now));
                     self.env.body.set_now(clock.v_now);
                     let dur = self.env.body.start(u, &self.st);
+                    self.env.body.after_start(u, &mut self.st);
                     self.drain_body();
                     // K5LOOP-SIEGE-ATK-B: `_schedule` z wnętrza ciała przed `done()` (np. `_attackWallTile` `:7555`).
                     self.schedule_body_timers(clock);
@@ -1853,6 +1859,9 @@ struct ProdFleeAfter {
     /// Jednostki obu stron po ucieczce (kopia z efektami `_startRout`, `_removeUnitFromScene`, `_shakeAlliesOnLoss`).
     atk: Vec<SeqUnit>,
     def: Vec<SeqUnit>,
+    /// MARCH-RESZTA-Q1 (D-MR-2): kopia już przepisana do stanu sterownika w [`LoopBody::after_start`] (chwila `start`,
+    /// jak synchroniczne `_startRout`/pierwsze wejście `_fleeStep` pinu); `complete` przepisuje wtedy tylko `moveLeft`.
+    applied: bool,
 }
 
 /// Równość list jednostek odporna na NaN (`moveLeft = NaN` z lekcji r2 a): bitowa, gdy `==` zawodzi tylko przez NaN.
@@ -5329,6 +5338,30 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
     fn march_pending(&self, unit: UnitRef) -> bool {
         self.march.is_some_and(|c| c.unit == unit)
     }
+    /// MARCH-RESZTA-Q1 (D-MR-2): ucieczka krok po kroku — kopia stanu z `start` (rout z okrążenia, pierwsze wejście
+    /// `_fleeStep`, zejście z pola i `_shakeAlliesOnLoss`) trafia do stanu sterownika w chwili `start`, nie w `complete`
+    /// (koniec marszu). Bez tego trafienie wieży w oknie marszu czytało morale sprzed wstrząsu sojuszników, a `complete`
+    /// zgłaszał `ucieczka-konflikt-zegara` (`p3_wzg_mix_d5_palisada_156` x32: `a0` morale 40,9 → 28,9 ucieczką `a2` i →
+    /// 31,8 wieżą). Dalsze kroki ucieczki działają już na stanie sterownika ([`Self::flee_step_end`]). Marsz atomowy
+    /// (`march_incremental = false`) bez zmian: tam cały marsz jest w kopii i łączy się w `complete`.
+    fn after_start(&mut self, unit: UnitRef, st: &mut TurnSeqState) {
+        if !self.march_incremental {
+            return;
+        }
+        let Some(fa) = self.flee_after.as_mut() else {
+            return;
+        };
+        if fa.unit != unit
+            || fa.applied
+            || !same_seq_units(&st.atk, &fa.before_atk)
+            || !same_seq_units(&st.def, &fa.before_def)
+        {
+            return;
+        }
+        st.atk.clone_from(&fa.atk);
+        st.def.clone_from(&fa.def);
+        fa.applied = true;
+    }
     fn take_march_done(&mut self) -> Option<(UnitRef, f64)> {
         self.march_done.take()
     }
@@ -5396,6 +5429,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 before_def: st.def.clone(),
                 atk: st2.atk,
                 def: st2.def,
+                applied: false,
             });
             self.pending[ix][unit.idx] = Some(ProdPending {
                 morale: seq.morale,
@@ -5684,6 +5718,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 before_def: st.def.clone(),
                 atk: st2.atk,
                 def: st2.def,
+                applied: false,
             });
             pend.start_rout = false;
             pend.flee = true;
@@ -5980,6 +6015,10 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                     unit_cu_mut(st, unit).move_left = ml;
                 }
             };
+            if fa.applied {
+                apply_move_left(st);
+                return;
+            }
             if same_seq_units(&st.atk, &fa.before_atk) && same_seq_units(&st.def, &fa.before_def) {
                 st.atk = fa.atk;
                 st.def = fa.def;

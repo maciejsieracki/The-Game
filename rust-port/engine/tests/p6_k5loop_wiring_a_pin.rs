@@ -1259,22 +1259,14 @@ fn kontrakt_land_at_wiezy_i_kamienia_rowny_chwili_trafienia() {
 
 const SPEED_VECTORS: &str = include_str!("p6_k5loop_wiring_a_pin_vectors/speed_vectors.json");
 
-/// R-RUSTPORT-P4-FQ-SPEED-Q1: wektory prędkości JAWNIE rozbieżne z pinem przy danym `speedMul`, wszystkie z długu
-/// MARCH-INCREMENTAL-RESZTA (zadanie #402: marsze nadal atomowe w ciele Rust, decyzja kolejnego kroku nie widzi zdarzenia
-/// zegara z okna marszu). Ślady pierwszej rozbieżności (raport `01-operator-r1.md` §4):
-/// * `fq_wzg_mix_d5_mury_155` x2 — kawaleria (`_cavalryAction`, kroki `CAVT`): pin t 283936 krok a3 41,88→41,89 po
-///   rozbiciu a2 od wieży w t 283872, Rust 41,88→41,87;
-/// * `p3_wzg_mix_d5_palisada_156` x32 — ucieczka (`_fleeStep`) liczona w `start`: tag `ucieczka-konflikt-zegara`;
-/// * `p3_las_jazda_d6l_mury_111` x256, x512 — kawaleria: pin t 4911104 krok a0 39,72→39,73 po rozbiciu a3 w t 4907008
-///   (zwolnione pole w trakcie marszu), Rust 39,72→39,71.
+/// R-RUSTPORT-P4-FQ-SPEED-Q1: wektory prędkości JAWNIE rozbieżne z pinem przy danym `speedMul`. Dawne pozycje (dług
+/// MARCH-INCREMENTAL-RESZTA, zadanie #402) zamknięte w R-RUSTPORT-P4-MARCH-RESZTA-Q1 (`dyspozycje/autobot/runs/
+/// R-RUSTPORT-P4-MARCH-RESZTA-Q1/01-operator-r1.md`): `fq_wzg_mix_d5_mury_155` x2 i `p3_las_jazda_d6l_mury_111` x256/x512
+/// (kawaleria krok po kroku, D-MR-1), `p3_wzg_mix_d5_palisada_156` x32 (skutki ucieczki w chwili `start`, D-MR-2) — lista
+/// PUSTA.
 ///
 /// Test pada, gdy pozycja z listy zacznie się zgadzać (lista do skrócenia) albo gdy rozjedzie się wektor spoza listy.
-const ROZBIEZNE_FQ_SPEED_402: [(&str, f64); 4] = [
-    ("fq_wzg_mix_d5_mury_155", 2.0),
-    ("p3_wzg_mix_d5_palisada_156", 32.0),
-    ("p3_las_jazda_d6l_mury_111", 256.0),
-    ("p3_las_jazda_d6l_mury_111", 512.0),
-];
+const ROZBIEZNE_FQ_SPEED_402: [(&str, f64); 0] = [];
 
 /// R-RUSTPORT-P4-FQ-SPEED-Q1: `SiegeBattleSession::set_speed_idx` / `cycle_speed` / `adjust_speed_idx` jak
 /// `_setSpeedIdx` / `_cycleSpeed` / `_adjustSpeedIdx` (`battleScene.ts:9518-9536`), klatka sesji `16 * speedMul`.
