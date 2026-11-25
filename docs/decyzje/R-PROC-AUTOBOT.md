@@ -739,6 +739,37 @@ Ten test jest **dodatkiem** do turnieju C-018 i do wymogów formy z §5, nie ich
 zamiennikiem. Pytanie może przejść turniej, mieć komplet wariantów i argumentów,
 i mimo to nie nadawać się do wysłania.
 
+### 10b. Szablon pytania ABC i kontrola przed wysłaniem (właściciel, 2026-11-25)
+
+Incydent: pytania o progi testów AI zadane żargonem (nazwy testów, „pp”, „tolerancja”) — właściciel
+odpowiedział „nie wiem o co chodzi, zadaj pytanie prawidłowo”. Od tej pory każde pytanie do właściciela
+(także przez narzędzie AskUserQuestion) przechodzi poniższą kontrolę; stała kopia w `CLAUDE.md`
+(sekcja „ZASADY PYTAŃ ABC DO WŁAŚCICIELA”) i `.cursor/rules/abc-pelna-forma.mdc`.
+
+**Szablon:**
+
+```text
+ID: <pełne ID tematu>
+Sytuacja (co dzieje się w grze, bez żargonu):
+Cel / dlaczego teraz:
+A (Rekomendowane): skutek dla gry/gracza · za (min. 2) · przeciw (min. 2) · praca do wykonania · testy do zmiany
+B: ...
+C: ...
+Rekomendacja i uzasadnienie:
+Szczegóły (tu wolno nazwy plików, testów, SHA):
+```
+
+**Kontrola przed wysłaniem — wszystkie TAK, inaczej nie wysyłaj:**
+
+1. Czy to sprawa wpływająca na grę (§10)? Progi/asercje testów, harness i inne techniczne decyzje wykonawca podejmuje sam.
+2. Czy w zdaniu pytania i w opcjach nie ma nazw plików, testów, funkcji, narzędzi, paragrafów, SHA ani skrótów („pp”, „tolerancja”, „hash”)? (§10a)
+3. Czy warianty różnią się skutkiem dla gry, a nie sposobem wykonania?
+4. Czy każdy wariant ma konsekwencję implementacyjną i testową (§5)?
+5. Czy temat już nie ma odpowiedzi w rejestrze / `KOLEJKA-WEB.md`? Czy nowe pytanie o grę przeszło turniej C-018?
+6. Czy pytań jest najwyżej trzy, każde o jedną decyzję?
+
+Przerwany lub zamknięty dialog nie jest ani zgodą, ani odmową: zapis „CZEKA NA WŁAŚCICIELA” w rejestrze i ponowne pytanie zwykłym tekstem.
+
 ## 11. Zasada czystości raportu
 
 Raport terminalny niesie **destylat, nie surowe dane**:

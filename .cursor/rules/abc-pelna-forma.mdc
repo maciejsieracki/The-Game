@@ -13,3 +13,12 @@ Pytania prowadź w głównym czacie orkiestratora (C-043). Przed wysłaniem spra
 konflikt z wcześniejszą decyzją i link do właściwego dokumentu. Szczegóły formatu i turnieju:
 [`docs/procesy/INDEX-PROCESU.md`](../../docs/procesy/INDEX-PROCESU.md) oraz
 [`docs/decyzje/R-PROC-AUTOBOT.md`](../../docs/decyzje/R-PROC-AUTOBOT.md).
+
+## Uzupełnienie 2026-11-25 (właściciel: „zapisz zasady ABC, żebyś zawsze je respektował”)
+
+Pełna wersja w `CLAUDE.md` → „ZASADY PYTAŃ ABC DO WŁAŚCICIELA”. Skrót:
+1. Do właściciela tylko sprawy wpływające na grę; progi/asercje testów i inne decyzje inżynierskie rozstrzyga wykonawca sam.
+2. Język = skutek dla gry i gracza. W pytaniu i opcjach zero nazw plików, testów, funkcji, narzędzi, paragrafów, SHA, skrótów („pp”, „tolerancja”, „hash”). Sprawdzian §10a: usuń nazwy własne — jeśli zdanie nic nie znaczy, nie wysyłaj.
+3. Struktura: pełne ID · sytuacja · cel · dlaczego teraz · A/B/C z za/przeciw (min. po 2), konsekwencją implementacyjną i testową per wariant · rekomendacja (pierwsza opcja).
+4. Nowe pytanie o grę przechodzi turniej C-018 przed wysłaniem.
+5. ECHO tylko po odpowiedzi literą dla pełnego ID; przerwany dialog ≠ decyzja.
