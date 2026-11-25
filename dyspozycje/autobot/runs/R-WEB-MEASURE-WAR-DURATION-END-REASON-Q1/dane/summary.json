@@ -1,0 +1,121 @@
+{
+  "files": [
+    {
+      "file": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/runs-cont/war-kontynenty-4242.jsonl",
+      "lastTurn": 117
+    },
+    {
+      "file": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/runs-final/war-kontynenty-4242.jsonl",
+      "lastTurn": 120
+    },
+    {
+      "file": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/runs-final/war-kontynenty-7.jsonl",
+      "lastTurn": 120
+    }
+  ],
+  "wars": [
+    {
+      "file": "war-kontynenty-4242.jsonl",
+      "a": 0,
+      "b": 1,
+      "start": 42,
+      "end": 83,
+      "duration": 40,
+      "type": "wymuszona-epoki",
+      "reason": "pokoj-100% (wymuszony)",
+      "fatigueAtEnd": 1,
+      "citiesChanged": 0
+    },
+    {
+      "file": "war-kontynenty-4242.jsonl",
+      "a": 4,
+      "b": 7,
+      "start": 111,
+      "end": null,
+      "duration": 6,
+      "type": "naturalna",
+      "reason": "trwa (koniec danych)",
+      "fatigueAtEnd": 0.15,
+      "citiesChanged": 0
+    },
+    {
+      "file": "war-kontynenty-4242.jsonl",
+      "a": 0,
+      "b": 7,
+      "start": 113,
+      "end": null,
+      "duration": 7,
+      "type": "wymuszona-epoki",
+      "reason": "trwa (koniec danych)",
+      "fatigueAtEnd": 0.175,
+      "citiesChanged": 0
+    },
+    {
+      "file": "war-kontynenty-4242.jsonl",
+      "a": 1,
+      "b": 4,
+      "start": 120,
+      "end": null,
+      "duration": 0,
+      "type": "wymuszona-epoki",
+      "reason": "trwa (koniec danych)",
+      "fatigueAtEnd": 0,
+      "citiesChanged": 0
+    },
+    {
+      "file": "war-kontynenty-7.jsonl",
+      "a": 0,
+      "b": 1,
+      "start": 42,
+      "end": 83,
+      "duration": 40,
+      "type": "wymuszona-epoki",
+      "reason": "pokoj-100% (wymuszony)",
+      "fatigueAtEnd": 1,
+      "citiesChanged": 0
+    },
+    {
+      "file": "war-kontynenty-7.jsonl",
+      "a": 1,
+      "b": 7,
+      "start": 108,
+      "end": 118,
+      "duration": 9,
+      "type": "naturalna",
+      "reason": "inne/nieznane (nie zapisane w logu)",
+      "fatigueAtEnd": 0.225,
+      "citiesChanged": 0
+    },
+    {
+      "file": "war-kontynenty-7.jsonl",
+      "a": 1,
+      "b": 4,
+      "start": 119,
+      "end": null,
+      "duration": 1,
+      "type": "wymuszona-epoki",
+      "reason": "trwa (koniec danych)",
+      "fatigueAtEnd": 0.025,
+      "citiesChanged": 0
+    }
+  ],
+  "durationByType": {
+    "naturalna": {
+      "n": 1,
+      "mediana": 9,
+      "min": 9,
+      "maks": 9
+    },
+    "wymuszona-epoki": {
+      "n": 2,
+      "mediana": 40,
+      "min": 40,
+      "maks": 40
+    }
+  },
+  "endReasonCounts": {
+    "pokoj-100% (wymuszony)": 2,
+    "trwa (koniec danych)": 4,
+    "inne/nieznane (nie zapisane w logu)": 1
+  }
+}
