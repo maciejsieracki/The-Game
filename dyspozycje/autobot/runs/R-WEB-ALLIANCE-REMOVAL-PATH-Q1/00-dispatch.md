@@ -1,6 +1,6 @@
 # R-WEB-ALLIANCE-REMOVAL-PATH-Q1 — którą ścieżką znikają sojusze AI↔AI (umowy 1–13 i 1–19 w turze 66, seed 4242)
 
-DOMAIN: GAME (pomiar/instrumentacja) | Operator HAIKU 5.5 | runda 1/5 | BAZA = origin/main b610e71a62f68c5c3052d456facc0deebd86af72. Bez deployu, zero zmian w gra/src i gra/data (instrumentacja tylko w kopii poza repo / w runnerze).
+DOMAIN: GAME (pomiar/instrumentacja) | Operator HAIKU 5.5 | runda 1/5 | BAZA = origin/main 8f7b4981f (pelny SHA: origin/main w chwili startu). Bez deployu, zero zmian w gra/src i gra/data (instrumentacja tylko w kopii poza repo / w runnerze).
 
 ## Kontekst
 ALLY66 (rejestr, wpis ALLY66): status relacji „sojusz” zostaje po zniknięciu umowy z activeDeals (syncRelationFromDeals); limit 2 sojuszy działa (maks. 2, 0 naruszeń na seedzie 4242 do t67). NIE ZMIERZONO: dlaczego/kiedy umowy 1–13 i 1–19 zniknęły z activeDeals w t62–66 (4 zinstrumentowane ścieżki usuwania nie zalogowały zdarzenia). Dane: runs/R-WEB-ALLIANCE-LIMIT-AI-T66-Q1/dane/ (log t67), runs/R-WEB-MEASURE-WARS-4242-VERIFY-Q1/dane/.

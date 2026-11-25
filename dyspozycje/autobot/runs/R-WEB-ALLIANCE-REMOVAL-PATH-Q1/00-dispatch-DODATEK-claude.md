@@ -17,3 +17,6 @@ gra-robocza/, gra-kanon/, dyspozycje/WERSJE.md, manifest, rust-port/, npm run bu
 tsc 0; logic 213; ai-test 297/0 (kod gry bez zmian w repo). Zacommituj i zwróć SHA.
 ## Binarne kryterium
 Lista wszystkich ścieżek usuwania sojuszu z plik:linia; log utrat sojuszu AI 1 w t62–66 z funkcją i powodem; klasyfikacja ścieżki z regułą; dokument i dane z SHA256; repo bez zmian w gra/src.
+
+---
+## DODATEK start (2026-11-25 ~19:00): BAZA = origin/main 8f7b4981f (po FALACH 899–902 i WARDUR). Runner wznawialny dla biegu 120 tur: gra/tools/war-duration-measure.cjs (wzór: slot gry + state.json + --stop-at; PRNG reseedowany przy wznowieniu — dla seeda 4242 do t67 preferuj bieg ciągły setsid nohup timeout 1800 + Monitor, bez parametru run_in_background narzędzia Bash). Hook __wwDump: gra/tools/ai-war-weariness-live-audit-hook.cjs. Instrumentacja usunięć sojuszu tylko w kopii poza repo.
