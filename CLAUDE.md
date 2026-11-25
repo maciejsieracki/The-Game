@@ -116,6 +116,8 @@ Workflow uruchamiaj z czytelną nazwą: `scratchpad/mkwf.sh <ID> "<opis po polsk
 8. **Komunikacja z właścicielem po polsku**, krótko, uczciwie: NIE_ZMIERZONO tam, gdzie nie zmierzono;
    żadnych zapewnień bez dowodu (SHA, liczby, MD5).
 
+9. **TRYB AUTONOMICZNY (właściciel, 2026-11-25: „pracuj autonomicznie, a wszystkie tematy z tasków zakończysz”):** bez ponownego pytania prowadź kolejkę z TaskList (poza #56 „PÓŹNIEJ”) aż do końca. Po KAŻDYM zakończonym temacie: integracja po FC (i deploy na ROBOCZĄ, jeśli zmiana dotyka gra/src) → wpis w rejestrze → `git push` → sprzątanie dysku (worktree, `node_modules`, `/tmp`, `df -h /`) → DOPIERO POTEM start kolejnego tematu z kolejki, tak by działały 4 sloty (wolne sloty dopełniaj od razu, nie czekaj na heartbeat). Pytanie do właściciela tylko wg „ZASAD PYTAŃ ABC”; w tym czasie nie blokuj pracy — zapisz „CZEKA NA WŁAŚCICIELA” i rób dalej.
+
 ## Bariery krytyczne
 
 - Każdy temat ma pełne ID, `GOAL`, kryteria końca, allowlistę i izolowany worktree.

@@ -18,6 +18,10 @@ KOLEJKA 2026-11-25 (kolejność realizacji; start równoległy tylko tam, gdzie 
 5. Dalej: #72/#79 pomiary NIE ZMIERZONO, #78 dług FAL 728–746, #38 VERIFY-LIVE, #56 balans kosztów badań/budynków (PÓŹNIEJ, tylko na polecenie).
 Oczekuje właściciela: ocena FALI 890 w grze przy „Koszty jednostek: Wysoki ×4” (NIE ZMIERZONO).
 
+## TRYB AUTONOMICZNY 2026-11-25 (polecenie właściciela: „pracuj autonomicznie, a wszystkie tematy z tasków zakończysz; po zakończonym temacie posprzątaj dysk, potem odpal kolejny”)
+
+Ta sekcja UCHYLA zdanie „Bez nowego polecenia heartbeat NIE startuje tematów” z sekcji wyżej: heartbeat i orkiestrator MAJĄ dopełniać wolne sloty (cel 4) tematami z kolejki poniżej bez pytania. Wykluczone: #56 (balans kosztów badań/budynków — tylko na wyraźne polecenie). Kolejność: (1) w toku: POLARA1 → FALA 895; Q14-C (testy); MINT (kod, deploy); MEAS79 (pomiary); (2) następne: Q14-E (26 testów generatora map, sekwencyjnie PO polarze), HUD getEmpireFoodReserve(0), pomiar wojen epoki seed 4242, #72 luki NIE ZMIERZONO (zapis/wczytanie, Targowisko, miasta AI, crash Chromium), #78 dług FAL 728–746, #38 VERIFY-LIVE, Q14 reszta kandydatów BŁĄD-GRY z raportów D1/D2 (karta budynku, agresja archetypu Rzymian, autoimprove starved=3, strażnik city-state — każdy jako osobny R-WEB-*, bez pytań, jeśli reguła jest udokumentowana; inaczej ABC wg zasad). Po każdym zakończonym temacie: integracja → rejestr → push → sprzątanie dysku (worktree, node_modules, /tmp; df -h) → start kolejnego. Pytania do właściciela wyłącznie wg „ZASAD PYTAŃ ABC” (CLAUDE.md); nie blokują pracy.
+
 ## PROCEDURA NOCNA (obowiązuje heartbeat i orkiestratora; kolejność ważna)
 
 1. **Policz aktywne workflowy** (`subagents/workflows/*/`: `agent-*.jsonl` zmieniony <10 min ORAZ brak wyniku FC w `journal.jsonl`). Cel: 4. Brak aktywności >30 min przy braku procesów w worktree = ZWIS → `TaskStop` i wznowienie rundy (nie ślepe czekanie).
