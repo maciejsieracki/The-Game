@@ -929,8 +929,17 @@ fn slad_diagnostyczny_na_zadanie() {
         .and_then(|x| x.parse::<f64>().ok())
         .unwrap_or(FRAME_MS);
     let mut seen = 0;
+    // FQ-SPEED-Q1 (diagnostyka): `WIRING_A_TRACE_MODE=skip` = ślad przewijania (`play` + `skip`, jak wektory `skip`).
+    let skip_mode = std::env::var("WIRING_A_TRACE_MODE").as_deref() == Ok("skip");
+    if skip_mode {
+        s.play();
+    }
     while s.phase() != SessionPhase::Finished {
-        let rep = s.step(step_ms).unwrap();
+        let rep = if skip_mode {
+            s.skip().unwrap()
+        } else {
+            s.step(step_ms).unwrap()
+        };
         let r = s.battle_loop().st.round_no;
         // FRAME-QUANT-Q1 (diagnostyka): starty aktywacji (`act:<jednostka>@<vNow>` ze śladu pętli) jak `ACT` generatora.
         for line in &s.battle_loop().trace[seen..] {
@@ -1227,4 +1236,155 @@ fn kontrakt_land_at_wiezy_i_kamienia_rowny_chwili_trafienia() {
         per_frame.get("boulder@16").copied().unwrap_or(0) > 0,
         "{per_frame:?}"
     );
+}
+
+// ------------------------------------------------------------ FQ-SPEED-Q1
+
+const SPEED_VECTORS: &str = include_str!("p6_k5loop_wiring_a_pin_vectors/speed_vectors.json");
+
+/// R-RUSTPORT-P4-FQ-SPEED-Q1: wektory prędkości JAWNIE rozbieżne z pinem przy danym `speedMul`, wszystkie z długu
+/// MARCH-INCREMENTAL-RESZTA (zadanie #402: marsze nadal atomowe w ciele Rust, decyzja kolejnego kroku nie widzi zdarzenia
+/// zegara z okna marszu). Ślady pierwszej rozbieżności (raport `01-operator-r1.md` §4):
+/// * `fq_wzg_mix_d5_mury_155` x2 — kawaleria (`_cavalryAction`, kroki `CAVT`): pin t 283936 krok a3 41,88→41,89 po
+///   rozbiciu a2 od wieży w t 283872, Rust 41,88→41,87;
+/// * `p3_wzg_mix_d5_palisada_156` x32 — ucieczka (`_fleeStep`) liczona w `start`: tag `ucieczka-konflikt-zegara`;
+/// * `p3_las_jazda_d6l_mury_111` x256, x512 — kawaleria: pin t 4911104 krok a0 39,72→39,73 po rozbiciu a3 w t 4907008
+///   (zwolnione pole w trakcie marszu), Rust 39,72→39,71.
+///
+/// Test pada, gdy pozycja z listy zacznie się zgadzać (lista do skrócenia) albo gdy rozjedzie się wektor spoza listy.
+const ROZBIEZNE_FQ_SPEED_402: [(&str, f64); 4] = [
+    ("fq_wzg_mix_d5_mury_155", 2.0),
+    ("p3_wzg_mix_d5_palisada_156", 32.0),
+    ("p3_las_jazda_d6l_mury_111", 256.0),
+    ("p3_las_jazda_d6l_mury_111", 512.0),
+];
+
+/// R-RUSTPORT-P4-FQ-SPEED-Q1: `SiegeBattleSession::set_speed_idx` / `cycle_speed` / `adjust_speed_idx` jak
+/// `_setSpeedIdx` / `_cycleSpeed` / `_adjustSpeedIdx` (`battleScene.ts:9518-9536`), klatka sesji `16 * speedMul`.
+#[test]
+fn predkosc_sesji_jak_set_speed_idx_pinu() {
+    let doc = vectors();
+    let data = pin_session_data();
+    let v = &doc["vectors"][0];
+    let mut s = SiegeBattleSession::prepare_scene(&scene_input(v), &data).unwrap();
+    // Start sceny: `speedIdx = 0`, `speedMul = 1` (`:2554-2555`, `:3370`).
+    assert_eq!((s.speed_idx(), s.speed_mul(), s.frame_ms()), (0, 1.0, 16.0));
+    assert_eq!(s.set_speed_idx(2, false), 4.0);
+    assert_eq!((s.speed_idx(), s.frame_ms()), (2, 64.0));
+    // `_cycleSpeed` zawija 512 → 1.
+    assert_eq!(s.set_speed_idx(9, false), 512.0);
+    assert_eq!(s.frame_ms(), 8192.0);
+    assert_eq!(s.cycle_speed(), 1.0);
+    assert_eq!(s.speed_idx(), 0);
+    assert_eq!(s.cycle_speed(), 2.0);
+    // Panel ± bez zawijania.
+    assert_eq!(s.adjust_speed_idx(-5), 1.0);
+    assert_eq!(s.adjust_speed_idx(100), 512.0);
+    assert_eq!(s.adjust_speed_idx(1), 512.0);
+    assert_eq!(s.adjust_speed_idx(-1), 256.0);
+    assert_eq!(s.set_speed_idx(-1, false), 512.0, "JS ((idx % n) + n) % n");
+    assert_eq!(s.set_speed_idx(-1, true), 1.0);
+    // W trakcie bitwy (pin: „Safe to call mid-battle”, `:9535`).
+    s.play();
+    assert_eq!(s.set_speed_idx(3, false), 8.0);
+    // Pierwsza klatka tylko ustawia `vLastWall` (`_advanceVClock` `:9502`), druga przesuwa `vNow` o `16 * 8`.
+    s.step(16.0).unwrap();
+    assert_eq!(s.clock().v_now, 0.0);
+    s.step(16.0).unwrap();
+    assert_eq!(s.clock().v_now, 128.0, "jedna klatka 16 ms ściany = 16 * 8 ms wirtualnych");
+}
+
+/// R-RUSTPORT-P4-FQ-SPEED-Q1: PEŁNE bitwy wektorów przy `speedMul` 2..512 (`speed_vectors.json`, generator
+/// `WIRING_A_SPEED_VECTORS=...`: każdy scenariusz `vectors.json` z klatką produkcyjną, prędkość ustawiona metodą pinu
+/// `_setSpeedIdx` przed `play()`; przewijanie z `FF_STEP_MS = 16 * speedMul` i czas rzeczywisty z klatkami 16 ms ściany)
+/// bajt w bajt z sesją przy [`SiegeBattleSession::set_speed_idx`], poza jawną listą [`ROZBIEZNE_FQ_SPEED_402`]. Przy
+/// okazji kontrakt czasu akcji z rendererem (`PlaybackOpts::frame_ms`): `Melee`/`Shot`/`TowerShot`/`Boulder`/`Move` w
+/// chwili siatki klatki `frame_raf(16 * speedMul, nominał)`, `Ram` nominalnie.
+#[test]
+fn predkosc_bitwy_wektory_pinu_bajt_w_bajt() {
+    use civ_engine::domain::siege_tactics_actions::{BattleAction, TimedAction};
+    use civ_engine::domain::siege_tactics_loop::frame_raf;
+    let base = vectors();
+    let doc: Value = serde_json::from_str(SPEED_VECTORS).unwrap();
+    assert_eq!(doc["pin"], PIN);
+    assert_eq!(doc["pinSha256"], PIN_SHA256, "wektory prędkości z innego tekstu pinu");
+    let data = pin_session_data();
+    let by_name: BTreeMap<&str, &Value> = base["vectors"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|v| (v["name"].as_str().unwrap(), v))
+        .collect();
+    let mut speeds = BTreeMap::<u64, usize>::new();
+    let mut rozbiezne = Vec::new();
+    let mut zgodne_z_listy = Vec::new();
+    let mut n_akcji = BTreeMap::<&str, usize>::new();
+    for sv in doc["vectors"].as_array().unwrap() {
+        let name = sv["name"].as_str().unwrap();
+        let k = f(&sv["speedMul"]);
+        let bv = by_name[name];
+        assert!(bv["frameMs"].is_null(), "{name}: tylko scenariusze z klatką produkcyjną");
+        assert_eq!(sv["mode"], bv["mode"]);
+        let mut s = SiegeBattleSession::prepare_scene(&scene_input(bv), &data).unwrap();
+        assert_eq!(s.set_speed_idx(speed_idx_of(k), false), k);
+        let frame = s.frame_ms();
+        assert_eq!(frame, 16.0 * k);
+        let mut check = |acts: &[TimedAction]| {
+            for a in acts {
+                let (kind, got, want) = match a.action {
+                    BattleAction::Melee { hit_at, .. } => ("melee", hit_at - a.t0, frame_raf(frame, 150.0)),
+                    BattleAction::Shot { land_at, .. } => ("shot", land_at - a.t0, frame_raf(frame, 380.0)),
+                    BattleAction::Move { arrive_at, .. } => ("move", arrive_at - a.t0, frame_raf(frame, 240.0)),
+                    BattleAction::TowerShot { land_at, .. } => ("tower", land_at - a.t0, frame_raf(frame, 380.0)),
+                    BattleAction::Boulder { land_at, .. } => ("boulder", land_at - a.t0, frame_raf(frame, 700.0)),
+                    BattleAction::Ram { until, .. } => ("ram", until - a.t0, 320.0),
+                    _ => continue,
+                };
+                assert_eq!(got, want, "{name} x{k}: {kind} w t0 {}", a.t0);
+                *n_akcji.entry(kind).or_default() += 1;
+            }
+        };
+        let out = match sv["mode"].as_str().unwrap() {
+            "skip" => {
+                s.play();
+                check(&s.battle_loop_mut().take_actions());
+                check(&s.skip().unwrap().actions);
+                s.finish().unwrap()
+            }
+            "realtime" => {
+                let mut frames = 0;
+                while s.phase() != SessionPhase::Finished {
+                    check(&s.step(FRAME_MS).unwrap().actions);
+                    frames += 1;
+                    assert!(frames < MAX_FRAMES, "bitwa bez końca");
+                }
+                s.finish().unwrap()
+            }
+            m => panic!("tryb {m}"),
+        };
+        // Porównanie z oczekiwaniem pinu przy tej prędkości (wejście z `vectors.json`, wynik z `speed_vectors.json`).
+        let mut cmp = bv.clone();
+        cmp["expect"] = sv["expect"].clone();
+        let d = diff(&cmp, &out);
+        let listed = ROZBIEZNE_FQ_SPEED_402.contains(&(name, k));
+        if listed && d.is_empty() {
+            zgodne_z_listy.push(format!("{name} x{k}"));
+        }
+        if !listed && !d.is_empty() {
+            rozbiezne.push(format!("{name} x{k}: {}", d.join("; ")));
+        }
+        *speeds.entry(k as u64).or_default() += 1;
+    }
+    assert!(rozbiezne.is_empty(), "rozbieżne z pinem: {rozbiezne:#?}");
+    assert!(
+        zgodne_z_listy.is_empty(),
+        "zgodne mimo listy długu #402 (skróć listę): {zgodne_z_listy:?}"
+    );
+    // Pokrycie: wszystkie prędkości > 1 z `SPEED_STEPS` i każdy rodzaj akcji z czasem.
+    let want: Vec<u64> = SPEED_STEPS[1..].iter().map(|k| *k as u64).collect();
+    assert_eq!(speeds.keys().copied().collect::<Vec<_>>(), want);
+    for kind in ["melee", "shot", "move", "tower", "boulder"] {
+        assert!(n_akcji.get(kind).copied().unwrap_or(0) > 0, "brak akcji {kind}: {n_akcji:?}");
+    }
+    eprintln!("FQ-SPEED: {speeds:?} akcje {n_akcji:?}");
 }

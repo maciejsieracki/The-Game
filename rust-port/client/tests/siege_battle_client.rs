@@ -1489,7 +1489,8 @@ fn play_session_at_speed(speed_idx: i64, frame_ms: Option<f64>) -> (Result<(), P
 
 /// R-RUSTPORT-P4-FQ-SPEED-Q1: the same storm at speed 1, 4 and 16: the playback built from the client's
 /// `PlaybackOpts` (frame of the session speed) accepts every action of the session; with the 16 ms frame of speed 1
-/// the faster battles are rejected (a hit / landing time off the 16 ms grid), so the frame really comes from the speed.
+/// the faster battles are rejected (a step arrival / hit / landing time off the 16 ms grid), so the frame really comes
+/// from the speed.
 #[test]
 fn fq_speed_klatka_playbacku_z_predkosci_sesji() {
     assert_eq!(civ_client::SIEGE_BATTLE_START_SPEED_MUL, 1.0);
@@ -1508,6 +1509,7 @@ fn fq_speed_klatka_playbacku_z_predkosci_sesji() {
             matches!(
                 bad,
                 Err(PlaybackError::HitAt { .. }
+                    | PlaybackError::ArriveAt { .. }
                     | PlaybackError::LandAt { .. }
                     | PlaybackError::ShotLandAt { .. }
                     | PlaybackError::BoulderLandAt { .. })

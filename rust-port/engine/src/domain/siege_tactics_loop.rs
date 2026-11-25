@@ -218,6 +218,13 @@ pub trait LoopBody {
     fn timer_raf(&self, _id: u64) -> bool {
         false
     }
+    /// R-RUSTPORT-P4-FQ-SPEED-Q1 (D-FQS-1, zamyka D-PIN3-3-SHOT-ID): `true` = zaplanowany [`LoopTimer::BodyDone`] jednostki
+    /// to trafienie STRZAŁU — w pinie zwykły zegar `_schedule(RANGED_FLY_MS)` z chwili wystrzału (`_doRangedAttack`
+    /// `:9227`), odpalany w `_drainTimers` w kolejności `due`/`id` (`:9616-9634`), a nie skutek pętli `_raf` (cios lunge,
+    /// koniec kroku). Sterownik go wtedy NIE odkłada do fazy kroków ([`SiegeLoop::body_done_raf`]). Domyślnie `false`.
+    fn done_is_timer(&self, _unit: UnitRef) -> bool {
+        false
+    }
 }
 
 /// Stałe morale z pinu (`battleScene.ts:1129, 1141, 1144-1145`).
@@ -893,7 +900,8 @@ impl<B: LoopBody> SiegeLoop<B> {
     /// MARCH-INCREMENTAL-Q1 (D-MI-2): także odroczone wywołanie ciała z fazy kroków ([`LoopBody::timer_raf`]).
     fn defer_to_raf(&mut self, t: LoopTimer) -> bool {
         let raf = match t {
-            LoopTimer::BodyDone(_) => self.body_done_raf,
+            // FQ-SPEED-Q1 (D-FQS-1): trafienie strzału = zwykły zegar fazy `_drainTimers`, bez odkładania.
+            LoopTimer::BodyDone(u) => self.body_done_raf && !self.env.body.done_is_timer(u),
             LoopTimer::BodyTimer(id) => self.body_done_raf && self.env.body.timer_raf(id),
             _ => false,
         };
@@ -1534,6 +1542,10 @@ pub struct ProdBody<R: RollSource> {
     pending: [Vec<Option<ProdPending>>; 2],
     /// Obrona r2 (E2-1b): ogon aktywacji ([`LoopBody::take_tail`]) ustawiony w `start`, odbierany po `complete`.
     tail: [Vec<f64>; 2],
+    /// FQ-SPEED-Q1 (D-FQS-1): `BodyDone` aktywacji jest trafieniem strzału wystrzelonego w chwili wywołania ciała
+    /// ([`LoopBody::done_is_timer`]); ustawiane razem z nominalnym czasem do trafienia `RANGED_FLY_MS`, czyszczone w
+    /// `start` i `complete`.
+    shot_done_timer: [Vec<bool>; 2],
     /// Stan `facing` każdej jednostki (`ru.facing`, liczba 0..3). Zmieniany przez `_updateFacing` i `_doMeleeAttack`.
     facing: [Vec<f64>; 2],
     /// `ru.moraleMax` każdej jednostki (`_gainMorale`, `_armyMoraleRatio`). Domyślnie morale startowe z `activate.morale`.
@@ -2380,6 +2392,7 @@ impl<R: RollSource> ProdBody<R> {
         };
         let range_base = [range_base_of(&units[0]), range_base_of(&units[1])];
         let tail = [vec![0.0; units[0].len()], vec![0.0; units[1].len()]];
+        let shot_done_timer = [vec![false; units[0].len()], vec![false; units[1].len()]];
         Self {
             occ_by_key: seed_occupancy(&units),
             formation_rank,
@@ -2448,6 +2461,7 @@ impl<R: RollSource> ProdBody<R> {
             surround,
             pending,
             tail,
+            shot_done_timer,
             facing,
             morale_max,
             is_army_commander,
@@ -3117,6 +3131,12 @@ impl<R: RollSource> ProdBody<R> {
                     if self.pin_blow_timing {
                         // FRAME-QUANT-Q1 (D-FQ-3): ogon nominalny, kwantyzuje go zegar sterownika.
                         self.tail[ix][unit.idx] = RANGED_GAP_MS;
+                        if attack_pre == 0.0 {
+                            // FQ-SPEED-Q1 (D-FQS-1): strzał w chwili wywołania = zegar `_schedule(RANGED_FLY_MS)`
+                            // z nominalnym `due` (klatkę odpalenia wyznacza zegar sterownika).
+                            self.shot_done_timer[ix][unit.idx] = true;
+                            return RANGED_FLY_MS;
+                        }
                         attack_pre + fly
                     } else {
                         attack_pre + fly + frame_sched(self.frame_ms, RANGED_GAP_MS)
@@ -3509,7 +3529,9 @@ impl<R: RollSource> ProdBody<R> {
                 let fly = frame_sched(self.frame_ms, RANGED_FLY_MS);
                 let dur = if self.pin_blow_timing && shot.is_some() {
                     self.tail[ix][unit.idx] = RANGED_GAP_MS;
-                    fly
+                    // FQ-SPEED-Q1 (D-FQS-1): strzał z wejścia marszu = zegar `_schedule(RANGED_FLY_MS)` z tej chwili.
+                    self.shot_done_timer[ix][unit.idx] = true;
+                    RANGED_FLY_MS
                 } else {
                     fly + frame_sched(self.frame_ms, RANGED_GAP_MS)
                 };
@@ -4914,6 +4936,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
     fn start(&mut self, unit: UnitRef, st: &TurnSeqState) -> f64 {
         let ix = side_ix(unit.side);
         self.pending[ix][unit.idx] = None;
+        self.shot_done_timer[ix][unit.idx] = false;
         // Obrona r2 (E2-1b): oś kroków poprzednich aktywacji jest już w całości przeszła (`t0 <= now`).
         let now = self.now;
         self.move_timeline.retain(|(_, t0, _, _, _)| *t0 > now);
@@ -5368,6 +5391,11 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                     // planuje zegar sterownika z chwili trafienia, więc zostaje nominalny (`due` jak w pinie, D-FQ-3).
                     dur = at + frame_sched(self.frame_ms, RANGED_FLY_MS);
                     self.tail[ix][unit.idx] = RANGED_GAP_MS;
+                    if at == 0.0 {
+                        // FQ-SPEED-Q1 (D-FQS-1): strzał bez kroków = zegar `_schedule(RANGED_FLY_MS)` z chwili aktywacji.
+                        self.shot_done_timer[ix][unit.idx] = true;
+                        dur = RANGED_FLY_MS;
+                    }
                 }
             }
             self.pending[ix][unit.idx] = Some(pend);
@@ -5440,8 +5468,13 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         std::mem::take(&mut self.tail[side_ix(unit.side)][unit.idx])
     }
 
+    fn done_is_timer(&self, unit: UnitRef) -> bool {
+        self.shot_done_timer[side_ix(unit.side)][unit.idx]
+    }
+
     fn complete(&mut self, unit: UnitRef, st: &mut TurnSeqState) {
         let ix = side_ix(unit.side);
+        self.shot_done_timer[ix][unit.idx] = false;
         let Some(pend) = self.pending[ix][unit.idx].take() else {
             return;
         };
