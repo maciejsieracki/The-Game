@@ -150,11 +150,17 @@ async function main() {
     const upkeepCostRows = bySectionKey['cost-upkeep'] ? bySectionKey['cost-upkeep'].rows : [];
     check('sekcja "cost-build" obecna', !!bySectionKey['cost-build']);
     check('sekcja "cost-upkeep" obecna', !!bySectionKey['cost-upkeep']);
-    check('wiersz "Praca (jednorazowo)" obecny i kończy się na "pkt Pracy"',
-      /pkt Pracy$/.test(rowByLabel(buildCostRows, 'Praca (jednorazowo)')?.value ?? ''),
+    // R-WEB-TEST-DEBT-Q14: słowo „Pracy" zastąpił chip ikony zasobu „praca" (commit 28d67d390,
+    // R-WEB-UI-RESOURCE-ICONS-YIELDS-WONDERS-Q1: buildingAdapter.ts `yieldValueFields('praca', …)`).
+    // Tekst wartości to „N pkt", a identyfikację surowca niesie valueParts[0] = chip „praca".
+    check('wiersz "Praca (jednorazowo)" obecny i ma wartość "N pkt" (chip ikony praca zamiast słowa „Pracy”)',
+      /^\d+ pkt$/.test(rowByLabel(buildCostRows, 'Praca (jednorazowo)')?.value ?? ''),
       rowByLabel(buildCostRows, 'Praca (jednorazowo)')?.value);
-    check('wiersz "Przyrost za poziom" (koszt budowy) === "+10 pkt Pracy / poziom" (przyrostKosztu=10, niezależne od pace/difficulty)',
-      rowByLabel(buildCostRows, 'Przyrost za poziom')?.value === '+10 pkt Pracy / poziom',
+    check('wiersz "Praca (jednorazowo)" zaczyna się chipem ikony praca (valueParts[0].id === "praca")',
+      rowByLabel(buildCostRows, 'Praca (jednorazowo)')?.valueParts?.[0]?.id === 'praca',
+      JSON.stringify(rowByLabel(buildCostRows, 'Praca (jednorazowo)')?.valueParts?.[0]));
+    check('wiersz "Przyrost za poziom" (koszt budowy) === "+10 pkt / poziom" (przyrostKosztu=10, chip praca; niezależne od pace/difficulty)',
+      rowByLabel(buildCostRows, 'Przyrost za poziom')?.value === '+10 pkt / poziom',
       rowByLabel(buildCostRows, 'Przyrost za poziom')?.value);
     check('wiersz "Co turę" (utrzymanie) obecny', !!rowByLabel(upkeepCostRows, 'Co turę'));
     check('BRAK wiersza "Przyrost za poziom" w utrzymaniu (przyrostUtrzymania=0 w danych)',
@@ -250,8 +256,11 @@ async function main() {
     viaSrc.includes('renderEntityCard(built)'));
   check('buildBuildingDetailCardViaEntityCard dopełnia sekcję Technologie (appendTechDetailBlock, NIE migrowana w T5)',
     viaSrc.includes("appendTechDetailBlock(techBody, data, def.techUnlock)"));
-  check('buildBuildingDetailCardViaEntityCard dopełnia sekcję Uwagi (playerFacingNote)',
-    viaSrc.includes('playerFacingNote(def.uwagi)'));
+  // R-WEB-TEST-DEBT-Q14: sekcja „Uwagi" została świadomie USUNIĘTA z karty budynku (commit 31a621d69,
+  // R-KARTY-HISTORIA-INFRA-Q1 (2/17): tekst deweloperski nie trafia do gracza). Asercja odwrócona na
+  // obowiązującą regułę: w ścieżce entityCards NIE ma playerFacingNote(def.uwagi).
+  check('buildBuildingDetailCardViaEntityCard NIE dopełnia sekcji Uwagi (usunięta: R-KARTY-HISTORIA-INFRA-Q1, commit 31a621d69)',
+    !viaSrc.includes('playerFacingNote(def.uwagi)'));
 
   const pubStart = cpSrc.indexOf('function buildBuildingDetailCard(def: BuildingDef, data: GameData, city?: City): HTMLDivElement {\n  try {');
   check('publiczna funkcja buildBuildingDetailCard( próbuje ścieżkę entityCards w try/catch', pubStart > -1);
