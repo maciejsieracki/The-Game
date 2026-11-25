@@ -61,7 +61,8 @@ if (process.argv.includes('--list')) { for (const m of MUTATIONS) console.log(m.
 // NIE są ruszane. Ten sam dobór pliku działa po starcie i po zakończeniu (cleanupOrphans poniżej).
 const pidAlive = (pid) => { try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; } };
 const cleanupOrphans = (verbose) => {
-  const tmp = require('os').tmpdir();
+  // Tylko ODCZYT katalogu (readdir + filtr po wzorcu z pidem); nic nie zapisujemy w korzeniu tmpdir.
+  const tmp = path.resolve(require('os').tmpdir());
   let files = [];
   try { files = fs.readdirSync(tmp).filter((f) => /^civ-ledger-mut-backup-\d+-[0-9a-f]+\.ts$/.test(f)); } catch (e) { /* ignore */ }
   for (const name of files) {
