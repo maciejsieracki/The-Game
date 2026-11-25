@@ -45,6 +45,7 @@ function arg(name, def) {
 const GRA_DIR = path.resolve(__dirname, '..');
 const DIST_GIVEN = process.argv.includes('--dist');
 let DIST = path.resolve(arg('dist', path.join(os.tmpdir(), `ai-economy-dist-${TMPDIR_RUN_ID}`)));
+console.log('[tmpdir] TMPDIR_RUN_ID=' + TMPDIR_RUN_ID + ' DIST=' + DIST + ' (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist)');
 const PW_DIR = path.resolve(arg('pw', GRA_DIR));
 const MUTANT_DIST = arg('mutant-dist', '') ? path.resolve(arg('mutant-dist', '')) : null;
 const RUNNER = path.resolve(arg('runner', path.join(GRA_DIR, 'tools', 'ai-economy-measure-run.cjs')));

@@ -63,6 +63,7 @@ const FAST = arg('fast', '1') !== '0';
 const LEDGER_OFF = arg('ledger-off', '0') === '1';
 const DIST = path.resolve(arg('dist', path.join(os.tmpdir(), `ai-economy-dist-${TMPDIR_RUN_ID}`)));
 const PROFILE = path.resolve(arg('profile', path.join(os.tmpdir(), `ai-economy-profile-${TMPDIR_RUN_ID}`)));
+console.log('[tmpdir] TMPDIR_RUN_ID=' + TMPDIR_RUN_ID + ' DIST=' + DIST + ' PROFILE=' + PROFILE);
 const OUT = path.resolve(arg('out', path.join(GRA_DIR, 'ai-economy-out')));
 const PW_DIR = path.resolve(arg('pw', GRA_DIR));
 const SAVE_AT = parseInt(arg('save-at', '40'), 10);
