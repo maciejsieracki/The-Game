@@ -375,7 +375,7 @@ ok(/buildTerritoryBorderGroup\(\s*map,\s*byOwner,\s*civColorFn,[\s\S]{0,200}?rel
     'main.ts: setDiploRelation zapamiętuje poprzedni status PRZED zapisem');
   ok(/prevStatus !== rel\.status/.test(body),
     'main.ts: odświeżenie tylko przy realnej zmianie STATUSU (nie co turę przy zaufaniu/respekcie)');
-  ok(/\((?:isMe\(a\) \|\| isMe\(b\)|a === 0 \|\| b === 0)\)/.test(body),
+  ok(/\(isMe\(a\) \|\| isMe\(b\)\)/.test(body),
     'main.ts: odświeżenie tylko dla par z graczem (AI↔AI nie zmienia koloru żadnej obwódki)');
 }
 

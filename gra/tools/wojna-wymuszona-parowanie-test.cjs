@@ -146,6 +146,29 @@ try {
     );
   }
 
+  // R-WEB-TEST-DEBT-Q14 (jawna asercja negatywna do S2, zgłoszenie Evaluatora): regula
+  // DEFER-NOT-CANCEL-Q1 r3 -- Brąz NIE dołącza do pary Kamienia. Ten sam scenariusz co S2, ale para
+  // 'stone' (jak w pierwotnym tescie) i leftover 'bronze'. Oczekiwane: leftover (5) NIE dostaje celu
+  // 3 ani 4 (pozostaje nierozwiązany albo paruje się z kimś innym, nie z parą Kamienia).
+  {
+    const subjectsK = [
+      { ownerId: 1, q: 0, r: 0, era: 'bronze' },
+      { ownerId: 2, q: 1, r: 0, era: 'bronze' },
+      { ownerId: 5, q: 50, r: 0, era: 'bronze' },
+    ];
+    const existingStone = [{ attackerId: 3, targetId: 4, era: 'stone' }];
+    const resultK = assignForcedWarPairings(subjectsK, existingStone, {
+      isPairBlocked: blockedPairsOpt([]),
+      hexDistanceFn: hexDistance,
+      totalActiveForcedWarsByOwner: (id) => (id === 3 || id === 4 ? 1 : 0),
+    });
+    const targetOfK = new Map(resultK.assignments.map(a => [a.ownerId, a.targetId]));
+    assert(targetOfK.get(5) !== 3 && targetOfK.get(5) !== 4,
+      'S2-NEG: Brąz (5) NIE dołącza do pary Kamienia 3<->4 (DEFER-NOT-CANCEL-Q1 r3) -- cel leftovera nie jest stroną pary Kamienia');
+    assert(!resultK.assignments.some(a => (a.ownerId === 3 || a.ownerId === 4) && a.targetId === 5),
+      'S2-NEG: strony pary Kamienia (3,4) nie wskazują Brązu (5) jako celu');
+  }
+
   // =========================================================================
   // Scenariusz 3: sojusz blokuje JEDNĄ konkretną parę -- pozostali nadal parowani normalnie
   // (blokada nie rozlewa się na całą pulę).

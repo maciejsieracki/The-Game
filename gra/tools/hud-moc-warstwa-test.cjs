@@ -189,14 +189,14 @@ const mainTsSrc = fs.readFileSync(MAIN_TS, 'utf8');
 
 // (1) Główny licznik Mocy w HUD.
 check(
-  'buildHudState: pole "power" czyta objectivePowerForOwnerEffective(0) (NIE objectivePowerForOwner)',
-  /function buildHudState\((?:ownerId: number = ME\(\)|)\): HudState \{[\s\S]{0,2500}?const power = objectivePowerForOwnerEffective\((?:0|ME\(\))\);/.test(mainTsSrc),
+  'buildHudState: pole "power" czyta objectivePowerForOwnerEffective(ME()) (NIE objectivePowerForOwner) -- R-WEB-TEST-DEBT-Q14: BŁĄD-GRY kandydat, main.ts:24044 nadal literal 0 (pozostałość migracji; zero w 1 graczu); test NIE osłabiony',
+  /function buildHudState\(ownerId: number = ME\(\)\): HudState \{[\s\S]{0,2500}?const power = objectivePowerForOwnerEffective\(ME\(\)\);/.test(mainTsSrc),
 );
 
 // (2) Ekran dyplomacji -- openDiplomacyAudience: playerPower/otherPower.
 check(
   'openDiplomacyAudience: playerPower czyta objectivePowerForOwnerEffective(0)',
-  /const playerPower = objectivePowerForOwnerEffective\((?:0|ME\(\))\);/.test(mainTsSrc),
+  /const playerPower = objectivePowerForOwnerEffective\(ME\(\)\);/.test(mainTsSrc),
 );
 check(
   'openDiplomacyAudience: otherPower czyta objectivePowerForOwnerEffective(ownerId) (OBIE strony efektywne)',
@@ -210,7 +210,7 @@ check(
 // (2b) buildPlayerDiploSummary -- "Moc: X" / "Ranking mocy: Y. z Z" na liście dyplomacji.
 check(
   'buildPlayerDiploSummary: militaryPower czyta objectivePowerForOwnerEffective(0)',
-  /function buildPlayerDiploSummary\(\): DiploPlayerSummary \{[\s\S]{0,400}?militaryPower: objectivePowerForOwnerEffective\((?:0|ME\(\))\),/.test(mainTsSrc),
+  /function buildPlayerDiploSummary\(\): DiploPlayerSummary \{[\s\S]{0,400}?militaryPower: objectivePowerForOwnerEffective\(ME\(\)\),/.test(mainTsSrc),
 );
 
 // (3) Pozycja w rankingu na ekranie dyplomacji -> buildAbsolutePowerRankEffective.
@@ -236,8 +236,8 @@ check(
 
 // (4a) Odkrycie Operatora: lista dyplomacji -- respekt/theirRespekt per-cywilizacja.
 check(
-  'objectiveRespektPctTowardEffective() istnieje i liczy obie strony przez objectivePowerForOwnerEffective',
-  /function objectiveRespektPctTowardEffective\(theirOwnerId: number\): number \{[\s\S]{0,200}?objectivePowerForOwnerEffective\((?:0|ME\(\))\),[\s\S]{0,100}?objectivePowerForOwnerEffective\(theirOwnerId\),/.test(mainTsSrc),
+  'objectiveRespektPctTowardEffective() istnieje i liczy obie strony przez objectivePowerForOwnerEffective(ME()) -- R-WEB-TEST-DEBT-Q14: BŁĄD-GRY kandydat, main.ts:3140 nadal literal 0; test NIE osłabiony',
+  /function objectiveRespektPctTowardEffective\(theirOwnerId: number\): number \{[\s\S]{0,200}?objectivePowerForOwnerEffective\(ME\(\)\),[\s\S]{0,100}?objectivePowerForOwnerEffective\(theirOwnerId\),/.test(mainTsSrc),
 );
 check(
   'buildPlayerDiploRelations: respekt czyta objectiveRespektPctTowardEffective(otherId)',
@@ -245,7 +245,7 @@ check(
 );
 check(
   'buildPlayerDiploRelations: theirRespekt czyta computeRespekt z OBOMA argumentami Effective',
-  /theirRespekt: computeRespekt\(\s*objectivePowerForOwnerEffective\(otherId\),\s*objectivePowerForOwnerEffective\((?:0|ME\(\))\),\s*\),/.test(mainTsSrc),
+  /theirRespekt: computeRespekt\(\s*objectivePowerForOwnerEffective\(otherId\),\s*objectivePowerForOwnerEffective\(ME\(\)\),\s*\),/.test(mainTsSrc),
 );
 
 // (4b) Odkrycie Operatora: ekran audiencji -- pole relacjaTotal w payloadzie getState()

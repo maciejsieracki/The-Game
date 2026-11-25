@@ -136,7 +136,7 @@ for (const name of FUNCTIONS) {
   // R-WEB-TEST-DEBT-Q14 (STARY-PIN): dwie funkcje sa cienkimi wrapperami bez literalu fotela (deleguja do
   // ...Impl / ...Uncached, ktore juz sa migrowane) -- wymog obecnosci isMe()/ME() nie dotyczy ich ciala.
   const DELEGATING_WRAPPERS = new Set(['previewNegotiationEntry', 'collectTurnEvents']);
-  ok(hasIsMeOrMe(bodyPo) || DELEGATING_WRAPPERS.has(name),
+  ok(hasIsMeOrMe(bodyPo) || (DELEGATING_WRAPPERS.has(name) && /\b\w+(?:Impl|Uncached)\b/.test(bodyPo)),
     `${name}: PO -- zawiera isMe()/ME() (lub cienki wrapper delegujacy bez literalu fotela)`);
   ok(hasHardcode(bodyPrzed), `${name}: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji)`);
 }

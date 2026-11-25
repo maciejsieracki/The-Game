@@ -309,6 +309,18 @@ console.log('\n-- 3. miasta-państwa: trudność w zakupie == trudność w produ
   // Stara asercja zakladala roznice kosztu; nowa pilnuje obowiazujacej reguly: koszt identyczny.
   ok(viaGlobal && viaOwner && viaGlobal.koszt === viaOwner.koszt, 'fixture: globalna i właścicielska trudność dają TEN SAM koszt (decyzja 2026-11-19: trudność nie wpływa na koszt jednostek)');
 
+  // R-WEB-TEST-DEBT-Q14 (kontrast czuły, zarzut Evaluatora #3): równość kosztów per trudność jest
+  // informatywna tylko wtedy, gdy ta sama funkcja REAGUJE na inne wejście. Kontrola: tempo kosztu
+  // jednostek (czwarty argument) 'niski' vs 'wysoki' MUSI zmienić koszt. Gdyby unitProductionItem
+  // był stały, asercje 'TEN SAM koszt' byłyby trywialne i ten kontrast by to wykrył.
+  {
+    const kontrastWysoki = unitProductionItem(unitId, data, undefined, 'wysoki', 7, 'easy');
+    const kontrastNiski = unitProductionItem(unitId, data, undefined, 'niski', 7, 'easy');
+    ok(!!kontrastWysoki && !!kontrastNiski && kontrastWysoki.koszt !== kontrastNiski.koszt,
+      'kontrast czuły: tempo kosztu jednostek wysoki vs niski ZMIENIA koszt (funkcja kosztu nie jest stała; równość per trudność jest więc znacząca)',
+      `niski=${kontrastNiski && kontrastNiski.koszt}, wysoki=${kontrastWysoki && kontrastWysoki.koszt}`);
+  }
+
   // BEHAWIORALNIE (stan decyzji zakupu): dla każdej kombinacji trudności gry x miasta-państwa,
   // cena, którą zakup dostaje z trudnością właściciela (ta sama wartość co w purchaseRecruitmentUnit),
   // musi równać się cenie produkcji miasta-państwa (trudność miasta-państwa), a gracz (owner 0) dalej
