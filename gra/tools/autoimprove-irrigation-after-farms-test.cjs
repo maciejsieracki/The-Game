@@ -7,7 +7,7 @@
  *     i przy rzece, dostaje irygacje i trzode (0 „zalegajacych” przy wystarczajacym budzecie); 0 ulepszen zywnosciowych poza obywatelami.
  * (B) mapy BEZ rzek (regula KANON-ULEPSZENIA-ZYWNOSC-HODOWLA §3: irygacja i hodowla tylko przy rzece): farmy tak, irygacja/trzoda 0,
  *     kazda niezirygowana farma ma powod „brak rzeki”, picker nie wychodzi poza pola obywateli, a wskaznik „Budzet niewydany” swieci.
- * (C) prog budzetu: irygacja (koszt 60 = 3 x farma) przy 33% budzetu i rezerwie 30 powstaje dopiero od puli >= koszt/0.33.
+ * (C) prog budzetu: irygacja (koszt = 1,5 x farma wg danych; R-WEB-TEST-DEBT-Q14: dawny pin 60 był sprzed skalowania) przy 33% budzetu i rezerwie 30 powstaje dopiero od puli >= koszt/0.33.
  *
  * Run z gra/:   node tools/autoimprove-irrigation-after-farms-test.cjs
  * Mutacja:      AIR_SRC_DIR=<kopia gra/src z mutacja> node tools/autoimprove-irrigation-after-farms-test.cjs   (MUSI byc czerwony)
@@ -221,7 +221,7 @@ for (const actor of ACTORS) {
   }
 }
 
-console.log('(C) prog budzetu: irygacja 3 x droższa od farmy — przy 33% i rezerwie 30 rusza dopiero od puli >= koszt/0.33');
+console.log('(C) prog budzetu: irygacja droższa od farmy (1,5 x) — przy 33% i rezerwie 30 rusza dopiero od puli >= koszt/0.33');
 {
   const map = generateMap(36, 28, 1, 'pangea');
   const [spot] = landSpots(map, 1);
@@ -241,7 +241,10 @@ console.log('(C) prog budzetu: irygacja 3 x droższa od farmy — przy 33% i rez
   const placed = new Map();
   for (const hk of worked) if (hk !== target) placed.set(hk, ['farma', 'bydlo', 'irygacja']);
   placed.set(target, ['farma', 'bydlo']);
-  const cost = getImprovementMeta('irygacja').kosztPraca;
+  // R-WEB-TEST-DEBT-Q14: koszt liczony wg epoki WŁAŚCICIELA (ERA), tak jak w pickAutoImprovements (playerEra: ERA).
+  // Wcześniej czytano getImprovementMeta('irygacja') bez epoki (Kamień, ×0,5) = 30, a pin 60 był z przed-skalowania.
+  const cost = getImprovementMeta('irygacja', ERA).kosztPraca;
+  const farmCost = getImprovementMeta('farma', ERA).kosztPraca;
   const pct = 33, reserve = 30;
   const need = Math.ceil(cost / (pct / 100));
   const tryPool = pool => pickAutoImprovements({
@@ -251,7 +254,8 @@ console.log('(C) prog budzetu: irygacja 3 x droższa od farmy — przy 33% i rez
     pracaBudgetPercent: pct, getPracaBudgetPercent: () => pct, civArchetype: 'grecy', playerEra: ERA,
     foodImprovementStages: () => true, clearingHexKeys: new Set(),
   }).filter(p => p.key === 'irygacja');
-  ok(cost === 60, `koszt irygacji = 60 (3 x farma 20) [jest ${cost}]`);
+  // Reguła danych: koszt_praca irygacji 30 = 1,5 × farma 20 (terrain-improvements.json); po skalowaniu epoki zachowany stosunek.
+  ok(cost === 1.5 * farmCost, `koszt irygacji = 1,5 x farma wg epoki ${ERA} (${cost} = 1,5 x ${farmCost})`);
   ok(tryPool(need - 2).length === 0, `pula ${need - 2} (< ${need}): irygacja NIE powstaje (limit ${pct}% < koszt) — „budzet odkladany”`);
   ok(tryPool(need + 1).length === 1, `pula ${need + 1} (>= ${need}): irygacja powstaje`);
 }

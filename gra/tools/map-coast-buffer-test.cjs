@@ -27,6 +27,13 @@ esbuild.buildSync({
 
 const M = require(BUNDLE);
 let pass = 0, fail = 0;
+// R-WEB-TEST-DEBT-Q14: płytkie morze to woda (P4, commit 6be6be373). Asercja „ląd w buforze brzegu” liczy tylko suchy ląd.
+function borderDryLand(hexes, w, h) {
+  return M.findLandInMapBorder(hexes, w, h).filter(k => {
+    const t = hexes[k]?.terenBazowy;
+    return t !== M.TerenBazowy.Morze && t !== M.TerenBazowy.PlytkieMorze;
+  });
+}
 function ok(cond, msg) { if (cond) { pass++; } else { fail++; console.error('FAIL:', msg); } }
 
 const typs = ['kontynenty', 'pangea', 'wyspy', 'ziemia'];
@@ -39,8 +46,8 @@ for (const typ of typs) {
     ok(inland.length === 0, `${typ} seed=${seed}: morze w środku lądu (${inland.slice(0, 3).join(', ')})`);
     const inlandW = M.findInlandWaterHexes(map.hexes, map.szerokoscQ, map.wysokoscR);
     ok(inlandW.length === 0, `${typ} seed=${seed}: woda w środku lądu (${inlandW.slice(0, 3).join(', ')})`);
-    const borderLand = M.findLandInMapBorder(map.hexes, map.szerokoscQ, map.wysokoscR);
-    ok(borderLand.length === 0, `${typ} seed=${seed}: ląd w buforze brzegu (${borderLand.slice(0, 3).join(', ')})`);
+    const borderLand = borderDryLand(map.hexes, map.szerokoscQ, map.wysokoscR);
+    ok(borderLand.length === 0, `${typ} seed=${seed}: suchy ląd w buforze brzegu (${borderLand.slice(0, 3).join(', ')})`);
     if (typ === 'pangea') {
       const depth = M.morseDepthFromMapBorder(map.hexes, map.szerokoscQ, map.wysokoscR);
       let enclosed = 0;
@@ -79,7 +86,7 @@ for (const roz of ['malenki', 'maly', 'standardowy', 'superogromny']) {
   const map = M.generujSwiat(42, roz, 'kontynenty');
   const b = M.mapBorderWidth(map.szerokoscQ, map.wysokoscR);
   ok(b >= M.MAP_BORDER_OCEAN_HEXES, `generujSwiat ${roz}: bufor brzegu ${b} < min`);
-  const borderLand = M.findLandInMapBorder(map.hexes, map.szerokoscQ, map.wysokoscR);
+  const borderLand = borderDryLand(map.hexes, map.szerokoscQ, map.wysokoscR);
   ok(borderLand.length === 0, `generujSwiat ${roz}: ląd w buforze (${borderLand.length})`);
 }
 

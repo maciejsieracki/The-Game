@@ -44,7 +44,8 @@ for (const key of Object.keys(map.hexes)) {
   const q = parseInt(qs, 10);
   const r = parseInt(rs, 10);
   const hex = map.hexes[key];
-  if (hex.terenBazowy === 'morze') continue;
+  // R-WEB-TEST-DEBT-Q14: płytkie morze (PlytkieMorze) to woda wg decyzji P4 (commit 6be6be373, isWaterTerrain) — nie ląd.
+  if (hex.terenBazowy === 'morze' || hex.terenBazowy === 'plytkie_morze') continue;
   if (M.earthTemplateLandAt(q, r, map.szerokoscQ, map.wysokoscR) <= 0) outsideLand++;
 }
 ok(outsideLand === 0, `ziemia: 0 heksów lądu poza szablonem (found ${outsideLand})`);
