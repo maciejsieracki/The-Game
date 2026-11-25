@@ -6837,7 +6837,7 @@ async function boot(): Promise<void> {
      */
     function applyCityPodzialPracyChange(cityId: string, procentBudynkiRaw: number): void {
       const c = cities.find(ct => ct.id === cityId);
-      if (!c || c.ownerId !== 0) return;
+      if (!c || c.ownerId !== ME()) return;
       const next = applyPodzialPracyLocalChange(
         procentBudynkiRaw,
         ownerDefaultPodzialPracy.get(c.ownerId),
@@ -6852,7 +6852,7 @@ async function boot(): Promise<void> {
     /** Reczne przelaczenie „Indywidualne" (pin) — zostaje jako jawna kontrola gracza. */
     function toggleCityPodzialPracyOverride(cityId: string): void {
       const c = cities.find(ct => ct.id === cityId);
-      if (!c || c.ownerId !== 0) return;
+      if (!c || c.ownerId !== ME()) return;
       const next = !c.podzialPracyOverride;
       if (next) {
         // Zamroź bieżącą (globalną) wartość jako lokalną punkt startowy override.
@@ -7011,7 +7011,7 @@ async function boot(): Promise<void> {
 
     function applyOkolicaTileAdjust(cityId: string, q: number, r: number, _delta: number): void {
       const city = cities.find(c => c.id === cityId);
-      if (!city || city.ownerId !== 0) return;
+      if (!city || city.ownerId !== ME()) return;
       const res = toggleTileWorker(city, map, q, r, undefined, buildAllTerritoryNodes(), siblingClaimedHexKeysForCity(city));
       if (res.ok) {
         city.okolicaReczne = res.reczne;
@@ -7956,21 +7956,21 @@ async function boot(): Promise<void> {
       const idx = units.findIndex(x => x.id === unitId);
       if (idx < 0) return false;
       const u = units[idx]!;
-      if (u.ownerId !== 0) return false;
+      if (u.ownerId !== ME()) return false;
 
-      const ep = empireEpochForOwner(0);
-      const mpMults = civManpowerMultsForOwner(0);
+      const ep = empireEpochForOwner(ME());
+      const mpMults = civManpowerMultsForOwner(ME());
       const mpRefund = unitManpowerCostForType(u.typeId, ep, mpMults.maxMult, mpMults.costMult);
-      refundManpowerToEmpire(cities, 0, ep, mpRefund, mpMults.maxMult);
+      refundManpowerToEmpire(cities, ME(), ep, mpRefund, mpMults.maxMult);
 
       // R-WEB-DISBAND-REFUND-RESOURCES-Q1: 100% surowców zużytych przy werbunku wraca do PUli
       // PAŃSTWA (ten sam mechanizm co zwrot anulowanej rekrutacji, z capem magazynu jak
       // przy produkcji). Pieniądz NIE wraca. Brak śladu (stockPaid) = zero zwrotu.
       // EN: 100% of stock consumed at recruitment returns to the state pool (capped like
       // production); gold is NOT refunded; no trace (stockPaid) = no refund.
-      const stockRefundCap = ownerResourceCap(cities, cityBuilt, 0, data, _menuDifficulty, ep);
-      const ledgerDisbandBefore = snapshotOwnersStock([0], o => ownerResourceStockAll(cities, o));
-      const stockRefundCredited = disbandStockRefundCredit(cities, 0, u, stockRefundCap);
+      const stockRefundCap = ownerResourceCap(cities, cityBuilt, ME(), data, _menuDifficulty, ep);
+      const ledgerDisbandBefore = snapshotOwnersStock([ME()], o => ownerResourceStockAll(cities, o));
+      const stockRefundCredited = disbandStockRefundCredit(cities, ME(), u, stockRefundCap);
       recordOwnersStockDeltaToPending(ledgerDisbandBefore, o => ownerResourceStockAll(cities, o), 'zwrot-rozwiazanie',
         { kind: 'zwrot', label: 'Zwrot z rozwiązania jednostki' });
 
@@ -8754,7 +8754,7 @@ async function boot(): Promise<void> {
 
     /** Otwórz modal wyboru zamiennika dla jednostki `u` (pojedyncza jednostka; komunikaty przyczyn). */
     function openUnitReplacePicker(u: RuntimeUnit): void {
-      if (u.ownerId !== 0) return;
+      if (u.ownerId !== ME()) return;
       if (!isUnitInPlayerTerritory(u)) {
         showHintMessage('Zastąp: dostępne tylko na własnym terytorium.', 3000);
         return;
@@ -8856,7 +8856,7 @@ async function boot(): Promise<void> {
     /** Wykonaj zamianę jednostki `unitId` na `newTypeId` (runtime, po wyborze w modalu). */
     function performUnitReplace(unitId: string, newTypeId: string, quiet = false): boolean {
       const u = units.find(x => x.id === unitId);
-      if (!u || u.ownerId !== 0) return false;
+      if (!u || u.ownerId !== ME()) return false;
       if (!isUnitInPlayerTerritory(u)) return false;
       if (u.replaceUsedThisTurn) return false;
       if (!lookupUnitDef(newTypeId)) return false;
@@ -9565,7 +9565,7 @@ async function boot(): Promise<void> {
         getCachedMaxSafePoziomRacji: (cityId: string) => _maxSafeRationCache.get(cityId),
         onCityRationChange: (cityId: string, level: PoziomRacji) => {
           const city = cities.find(c => c.id === cityId);
-          if (!city || city.ownerId !== 0) return;
+          if (!city || city.ownerId !== ME()) return;
           const maxSafe = getMaxSafePoziomRacjiForPlayerCity(cityId);
           const clamped = clampPoziomRacji(Math.min(level, maxSafe));
           // R-USTAWIENIA-GLOBALNE-LOKALNE (Żywność, Maciej 2026-08-10): bez override —
@@ -9587,7 +9587,7 @@ async function boot(): Promise<void> {
         getPoziomRacjiOverride: (cityId: string) => cities.find(c => c.id === cityId)?.poziomRacjiOverride === true,
         onPoziomRacjiOverrideToggle: (cityId: string) => {
           const city = cities.find(c => c.id === cityId);
-          if (!city || city.ownerId !== 0) return;
+          if (!city || city.ownerId !== ME()) return;
           const next = !city.poziomRacjiOverride;
           city.poziomRacjiOverride = next;
           if (!next) {
@@ -9605,7 +9605,7 @@ async function boot(): Promise<void> {
         },
         onCityAutoWyzywienieChange: (cityId: string, enabled: boolean) => {
           const city = cities.find(c => c.id === cityId);
-          if (!city || city.ownerId !== 0) return;
+          if (!city || city.ownerId !== ME()) return;
           city.autoWyzywienie = enabled;
           // C-026: gdy gracz WŁĄCZA Auto Wyżywienie przy poziomRacji > maxSafe, przelicz
           // natychmiast -- przed tym przełączeniem `applyLiveSafeRationForCity` był no-opem
@@ -10081,7 +10081,7 @@ async function boot(): Promise<void> {
         // na heksie miasta, widoczna na mapie ze sterowaniem ruchem.
         onLeaveGarrison: (unitId: string) => {
           const u = units.find(x => x.id === unitId);
-          if (!u || u.ownerId !== 0 || u.inGarnizon !== true) return;
+          if (!u || u.ownerId !== ME() || u.inGarnizon !== true) return;
           const city = cityAtUnit(u);
           if (!exitGarnizon(u)) return;
           if (city) syncGarnizonForCity(city);
@@ -12209,7 +12209,7 @@ async function boot(): Promise<void> {
             // domyślnego procentNauka=60 gracza.
             ownerDefaultPodzialHandlu.set(
               sc.ownerId,
-              sc.ownerId === ME()
+              sc.ownerId === 0
                 ? freshOwnerDefaultPodzialHandlu()
                 : aiSeedPodzialHandlu(),
             );
@@ -13661,7 +13661,7 @@ async function boot(): Promise<void> {
           onCancelled: (reason) => showHintMessage(reason, 3500),
         },
       );
-      if (executed && (proposerId === 0 || responderId === 0)) updateHud();
+      if (executed && (proposerId === ME() || responderId === ME())) updateHud();
     }
 
     function transferBasketItems(
@@ -13810,7 +13810,7 @@ async function boot(): Promise<void> {
       if (gold > 0) {
         const treasury = buildDiploTreasury();
         applyOneShotGoldTransfer(proposerId, responderId, gold, treasury);
-        if (responderId === 0 || proposerId === 0) updateHud();
+        if (responderId === ME() || proposerId === ME()) updateHud();
       }
     }
 
@@ -16150,7 +16150,7 @@ async function boot(): Promise<void> {
 
     function planSpawnedUnitFollowGeneral(newUnitId: string): boolean {
       const u = units.find(x => x.id === newUnitId);
-      if (!u || u.ownerId !== 0) return false;
+      if (!u || u.ownerId !== ME()) return false;
       // R-WEB-ARMY-TO-NEAREST-LEADER-Q1: najblizszy dostepny wodz (trasa), nie pierwszy na liscie.
       // R-WEB-ARMY-AUTO-RECRUIT-GENERAL-Q1: jednostka z panelu Rekrutacja idzie do WYBRANEGO generała.
       const general = pickRallyGeneral(u, units, () => pickNearestLeaderForUnit(u));
@@ -16161,7 +16161,7 @@ async function boot(): Promise<void> {
     function afterPlayerUnitSpawned(newUnitId: string, generalMarchPreplanned = false): void {
       syncUnitsRender();
       const u = units.find(x => x.id === newUnitId);
-      if (!u || u.ownerId !== 0) return;
+      if (!u || u.ownerId !== ME()) return;
       const coLocated = coLocatedForMergePrompt(units, u.q, u.r, u.ownerId)
         .filter(x => x.id !== newUnitId);
       const autoMarchingToGeneral = u.followGeneral === true && (generalMarchPreplanned
@@ -16594,7 +16594,7 @@ async function boot(): Promise<void> {
       const inputs: TradeRouteOverlayInput[] = [];
       for (const route of tradeRoutes) {
         if (route.status !== 'polaczony') continue;
-        if (route.ownerId !== 0 && route.toOwnerId !== 0) continue; // R2-3: cudza trasa (AI↔AI / wewnętrzna obcych) — nie na mapie gracza
+        if (route.ownerId !== ME() && route.toOwnerId !== ME()) continue; // R2-3: cudza trasa (AI↔AI / wewnętrzna obcych) — nie na mapie gracza
         const from = cityById.get(route.fromCityId);
         const to = cityById.get(route.toCityId);
         if (!from || !to) continue;
@@ -18708,9 +18708,9 @@ async function boot(): Promise<void> {
 
     /** Po pierwszej jednostce gracza — przypomnienie o magazynie centralnym (PYTANIE-85). */
     function maybeHintArmyFoodOnFirstPlayerUnit(ownerId: number): void {
-      if (ownerId !== 0 || playerArmyFoodHintShown) return;
+      if (ownerId !== ME() || playerArmyFoodHintShown) return;
       playerArmyFoodHintShown = true;
-      const reserve = getEmpireFoodReserve(0);
+      const reserve = getEmpireFoodReserve(ME());
       if (reserve >= 0) return;
       showHintMessage(
         'Masz wojsko, a magazyn centralny jest ujemny — wojsko może głodować. ' +
@@ -19463,7 +19463,7 @@ async function boot(): Promise<void> {
 
     function maybeAiAssaultAfterMachines(city: City, siegeTurn: number): void {
       const bId = city.oblegajacyOwnerId ?? siegeBesiegerByCity.get(city.id);
-      if (bId === undefined || bId === 0 || city.ownerId === bId) return;
+      if (bId === undefined || bId === ME() || city.ownerId === bId) return;
       const anchor = units.find(
         u => u.ownerId === bId && hexDistance(u.q, u.r, city.q, city.r) === 1,
       );
@@ -19860,8 +19860,8 @@ async function boot(): Promise<void> {
     }
 
     function cityHasAffordableWonderEnqueue(city: City): boolean {
-      if (city.ownerId !== 0) return false;
-      const wonders = listBuildableWondersForOwner(0);
+      if (city.ownerId !== ME()) return false;
+      const wonders = listBuildableWondersForOwner(ME());
       if (wonders.length === 0) return false;
       const prod = cityProd.get(city.id);
       const queuedWonderIds = new Set(
