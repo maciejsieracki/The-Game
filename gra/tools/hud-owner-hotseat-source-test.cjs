@@ -192,6 +192,43 @@ check(
     && !/getLastEmpireFoodTick\(\s*0\s*\)|getEmpireFoodReserve\(\s*0\s*\)|getEmpireFoodMaxCap\(\s*0\s*\)|projectPlayerFoodMaxCap\(\s*\)/.test(foodSnapCode2),
 );
 
+// R-WEB-HUD-ME-EMPIREHUD-Q1: getEmpireHud(oid) zwraca panel imperium FOTELA oid (nie właściciela 0).
+// Źródłowo: guarda przepuszcza każdy fotel człowieka, a dane (buildHudState, miasta, religia państwa)
+// idą wyłącznie z oid. Dla AI (nie-fotel) zwraca null jak dotąd. Zachowanie runtime (ownerId ≠ 0)
+// wymaga sesji hotseat -- ten test jest dowodem źródłowym.
+const empireHudCode = (() => {
+  const m = /getEmpireHud: \(oid: number\) => \{/.exec(src);
+  if (!m) return null;
+  const open = m.index + m[0].length - 1;
+  let depth = 0;
+  for (let i = open; i < src.length; i++) {
+    if (src[i] === '{') depth++;
+    else if (src[i] === '}') {
+      depth--;
+      if (depth === 0) return stripComments(src.slice(m.index, i + 1));
+    }
+  }
+  return null;
+})();
+check(
+  'getEmpireHud(oid): guarda isHuman(oid), nie literał 0',
+  empireHudCode !== null && empireHudCode.includes('if (!isHuman(oid)) return null;'),
+);
+check(
+  'getEmpireHud(oid): buildHudState(oid), miasta c.ownerId === oid, religia ownerReligionForOwnerId(oid)',
+  empireHudCode !== null
+    && empireHudCode.includes('buildHudState(oid)')
+    && empireHudCode.includes('c.ownerId === oid')
+    && empireHudCode.includes('ownerReligionForOwnerId(oid)'),
+);
+check(
+  'getEmpireHud(oid): brak ownerId === 0 / ForOwnerId(0) / buildHudState() bez argumentu',
+  empireHudCode !== null
+    && !/ownerId === 0\b/.test(empireHudCode)
+    && !/ownerReligionForOwnerId\(\s*0\s*\)/.test(empireHudCode)
+    && !/buildHudState\(\s*\)/.test(empireHudCode),
+);
+
 console.log('\nWynik: ' + passCount + ' PASS / ' + failCount + ' FAIL');
 if (failCount > 0) {
   process.exit(1);

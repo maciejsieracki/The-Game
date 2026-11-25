@@ -9660,10 +9660,12 @@ async function boot(): Promise<void> {
           };
         },
         getEmpireHud: (oid: number) => {
-          if (oid !== 0) return null;
-          const hs = buildHudState();
-          const pc = cities.filter(c => c.ownerId === 0);
-          const stateRel = ownerReligionForOwnerId(0);
+          // R-WEB-HUD-ME-EMPIREHUD-Q1: 0 był literałem gracza aktywnego; teraz fotel `oid`
+          // (dowolny fotel człowieka; AI -> null jak dotąd). Single-player: oid 0 = ME().
+          if (!isHuman(oid)) return null;
+          const hs = buildHudState(oid);
+          const pc = cities.filter(c => c.ownerId === oid);
+          const stateRel = ownerReligionForOwnerId(oid);
           const relAgg = aggregateReligionEmpire(
             pc.map(c => ({
               state: resolvedCityReligion(c),
@@ -24077,7 +24079,7 @@ async function boot(): Promise<void> {
         r => resourceIsShortage(r) || r.stock >= (r.cap ?? Infinity),
       ).length;
       // Z5 hot-seat: niedobór wg imperium AKTUALNEGO fotela (ownerId), nie zawsze fotela 0 (read-only podgląd).
-      const shortageRows = ownerId === 0
+      const shortageRows = isMe(ownerId)
         ? storedResourceRows
         : buildEmpireResourceRows(ownerId).filter(r => r.cap != null && !r.placeholder);
       const surowceNiedoborLabels = shortageRows.filter(r => resourceIsShortage(r)).map(r => r.label);

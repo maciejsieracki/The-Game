@@ -327,6 +327,52 @@ check(
   'literał 0 zamiast gracza aktywnego -- regresja hotseat',
 );
 
+// R-WEB-HUD-ME-EMPIREHUD-Q1: panel imperium `getEmpireHud(oid)` -- literał 0 w guardzie,
+// filtrze miast, religii państwa i buildHudState był gracza aktywnego. Kotwica po sygnaturze
+// (ciało wycinane po nawiasach z pominięciem komentarzy); każda linia osobno.
+const empireHudBody = (() => {
+  const m = /getEmpireHud: \(oid: number\) => \{/.exec(src);
+  if (!m) return null;
+  const open = m.index + m[0].length - 1;
+  let depth = 0;
+  for (let i = open; i < src.length; i++) {
+    if (src[i] === '{') depth++;
+    else if (src[i] === '}') {
+      depth--;
+      if (depth === 0) return stripComments(src.slice(m.index, i + 1));
+    }
+  }
+  return null;
+})();
+const EMPIREHUD_LINES = [
+  ['getEmpireHud: guarda = isHuman(oid) (nie oid !== 0)', /if \(!isHuman\(oid\)\) return null;/],
+  ['getEmpireHud: buildHudState(oid)', /const hs = buildHudState\(oid\);/],
+  ['getEmpireHud: pc = miasta fotela oid', /const pc = cities\.filter\(c => c\.ownerId === oid\);/],
+  ['getEmpireHud: stateRel = ownerReligionForOwnerId(oid)', /const stateRel = ownerReligionForOwnerId\(oid\);/],
+];
+for (const [label, re] of EMPIREHUD_LINES) {
+  check(label, empireHudBody !== null && re.test(empireHudBody));
+}
+const EMPIREHUD_LITERALS = [
+  /oid !== 0\)/,
+  /buildHudState\(\)/,
+  /c\.ownerId === 0\)/,
+  /ownerReligionForOwnerId\(\s*0\s*\)/,
+];
+check(
+  'getEmpireHud: brak literału 0 (guarda, buildHudState, miasta, religia)',
+  empireHudBody !== null && !EMPIREHUD_LITERALS.some(re => re.test(empireHudBody)),
+  'literał 0 zamiast fotela wyświetlanego -- regresja hotseat',
+);
+
+// buildHudStateRaw: wybór wierszy niedoboru dla fotela wyświetlanego (`isMe`, nie literał 0).
+check(
+  'buildHudStateRaw: shortageRows = isMe(ownerId) (nie ownerId === 0)',
+  rawCode !== null
+    && rawCode.includes('const shortageRows = isMe(ownerId)')
+    && !/const shortageRows = ownerId === 0\b/.test(rawCode),
+);
+
 console.log('\nWynik: ' + passCount + ' PASS / ' + failCount + ' FAIL');
 if (failCount > 0) {
   process.exit(1);
