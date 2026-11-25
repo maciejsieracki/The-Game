@@ -23146,8 +23146,8 @@ async function boot(): Promise<void> {
       return u.inGarnizon === true;
     }
 
-    function projectPlayerFoodMaxCap(): number {
-      const cap = getEmpireFoodMaxCap(0);
+    function projectPlayerFoodMaxCap(ownerId: number = 0): number {
+      const cap = getEmpireFoodMaxCap(ownerId);
       if (cap > 0) return cap;
       const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
       return efParams.centralCapBaza;
@@ -23358,7 +23358,7 @@ async function boot(): Promise<void> {
     }
 
     /** Projekcja przyrostu magazynu centralnego (PYTANIE-85). */
-    function projectPlayerFoodProjection(): {
+    function projectPlayerFoodProjection(ownerId: number = 0): {
       netRate: number;
       wplywDoZapasow: number;
       kosztArmii: number;
@@ -23376,7 +23376,7 @@ async function boot(): Promise<void> {
       // C-GLOD-Q2=B (Maciej 2026-07-26): mnożnik terytorialny w projekcji HUD —
       // territoryNodes budowane RAZ, nie per jednostka (wydajność).
       const territoryNodesForFoodProj = buildAllTerritoryNodes();
-      const playerCities = cities.filter(c => c.ownerId === 0 && !c.oblegane);
+      const playerCities = cities.filter(c => c.ownerId === ownerId && !c.oblegane);
       const preview = previewCityEconomy(
         playerCities,
         map,
@@ -23385,7 +23385,7 @@ async function boot(): Promise<void> {
         cityBuilt,
         player.era,
         player.zbadane,
-        new Map([[0, (player.civType as string) || 'grecy']]),
+        new Map([[ownerId, ownerId === 0 ? ((player.civType as string) || 'grecy') : civTypeForOwner(ownerId)]]),
         orderMultMap,
         empireEpochForOwner,
         unlockedTechSetForOwner,
@@ -23393,7 +23393,7 @@ async function boot(): Promise<void> {
         undefined,
         buildAllTerritoryNodes(),
         undefined,
-        buildWonderCityYieldsByOwnerMap([0]),
+        buildWonderCityYieldsByOwnerMap([ownerId]),
         // PYTANIE 83=B: dostęp do złota (Mennica śpi bez niego) — projekcja gracza.
         makeOwnerZlotoAccessResolver(),
         // PYTANIE-84: runtime gate dostęp/magazyn dla budynków złożowych.
@@ -23405,13 +23405,13 @@ async function boot(): Promise<void> {
       const solCityIds = new Set<string>();
       let uchwalaSolSpichlerzIICount = 0;
       for (const tk of preview.perCity) {
-        if (tk.ownerId !== 0 || !tk.spichlerzSol) continue;
+        if (tk.ownerId !== ownerId || !tk.spichlerzSol) continue;
         solCityIds.add(tk.cityId);
         uchwalaSolSpichlerzIICount++;
       }
-      const uchwalaSolAktywna = solCityIds.size > 0 || spichlerzSolArmyBonusActive(0);
+      const uchwalaSolAktywna = solCityIds.size > 0 || spichlerzSolArmyBonusActive(ownerId);
       const playerUnits: (EconUnit & { inGarnizon?: boolean; garrisonCityId?: string })[] = units
-        .filter(u => u.ownerId === 0)
+        .filter(u => u.ownerId === ownerId)
         .map(u => ({
           ownerId: u.ownerId,
           typeId: u.typeId,
@@ -23426,12 +23426,12 @@ async function boot(): Promise<void> {
         }));
       const kosztArmii = militaryFoodConsumptionWithSpichlerz(
         playerUnits,
-        0,
+        ownerId,
         upkeepParams,
         unitFoodTbl,
         { solArmyOverride: uchwalaSolAktywna, solCityIdsOverride: solCityIds, kosztJednostekPace: kosztJednostekPaceUtrzymania() },
       );
-      const reserve = getEmpireFoodReserve(0);
+      const reserve = getEmpireFoodReserve(ownerId);
       let central = reserve;
       let sumSurplus = 0;
       let sumDeficit = 0;
@@ -23443,7 +23443,7 @@ async function boot(): Promise<void> {
       // (empire-food.ts:227-243).
       const deficitNeedsForFeed: number[] = [];
       for (const tk of preview.perCity) {
-        if (tk.ownerId !== 0 || tk.oblegany) continue;
+        if (tk.ownerId !== ownerId || tk.oblegany) continue;
         const bilans = tk.bilansLokalny ?? tk.zywnoscNetto;
         if (bilans >= 0) {
           sumSurplus += bilans;
@@ -24042,14 +24042,17 @@ async function boot(): Promise<void> {
       // otwiera panel Mocy który już liczy efektywnie — d1f7b91) -> EFEKTYWNA,
       // dla spójności z panelem, który się pod nim otwiera.
       const power = objectivePowerForOwnerEffective(ME());
-      const foodReserve = Math.floor(getEmpireFoodReserve(0));
-      const foodMaxCap = projectPlayerFoodMaxCap();
-      const foodProj = projectPlayerFoodProjection();
+      // R-WEB-HUD-ME-FOODRESERVE-Q1: zapas i cap żywności = fotel wyświetlany (ownerId), nie literał 0.
+      const foodReserve = Math.floor(getEmpireFoodReserve(ownerId));
+      const foodMaxCap = projectPlayerFoodMaxCap(ownerId);
+      // R-WEB-HUD-ME-FOODRESERVE-Q1 (zarzut FC nr 1): projekcja netto/wpływ/koszt armii/niedokarmione
+      // też dla fotela wyświetlanego (ownerId), spójnie z zapasem i capem powyżej.
+      const foodProj = projectPlayerFoodProjection(ownerId);
       const foodNetRate = Math.floor(foodProj.netRate);
       // ZADANIE 5 (Maciej 2026-07-26): ostrzeżenie z wyprzedzeniem — ile tur do startu
       // atrycji HP wojska, gdy zapasy państwa są ujemne ale karencja jeszcze nie minęła.
       const glodWojskaKarencjaTurHud = buildEmpireFoodParams(data.econParams, _menuDifficulty).glodWojskaKarencjaTur;
-      const foodStarvationCountdown = getArmyStarvationCountdown(0, glodWojskaKarencjaTurHud);
+      const foodStarvationCountdown = getArmyStarvationCountdown(ownerId, glodWojskaKarencjaTurHud);
       const stateRel = ownerReligionForOwnerId(0);
       const relAgg = aggregateReligionEmpire(
         pc.map(c => ({
@@ -24187,7 +24190,7 @@ async function boot(): Promise<void> {
       // deficit-coverage algorithm as advanceEmpireFood (empire-food.ts:227-243). When a tick IS
       // available, behavior is UNCHANGED: counted the same way as before, from the last
       // end-of-turn data. Pattern: resolveCityFedForUi in cityPanel.ts:1344-1353.
-      const lastFoodTickForHud = getLastEmpireFoodTick(0);
+      const lastFoodTickForHud = getLastEmpireFoodTick(ownerId);
       const zywnoscMiastNiedokarmionych = lastFoodTickForHud
         ? lastFoodTickForHud.perCityRows.filter(r => r.nakarmione === false).length
         : foodProj.unfedCityCount;
@@ -24197,7 +24200,7 @@ async function boot(): Promise<void> {
         zywnoscRate: foodNetRate,
         zywnoscWplywMiast: foodProj.wplywDoZapasow,
         zywnoscKosztWojska: foodProj.kosztArmii,
-        glodWojska: isArmyHungry(0),
+        glodWojska: isArmyHungry(ownerId),
         zywnoscMiastNiedokarmionych,
         zywnoscKarencjaZaTur: foodStarvationCountdown ?? undefined,
         zloto: Math.floor(ps.skarbiec),
