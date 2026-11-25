@@ -221,7 +221,7 @@ function isReadOnlyRoot(src, name) {
     const after = src.slice(u.index + name.length, u.index + name.length + 200);
     if (/\+\s*$/.test(before) || /^\s*\+/.test(after)) return false;           // konkatenacja
     if (/=\s*$/.test(before) && /^\s*;/.test(after)) return false;             // alias: const U = T;
-    if (/path\.(?:join|resolve)\(\s*$/.test(before) && /^\s*,\s*['"`]/.test(after)) return false; // stała nazwa pod korzeniem
+    if (/path\.(?:(?:posix|win32)\.)?(?:join|resolve)\(\s*$/.test(before) && /^\s*,\s*['"`]/.test(after)) return false; // stała nazwa pod korzeniem
   }
   return true;
 }
@@ -253,7 +253,9 @@ function scanSource(rel, src) {
   // Swiadomie NIE liczymy tu zadnego znacznika „na poziomie pliku" — patrz komentarz przy R3.
 
   // --- R1 + R3: `path.join|resolve(<tmpdir>, ARG...)` ----------------------------------
-  const callRe = new RegExp(String.raw`path\.(?:join|resolve)\(\s*` + TMPDIR_CALL, 'g');
+  // Runda Q1: `path.posix.join|win32.join` to ta sama operacja — bez tej alternatywy
+  // `path.posix.join(os.tmpdir(), 'stala')` przechodziło jako nieobjęte regułą.
+  const callRe = new RegExp(String.raw`path\.(?:(?:posix|win32)\.)?(?:join|resolve)\(\s*` + TMPDIR_CALL, 'g');
   let m;
   while ((m = callRe.exec(src)) !== null) {
     const lineNo = src.slice(0, m.index).split('\n').length;
@@ -317,6 +319,64 @@ function scanSource(rel, src) {
     const rest = statementRestOf(src.slice(m.index + m[0].length).split('\n')[0]);
     if (UNIQUE_MARK.test(rest)) continue;
     findings.push({ rule: 'R4', rel, lineNo, arg: rest.trim().slice(0, 60), line: line.trim() });
+  }
+
+  // --- R7: STALA NAZWA doklejona do KORZENIA (zmienna lub wprost), bez wzgledu na instrukcje ---
+  // Runda Q1: isReadOnlyRoot ocenia tylko INSTRUKCJE z uzyciem zmiennej, wiec zapis rozbity na
+  // dwie instrukcje przechodzil: `const p = `${T}/civ-stala`;` + osobne `fs.writeFileSync(p, ..)`.
+  // Ta sama luka dla `T.concat('/x')`, `[T, 'x'].join('/')`, `path.posix.join(T, 'x')` i ich
+  // wariantow z os.tmpdir() wprost. Tu nie pytamy o instrukcje: STALY segment nazwy (literal,
+  // bez znacznika unikalnosci w SAMYM segmencie) doklejony do korzenia = FAIL. Dynamiczna
+  // nazwa (`${T}/${n}`, `[T, n]`) nie jest stala i tu nie trafia. `mkdtempSync(...)` pomijany.
+  /** Reszta WYRAZENIA po segmencie: do domykajacego `)`/`]`/`}` lub `;` na zerowym poziomie. */
+  function exprTailAfter(s) {
+    let d = 0;
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i];
+      if (c === '\n' || c === ';') return s.slice(0, i);
+      if (c === '(' || c === '[' || c === '{') d++;
+      else if (c === ')' || c === ']' || c === '}') { if (d === 0) return s.slice(0, i); d--; }
+    }
+    return s;
+  }
+  const r7Alts = [TMPDIR_CALL];
+  const r7Decl = new RegExp(String.raw`(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*` + TMPDIR_CALL, 'g');
+  let r7d;
+  while ((r7d = r7Decl.exec(src)) !== null) {
+    r7Alts.push('(?<![\\w$.])' + r7d[1].replace(/\$/g, '\\$') + '(?![\\w$])');
+  }
+  const R7_ALT = '(?:' + r7Alts.join('|') + ')';
+  const r7Patterns = [
+    // Runda Q1-obrona (zarzut 1): separator `${path.sep}` zamiast dosłownego `/` — ta sama stała nazwa.
+    { kind: 'tpl', re: new RegExp('\\$\\{\\s*' + R7_ALT + '\\s*\\}(?=/|\\$\\{\\s*path\\.sep\\s*\\})', 'g') },
+    { kind: 'lit', re: new RegExp('\\[\\s*' + R7_ALT + '\\s*,\\s*([\'"`])([^\'"`\\n]*)\\1', 'g') },
+    { kind: 'lit', re: new RegExp(R7_ALT + '\\s*\\.concat\\(\\s*([\'"`])([^\'"`\\n]*)\\1', 'g') },
+    { kind: 'lit', re: new RegExp('path\\.(?:(?:posix|win32)\\.)?(?:join|resolve)\\(\\s*' + R7_ALT + '\\s*,\\s*([\'"`])([^\'"`\\n]*)\\1', 'g') },
+  ];
+  for (const p7 of r7Patterns) {
+    let q7;
+    while ((q7 = p7.re.exec(src)) !== null) {
+      const lineNo = src.slice(0, q7.index).split('\n').length;
+      const line = lines[lineNo - 1];
+      if (isCommentLine(line)) continue;
+      const pre7 = src.slice(Math.max(0, q7.index - 60), q7.index);
+      if (/mkdtempSync\(\s*(?:['"`]|path\.(?:(?:posix|win32)\.)?(?:join|resolve)\(\s*)?$/.test(pre7)) continue;
+      let seg7;
+      let tailStart = q7.index + q7[0].length;
+      if (p7.kind === 'tpl') {
+        seg7 = templateSegmentAfter(src.slice(tailStart));
+        if (!/^(?:\/|\$\{\s*path\.sep\s*\})\/?[A-Za-z0-9_.-]/.test(seg7)) continue;
+        tailStart += seg7.length;
+      } else {
+        seg7 = q7[2];
+        if (!/^\/?[A-Za-z0-9_.-]/.test(seg7)) continue;
+      }
+      // Znacznik moze stac PO literale w tym samym wyrazeniu (`'civ-' + process.pid`,
+      // `[T, 'civ-', pid]`). Zakres: do domykajacego nawiasu/srednika na zerowym poziomie —
+      // nie cala reszta linii, wiec znacznik w innym wywolaniu nie tlumi zgloszenia.
+      if (UNIQUE_MARK.test(seg7) || UNIQUE_MARK.test(exprTailAfter(src.slice(tailStart)))) continue;
+      findings.push({ rule: 'R7', rel, lineNo, arg: seg7.slice(0, 60), line: line.trim() });
+    }
   }
 
   // --- R6: INTERPOLACJA `${<tmpdir>}/nazwa` w szablonie --------------------------------
@@ -385,6 +445,39 @@ for (const file of files) scanSource(path.relative(TOOLS_DIR, file), fs.readFile
   check('samotest R2: konkatenacja zmiennej korzenia + stała = FAIL', countFixture(fixtureConcatRoot) >= 1);
   check('samotest R2: alias korzenia (const U = T) użyty do zapisu = FAIL', countFixture(fixtureAliasRoot) >= 1);
   check('samotest R2: wieloliniowe path.join(korzeń, stała) = FAIL', countFixture(fixtureMultilineRoot) >= 1);
+  // Runda Q1: luki G1-G6 z zadania — stała nazwa pod korzeniem w INNEJ instrukcji niż zapis
+  // oraz formy wprost, których poprzednia wersja nie widziała.
+  const fixtureTplAcrossStmt = fx(["const T = @TMP@;", "const p = `${T}/civ-stala`;", "fs.writeFileSync(p, 'x');"]);
+  const fixtureConcatAcrossStmt = fx(["const T = @TMP@;", "const p = T.concat('/civ-stala');", "fs.writeFileSync(p, 'x');"]);
+  const fixtureArrayJoinVar = fx(["const T = @TMP@;", "const p = [T, 'civ-stala'].join('/');", "fs.writeFileSync(p, 'x');"]);
+  const fixturePosixJoinVar = fx(["const T = @TMP@;", "const p = path.posix.join(T, 'civ-stala');", "fs.writeFileSync(p, 'x');"]);
+  const fixturePosixJoinInline = fx(["fs.writeFileSync(path.posix.join(@TMPOS@, 'civ-stala'), 'x');"]);
+  const fixtureArrayJoinInline = fx(["const p = [@TMPOS@, 'civ-stala'].join('/');", "fs.writeFileSync(p, 'x');"]);
+  // Runda Q1-obrona (zarzut 3): asercje R7 wymagają trafienia REGUŁY R7 (nie dowolnej reguły).
+  // Bez tego fixture'y, które łapie też R2, zostawały zielone po wyłączeniu R7.
+  const rulesFixture = (src) => {
+    const mark = findings.length;
+    scanSource('SAMOTEST.cjs', src);
+    const r = findings.slice(mark).map((f) => f.rule);
+    findings.length = mark;
+    return r;
+  };
+  const fixtureTplSepAcrossStmt = fx(["const T = @TMP@;", "const p = `${T}${path.sep}civ-stala`;", "fs.writeFileSync(p, 'x');"]);
+  check('samotest R7: szablon `${T}${path.sep}stała` w osobnej instrukcji = FAIL (reguła R7)', rulesFixture(fixtureTplSepAcrossStmt).includes('R7'));
+  check('samotest R7: szablon `${T}/stała` w osobnej instrukcji = FAIL (reguła R7)', rulesFixture(fixtureTplAcrossStmt).includes('R7'));
+  check('samotest R7: T.concat(\'/stała\') w osobnej instrukcji = FAIL (reguła R7)', rulesFixture(fixtureConcatAcrossStmt).includes('R7'));
+  check('samotest R7: [T, \'stała\'].join(\'/\') przez zmienną = FAIL (reguła R7)', rulesFixture(fixtureArrayJoinVar).includes('R7'));
+  check('samotest R7: path.posix.join(T, \'stała\') przez zmienną = FAIL (reguła R7)', rulesFixture(fixturePosixJoinVar).includes('R7'));
+  check('samotest R1: posix-join korzenia wprost (bez zmiennej) = FAIL', countFixture(fixturePosixJoinInline) >= 1);
+  check('samotest R7: tablica z korzeniem wprost + join = FAIL (reguła R7)', rulesFixture(fixtureArrayJoinInline).includes('R7'));
+  // Fixture odczytu bez trafienia: odczyt readdir i dynamiczna nazwa z listy katalogu.
+  const fixtureReadDynamic = fx([
+    'const T = @TMP@;',
+    'const names = fs.readdirSync(`${T}`);',
+    'const q = [T, names[0]].join(\'/\');',
+    'const d = fs.mkdtempSync(path.posix.join(T, \'civ-\'));',
+  ]);
+  check('samotest R7: odczyt readdir + dynamiczna nazwa + mkdtemp = dozwolony', countFixture(fixtureReadDynamic) === 0);
   findings.length = findingsMark;
   scanned = scannedMark;
 }
