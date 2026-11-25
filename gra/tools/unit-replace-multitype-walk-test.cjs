@@ -41,6 +41,8 @@ const REPL = { Wojownik: ['Wlocznik'], Konnica: ['Rydwan'], Procarz: [], Zwiadow
 function makeRun(stack, pickedIds) {
   const modals = []; const hints = []; const singles = []; const performed = [];
   const ctx = {
+    // R-WEB-HUD-ME-RESIDUAL-Q1 r2: funkcje z main.ts czytaja ME() (gracz aktywny); stub = fotel jednoosobowy 0.
+    ME: () => 0,
     playerStackAt: () => stack,
     stackPickState: { key: 'k', ids: new Set(pickedIds) },
     armyPickKey: () => 'k',

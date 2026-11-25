@@ -69,6 +69,8 @@ const ENV_NAMES = [
   'markCityStateDirty',
   'cityProd',
   'enqueueRecruitment',
+  // R-WEB-HUD-ME-RESIDUAL-Q1 r2: purchaseRecruitmentUnit czyta ME() (gracz aktywny); stub = fotel jednoosobowy 0.
+  'ME',
   'updateHud',
   'refreshCityPanelIfOpen',
   'refundManpowerToEmpire',
@@ -260,6 +262,7 @@ function makeHarness({ gold = 100, manpower = 100, homeStock = 1, depotStock = 1
     markCityStateDirty,
     cityProd,
     enqueueRecruitment,
+    () => 0,
     updateHud,
     refreshCityPanelIfOpen,
     refundManpowerToEmpire,
