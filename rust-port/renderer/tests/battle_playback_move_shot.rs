@@ -830,3 +830,58 @@ fn hitat_fq_shot_on_frame_grid_is_played_like_nominal() {
         assert!(bad == q, "offset {off}: nothing reached the scene");
     }
 }
+
+/// R-RUSTPORT-P4-FQ-SPEED-Q1 (D-FQS-2): `_doMove` ends in the first `_raf` frame with `p >= 1` (`:8746-8775`), so at
+/// `speedMul = 4` (frame 64 ms) the step arrives at `t0 + 256`, not `t0 + MOVE_STEP_MS`. The playback of that frame
+/// plays it like the nominal arrival (same scene calls, same scene); the 16 ms playback rejects it (`ArriveAt`) and
+/// nothing reaches the scene.
+#[test]
+fn fq_speed_move_arrives_on_the_session_frame_grid() {
+    let (_, q) = base();
+    let id = uid("atk0");
+    let (c, r) = {
+        let u = unit(&q, id);
+        (u.col, u.row)
+    };
+    let t0 = 1_024.0;
+    let run = |frame_ms: f64, arrive_at: f64| {
+        let mut s = q.clone();
+        let mut pb = BattlePlayback::new(
+            &s,
+            PlaybackOpts {
+                frame_ms,
+                ..PlaybackOpts::default()
+            },
+        );
+        pb.push_actions(&[act(
+            t0,
+            BattleActionKindDto::Move {
+                id,
+                from_col: c,
+                from_row: r,
+                to_col: c + 1,
+                to_row: r,
+                arrive_at,
+            },
+        )])
+        .expect("push");
+        let res = pb.play_until(&mut s, t0, 0.0);
+        (s, pb, res)
+    };
+    let (nominal, pb_n, rn) = run(16.0, t0 + MOVE_STEP_MS);
+    assert_eq!(rn, Ok(()));
+    let (grid, pb_g, rg) = run(64.0, t0 + 256.0);
+    assert_eq!(rg, Ok(()), "x4: frame-grid arrival accepted");
+    assert_eq!(pb_g.calls(), pb_n.calls());
+    assert!(grid == nominal, "same scene as the nominal arrival");
+    let (bad, _, rb) = run(16.0, t0 + 256.0);
+    assert_eq!(
+        rb,
+        Err(PlaybackError::ArriveAt {
+            t0,
+            arrive_at: t0 + 256.0
+        }),
+        "16 ms playback rejects the x4 arrival"
+    );
+    assert!(bad == q, "nothing reached the scene");
+}
