@@ -157,6 +157,7 @@ ok(/worldDiploNewsList = worldDiploNewsSanitize\(saved\.meta\?\.worldDiploNews\)
 ok(/getWorldNews: \(\) => worldDiploNewsVisibleList\(worldDiploNewsList, getDiplomaticContacts\(\)\)/.test(mainSrc), 'okno dyplomacji dostaje listę przefiltrowaną po odkryciu');
 const hudSrc = fs.readFileSync(path.join(SRC, 'ui', 'diploListHud.ts'), 'utf8');
 ok(/config\.getWorldNews\?\.\(\)/.test(hudSrc) && /'Wydarzenia na świecie'/.test(hudSrc), 'okno dyplomacji renderuje sekcję „Wydarzenia na świecie”');
+ok(/const worldNews = listFilter === 'all' \? \(config\.getWorldNews\?\.\(\) \?\? \[\]\) : \[\];/.test(hudSrc), 'sekcja „Wydarzenia na świecie” tylko w widoku „Dyplomacja” (listFilter === \'all\'), nie w filtrze „Wojna”');
 ok(/warEventLog\.unshift\(entry\);/.test(recBody) && /trimWarEventLog\(\);/.test(recBody), 'wpis do warEventLog + przycięcie dziennika');
 ok(mainSrc.includes("from './game/diplo-world-news'") && mainSrc.includes('worldDiploNewsEntry'), 'main.ts importuje worldDiploNewsEntry');
 
