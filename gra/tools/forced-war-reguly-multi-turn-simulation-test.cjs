@@ -430,10 +430,10 @@ console.log('\n--- K5: próg startu -- Kamień tura 25, Brąz 25 tur od WŁASNEG
     if (picks.has(1) && firedA == null) firedA = turn;
     if (picks.has(2) && firedB == null) firedB = turn;
   }
-  // Próg Brązu = 40 tur od wejścia w epokę (war-rules-params.json; zgodnie z aktualnym JSON).
-  eq(WOJNA_WYMUSZONA_START_TURY_OD_EPOKI, 40, 'K5: stała progu Brązu = 40 tur od epoki (z JSON)');
-  eq(firedA, 50, 'K5: cywilizacja A weszła w Brąz w turze 10 -> pierwsza wojna wymuszona dokładnie w turze 50 (10+40)');
-  eq(firedB, 80, 'K5: cywilizacja B weszła w Brąz w turze 40 (30 tur PÓŹNIEJ niż A) -> pierwsza wojna w turze 80 (40+40), NIEZALEŻNIE od A');
+  // Próg Brązu = 0 tur od wejścia w epokę (R-WEB-ERA-WAR-START-AT-ERA-ENTRY-Q1; z JSON).
+  eq(WOJNA_WYMUSZONA_START_TURY_OD_EPOKI, 0, 'K5: stała progu Brązu = 0 tur od epoki (z JSON)');
+  eq(firedA, 10, 'K5: cywilizacja A weszła w Brąz w turze 10 -> pierwsza wojna wymuszona w turze 10 (10+0)');
+  eq(firedB, 40, 'K5: cywilizacja B weszła w Brąz w turze 40 -> pierwsza wojna w turze 40 (40+0), NIEZALEŻNIE od A');
 }
 
 // =============================================================================
