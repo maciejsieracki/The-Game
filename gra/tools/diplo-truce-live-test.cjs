@@ -55,8 +55,11 @@ const SCRATCH = process.argv[2] || path.join(os.tmpdir(), 'civ-truce-live-' + pr
 // R-TEST-DEBT-BASE-RED-MAIN-Q2 (obrona r1, zarzut 3): domyślny katalog bundle (os.tmpdir) jest sprzątany po teście;
 // podany ręcznie przez argv[2] zostaje (użytkownik może go ponownie użyć z SKIP_BUILD=1).
 if (!process.argv[2]) process.on('exit', () => { try { fs.rmSync(SCRATCH, { recursive: true, force: true }); } catch (_) { /* best-effort */ } });
+// R-WEB-HARNESS-LIVE-WELCOME-TRUCE-Q1: domyślny katalog zrzutów poza repo (zrzut do śledzonego pliku brudził git).
+// Podanie katalogu jako argv[3] nadal działa.
+const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
 const EVIDENCE = process.argv[3]
-  || path.join(REPO_ROOT, 'dyspozycje', 'autobot', 'runs', 'R-WEB-TRUCE-Q1', 'evidence');
+  || path.join(os.tmpdir(), 'civ-truce-evidence-' + TMPDIR_RUN_ID);
 // R-TEST-DEBT-BASE-RED-MAIN-Q2 (klasa A, dowód z przebiegu: log „[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)”
 // i tekst gry „Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 46”): bramka NNS
 // (R-WEB-ECON-NO-NEGATIVE-STOCKS, decyzje #365/#368) blokuje endTurn od tury 2, bo scenariusz nie ma bufora żywności.
@@ -154,6 +157,14 @@ async function waitEndTurnIdle(page) {
 }
 async function endOneTurn(page) {
   await waitEndTurnIdle(page);
+  // R-WEB-HARNESS-LIVE-WELCOME-TRUCE-Q1 (STARY-PIN): bufor spichlerza z setupu (999) nie wystarcza na kilka tur po
+  // R-WEB-UPKEEPMULT (żywność jednostek ×4/×16/×64). Bramka NNS (no-negative-stocks) słusznie blokuje koniec tury
+  // przy prognozie < 0, bo gracz ma ruch naprawczy. Test dosypuje dodatnie zasoby, gdy bramka blokuje — jak
+  // runner pomiaru i inne testy live. Asercje rozejmu bez zmian.
+  await page.evaluate(() => {
+    const d = window.__aiTradeWiringTestDebug;
+    if (d && d.nnsGateBlocked()) { d.grantPlayerGold(300); d.grantPlayerFood(300); }
+  });
   await page.evaluate(() => window.__eraTestDebug.endTurn());
   await waitEndTurnIdle(page);
   await wait(100);
