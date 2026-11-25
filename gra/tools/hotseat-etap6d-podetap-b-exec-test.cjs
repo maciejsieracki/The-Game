@@ -114,7 +114,7 @@ function exportedFunctionIndex() {
       if (ent.isDirectory()) walk(full);
       else if (ent.name.endsWith('.ts')) {
         const txt = fs.readFileSync(full, 'utf8');
-        for (const m of txt.matchAll(/export function (\w+)/g)) {
+        for (const m of txt.matchAll(/export (?:function|const) (\w+)/g)) {
           if (!_exportIndex.has(m[1])) _exportIndex.set(m[1], path.relative(GRA, full));
         }
       }
@@ -157,7 +157,7 @@ function compileRealFunction(name, freeVarNames, mocks) {
       const modFile = exportedFunctionIndex().get(String(k));
       if (modFile) {
         const v = loadRealModuleCached(modFile)[k];
-        if (typeof v === 'function') { cache.set(k, v); return v; }
+        if (v !== undefined) { cache.set(k, v); return v; } // funkcje i stałe eksportowane (np. DEFAULT_CONVERTER_RECIPES)
       }
       return () => { throw new Error(`UNMOCKED w harnessie: ${String(k)} (w ${name})`); };
     },
@@ -364,6 +364,21 @@ console.log('\n4. enqueueNegotiationFromAiCmd — realne wykonanie\n');
       empireEpochForOwner: () => 1,
       // Stan modułu main.ts (let ... = null w stanie domyślnym, main.ts ~L25043): cache wyłączony.
       aiDiploTradeGoodsCache: null,
+      aiDiploRatesCache: null, // main.ts ~L3747, stan domyślny (cache wyłączony poza oknem tury)
+      // R-WEB-TEST-DEBT-Q15 (runda 2): main.ts `tradableGoodsIndexForOwner` -> ... ->
+      // `empireActiveResourceLabelsForOwner` czyta moduły-poziomu `hudPureScope` / `ownerScope`
+      // (createScopeMemo z frame-memo, main.ts ~L3739). Bez mocka: TypeError `.cached`. Pass-through
+      // memo (bez cache) = ta sama wartość co realna funkcja Raw; asercje bez zmian.
+      hudPureScope: { active: false, cached: (_k, f) => f(), run: (f) => f() },
+      ownerScope: { cached: (_k, f) => f(), run: (f) => f() },
+      // Stan świata (main.ts moduł-poziom) dla etykiet zasobów: pusty świat = brak miast/ulepszeń
+      // gracza/AI; ścieżka ME() tego testu nie zależy od etykiet (asercje na routingu, nie na zasobach).
+      cities: [], cityBuilt: new Map(), map: {}, units: [],
+      empireBuiltIdsForOwner: () => new Set(),
+      placedImprovementsForOwner: () => [],
+      // main.ts importuje `tradableGoodsForOwner as tradableGoodsIndexForOwnerPure` z src/game/diplomacy-goods.ts
+      // (alias, nie nazwa eksportu) -- realny moduł z bundla, ta sama funkcja.
+      tradableGoodsIndexForOwnerPure: loadRealModuleCached('src/game/diplomacy-goods.ts').tradableGoodsForOwner,
       withDiplomacyTradeEra: (era, fn) => fn(),
       // R-WEB-TEST-DEBT-Q15: Impl (gałąź pokoju) bramkuje propozycję `peaceProposalIsTooEarly`
       // (commit 271fcf39f, "defer peace offers ten war turns"). Ten test dowodzi routingu ME(),

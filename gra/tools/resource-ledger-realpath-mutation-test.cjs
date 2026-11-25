@@ -53,6 +53,17 @@ const MUTATIONS = [
 
 if (process.argv.includes('--list')) { for (const m of MUTATIONS) console.log(m.id + ' ' + m.name); process.exit(0); }
 
+// R-WEB-TEST-DEBT-Q15 (runda 2): SIGKILL nie daje się przechwycić, więc po takim przerwaniu main.ts
+// zostaje zmutowany, a kopia wisi w tmpdir. PRZED odczytaniem `original` przywracamy main.ts z
+// osieroconych kopii (inaczej `original` byłby już zmutowany), potem kasujemy kopię.
+(() => {
+  const tmp = require('os').tmpdir();
+  let stale = [];
+  try { stale = fs.readdirSync(tmp).filter((f) => /^civ-ledger-mut-backup-.*\.ts$/.test(f)).map((f) => path.join(tmp, f)); } catch (e) { /* ignore */ }
+  for (const f of stale) {
+    try { fs.writeFileSync(MAIN, fs.readFileSync(f, 'utf8'), 'utf8'); fs.unlinkSync(f); console.log(`[recover] przywrócono main.ts z osieroconej kopii ${path.basename(f)}`); } catch (e) { /* ignore */ }
+  }
+})();
 const original = fs.readFileSync(MAIN, 'utf8');
 // R-WEB-TEST-DEBT-Q15: kopia źródła POZA repo (odporna na SIGKILL: przy następnym uruchomieniu
 // wykrywana i przywracana) + przywracanie: finally, 'exit', SIGINT/SIGTERM/uncaughtException.
@@ -64,6 +75,8 @@ const restore = () => {
   try {
     if (fs.readFileSync(MAIN, 'utf8') !== original) fs.writeFileSync(MAIN, original, 'utf8');
   } catch (e) { /* ignore */ }
+  // kopia kasowana dopiero PO przywróceniu (osierocona kopia = sygnał do odzyskania przy starcie)
+  try { if (fs.readFileSync(MAIN, 'utf8') === original) fs.unlinkSync(BACKUP); } catch (e) { /* ignore */ }
 };
 const killChild = () => { if (activeChild && activeChild.exitCode === null) { try { activeChild.kill('SIGTERM'); } catch (e) { /* ignore */ } } };
 process.on('exit', restore);
