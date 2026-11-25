@@ -1,0 +1,113 @@
+--- /tmp/claude-0/aaq1/clean/gra/src/main.ts	2026-11-25 19:37:01.792028053 +0000
++++ /tmp/claude-0/aaq1/gra/src/main.ts	2026-11-25 19:08:03.707537715 +0000
+@@ -1665,7 +1665,7 @@
+   rejectCooldownKeyFor,
+ } from './game/diplomacy-rejection-cooldown';
+ import {
+-  type ActiveDeal, hasTreaty, expireTreaties, treatiesBrokenByWar,
++  type ActiveDeal, hasTreaty, expireTreaties, expireTreatiesLogged, removeTreatiesByIdLogged, treatiesBrokenByWar,
+   removeTreatiesById, allianceObligationsForWarDeclaration, treatiesBrokenByRefusal,
+   isDefensiveAllianceWarObligation,
+   normalizeTreatyKind, hydrateActiveDeals, addTreaty, resolvePokojTrustTier,
+@@ -22803,7 +22803,7 @@
+       } else {
+         appendWiarygodnoscEvent(recipientOwnerId, 'odmowa_obowiazku_sojuszu', _diplomacyParams().wiarygodnoscN4OdmowaObowiazkuSojuszu);
+         const brokenIds = treatiesBrokenByRefusal([{ ...obligation, obligatedAllies: [recipientOwnerId] }], []);
+-        if (brokenIds.length) activeDeals = removeTreatiesById(activeDeals, brokenIds);
++        if (brokenIds.length) activeDeals = removeTreatiesByIdLogged(activeDeals, brokenIds, "odmowa-obowiazku-sojuszu", turn);
+         syncRelationFromDeals(recipientOwnerId, p.ownerId);
+         showHintMessage('Odmówiono wezwania — sojusz zerwany', 4500);
+         recordAllianceWarCallOutcome(id, call, 'refused');
+@@ -24641,7 +24641,7 @@
+         );
+       }
+ 
+-      activeDeals = removeTreatiesById(activeDeals, [dealId]);
++      activeDeals = removeTreatiesByIdLogged(activeDeals, [dealId], "zerwanie-dobrowolne-breakTreatyVoluntarily", turn);
+       zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, dealId);
+ 
+       // R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1 (GOAL 2/3, decision-abc.md pkt 2) — jednostronne
+@@ -25659,7 +25659,7 @@
+       // Zaufanie (−20) nalicza istniejące zdarzenie 'zlamana_obietnica_ai' niżej; tu tylko dopisek relacji.
+       const napAiAiZerwany = isAiAiTreatyTickEnabled() && !isHuman(a) && !isHuman(b) && !opts?.bezKary
+         && activeDeals.some(d => brokenIds.includes(d.id) && normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.PaktNieagresji);
+-      activeDeals = removeTreatiesById(activeDeals, brokenIds);
++      activeDeals = removeTreatiesByIdLogged(activeDeals, brokenIds, "wojna-breakTreatiesOnWar", turn);
+       for (const id of brokenIds) {
+         zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, id);
+       }
+@@ -26221,7 +26221,7 @@
+           if (isMe(deal.strony[0])) playerRefusalAllies.add(deal.strony[1]);
+           else if (isMe(deal.strony[1])) playerRefusalAllies.add(deal.strony[0]);
+         }
+-        activeDeals = removeTreatiesById(activeDeals, brokenTreatyIds);
++        activeDeals = removeTreatiesByIdLogged(activeDeals, brokenTreatyIds, "odmowa-sojuszu-finalize", turn);
+         for (const allyId of playerRefusalAllies) {
+           showHintMessage(
+             'Sojusz zerwany — ' + ownerDiploLabel(allyId) + ' nie wszedł do wojny',
+@@ -26612,7 +26612,7 @@
+ 
+     function runDiplomacyTurnTick(): void {
+       const dealsBeforeExpire = activeDeals;
+-      activeDeals = expireTreaties(activeDeals, turn);
++      activeDeals = expireTreatiesLogged(activeDeals, turn);
+       for (const d of dealsBeforeExpire) {
+         if (activeDeals.some(x => x.id === d.id)) continue;
+         zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, d.id);
+@@ -26675,7 +26675,7 @@
+         }
+       }
+       for (const id of broken) {
+-        activeDeals = removeTreatiesById(activeDeals, [id]);
++        activeDeals = removeTreatiesByIdLogged(activeDeals, [id], "platnosc-broken-tickDiplomacyPayments", turn);
+         zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, id);
+         if (!tributeBreaks.some(p => p.dealId === id)) {
+           showHintMessage('Trybut zerwany — brak środków w skarbcu', 3500);
+@@ -27101,7 +27101,7 @@
+           showHintMessage('Miasto-państwo wchłonięte do imperium', 4000);
+         }
+         const wasalDeal = findWasalDeal(activeDeals, proposerId, responderId);
+-        if (wasalDeal) activeDeals = removeTreatiesById(activeDeals, [wasalDeal.id]);
++        if (wasalDeal) activeDeals = removeTreatiesByIdLogged(activeDeals, [wasalDeal.id], "wchloniecie-wasal", turn);
+         for (const oid of aiOwnerCivMap.keys()) {
+           if (oid !== responderId) clearAiCsPairState(oid, responderId);
+         }
+@@ -40241,7 +40241,7 @@
+           if (key.startsWith(`${ownerId}_`)) m.delete(key);
+         }
+       }
+-      activeDeals = activeDeals.filter(d => !d.strony.includes(ownerId));
++      activeDeals = removeTreatiesByIdLogged(activeDeals, activeDeals.filter(d => d.strony.includes(ownerId)).map(d => d.id), "eliminateOwner", turn);
+ 
+       // Oblężenia PROWADZONE przez ownerId gdzie indziej (inne miasto niż to
+       // właśnie przejęte) — porzucamy, bo nie ma już kto ich kontynuować.
+--- /tmp/claude-0/aaq1/clean/gra/src/game/diplomacy-treaties.ts	2026-11-25 19:37:01.740435918 +0000
++++ /tmp/claude-0/aaq1/gra/src/game/diplomacy-treaties.ts	2026-11-25 19:08:03.575537707 +0000
+@@ -465,3 +465,16 @@
+   if (opts.contactEstablished) return 'pokoj';
+   return undefined;
+ }
++
++export function removeTreatiesByIdLogged(state: ActiveDeal[], ids: readonly string[], label: string, turn: number): ActiveDeal[] {
++  if (!ids.length) return state;
++  const drop = new Set(ids);
++  for (const d of state) if (drop.has(d.id)) console.log('[AA-REMOVE] t' + turn + ' sciezka=' + label + ' id=' + d.id + ' rodzaj=' + d.rodzaj + ' strony=' + JSON.stringify(d.strony) + ' wygasaTura=' + d.wygasaTura + ' zawarta=' + d.zawartaTura);
++  return state.filter(d => !drop.has(d.id));
++}
++export function expireTreatiesLogged(state: ActiveDeal[], turn: number): ActiveDeal[] {
++  const out = expireTreaties(state, turn);
++  const kept = new Set(out.map(d => d.id));
++  for (const d of state) if (!kept.has(d.id)) console.log('[AA-REMOVE] t' + turn + ' sciezka=wygasniecie-expireTreaties id=' + d.id + ' rodzaj=' + d.rodzaj + ' strony=' + JSON.stringify(d.strony) + ' wygasaTura=' + d.wygasaTura + ' zawarta=' + d.zawartaTura);
++  return out;
++}
+--- /tmp/claude-0/aaq1/clean/gra/tools/ai-economy-measure-run.cjs	2026-11-25 19:37:01.857448503 +0000
++++ /tmp/claude-0/aaq1/gra/tools/ai-economy-measure-run.cjs	2026-11-25 19:08:08.547538002 +0000
+@@ -275,7 +275,7 @@
+   page.on('pageerror', e => log('pageerror', e && e.message));
+   page.on('crash', () => log('crash', 'strona przegladarki padla'));
+   page.on('close', () => log('close', 'strona zamknieta'));
+-  page.on('console', m => { if (m.type() === 'error') log('console-error', m.text()); });
++  page.on('console', m => { if (m.type() === 'error') log('console-error', m.text()); if (m.text().startsWith('[AA-')) require('fs').appendFileSync(process.env.AA_LOG || '/tmp/claude-0/aaq1/aa.log', m.text() + '\n'); });
+   require('./measure-close-modals.cjs').attachEndTurnBlockLog(page, log); // R-WEB-MEASURE-STALL-T72-T80-Q1: powody blokady „Zakoncz ture”
+   page.on('framenavigated', f => { if (f === page.mainFrame()) log('navigate', f.url().slice(0, 120)); });
+ }
