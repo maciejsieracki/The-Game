@@ -213,12 +213,20 @@ console.log('\n--- C. bariery w kodzie (kotwice zrodlowe) ---');
 
   // C2/C3 (kotwice po tekscie wlasnego hunku) usuniete w RUNDZIE 2 — zastapione
   // sekcja D, ktora wykonuje prawdziwy kod main.ts zamiast dopasowywac go regexem.
-  assert(/item\.kind === 'jednostka'[\s\S]{0,900}?shouldAIPurchaseUnit/.test(mainSrc),
-    'C4: egzekutor build AI kieruje jednostke do bramki zakupu za Skarbiec');
+  // R-WEB-TEST-DEBT-Q14 (HARNESS): stałe okno 900 zgniło po dopisaniu komentarzy R-WEB-AI-CITY-GARRISON
+  // (bramka shouldAIPurchaseUnit jest ~1615 znaków od kotwicy). Zamiast poszerzać okno regexu (osłabia
+  // lokalność): wycinamy DOKŁADNIE gałąź `} else if (item.kind === 'jednostka') {` egzekutora build AI
+  // (do jej zamykającego `}` na wcięciu 18) i wymagamy bramki wewnątrz tej gałęzi.
+  const kBranchStart = mainSrc.indexOf("} else if (item.kind === 'jednostka') {");
+  const kBranchEnd = kBranchStart >= 0 ? mainSrc.indexOf('\n                  }\n', kBranchStart) : -1;
+  assert(kBranchStart >= 0 && kBranchEnd > kBranchStart
+    && /shouldAIPurchaseUnit\(/.test(mainSrc.slice(kBranchStart, kBranchEnd)),
+    'C4: egzekutor build AI kieruje jednostke do bramki zakupu za Skarbiec (w gałęzi jednostka)');
   assert(/shouldAIPurchaseUnit[\s\S]{0,700}?purchaseRecruitmentUnit\(/.test(mainSrc),
     'C5: po bramce zakupu AI wola wspolna z graczem purchaseRecruitmentUnit');
   // Parytet (rule_108): sciezka GRACZA bez zmian — nadal blokuje jednostke w kolejce Pracy.
-  assert(/item\.kind === 'jednostka'[\s\S]{0,400}?return;/.test(panelSrc),
+  // R-WEB-TEST-DEBT-Q14 (HARNESS): panel zwraca `return false;` (nie gołe `return;`) po P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1.
+  assert(/item\.kind === 'jednostka'[\s\S]{0,400}?return(?: false)?;/.test(panelSrc),
     'C6: PARYTET — panel miasta gracza nadal odrzuca jednostke w kolejce Pracy (bez zmian)');
 }
 

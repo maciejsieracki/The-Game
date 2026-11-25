@@ -101,8 +101,10 @@ check(`[B] żaden wiersz tekstowy kafelka nie zawiera efektu martwego (sprawdzon
 
 // [C] regresja: rzeczy widoczne na karcie odkrycia zostają
 const oblez = byName['Oblężnictwo'];
-check('[C] Oblężnictwo „Odblokowuje budynek” nadal zawiera Katapultę (Warsztat odblokowuje Katapultę)',
-  (filterDeadEffectText(oblez['Odblokowuje budynek'], 'Oblężnictwo') || '').includes('Katapult'));
+// R-WEB-TEST-DEBT-Q14 (STARY-PIN): data/tech.json Oblężnictwo „Odblokowuje budynek” = „Warsztat oblężniczy”
+// (Katapulta przeniesiona do wiersza samego Warsztatu); regresja pilnuje, że wiersz zostaje na karcie.
+check('[C] Oblężnictwo „Odblokowuje budynek” nadal pokazuje Warsztat oblężniczy (wiersz zostaje po filtrze)',
+  (filterDeadEffectText(oblez['Odblokowuje budynek'], 'Oblężnictwo') || '').includes('Warsztat oblężniczy'));
 const sztuka = byName['Sztuka wojenna'];
 check('[C] Sztuka wojenna „Uwagi” nadal zawiera „elitarnych” (realna bramka jednostek elit)',
   (filterDeadEffectText(sztuka.Uwagi, 'Sztuka wojenna') || '').includes('elitarnych'));

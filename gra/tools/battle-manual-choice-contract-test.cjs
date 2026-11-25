@@ -19,7 +19,9 @@ assert.match(preBattle, /const enterLabel = defaultManual \? deployLabel : 'Auto
 assert.ok(preBattle.includes('Bez Wodza lub Generała możesz wejść na pole bitwy, ale walka rozegra się automatycznie bez indywidualnego sterowania.'),
   'commander note explains the automatic field resolution');
 
-assert.equal((main.match(/deploy: (?:atk|def)RosterRef\.some\(u => u\.isGeneral === true\)/g) ?? []).length, 3,
+// R-WEB-TEST-DEBT-Q14 (HARNESS): wejście gracza w bitwę mapową (openPlayerMapUnitAttackCore) używa
+// `scenePlayerRef` (swapSides, main.ts ~38141) zamiast `atkRosterRef`; wzorzec obejmuje oba nazewnictwa.
+assert.equal((main.match(/deploy: (?:atk|def|scenePlayer)(?:Roster)?Ref\.some\(u => u\.isGeneral === true\)/g) ?? []).length, 3,
   'all three player-controlled map-battle entry paths skip manual deployment controls without a commander');
 assert.match(preBattle, /if \(opts\?\.automaticOnly === true\)\s*\{\s*cb\.onAuto\(\);\s*return;/,
   'automatic-only mode resolves directly and does not show the manual-vs-auto overlay');

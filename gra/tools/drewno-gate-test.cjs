@@ -237,8 +237,10 @@ console.log('\n8. Realne data/units.json: Zwiadowca (po naprawie) vs Wojownik (b
     'ma=' + JSON.stringify(zwiadowca['Surowiec']));
   assert(zwiadowca['Utrzymanie surowiec (ilość)'] === 0,
     'Zwiadowca: Utrzymanie surowiec (ilość) = 0', 'ma=' + zwiadowca['Utrzymanie surowiec (ilość)']);
-  assert(wojownik['Surowiec (ilość)'] === 10 && wojownik['Surowiec'] === 'Drewno',
-    'Wojownik: nadal Surowiec=Drewno ×10 (bez zmian -- kontrola)',
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): units.json Wojownik „Surowiec (ilość)” = 13 (wcześniej 10 w pinie);
+  // kontrola zachowuje sens: Wojownik nadal ma Drewno jako surowiec bramki.
+  assert(wojownik['Surowiec (ilość)'] === 13 && wojownik['Surowiec'] === 'Drewno',
+    'Wojownik: nadal Surowiec=Drewno ×13 (wartość z units.json; kontrola)',
     'ma=' + JSON.stringify({ Surowiec: wojownik['Surowiec'], ilosc: wojownik['Surowiec (ilość)'] }));
 
   const REAL_DATA = { buildings: [], units: realUnits };

@@ -64,7 +64,9 @@ async function main() {
   // (a) Okablowanie main.ts (statyczne).
   console.log('(a) okablowanie main.ts');
   has("openPlayerMapUnitAttackCore(mover, defender, true);", 'gracz wpada w zasadzke AI: openPlayerMapUnitAttackCore(..., true)');
-  has("deploy: atkRosterRef.some(u => u.isGeneral === true) || ambushSurprised,",
+  // R-WEB-TEST-DEBT-Q14 (HARNESS): od obsługi swapSides strona gracza to `scenePlayerRef`
+  // (= swapSides ? defRosterRef : atkRosterRef, main.ts ~38141); warunek deploy ten sam co wcześniej po stronie gracza.
+  has("deploy: scenePlayerRef.some(u => u.isGeneral === true) || ambushSurprised,",
     'atak gracza: deploy = generał LUB zasadzka (rozstawienie bez generała)');
   has("...(ambushSurprised ? { ambush: { surprisedSide: 'atk' as const } } : {}),",
     'atak gracza: ambush.surprisedSide="atk" tylko przy zasadzce');

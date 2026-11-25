@@ -233,8 +233,11 @@ const b8 = CR.cityTradeMultiplier(cityGreek, 'Grecy', null, P, true);
 near(b8.multiplier, 1.0, 'B8: null civs -> multiplier = 1');
 
 // B9. Civ row missing mnoznikHandelPieniadz -> multiplier = 1.
-const civsMissing = { cywilizacje: [{ Cywilizacja: 'Grecy', Religia: 'Politeizm olimpijski' }] };
-const b9 = CR.cityTradeMultiplier(cityGreek, 'Grecy', civsMissing, P, true);
+// R-WEB-TEST-DEBT-Q14 (STARY-PIN): mnożnik handlu czytany jest z civ-matrix (meta_mnoznik_waluta po ikonaId/
+// typCywilizacji/Cywilizacja, culture-religion.ts ~1311), a nie z pola wiersza civs. Brak wiersza w macierzy =
+// brak wartości = fallback 1. Używamy nazwy cywilizacji spoza macierzy.
+const civsMissing = { cywilizacje: [{ Cywilizacja: 'Cywilizacja-bez-macierzy', Religia: 'Politeizm olimpijski' }] };
+const b9 = CR.cityTradeMultiplier(cityGreek, 'Cywilizacja-bez-macierzy', civsMissing, P, true);
 near(b9.multiplier, 1.0, 'B9: missing mnoznikHandelPieniadz -> multiplier = 1 (fallback)');
 eq(b9.civBaseMultiplier, null, 'B9: civBaseMultiplier = null when field absent');
 
