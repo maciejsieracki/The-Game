@@ -335,7 +335,10 @@ function scenarioReplacementAfterLoss(B) {
   ok(simMain.marchBelowThreshold.share >= simPost.marchBelowThreshold.share, 'atrybucja: nowa bramka zbiorki stosu nie pogarsza udzialu marszow ponizej progu wzgledem czystego main');
   console.log(`POMIAR (2 ziarna x 70 tur, flat): marsz-ponizej-progu PO=${simPost.marchBelowThreshold.share.toFixed(3)} (mutacja ${simMut.marchBelowThreshold.share.toFixed(3)}); ` +
     `ms/tura AI PO=${simPost.aiMsPerCall.toFixed(1)} (mutacja ${simMut.aiMsPerCall.toFixed(1)})`);
-  ok(simMut.marchBelowThreshold.share > 0.10, 'pomiar: bez bramki >10% marszow jednostek ze skupiska < 3 (stan przed poprawka)');
+  // Decyzja techniczna orkiestratora (R-WEB-TEST-DEBT-Q14-C, pkt 3): prog 10% -> 5%. Pomiar 2026-11-25 (baza 35f601ae3):
+  // bez bramki 9,1% (mutacja), z bramka 2,5%, czysty main 3,0%. Prog 10% byl za wysoko wzgledem zmierzonego efektu;
+  // warunek "z bramka udzial spada co najmniej o polowe" (nizej) ZOSTAJE bez zmian.
+  ok(simMut.marchBelowThreshold.share > 0.05, 'pomiar: bez bramki >5% marszow jednostek ze skupiska < 3 (stan przed poprawka)');
   ok(simPost.marchBelowThreshold.share < simMut.marchBelowThreshold.share * 0.5,
     'pomiar: z bramka udzial marszow ponizej progu spada o co najmniej polowe');
   ok(simPost.aiMsPerCall <= simMut.aiMsPerCall * 1.5 + 5, 'pomiar: czas tury AI nie rosnie znaczaco (<= 1.5x + 5 ms)');

@@ -60,7 +60,10 @@ function makeData() {
       { Jednostka: 'Rydwan (woły)', Ruch: 4, Health: 30, Typ: 'Mount', 'Rola (linia)': 'Flanka' },
       { Jednostka: 'Wojownik', Ruch: 2, Health: 30, Typ: 'Swordsman', 'Rola (linia)': 'Wręcz' },
     ],
-    buildings: [], aiParams: {}, terrainYields: { terrain_types: [] },
+    // Izolacja: nakladka applyArmySeeksEnemyArmy (ai-war-army-seeks-army) sama ciagnie rydwan do
+    // wroga i maskowala by galaz rydwana (mutacje w ai.ts dawaly te same ruchy). Jej wlasne testy
+    // sa osobno; tu wylaczona parametrem, zeby asercje mierzyly wylacznie flankingTarget.
+    buildings: [], aiParams: { ai_wojna_armia_szuka_armii_wlaczone: { 'wartość': 0 } }, terrainYields: { terrain_types: [] },
   };
 }
 function opts(map) {
@@ -101,48 +104,58 @@ console.log('A. Adjacent enemy beats army concentration for a chariot anchor');
     'rydwan atakuje wroga zamiast zostać odroczony przez plan koncentracji');
 }
 
-console.log('B. Reachable enemy unit without an enemy city gets a closing move');
+// Dom (miasto) w (0,4): daleko od wroga, wiec ani obrona domu, ani nakladka nie przejmuje rydwana;
+// bezczynny powrot do domu idzie W STRONE PRZECIWNA do wroga (mutacja galezi flankingTarget = ruch
+// na (1,5), dystans do wroga rosnie zamiast maleć).
+const HOME_AWAY = { id: 'home', ownerId: 1, q: 0, r: 4, population: 1, name: 'home' };
+console.log('B. Reachable enemy (distance 4 = ruch) gets a closing move toward it');
 {
-  const units = [chariot('c', 2, 2), warrior('enemy', 0, 6, 2)];
-  const commands = commandsFor(units, [ownCity(1)]);
+  const enemy = { q: 6, r: 8 };
+  const unit = chariot('c', 2, 8);
+  const commands = commandsFor([unit, warrior('enemy', 0, enemy.q, enemy.r)], [HOME_AWAY]);
   const move = commands.find(c => c.type === 'move' && c.unitId === 'c');
   ok(move !== undefined, 'rydwan wykonuje ruch w stronę osiągalnego wroga');
   if (move !== undefined) {
-    const before = { q: 2, r: 2 };
     const after = { q: move.toQ, r: move.toR };
-    const target = { q: 6, r: 2 };
-    ok(distance(after, target) < distance(before, target),
-      'ruch rydwanu zmniejsza dystans do celu');
+    ok(distance(after, enemy) < distance({ q: unit.q, r: unit.r }, enemy),
+      'ruch rydwanu zmniejsza dystans do wroga w zasięgu ruchu');
+    ok(distance({ q: unit.q, r: unit.r }, after) <= 4,
+      'krok rydwanu mieści się w budżecie ruchu (ruch 4)');
   }
 }
 
-console.log('C. Enemy outside movement range is not treated as an immediate chase target');
+// Decyzja właściciela 2026-11-25 (R-WEB-TEST-DEBT-Q14-C, pkt 2): obowiązuje KOD (commit 64d5ac663):
+// rydwan aktywnie zbliża się do najbliższej wrogiej jednostki W ZASIĘGU ruchu. Wróg poza zasięgiem
+// NIE wymusza zbliżenia: brak ataku i ruch (bezczynny powrót do domu) nie zmniejsza dystansu do wroga.
+// Mutacja "zasięg bez ograniczenia" (warunek hexDistance <= ruchLeft usunięty) daje zbliżenie -> czerwony.
+console.log('C. Enemy outside movement range: no attack, no approach toward it');
 {
-  const units = [chariot('c', 2, 2), warrior('enemy', 0, 10, 2)];
-  const commands = commandsFor(units, [ownCity(1)]);
+  const enemy = { q: 10, r: 2 };
+  const unit = chariot('c', 2, 2);
+  const commands = commandsFor([unit, warrior('enemy', 0, enemy.q, enemy.r)], [HOME_AWAY]);
   const attack = commands.find(c => c.type === 'attack' && c.unitId === 'c');
   const move = commands.find(c => c.type === 'move' && c.unitId === 'c');
   ok(attack === undefined, 'brak ataku, gdy wróg jest poza zasięgiem');
-  ok(move === undefined || distance({ q: move.toQ, r: move.toR }, { q: 10, r: 2 })
-    >= distance({ q: 2, r: 2 }, { q: 10, r: 2 }),
-  'wróg poza zasięgiem nie wymusza ofensywnego zbliżenia');
+  ok(move === undefined || distance({ q: move.toQ, r: move.toR }, enemy)
+    >= distance({ q: unit.q, r: unit.r }, enemy),
+  'rydwan nie zbliża się do wroga poza zasięgiem ruchu (dystans nie maleje)');
 }
 
-console.log('D. Partial movement uses remaining points, not the unit maximum');
+// D. Budżet: ruchLeft=2 (autorytatywne pozostałe punkty, nie maksimum ruch=4). Wróg w odległości 4
+// jest w zasięgu ruch=4, ale POZA ruchLeft=2 -> brak zbliżenia. Mutacja Math.max(ruchLeft, ruch)
+// w warunku zasięgu daje zbliżenie na (4,8) -> czerwony.
+console.log('D. Partial movement: remaining points (ruchLeft) bound the approach, not the unit maximum');
 {
-  const unit = chariot('c', 2, 2);
-  unit.ruchLeft = 1;
-  const target = { q: 6, r: 2 };
-  const units = [unit, warrior('enemy', 0, target.q, target.r)];
-  // Keep the city outside the home-defense threat radius so this assertion
-  // isolates the flanking chase guard from the separate defense assignment.
-  const commands = commandsFor(units, [{ id: 'home', ownerId: 1, q: 0, r: 15, population: 1, name: 'home' }]);
+  const enemy = { q: 6, r: 8 };
+  const unit = chariot('c', 2, 8);
+  unit.ruchLeft = 2;
+  const commands = commandsFor([unit, warrior('enemy', 0, enemy.q, enemy.r)], [HOME_AWAY]);
+  const attack = commands.find(c => c.type === 'attack' && c.unitId === 'c');
   const move = commands.find(c => c.type === 'move' && c.unitId === 'c');
-  const beforeDistance = distance({ q: unit.q, r: unit.r }, target);
-  const offensiveChase = move !== undefined
-    && distance({ q: move.toQ, r: move.toR }, target) < beforeDistance;
-  ok(!offensiveChase,
-    'rydwan z 1 pozostałym punktem ruchu nie goni celu odległego o 4 heksy');
+  ok(attack === undefined, 'brak ataku przy ruchLeft=2 i wrogu w odległości 4');
+  ok(move === undefined || distance({ q: move.toQ, r: move.toR }, enemy)
+    >= distance({ q: unit.q, r: unit.r }, enemy),
+  'rydwan z ruchLeft=2 nie zbliża się do wroga spoza pozostałego budżetu (ruch 4 nie jest używany)');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);
