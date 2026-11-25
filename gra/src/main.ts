@@ -13101,6 +13101,16 @@ async function boot(): Promise<void> {
         getArmyM: ownerId => sumArmyMForOwner(ownerId),
         isHuman: id => isHuman(id),
         declareWarAfterTruce: (a, b) => {
+          // R-WEB-WAR-LIMIT-BYPASS-Q1: wznowienie wojny po rozejmie to wojna naturalna (limit 1 naturalnej
+          // na cywilizację, FALA 863) — podlega bramce jak zwykłe wypowiedzenie. Podczas rozejmu para nie
+          // jest liczona jako wojna, więc w międzyczasie mogła powstać inna wojna; wtedy wznowienie jest
+          // odrzucone, rozejm dostaje +1 turę i próba ponowi się w kolejnej turze (bez wybuchu wojny).
+          const typWojnyRozejm = getWarTypFromMeta(getDiploPairMeta(a, b));
+          if (!warLimitAllowsDeclaration(a, b, typWojnyRozejm)) {
+            const metaOdmowa = getDiploPairMeta(a, b);
+            setDiploPairMeta(a, b, { ...metaOdmowa, truceUntilTurn: turn + 1 });
+            return;
+          }
           const cur = getDiploRelation(a, b);
           setDiploRelation(a, b, applyDiploEventTracked(a, b, cur, 'wojna_wypowiedziana'));
         },
