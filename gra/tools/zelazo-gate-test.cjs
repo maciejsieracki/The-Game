@@ -80,14 +80,17 @@ function assert(cond, msg, extra) {
 // --- Fixtures ----------------------------------------------------------------
 const CITY = { id: 'test-city', q: 0, r: 0, ownerId: 0, population: 3 };
 
+// R-WEB-TEST-DEBT-Q14 (runda 3 D2): fixture 'Legionista' nigdy nie istniala w data/units.json (git log -S bez trafien
+// w units.json); zastapiona realna jednostka epoki Zelazo z units.json (Hastati, Surowiec Żelazo, koszt 25). Moc dowodowa
+// bez zmian: te same asercje bramki kopalnia+odlewnia (fixture ma Surowiec zelazo i epoke Zelazo jak wczesniej).
 const UNIT_ZELAZO = {
-  Jednostka: 'Legionista',
+  Jednostka: 'Hastati',
   Epoka: 'Zelazo',
   'Rola (linia)': 'Wrecz',
   'W zamian za': '-',
   Tech: '-',
   Surowiec: 'zelazo',
-  'Pieniadz (koszt)': 15,
+  'Pieniadz (koszt)': 25, // R-WEB-TEST-DEBT-Q14: jednostka zastepcza z units.json (Hastati, Żelazo, 25)
 };
 const UNIT_ZELAZO_NO_SUROWIEC = {
   Jednostka: 'Procarz',
@@ -175,8 +178,8 @@ console.log('\n4. availableProduction: miasto BEZ zlozа/kopalni LUB BEZ Odlewni
     builtBuildingIds: ['odlewnia_zelaza', 'koszary'],
     hasKopalniaNaZlozuZelaza: false,
   });
-  assert(!itemsNoMine.some(i => i.id === 'Legionista'),
-    'Legionista NIE dostepny: Odlewnia jest, ale brak kopalni na zlozu zelaza',
+  assert(!itemsNoMine.some(i => i.id === 'Hastati'),
+    'Hastati NIE dostepny: Odlewnia jest, ale brak kopalni na zlozu zelaza',
     'ids=' + JSON.stringify(itemsNoMine.map(i => i.id)));
 
   // Kopalnia jest (empire-wide), ale BRAK Odlewni w tym miescie.
@@ -185,8 +188,8 @@ console.log('\n4. availableProduction: miasto BEZ zlozа/kopalni LUB BEZ Odlewni
     builtBuildingIds: ['koszary'],
     hasKopalniaNaZlozuZelaza: true,
   });
-  assert(!itemsNoOdlewnia.some(i => i.id === 'Legionista'),
-    'Legionista NIE dostepny: kopalnia jest, ale brak Odlewni zelaza w miescie',
+  assert(!itemsNoOdlewnia.some(i => i.id === 'Hastati'),
+    'Hastati NIE dostepny: kopalnia jest, ale brak Odlewni zelaza w miescie',
     'ids=' + JSON.stringify(itemsNoOdlewnia.map(i => i.id)));
 
   // Ctx bez pola hasKopalniaNaZlozuZelaza w ogole (domyslne {}) -> fail-closed.
@@ -194,8 +197,8 @@ console.log('\n4. availableProduction: miasto BEZ zlozа/kopalni LUB BEZ Odlewni
     epoch: 3,
     builtBuildingIds: ['odlewnia_zelaza', 'koszary'],
   });
-  assert(!itemsDefaultCtx.some(i => i.id === 'Legionista'),
-    'Legionista NIE dostepny gdy ctx.hasKopalniaNaZlozuZelaza w ogole nie podano (fail-closed)',
+  assert(!itemsDefaultCtx.some(i => i.id === 'Hastati'),
+    'Hastati NIE dostepny gdy ctx.hasKopalniaNaZlozuZelaza w ogole nie podano (fail-closed)',
     'ids=' + JSON.stringify(itemsDefaultCtx.map(i => i.id)));
 }
 
@@ -207,8 +210,8 @@ console.log('\n5. availableProduction: miasto Z kopalnia na zlozu ORAZ z Odlewni
     hasKopalniaNaZlozuZelaza: true,
     empireResourceStock: { zelazo: 1 },
   });
-  assert(items.some(i => i.id === 'Legionista'),
-    'Legionista JEST dostepny: kopalnia na zlozu + Odlewnia zelaza',
+  assert(items.some(i => i.id === 'Hastati'),
+    'Hastati JEST dostepny: kopalnia na zlozu + Odlewnia zelaza',
     'ids=' + JSON.stringify(items.map(i => i.id)));
 }
 
@@ -233,8 +236,8 @@ console.log('\n7. purchasableUnits respektuje ten sam gate');
     epoch: 3, builtBuildingIds: ['odlewnia_zelaza', 'koszary'], hasKopalniaNaZlozuZelaza: true,
     empireResourceStock: { zelazo: 1 },
   });
-  assert(!without.some(i => i.id === 'Legionista'), 'purchasableUnits: brak kopalni -> Legionista niedostepny');
-  assert(withBoth.some(i => i.id === 'Legionista'), 'purchasableUnits: kopalnia+Odlewnia -> Legionista dostepny');
+  assert(!without.some(i => i.id === 'Hastati'), 'purchasableUnits: brak kopalni -> Hastati niedostepny');
+  assert(withBoth.some(i => i.id === 'Hastati'), 'purchasableUnits: kopalnia+Odlewnia -> Hastati dostepny');
 }
 
 console.log('\n8. availableReplacementsFor ("Zastap") respektuje ten sam gate');
@@ -255,16 +258,16 @@ console.log('\n8. availableReplacementsFor ("Zastap") respektuje ten sam gate');
   const withoutAccess = availableReplacementsFor('Wojownik podstawowy', DATA_REPL, NO_TECHS, {
     epoch: 3, builtBuildingIds: ['odlewnia_zelaza', 'koszary'], hasKopalniaNaZlozuZelaza: false,
   });
-  assert(!withoutAccess.some(i => i.id === 'Legionista'),
-    'Zastap: Legionista NIE jest opcja zamiany bez dostepu do zelaza',
+  assert(!withoutAccess.some(i => i.id === 'Hastati'),
+    'Zastap: Hastati NIE jest opcja zamiany bez dostepu do zelaza',
     'ids=' + JSON.stringify(withoutAccess.map(i => i.id)));
 
   const withAccess = availableReplacementsFor('Wojownik podstawowy', DATA_REPL, NO_TECHS, {
     epoch: 3, builtBuildingIds: ['odlewnia_zelaza', 'koszary'], hasKopalniaNaZlozuZelaza: true,
     empireResourceStock: { zelazo: 1 },
   });
-  assert(withAccess.some(i => i.id === 'Legionista'),
-    'Zastap: Legionista JEST opcja zamiany z pelnym dostepem do zelaza',
+  assert(withAccess.some(i => i.id === 'Hastati'),
+    'Zastap: Hastati JEST opcja zamiany z pelnym dostepem do zelaza',
     'ids=' + JSON.stringify(withAccess.map(i => i.id)));
 }
 
