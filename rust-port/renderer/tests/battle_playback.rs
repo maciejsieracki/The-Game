@@ -851,6 +851,67 @@ fn tower_shot_playback_equals_pin_calls() {
     // change the scene.
 }
 
+/// LANDAT-TOWER-BOULDER-Q1 (D-LTB-1): the engine session carries in
+/// `TowerShot.landAt` the frame-grid moment of the pin hit
+/// (`_schedule(RANGED_FLY_MS)` `:4262` fires in the first 16 ms frame with
+/// `vNow >= due`: `t0 + 384`). The playback accepts exactly the nominal
+/// `t0 + RANGED_FLY_MS` and `t0 + 384` with the same scene calls and scene (the
+/// projectile keeps `dur = RANGED_FLY_MS`, `:4261`); every other moment is
+/// `LandAt` and launches nothing.
+#[test]
+fn landat_tb_tower_shot_on_frame_grid_is_played_like_nominal() {
+    let d = load();
+    let fort = FortDto {
+        kind: FortKind::Mur,
+        tower_material: Some(TowerMaterial::Kamien),
+        tower_rows: vec![67, 73],
+    };
+    let base = build_battle_scene_with_units_fort(opts_of(&d["siege"]), &fort);
+    let kind = tower_projectile_kind(Some("Distance"), Some("Lucznik"));
+    let target = uid("atk0");
+    let t0 = 5_000.0;
+    let run = |land_at: f64| {
+        let mut q = base.clone();
+        let mut pb = BattlePlayback::new(
+            &q,
+            PlaybackOpts {
+                tower_projectile: Some(kind),
+            },
+        );
+        pb.push_actions(&[act(
+            t0,
+            BattleActionKindDto::TowerShot {
+                row: 67,
+                target,
+                land_at,
+            },
+        )])
+        .expect("push");
+        let r = pb.play_until(&mut q, t0 + 100.0, 0.0);
+        (q, pb, r)
+    };
+    let (nominal, pb_n, rn) = run(t0 + RANGED_FLY_MS);
+    assert_eq!(rn, Ok(()));
+    let (grid, pb_g, rg) = run(t0 + 384.0);
+    assert_eq!(rg, Ok(()), "frame-grid landing accepted");
+    assert_eq!(pb_g.projectiles().len(), 1);
+    assert_eq!(pb_g.calls(), pb_n.calls());
+    assert!(grid == nominal, "same scene as the nominal landing");
+    for off in [0.0, 368.0, 379.0, 381.0, 383.0, 385.0, 396.0, 400.0] {
+        let (bad, pb_b, rb) = run(t0 + off);
+        assert_eq!(
+            rb,
+            Err(PlaybackError::LandAt {
+                t0,
+                land_at: t0 + off
+            }),
+            "offset {off}"
+        );
+        assert!(pb_b.projectiles().is_empty(), "offset {off}");
+        assert!(bad == base, "offset {off}: nothing reached the scene");
+    }
+}
+
 /// Frames drive the morale and ammunition bars (`_updateMoraleBar`
 /// `:9652-9661`, `_updateAmmoBar` `:9671-9684`) and not the HP bar;
 /// `apply_snapshot` resyncs all three (reset paths `:4581-4583`).

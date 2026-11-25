@@ -1151,7 +1151,11 @@ fn kontrakt_land_at_wiezy_i_kamienia_rowny_chwili_trafienia() {
                         // `WallDamage` pada tylko z callbacku kamienia (`:7555-7564`).
                         let q = stone_fly.entry(row).or_default();
                         unpaired += pop_before(q, a.t0);
-                        assert_eq!(q.pop_front(), Some(a.t0), "{name}: trafienie kamienia w mur {row}");
+                        assert_eq!(
+                            q.pop_front(),
+                            Some(a.t0),
+                            "{name}: trafienie kamienia w mur {row}"
+                        );
                         boulder_hits += 1;
                     }
                     _ => {}
@@ -1165,7 +1169,16 @@ fn kontrakt_land_at_wiezy_i_kamienia_rowny_chwili_trafienia() {
         "LANDAT-TB: trafień wieży {tower_hits}, kamienia {boulder_hits}, bez pary {unpaired}; wystrzały {per_frame:?}"
     );
     // Pokrycie: oba rodzaje pocisków i ich trafienia wystąpiły (inaczej test niczego nie pilnuje), także przy 16 ms.
-    assert!(tower_hits > 0 && boulder_hits > 0, "brak trafień: {per_frame:?}");
-    assert!(per_frame.get("tower@16").copied().unwrap_or(0) > 0, "{per_frame:?}");
-    assert!(per_frame.get("boulder@16").copied().unwrap_or(0) > 0, "{per_frame:?}");
+    assert!(
+        tower_hits > 0 && boulder_hits > 0,
+        "brak trafień: {per_frame:?}"
+    );
+    assert!(
+        per_frame.get("tower@16").copied().unwrap_or(0) > 0,
+        "{per_frame:?}"
+    );
+    assert!(
+        per_frame.get("boulder@16").copied().unwrap_or(0) > 0,
+        "{per_frame:?}"
+    );
 }
