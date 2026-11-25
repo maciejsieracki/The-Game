@@ -4,7 +4,8 @@
  *
  * Kontrakt (tabela zatwierdzona przez właściciela 2026-11-09): AI każdej z 15 cywilizacji
  * rekrutuje wg docelowego składu wręcz / dystans / konnica+rydwany (rydwany liczone z konnicą),
- * min. 50% wręcz; brak dostępu do klasy NIE blokuje rekrutacji (udział przechodzi na wręcz);
+ * udział wręcz mierzony w zakresie celu ±10 pp (dla celów 50% = zakres 40-60%; decyzja właściciela
+ * 2026-11-25: sztywny próg "min 50% wręcz" usunięty -- "nigdy nie trafi idealnie 50 na 50"); brak dostępu do klasy NIE blokuje rekrutacji (udział przechodzi na wręcz);
  * Inkowie: 0 konnicy. Dotyczy wyłącznie AI (chooseCityProduction / decideAITurn).
  *
  * Uruchomienie z katalogu gra:  node tools/ai-army-composition-per-civ-test.cjs
@@ -245,7 +246,6 @@ for (const civ of CIVS) {
     assert(Math.abs(r.pct.wrecz - w) <= 10, `${tag}: wręcz ${r.pct.wrecz.toFixed(1)}% vs ${w}% (±10)`);
     assert(Math.abs(r.pct.dystans - d) <= 10, `${tag}: dystans ${r.pct.dystans.toFixed(1)}% vs ${d}% (±10)`);
     assert(Math.abs(r.pct.konnica - k) <= 10, `${tag}: konnica ${r.pct.konnica.toFixed(1)}% vs ${k}% (±10)`);
-    assert(r.pct.wrecz >= 50, `${tag}: min 50% wręcz (got ${r.pct.wrecz.toFixed(1)}%)`);
     if (civ === 'inkowie') eq(r.counts.konnica, 0, `${tag}: Inkowie 0 konnicy`);
     if (ep === 3) console.log(`    ${civ.padEnd(10)} ${epName}: ${r.pct.wrecz.toFixed(0)}/${r.pct.dystans.toFixed(0)}/${r.pct.konnica.toFixed(0)}  ${JSON.stringify(r.names)}`);
   }
@@ -287,7 +287,6 @@ for (const level of [1, 2, 3]) {
     const tag = `F: L${level}/${civ}`;
     assert(Math.abs(r.pct.wrecz - w) <= 10 && Math.abs(r.pct.dystans - d) <= 10 && Math.abs(r.pct.konnica - k) <= 10,
       `${tag}: ${r.pct.wrecz.toFixed(0)}/${r.pct.dystans.toFixed(0)}/${r.pct.konnica.toFixed(0)} vs ${w}/${d}/${k}`);
-    assert(r.pct.wrecz >= 50, `${tag}: min 50% wręcz`);
   }
 }
 
