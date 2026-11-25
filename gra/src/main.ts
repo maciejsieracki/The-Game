@@ -13109,6 +13109,20 @@ async function boot(): Promise<void> {
         declareWarAfterTruce: (a, b) => {
           const cur = getDiploRelation(a, b);
           setDiploRelation(a, b, applyDiploEventTracked(a, b, cur, 'wojna_wypowiedziana'));
+          // R-WEB-TRUCE-END-SILENT-WAR-Q1 (L4): powrót do wojny po rozejmie bez oferty (odmowa AI, brak zgody
+          // wojskowej, brak inicjatora, timeout oferty) był dla gracza cichy. Wpis „Ważne” (jak logPeaceVazne),
+          // tylko gdy gracz jest stroną pary; AI↔AI bez zmian. Dedup: tura + para.
+          if (a === ME() || b === ME()) {
+            const other = a === ME() ? b : a;
+            const evId = `truce-war-${turn}-${diploPairKey(a, b)}`;
+            if (!warEventLog.some(e => e.id === evId)) {
+              warEventLog.unshift({
+                id: evId, icon: '⚔', title: 'Rozejm wygasł, wojna wraca: ' + ownerDiploLabel(other),
+                subtitle: 'Bez pokoju stałego po końcu rozejmu (odmowa lub brak zgody)', kind: 'enemy', turnCreated: turn,
+              });
+              trimWarEventLog();
+            }
+          }
         },
         enqueueOffer: (ownerId, reason) => enqueueTruceEndOffer(ownerId, reason),
         removeOffer: inboxId => {
