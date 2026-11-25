@@ -347,6 +347,17 @@ const DAWNA_KLASA_A: [&str; 3] = [
     "a3_rown_lucz2_d3l_mury_221_klatka1",
 ];
 
+/// MARCH-RESZTA-Q1 (D-MR-1, `dyspozycje/autobot/runs/R-RUSTPORT-P4-MARCH-RESZTA-Q1/01-operator-r1.md`): wektory z marszem
+/// jazdy (`_cavalryAction`, kolejny krok i cel z chwili callbacku kroku) i wieży oblężnej (`_siegeWalkTo` + `arrive`) w
+/// oknie zdarzeń zegara; pilnowane jako zwykłe zgodne (test pada, gdy któryś zniknie z pliku).
+const MARCH_RESZTA: [&str; 5] = [
+    "mr_wzg_jazda3_d3l_mury_333",
+    "mr_wzg_wieza_df_mury_347",
+    "mr_wzg_mixk_df_palisada_364",
+    "mr2_wzg_slabi_ds_palisada_534",
+    "mr2_rown_wiezak_ds_palisada_606",
+];
+
 #[test]
 fn wektory_pinu_pelnej_bitwy_bajt_w_bajt() {
     let doc = vectors();
@@ -392,6 +403,12 @@ fn wektory_pinu_pelnej_bitwy_bajt_w_bajt() {
         assert!(
             list.iter().any(|v| v["name"] == name),
             "brak dawnego wektora klasy A {name}"
+        );
+    }
+    for name in MARCH_RESZTA {
+        assert!(
+            list.iter().any(|v| v["name"] == name),
+            "brak wektora MARCH-RESZTA {name}"
         );
     }
     // PIN2-PROBE-Q1 (D-PIN2-2): każdy scenariusz z jawną rozbieżnością @16 ms ma bliźniaka z granicą klatki (krok 1 ms),

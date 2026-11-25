@@ -3582,9 +3582,10 @@ impl<R: RollSource> ProdBody<R> {
             (MarchStage::Gap, MarchKind::SiegeWalk { .. }) => self.walk_enter(st, &mut c),
             (MarchStage::StepEnd, _) => self.ranged_step_end(st, &mut c),
             // Jazda nie planuje `_schedule` (kolejny krok w callbacku), więc przerwa jazdy nie występuje.
-            (MarchStage::Gap, MarchKind::CavDirected { .. } | MarchKind::CavManeuver | MarchKind::CavCharge) => {
-                MarchNext::Done
-            }
+            (
+                MarchStage::Gap,
+                MarchKind::CavDirected { .. } | MarchKind::CavManeuver | MarchKind::CavCharge,
+            ) => MarchNext::Done,
             (MarchStage::Gap, _) => self.ranged_forward_enter(st, &mut c),
         };
         self.march_advance(c, next);
@@ -3829,7 +3830,8 @@ impl<R: RollSource> ProdBody<R> {
         let en = self.combatants(opposite(unit.side), st);
         let me = self.combatant(unit, st);
         // `ru.moveLeft > 0` (`:6439`/`:6496`): `NaN` kończy.
-        if cav_adjacent_non_spear(&me, &en).is_some() || c.move_left <= 0.0 || c.move_left.is_nan() {
+        if cav_adjacent_non_spear(&me, &en).is_some() || c.move_left <= 0.0 || c.move_left.is_nan()
+        {
             return MarchNext::Done;
         }
         let gate = |ml: f64| i64::from(ml > 0.0 || ml.is_nan());
@@ -5357,7 +5359,9 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             }
             let mut st2 = st.clone();
             // MARCH-RESZTA-Q1 (D-MR-1): `_fleeStep` krok po kroku; pierwsze wejście synchronicznie na kopii stanu.
-            let flee_march = self.march_incremental.then(|| self.flee_first(unit, &mut st2));
+            let flee_march = self
+                .march_incremental
+                .then(|| self.flee_first(unit, &mut st2));
             let dur = if flee_march.is_some() {
                 0.0
             } else {
@@ -5643,7 +5647,9 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             // `_siegeApproachRestricted` (`:7953`) czyta `ru.routed` w chwili kroku, czyli PO `_startRout` (`:6116`).
             self.mover_routed = st2.unit(unit).c.routed;
             // MARCH-RESZTA-Q1 (D-MR-1): `_fleeStep` krok po kroku; pierwsze wejście synchronicznie na kopii stanu.
-            let flee_march = self.march_incremental.then(|| self.flee_first(unit, &mut st2));
+            let flee_march = self
+                .march_incremental
+                .then(|| self.flee_first(unit, &mut st2));
             let dur = if flee_march.is_some() {
                 0.0
             } else {
@@ -8273,6 +8279,17 @@ mod march_incremental_tests {
 
     /// Atakujący wręcz w (0,0), obrońca w (8,0); równina, klatka 16 ms, model czasu pinu, marsz krok po kroku.
     fn setup(move_left: f64) -> (ProdBody<SequenceRolls>, TurnSeqState) {
+        setup_defs(move_left, vec![unit_at(false, 8)])
+    }
+
+    /// Jak [`setup`], z podanymi obrońcami (wiersz 0 = indeks 0 w `st.def`).
+    fn setup_defs(move_left: f64, defs: Vec<ProdUnit>) -> (ProdBody<SequenceRolls>, TurnSeqState) {
+        let def_seq: Vec<SeqUnit> = (0..defs.len())
+            .map(|i| SeqUnit {
+                id: 1 + i as u64,
+                c: cu(0.0),
+            })
+            .collect();
         let scene = ActivateScene {
             finished: false,
             manual_mode: false,
@@ -8283,7 +8300,7 @@ mod march_incremental_tests {
             siege_machine_range: 0.0,
         };
         let mut b = ProdBody::new(
-            [vec![unit_at(true, 0)], vec![unit_at(false, 8)]],
+            [vec![unit_at(true, 0)], defs],
             scene,
             SequenceRolls::new(Vec::new()),
         );
@@ -8296,7 +8313,7 @@ mod march_incremental_tests {
                 id: 0,
                 c: cu(move_left),
             }],
-            def: vec![SeqUnit { id: 1, c: cu(0.0) }],
+            def: def_seq,
             turn_order: Vec::new(),
             turn_idx: 0,
             round_no: 1,
@@ -9014,18 +9031,12 @@ mod march_incremental_tests {
         let mut c = cont(MarchKind::Flee, 4.0);
         let next = b.flee_enter(&mut st, &mut c);
         assert_eq!(next, MarchNext::StepEnd);
-        assert!(
-            b.mover_routed,
-            "uciekający nie dostaje odmowy bramki muru"
-        );
+        assert!(b.mover_routed, "uciekający nie dostaje odmowy bramki muru");
         b.march_advance(c, next);
         assert_eq!(b.cell_of(A0), (1, 0));
         assert!(step(&mut b, &mut st, 1240.0));
         assert!(!st.atk[0].c.removed, "przed krawędzią: jeszcze na polu");
-        assert!(
-            !step(&mut b, &mut st, 1328.0),
-            "wejście z zegara przerwy"
-        );
+        assert!(!step(&mut b, &mut st, 1328.0), "wejście z zegara przerwy");
         assert_eq!(b.cell_of(A0), (0, 0));
         assert!(step(&mut b, &mut st, 1568.0));
         assert!(
@@ -9165,6 +9176,93 @@ mod march_incremental_tests {
         }
     }
 
+    /// Jazda z `start` (`_activateUnit` -> `_cavalryAction`, `:6284`, `:6372-6412`): pierwszy krok synchronicznie, dalsze
+    /// kroki w callbackach (marsz w toku po `start`, NIE cały manewr policzony przy starcie aktywacji).
+    #[test]
+    fn jazda_ze_start_marsz_w_toku() {
+        let (mut b, mut st) = setup(4.0);
+        b.units[0][0].activate.mounted = true;
+        place(&mut b, A0, 0);
+        place(&mut b, D0, 4);
+        b.set_now(1000.0);
+        b.start(A0, &st);
+        assert!(b.march_pending(A0), "manewr jazdy w toku po start");
+        assert_eq!(b.cell_of(A0), (1, 0), "tylko pierwszy krok przy starcie");
+        let mut t = 1000.0;
+        while b.march_pending(A0) {
+            t += 240.0;
+            step(&mut b, &mut st, t);
+        }
+        assert_eq!(b.cell_of(A0), (3, 0));
+        assert_eq!(b.take_march_done(), Some((A0, 0.0)));
+        b.complete(A0, &mut st);
+        assert_eq!(st.atk[0].c.move_left, 1.0, "moveLeft manewru w complete");
+    }
+
+    /// Pin C-FLANK `_cavDirectedManeuverStep` (`:6436-6443`): callback kroku bierze cel `_cavalryTarget(ru) ?? tgt` Z
+    /// CHWILI callbacku — cel z wejścia zabity w trakcie kroku = manewr na nowy cel (nie na pole martwego).
+    #[test]
+    fn jazda_c_flank_cel_z_chwili_callbacku() {
+        // Cel 1 w (0,7): dalej niż cel 0 w (6,0), więc wejście wybiera cel 0; manewr na tył celu 1 idzie na zachód/południe.
+        let mut d1 = unit_at(false, 0);
+        d1.activate.r = 7;
+        let (mut b, mut st) = setup_defs(4.0, vec![unit_at(false, 6), d1]);
+        b.units[0][0].activate.mounted = true;
+        b.attack_direction[0][0] = AttackDirection::Tyl;
+        place(&mut b, A0, 0);
+        b.set_now(1000.0);
+        pend(&mut b, false);
+        let mut c = cont(MarchKind::CavManeuver, 4.0);
+        let next = b.cav_enter(&st, &mut c);
+        assert_eq!(next, MarchNext::StepEnd);
+        assert!(
+            matches!(c.kind, MarchKind::CavDirected { tgt: 0, .. }),
+            "manewr C-FLANK na bliższy cel: {:?}",
+            c.kind
+        );
+        b.march_advance(c, next);
+        let first = b.cell_of(A0);
+        st.def[0].c.dead = true;
+        step(&mut b, &mut st, 1240.0);
+        let second = b.cell_of(A0);
+        assert!(
+            matches!(
+                b.march.map(|c| c.kind),
+                Some(MarchKind::CavDirected { tgt: 1, .. })
+            ),
+            "cel z chwili callbacku"
+        );
+        assert!(
+            second.0 <= first.0,
+            "drugi krok ku nowemu celowi (0,7), nie na wschód ku martwemu (6,0): {first:?} -> {second:?}"
+        );
+    }
+
+    /// Strzelec bez amunicji z `start` (`_activateUnit` `:6249-6276` -> `_fallBackStep`): odwrót krok po kroku (marsz
+    /// w toku po `start`).
+    #[test]
+    fn odwrot_ze_start_marsz_w_toku() {
+        let (mut b, mut st) = setup(3.0);
+        {
+            let a = &mut b.units[0][0].activate;
+            a.primary_ranged = true;
+            a.can_shoot = false;
+        }
+        place(&mut b, A0, 4);
+        // Zagrożenie bliżej niż `FALLBACK_TILES = 3` (`:1161`, `:6264`), więc odwrót trwa (bez `heldAfterFallback`).
+        place(&mut b, D0, 6);
+        b.set_now(1000.0);
+        b.start(A0, &st);
+        assert!(b.march_pending(A0), "odwrót w toku po start: {:?}", b.trace);
+        assert_eq!(b.cell_of(A0), (3, 0), "tylko pierwszy krok przy starcie");
+        let mut t = 1000.0;
+        while b.march_pending(A0) {
+            t += 240.0;
+            step(&mut b, &mut st, t);
+        }
+        assert_eq!(b.take_march_done(), Some((A0, 0.0)));
+    }
+
     /// Taran pod bramę (`_siegeWalkTo` `:8006-8019`, cel `GateApproach`).
     fn ram(b: &mut ProdBody<SequenceRolls>) -> MarchKind {
         let a = &mut b.units[0][0].activate;
@@ -9209,10 +9307,30 @@ mod march_incremental_tests {
         assert_eq!(b.cell_of(A0), (2, 0));
         assert!(step(&mut b, &mut st, 1568.0));
         assert_eq!(b.take_march_done(), Some((A0, 0.0)));
-        assert!(
-            b.tower_at_wall_rows.contains(&0),
-            "arrive: q >= wallBase"
-        );
+        assert!(b.tower_at_wall_rows.contains(&0), "arrive: q >= wallBase");
+    }
+
+    /// Wejście `_siegeWalkTo` z gałęzi atakującego przy murze (`_siegeRamTowerStep` `:8032`): pierwszy krok synchronicznie,
+    /// marsz przekazany do `start` przez `walk_deferred` (NIE cały marsz policzony przy starcie aktywacji).
+    #[test]
+    fn marsz_machiny_z_aktywacji_krok_po_kroku() {
+        let (mut b, st) = setup(2.0);
+        let _ = ram(&mut b);
+        place(&mut b, A0, 0);
+        place(&mut b, D0, 9);
+        b.set_now(1000.0);
+        let enemies = b.enemies_of(A0.side, &st);
+        let goal = AtkGoal::GateApproach {
+            wall_col: 9,
+            lo: 0,
+            hi: 1,
+        };
+        let run = b.siege_atk_walk(A0, &st, 9, goal, None, Some(2), &enemies);
+        assert_eq!(run.dur, 0.0, "czas marszu prowadzi sterownik, nie start");
+        assert_eq!(run.move_left, Some(1.0));
+        let (_, next) = b.walk_deferred.take().expect("marsz _siegeWalkTo w toku");
+        assert_eq!(next, MarchNext::StepEnd);
+        assert_eq!(b.cell_of(A0), (1, 0), "tylko pierwszy krok przy starcie");
     }
 
     /// Pin callback `_siegeWalkTo` (`:8016`): machina zniszczona w trakcie kroku (`ru.dead`) kończy marsz bez kolejnego
