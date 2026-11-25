@@ -135,6 +135,43 @@ check(
   capCode !== null && capCode.includes('getEmpireFoodMaxCap(ownerId)') && !/getEmpireFoodMaxCap\(\s*0\s*\)/.test(capCode),
 );
 
+// R-WEB-HUD-ME-FOODRESERVE-Q1 (zarzut FC nr 1+2): projekcja żywności dla fotela wyświetlanego.
+// buildHudStateRaw musi wołać projectPlayerFoodProjection(ownerId), a jej ciało nie może
+// liczyć wyłącznie właściciela 0 (zapas, miasta, armia, preview).
+check(
+  'buildHudStateRaw: projectPlayerFoodProjection(ownerId) (nie bez argumentu, nie literał 0)',
+  rawCode !== null && rawCode.includes('projectPlayerFoodProjection(ownerId)') && !/projectPlayerFoodProjection\(\s*\)/.test(rawCode) && !/projectPlayerFoodProjection\(\s*0\s*\)/.test(rawCode),
+);
+// Ciało z typem zwracanym `{...}` w sygnaturze: wycinek do następnej funkcji (nie dopasowanie klamer).
+const projStart = /function projectPlayerFoodProjection\(/.exec(src);
+const projEnd = projStart ? src.indexOf('function projectPlayerFoodNetRate(', projStart.index) : -1;
+const projBody = projStart && projEnd > projStart.index ? src.slice(projStart.index, projEnd) : null;
+const projCode = projBody === null ? null : stripComments(projBody);
+const PROJ_LITERALS = [
+  [/getEmpireFoodReserve\(\s*0\s*\)/, 'getEmpireFoodReserve(0)'],
+  [/c\.ownerId\s*===\s*0\b/, 'c.ownerId === 0'],
+  [/tk\.ownerId\s*!==\s*0\b/, 'tk.ownerId !== 0'],
+  [/u\.ownerId\s*===\s*0\b/, 'u.ownerId === 0'],
+  [/buildWonderCityYieldsByOwnerMap\(\s*\[\s*0\s*\]\s*\)/, 'buildWonderCityYieldsByOwnerMap([0])'],
+  [/spichlerzSolArmyBonusActive\(\s*0\s*\)/, 'spichlerzSolArmyBonusActive(0)'],
+  [/militaryFoodConsumptionWithSpichlerz\(\s*playerUnits\s*,\s*0\s*,/, 'militaryFoodConsumptionWithSpichlerz(playerUnits, 0,'],
+  [/new Map\(\[\[0,/, 'new Map([[0,'],
+];
+for (const [re, label] of PROJ_LITERALS) {
+  check(
+    'projectPlayerFoodProjection: brak ' + label,
+    projCode !== null && !re.test(projCode),
+    'właściciel 0 zamiast ownerId -- niespójny HUD hotseat',
+  );
+}
+check(
+  'projectPlayerFoodProjection: sygnatura (ownerId: number = 0) i użycie ownerId w zapasie/armii',
+  projCode !== null
+    && /function projectPlayerFoodProjection\(ownerId: number = 0\)/.test(projBody)
+    && projCode.includes('getEmpireFoodReserve(ownerId)')
+    && /militaryFoodConsumptionWithSpichlerz\(\s*playerUnits\s*,\s*ownerId\s*,/.test(projCode),
+);
+
 console.log('\nWynik: ' + passCount + ' PASS / ' + failCount + ' FAIL');
 if (failCount > 0) {
   process.exit(1);
