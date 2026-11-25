@@ -89,6 +89,7 @@ import {
   thickenCoastAndSmoothInlets,
   applyCoastRing,
   enforceTargetDryLandFraction,
+  purgeOpenOceanLandSpecks,
   pangeaLandLayoutParams,
   type StartPosition,
   type TypSwiata,
@@ -452,7 +453,13 @@ export function generateMap(
       undefined,
       typ === 'pangea' ? 'mask' : 'center',
       pangeaFillMin,
+      typ !== 'pangea',
     );
+    // Pas polarny po konwersji klimatu może zostawić samotne heksy lądu (otwarte morze):
+    // usuń je, jak robi to finalizeLandMassAfterCoast (kontynenty/wyspy, nie pangea).
+    if (typ !== 'pangea') {
+      purgeOpenOceanLandSpecks(hexes);
+    }
     if (typ === 'pangea') {
       snapPangeaBagelAudit('05_po_enforceLandPct', hexes, width, height);
       // Po ścięciu % lądu (często znów otwiera dolinę pierścienia) — most NATYCHMIAST.
