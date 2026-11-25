@@ -200,7 +200,9 @@ const WRITE_API = /writeFileSync|writeFile\(|mkdirSync|mkdir\(|copyFileSync|rena
 function isReadOnlyRoot(src, name) {
   const esc = name.replace(/\$/g, '\\$');
   const useRe = new RegExp('(?<![\\w$.])' + esc + '(?![\\w$])', 'g');
-  const literalJoinRe = new RegExp('path\\.(?:join|resolve)\\(\\s*' + esc + '\\s*,\\s*[\'"`]');
+  // Kontekst KAZDEGO uzycia liczony wielolinijkowo (runda 2): zmienna moze stac w innej linii
+  // niz wywolanie zapisu lub `path.join(` — linia po linii przepuszczala trzy warianty luki:
+  // konkatenacja `T + '/x'`, alias `const U = T` i `path.join(\n T,\n 'x')`.
   let u;
   while ((u = useRe.exec(src)) !== null) {
     const lineStart = src.lastIndexOf('\n', u.index - 1) + 1;
@@ -209,8 +211,17 @@ function isReadOnlyRoot(src, name) {
     if (isCommentLine(line)) continue;
     if (/(?:const|let|var)\s+$/.test(src.slice(lineStart, u.index))) continue; // deklaracja
     if (/mkdtempSync\(/.test(line)) continue;                                  // bezpieczny wzorzec
-    if (WRITE_API.test(line)) return false;                                    // zapis do korzenia
-    if (literalJoinRe.test(line)) return false;                                // stała nazwa pod korzeniem
+    // Instrukcja, w ktorej stoi uzycie (od poprzedniego `;`/`{`/`}` do nastepnego `;`).
+    const stmtStart = Math.max(src.lastIndexOf(';', u.index - 1), src.lastIndexOf('{', u.index - 1),
+      src.lastIndexOf('}', u.index - 1)) + 1;
+    const semi = src.indexOf(';', u.index);
+    const stmt = src.slice(stmtStart, semi === -1 ? src.length : semi);
+    if (WRITE_API.test(stmt)) return false;                                    // zapis w tej instrukcji
+    const before = src.slice(Math.max(0, u.index - 60), u.index);
+    const after = src.slice(u.index + name.length, u.index + name.length + 200);
+    if (/\+\s*$/.test(before) || /^\s*\+/.test(after)) return false;           // konkatenacja
+    if (/=\s*$/.test(before) && /^\s*;/.test(after)) return false;             // alias: const U = T;
+    if (/path\.(?:join|resolve)\(\s*$/.test(before) && /^\s*,\s*['"`]/.test(after)) return false; // stała nazwa pod korzeniem
   }
   return true;
 }
@@ -367,6 +378,13 @@ for (const file of files) scanSource(path.relative(TOOLS_DIR, file), fs.readFile
   check('samotest R2: zapis do korzenia przez zmienna = FAIL', countFixture(fixtureWriteRoot) >= 1);
   check('samotest R2: stala nazwa pod korzeniem zmiennej = FAIL', countFixture(fixtureWriteConst) >= 1);
   check('samotest R1: stala nazwa dosłowna pod os.tmpdir() = FAIL', countFixture(fixtureLiteral) >= 1);
+  // Runda 2 (zarzut 2): trzy warianty luki z zarzutu 1 — każdy musi być FAIL.
+  const fixtureConcatRoot = fx(["const T = @TMP@;", "const p = T + '/civ-fixed';", "fs.writeFileSync(p, 'x');"]);
+  const fixtureAliasRoot = fx(["const T = @TMP@;", "const U = T;", "fs.writeFileSync(U + '/a', 'x');"]);
+  const fixtureMultilineRoot = fx(["const T = @TMP@;", "fs.writeFileSync(path.join(", "  T,", "  'civ-fixed'), 'x');"]);
+  check('samotest R2: konkatenacja zmiennej korzenia + stała = FAIL', countFixture(fixtureConcatRoot) >= 1);
+  check('samotest R2: alias korzenia (const U = T) użyty do zapisu = FAIL', countFixture(fixtureAliasRoot) >= 1);
+  check('samotest R2: wieloliniowe path.join(korzeń, stała) = FAIL', countFixture(fixtureMultilineRoot) >= 1);
   findings.length = findingsMark;
   scanned = scannedMark;
 }
