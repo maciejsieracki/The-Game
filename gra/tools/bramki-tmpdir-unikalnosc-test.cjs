@@ -188,10 +188,35 @@ function statementRestOf(rest) {
   return rest;
 }
 
+/**
+ * R2 — wyjątek ODCZYTU. Zmienna przypisana do korzenia (`const tmp = os.tmpdir();`) jest
+ * dopuszczona wyłącznie, gdy KAŻDE jej użycie w pliku jest odczytem: argument readdir/exists/
+ * stat/read, `path.join(tmp, <zmienna>)` (dynamiczna nazwa z listy katalogu), albo wyrażenie
+ * bez API zapisu. Zapis (`writeFileSync|mkdirSync|unlinkSync|...` w linii z korzeniem) albo
+ * stała nazwa pod korzeniem (`path.join(tmp, 'stala')`) → false (FAIL).
+ * `mkdtempSync(...)` jest bezpieczny z definicji i nie jest tu liczony jako zapis.
+ */
+const WRITE_API = /writeFileSync|writeFile\(|mkdirSync|mkdir\(|copyFileSync|renameSync|cpSync|appendFileSync|rmSync|rmdirSync|unlinkSync|writeSync|openSync|createWriteStream|symlinkSync|linkSync/;
+function isReadOnlyRoot(src, name) {
+  const esc = name.replace(/\$/g, '\\$');
+  const useRe = new RegExp('(?<![\\w$.])' + esc + '(?![\\w$])', 'g');
+  const literalJoinRe = new RegExp('path\\.(?:join|resolve)\\(\\s*' + esc + '\\s*,\\s*[\'"`]');
+  let u;
+  while ((u = useRe.exec(src)) !== null) {
+    const lineStart = src.lastIndexOf('\n', u.index - 1) + 1;
+    const lineEndRaw = src.indexOf('\n', u.index);
+    const line = src.slice(lineStart, lineEndRaw === -1 ? src.length : lineEndRaw);
+    if (isCommentLine(line)) continue;
+    if (/(?:const|let|var)\s+$/.test(src.slice(lineStart, u.index))) continue; // deklaracja
+    if (/mkdtempSync\(/.test(line)) continue;                                  // bezpieczny wzorzec
+    if (WRITE_API.test(line)) return false;                                    // zapis do korzenia
+    if (literalJoinRe.test(line)) return false;                                // stała nazwa pod korzeniem
+  }
+  return true;
+}
+
 let scanned = 0;
-for (const file of files) {
-  const rel = path.relative(TOOLS_DIR, file);
-  const src = fs.readFileSync(file, 'utf8');
+function scanSource(rel, src) {
   const lines = src.split('\n');
 
   // --- R5: DOSLOWNA sciezka '/tmp/...' — klasa CALKOWICIE poza zasiegiem R1-R4 ----------
@@ -212,7 +237,7 @@ for (const file of files) {
     findings.push({ rule: 'R5', rel, lineNo, arg: full, line: line.trim() });
   }
 
-  if (!src.includes('tmpdir')) continue;
+  if (!src.includes('tmpdir')) return;
   scanned++;
   // Swiadomie NIE liczymy tu zadnego znacznika „na poziomie pliku" — patrz komentarz przy R3.
 
@@ -249,12 +274,17 @@ for (const file of files) {
     }
   }
 
-  // --- R2: KORZEN os.tmpdir() wprost jako cel zapisu ------------------------------------
+  // --- R2: KORZEN os.tmpdir() jako CEL ZAPISU --------------------------------------------
+  // Sam korzen nie jest bledem. `cel = os.tmpdir();` bez zmiennej (np. `x || os.tmpdir();`)
+  // jest zawsze FAIL; przypisanie do zmiennej przechodzi tylko przez isReadOnlyRoot (odczyt).
   const rootRe = new RegExp(String.raw`(?:=|\|\|)\s*` + TMPDIR_CALL + String.raw`\s*;`, 'g');
   while ((m = rootRe.exec(src)) !== null) {
     const lineNo = src.slice(0, m.index).split('\n').length;
     const line = lines[lineNo - 1];
     if (isCommentLine(line)) continue;
+    const lineStart = src.lastIndexOf('\n', m.index - 1) + 1;
+    const decl = /(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*$/.exec(src.slice(lineStart, m.index));
+    if (decl && isReadOnlyRoot(src, decl[1])) continue;
     findings.push({ rule: 'R2', rel, lineNo, arg: '(korzen os.tmpdir())', line: line.trim() });
   }
 
@@ -301,6 +331,44 @@ for (const file of files) {
     if (UNIQUE_MARK.test(seg)) continue;
     findings.push({ rule: 'R6', rel, lineNo, arg: rest.trim().slice(0, 60), line: line.trim() });
   }
+}
+
+for (const file of files) scanSource(path.relative(TOOLS_DIR, file), fs.readFileSync(file, 'utf8'));
+
+// --- SAMOTEST BRAMKI ---------------------------------------------------------------------
+// Bramka sprawdza samą siebie na fixture'ach w pamięci: odczyt korzenia = dozwolony; zapis do
+// korzenia i stała nazwa pod korzeniem = FAIL. Bez tego wyjątek odczytu mógłby po cichu
+// przepuścić prawdziwy zapis, a bramka zostałaby zielona.
+{
+  const findingsMark = findings.length;
+  const scannedMark = scanned;
+  const countFixture = (src) => {
+    const mark = findings.length;
+    scanSource('SAMOTEST.cjs', src);
+    const n = findings.length - mark;
+    findings.length = mark;
+    return n;
+  };
+  // Fixture'y zapisane z placeholderami (@TMP@ / @TMPOS@), żeby sam plik bramki nie zawierał
+  // dosłownych wzorców, które bramka by zgłosiła przy skanie własnego źródła.
+  const fx = (lines) => lines.join('\n').replace(/@TMP@/g, "require('os').tmpdir()").replace(/@TMPOS@/g, 'os.tmpdir()');
+  const fixtureRead = fx([
+    'const tmp = @TMP@;',
+    "const names = fs.readdirSync(tmp).filter(f => f.endsWith('.ts'));",
+    'for (const n of names) {',
+    '  const f = path.join(tmp, n);',
+    '  fs.unlinkSync(f);',
+    '}',
+  ]);
+  const fixtureWriteRoot = fx(['const dir = @TMP@;', "fs.writeFileSync(dir, 'x');"]);
+  const fixtureWriteConst = fx(['const OUT = @TMP@;', "fs.writeFileSync(path.join(OUT, 'civ-stala'), 'x');"]);
+  const fixtureLiteral = fx(["fs.writeFileSync(path.join(@TMPOS@, 'civ-cos-dist'), 'x');"]);
+  check('samotest R2: odczyt korzenia (readdir + dynamiczna nazwa) = dozwolony', countFixture(fixtureRead) === 0);
+  check('samotest R2: zapis do korzenia przez zmienna = FAIL', countFixture(fixtureWriteRoot) >= 1);
+  check('samotest R2: stala nazwa pod korzeniem zmiennej = FAIL', countFixture(fixtureWriteConst) >= 1);
+  check('samotest R1: stala nazwa dosłowna pod os.tmpdir() = FAIL', countFixture(fixtureLiteral) >= 1);
+  findings.length = findingsMark;
+  scanned = scannedMark;
 }
 
 check('skan objął pliki używające tmpdir', scanned > 0, scanned);
