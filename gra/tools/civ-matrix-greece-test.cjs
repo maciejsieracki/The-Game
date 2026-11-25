@@ -166,11 +166,15 @@ equal(resolveArchetypeAggression('grecy', 0.99, conflictingData, 'hard'), 0.5, '
 equal(resolveArchetypeTrade('grecy', 0, 'normal'), 0.75, 'trade archetype uses matrix value');
 equal(nastawienieBazoweZaufanieDelta('grecy'), 4.5, 'base attitude helper reads matrix value (pure adapter; live init is not claimed)');
 equal(civMatrixParamAtDifficulty('rzymianie', 'dip_agresja_archetyp', 'normal'), 0.75, 'Roman dip_agresja_archetyp remains a separate matrix field');
-equal(resolveArchetypeAggression('rzymianie', 0, conflictingData, 'normal'), 0.8, 'Roman gameplay aggression resolver uses ai_agresywnosc, not dip_agresja_archetyp');
+// R-WEB-TEST-DEBT-Q14: STARY-PIN. Zatwierdzone 2026-10-18 (docs/decyzje/R-PR141-CODEX-SEMANTICS-DECISIONS-20261018.md,
+// Q3): resolver główny AI bierze bazę z dip_agresja_archetyp (0–1) zamiast ai_agresywnosc/10; offset difficulty
+// (ai_agresywnosc normal→normal = 0) i clamp bez zmian. Rzymianie normal: 0,75 + 0 = 0,75 (commit b4d37d9f8).
+equal(resolveArchetypeAggression('rzymianie', 0, conflictingData, 'normal'), 0.75, 'Roman gameplay aggression resolver uses approved dip_agresja_archetyp base (R-PR141-CODEX-Q3)');
 assert(
-  civMatrixParamAtDifficulty('rzymianie', 'dip_agresja_archetyp', 'normal')
-    !== resolveArchetypeAggression('rzymianie', 0, conflictingData, 'normal'),
-  'duplicate Roman aggression fields are distinguishable (0.75 vs 0.8)',
+  resolveArchetypeAggression('rzymianie', 0, conflictingData, 'normal')
+    === civMatrixParamAtDifficulty('rzymianie', 'dip_agresja_archetyp', 'normal')
+    && resolveArchetypeAggression('rzymianie', 0, conflictingData, 'normal') !== civMatrixParamAtDifficulty('rzymianie', 'ai_agresywnosc', 'normal') / 10,
+  'duplicate Roman aggression fields are distinguishable: resolver follows dip_agresja_archetyp (0.75), not ai_agresywnosc/10 (0.8)',
 );
 
 console.log('--- production-priority decision consumes military/economy fields ---');
@@ -248,6 +252,11 @@ const decisionInput = {
     respektWzgledny: 0.65,
     stanWojny: false,
     partnerTypCywilizacji: 'rzymianie',
+    // R-WEB-TEST-DEBT-Q14: STARY-PIN. Od R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 wypowiedzenie wojny wymaga
+    // przewagi siły militarnej AI (ai.ts Priorytet 4: aiMaPrzewageMilitarna; brak danych = brak przewagi).
+    // Fixture podaje dane siły: AI 150 vs partner 100 (+50% ≥ progu 10–35%).
+    silaMilitarnaAI: { sila: 150, armiaPkt: 1500 },
+    silaMilitarnaPartner: { sila: 100, armiaPkt: 1000 },
   }],
   agresja: 1,
   handlowosc: 0.4,
