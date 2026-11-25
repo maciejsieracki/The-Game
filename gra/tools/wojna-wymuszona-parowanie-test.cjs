@@ -123,7 +123,9 @@ try {
       { ownerId: 2, q: 1, r: 0, era: 'bronze' },
       { ownerId: 5, q: 50, r: 0, era: 'iron' }, // leftover -- nikt inny wolny w puli
     ];
-    const existingPairs = [{ attackerId: 3, targetId: 4, era: 'stone' }];
+    // R-WEB-TEST-DEBT-Q14 (D2, STARY-PIN): para 'bronze' zamiast 'stone' -- regula R-WEB-ERA-WAR-DEFER-NOT-CANCEL-Q1 r3
+    // (commit 8df9ac864): Braz/Zelazo NIE dolacza do pary Kamienia. Negatywny przypadek pokryty w S2b ponizej.
+    const existingPairs = [{ attackerId: 3, targetId: 4, era: 'bronze' }];
     const result = assignForcedWarPairings(subjects, existingPairs, {
       isPairBlocked: blockedPairsOpt([]),
       hexDistanceFn: hexDistance,
@@ -138,6 +140,33 @@ try {
     // pod starym mechanizmem, gdyby 5 nie miał pary i nie było domina.
     assertNoZeroWhileOthersHaveTwoPlus(
       'S2', [1, 2, 3, 4, 5],
+      (id) => (id === 3 || id === 4 ? 1 : 0),
+      result,
+    );
+  }
+
+  // =========================================================================
+  // Scenariusz 2b (R-WEB-TEST-DEBT-Q14 D2): regula 8df9ac864 -- leftover Zelaza NIE dolacza do pary Kamienia.
+  // Binarny ECHO nadal obowiazuje: nikt nie ma 2+ wojen, wiec brak przydzialu nie narusza inwariantu.
+  // =========================================================================
+  console.log('\n--- Scenariusz 2b: leftover Zelaza + para Kamienia -- brak dolaczenia (regula Braz/Zelazo nie do pary Kamienia) ---');
+  {
+    const subjects = [
+      { ownerId: 1, q: 0, r: 0, era: 'bronze' },
+      { ownerId: 2, q: 1, r: 0, era: 'bronze' },
+      { ownerId: 5, q: 50, r: 0, era: 'iron' },
+    ];
+    const existingPairs = [{ attackerId: 3, targetId: 4, era: 'stone' }];
+    const result = assignForcedWarPairings(subjects, existingPairs, {
+      isPairBlocked: blockedPairsOpt([]),
+      hexDistanceFn: hexDistance,
+      totalActiveForcedWarsByOwner: (id) => (id === 3 || id === 4 ? 1 : 0),
+    });
+    assert(!result.assignments.some(a => a.ownerId === 5 && (a.targetId === 3 || a.targetId === 4)),
+      'S2b: Zelazo (5) NIE dolacza do pary Kamienia 3<->4 (R-WEB-ERA-WAR-DEFER-NOT-CANCEL-Q1 r3)');
+    assert(result.unresolvedOwnerIds.includes(5), 'S2b: Zelazo (5) trafia do unresolved (DECISION_REQUIRED zamiast zgadywania)');
+    assertNoZeroWhileOthersHaveTwoPlus(
+      'S2b', [1, 2, 3, 4, 5],
       (id) => (id === 3 || id === 4 ? 1 : 0),
       result,
     );
@@ -259,7 +288,8 @@ try {
       { ownerId: RZYM, q: 0, r: 0, era: 'bronze' }, // Rzym, sojusznik gracza, szuka nowego celu
     ];
     // Istniejąca para AI-AI (2,3) NIEpowiązana z Rzymem ani graczem -- jedyna dostępna do dołączenia.
-    const existingPairs = [{ attackerId: 2, targetId: 3, era: 'stone' }];
+    // R-WEB-TEST-DEBT-Q14 (D2, STARY-PIN): para 'bronze' (regula 8df9ac864: Braz nie dolacza do pary Kamienia).
+    const existingPairs = [{ attackerId: 2, targetId: 3, era: 'bronze' }];
     const isPairBlocked = (a, b) => {
       // Rzym i gracz są sojusznikami -- ta para jest zablokowana WZAJEMNIE (nieistotne tu,
       // bo gracz nie jest w tym scenariuszu w ogóle triggered/warless -- ma już wojnę).

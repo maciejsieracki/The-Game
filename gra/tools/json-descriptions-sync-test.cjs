@@ -162,6 +162,11 @@ if (warCur && dipCur) {
       for (const k of ['mnozniStopni', 'mnoznikNaOdrzucenie', 'maxMiastNaPokoj', 'minMiastPoOddaniu']) delete base.przegrywajacy[k];
       curCmp = JSON.parse(JSON.stringify(cur));
       delete curCmp.cenaPokoju;
+      // R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (ABC 2026-11-18): sekcja pwPrzezMoc (mianownikMin) — nowa, celowa.
+      // R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (ABC właściciela 2026-11-18): sekcja ogonPokoju (kolejnosc) — nowa, celowa.
+      // R-WEB-TEST-DEBT-Q14 (D2): pola dodane przez te decyzje były niewyjaśnione w teście (przyczyna FAIL a1).
+      delete curCmp.pwPrzezMoc;
+      delete curCmp.ogonPokoju;
     }
     if (rel === WAR_JSON && base && base.zmeczenie) {
       base.zmeczenie.pelneTur = 40;

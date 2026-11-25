@@ -612,6 +612,17 @@ const BEFORE = {
 };
 const TARGET_NAMES = Object.keys(BEFORE);
 
+// R-WEB-TEST-DEBT-Q14 (D2): celowe zmiany danych PO migawce BEFORE (STARY-PIN). Migawka jest sprzed tych decyzji;
+// asercje nie są osłabione — dla tych pól oczekiwana wartość to wartość z decyzji, a nie BEFORE*2 / BEFORE.
+//  - Rydwan (woły) Surowiec / Utrzymanie surowiec = Drewno: commit e06ad53c8d (Maciej Sieracki 2026-10-28, zmiana surowca).
+//  - Rydwan egipski Atak dystansowy = 10, Jeździec z oszczepami Atak dystansowy = 14: commit fb17e765a
+//    (R-WEB-DATA-RANGED-HEALTH-HALF-AND-CARDS-ALIGN-Q1, 2026-11-17; decyzja właściciela: karta = silnik).
+const DECYZJE_NADPISANIA = {
+  "Rydwan (woły)": { unchanged: { "Surowiec": "Drewno", "Utrzymanie surowiec": "Drewno" } },
+  "Rydwan egipski": { doubled: { "Atak dystansowy": 10 } },
+  "Jeździec z oszczepami": { doubled: { "Atak dystansowy": 14 } },
+};
+
 let checks = 0;
 const failures = [];
 const byName = new Map(units.map((unit) => [unit.Jednostka, unit]));
@@ -641,6 +652,7 @@ check(mountedNames.every((name) => TARGET_NAMES.includes(name)) && TARGET_NAMES.
 
 for (const name of TARGET_NAMES) {
   const before = BEFORE[name];
+  const ov = DECYZJE_NADPISANIA[name] || {};
   const after = byName.get(name);
   check(Boolean(after), `${name}: brak wpisu w units.json`);
   if (!after) continue;
@@ -651,15 +663,16 @@ for (const name of TARGET_NAMES) {
       check(!hasOwn(after, field), `${name}.${field}: pole nieobecne przed zmiana nie powinno zostac dodane`);
       continue;
     }
-    const expected = before[field] * 2;
+    const expected = ov.doubled && hasOwn(ov.doubled, field) ? ov.doubled[field] : before[field] * 2;
     const actual = after[field];
     check(isNumber(actual) && actual === expected,
       `${name}.${field}: oczekiwano ${expected} (= ${before[field]} * 2), jest ${JSON.stringify(actual)}`);
   }
 
   for (const field of FIELDS_UNCHANGED) {
-    check(same(after[field], before[field]),
-      `${name}.${field}: powinno pozostac ${JSON.stringify(before[field])}, jest ${JSON.stringify(after[field])}`);
+    const expectedU = ov.unchanged && hasOwn(ov.unchanged, field) ? ov.unchanged[field] : before[field];
+    check(same(after[field], expectedU),
+      `${name}.${field}: powinno pozostac ${JSON.stringify(expectedU)}, jest ${JSON.stringify(after[field])}`);
   }
 }
 
