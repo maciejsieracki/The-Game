@@ -1,59 +1,68 @@
-STATUS: BLOCK
-DOMAIN: GAME (testy; bez zmian w gra/src i gra/data)
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (testy; bez zmian w gra/src, gra/data, wiki i gra/tools poza wymienionymi plikami testów)
 TEMAT: R-WEB-TEST-DEBT-Q14-B
-GOAL: Odpowiedź na 7 zarzutów Evaluatora (49542f4ce) do kandydata 6f9736f32. Bez osłabiania asercji. Pozycje nie domknięte zaznaczone wprost.
-BAZA: kandydat 6f9736f32f029bce8138c71ee5fdc340fba871c7 (detach). Runda 2/5. Operator HAIKU 5.5.
+GOAL: Obrona rundy 3 (odpowiedź na zarzuty 1–5 Evaluatora, commit c122cea4b). Baza: 27a4680758b9fe7058ec06fdb326901e5fbdbabc, kandydat 57f222f520033ec053b6239ed15fadb7095c077e.
 
-ZMIANY/COMMIT (allowlista, git add ścieżkami):
-- gra/tools/wojna-wymuszona-parowanie-test.cjs: DODANA asercja negatywna S2-NEG (Brąz nie dołącza do pary Kamienia; strony pary nie wskazują leftovera). Dotychczasowe asercje bez zmian.
-- gra/tools/ai-player-parity-fixes-test.cjs: DODANY kontrast czuły: unitProductionItem tempo 'wysoki' vs 'niski' ZMIENIA koszt. Asercje o koszcie bez zmian.
-- gra/tools/hud-moc-warstwa-test.cjs: wzorce zawężone do ME() (usunięte alternatywy z literałem 0); dwa checki teraz CZERWONE, patrz zarzut 5.
-- gra/tools/granice-relacja-dyplomatyczna-test.cjs: wzorzec `(a === 0 || b === 0)` usunięty, zostaje tylko `isMe(a) || isMe(b)`.
-- gra/tools/hotseat-etap6d-podetap-e-source-test.cjs: wyjątek wrapperów wymaga teraz delegacji do ...Impl/...Uncached (regex na ciele), zamiast samej nazwy z listy.
-- dyspozycje/autobot/runs/R-WEB-TEST-DEBT-Q14-B/30-obrona-claude.md (ten raport).
-- Brak zmian w gra/src, gra/data, wiki, docs. Nie uruchamiano npm run build w gra/. npm ci wykonano w worktree (node_modules do usunięcia po bramkach).
+ODPOWIEDZI NA ZARZUTY
 
-ODPOWIEDZI NA ZARZUTY:
-1. PRZYJMUJĘ, NIE DOKOŃCZONE w tej rundzie: dyplo-bilans-runda2 pozostaje 18 PASS / 6 FAIL. Przyczyna (zweryfikowana): e27418db7 przywróciło KIERUNKOWĄ bramkę pokoju (gracz-autor z pwBalance<0 -> accepted:false, "Brakuje N PW"), pomijaną gdy autorem jest partner (AI). Checki (5-REGRESJA/PLAYER) i (5-KONTROLA/PLAYER) pinują stan z e253e64a6 (bez bramki w obu kierunkach) i wymagają re-pinu do reguły kierunkowej. (0e) oczekuje 2, kod daje 1. (6-setup): brak fixtur dla 4 typów komend z ai.ts (oferuj_miasto_za_pokoj, zada_miasto_za_pokoj, zaproponuj_wymiane_cykliczna, zaproponuj_przemarsz), do dopisania (test-only). (1-PRZED), (2-PRZED): dowody błędu rundy 2 nie są odtwarzalne na kodzie bieżącym, do przepisania jako pin historyczny albo usunięcia z jawnym uzasadnieniem. Wymaga osobnej rundy.
-2. PRZYJMUJĘ, NIE RUSZANE w tej rundzie: dyplo-bilans-runda3 = "=== PODSUMOWANIE: 10 PASS / 17 FAIL ===" (surowe). Diagnoza: needle mutacji (FIXED_NEEDLE, PRE_R4_BLOCK, pluginSwap) są zakotwiczone w kodzie sprzed e253e64a6/e27418db7 i nie pasują do bieżącego diplomacy-proposals.ts (case 'pokoj', ok. linii 2051-2117), więc (0a) daje applied != 2. Oczekiwane pwBalance (-450/+450/+50) dryfowały (bieżąco -554/+554/0 przy tej samej relacji). Check (3b) oczekuje accepted=true dla gracza-autora, a kod po e27418db7 zwraca false. Wymaga osobnego, zakresowego dispatchu Operatora.
-3. PRZYJMUJĘ I ZROBIONE: ai-player-parity dostał kontrast czuły (tempo niski vs wysoki ZMIENIA koszt, PASS). Wynik: 45 passed, 0 failed. Równość per trudność jest teraz informatywna.
-4. PRZYJMUJĘ: ai-army-composition-per-civ pozostaje DECYZJA_WŁAŚCICIELA (10 FAIL "min 50% wręcz": sumer 48,3%, babilonia 48,3%, asyria 46,7%, L1-L3 asyria). Operator nie rozstrzyga progu. Bez zmian w kodzie testu. Pytanie ABC: patrz 10-operator-claude.md (runda 1), opcje A/B/C bez zmian.
-5. PRZYJMUJĘ I ZROBIONE: wzorce poluzowane usunięte.
-   - hud-moc-warstwa: tylko ME(). WYNIK: 26 PASS / 2 FAIL. To ujawnia pozostałości literału 0 w kodzie gry: main.ts:24044 (buildHudState: objectivePowerForOwnerEffective(0)) i main.ts:3140 (objectiveRespektPctTowardEffective: objectivePowerForOwnerEffective(0)). Kandydat BŁĄD-GRY (semantycznie neutralne w grze 1-graczowej, ME()=0). Kodu gry NIE poprawiano (zakaz). Test NIE osłabiony.
-   - granice-relacja: tylko isMe(a) || isMe(b). WYNIK: 52 passed, 0 failed.
-   - hotseat-etap6d: wrapper zwolniony tylko gdy ciało zawiera ...Impl/...Uncached (regex \b\w+(?:Impl|Uncached)\b). Potwierdzone w main.ts: previewNegotiationEntry -> previewNegotiationEntryImpl; collectTurnEvents -> collectTurnEventsUncached. WYNIK: 77 PASS / 0 FAIL.
-6. PRZYJMUJĘ I ZBADANE: ai-ai-treaty-live-proof-wiring wykonano w przebiegu LIVE (poniżej). WYNIK: 3 OK / 1 FAIL.
-   - Przebieg: ai-ai-treaty-live-proof-wiring-run.cjs, Chromium /usr/bin/google-chrome, bundle vite zbudowany poza repo (scratchpad .../scratchpad/q14b-live/dist), ziarno 4242, 60 tur. Wznowienie ze slotu dwukrotnie padło SIGSEGV w openGame, więc wykonano ŚWIEŻY przebieg (resumed=false), który się zakończył. Wyjście: .../scratchpad/q14b-live/out2/seed4242.{jsonl,wiring.log,events.log,summary.json}. Runner: endTurn=60, wallSec=246, counters: gateActiveTurns 1, bypassApplied 1, battlesAuto 0, modal closed 0/0/0.
-   - Analizator (node tools/ai-ai-treaty-live-proof-wiring-test.cjs <out2> 4242): A1 OK (59 wierszy). A2 OK (min skarbiec 0, tura 2, owner 22, negCount 0). A3 FAIL: nap=0, dopl=2, napD=[]. A4 OK (0 pageerror/crash).
-   - Interpretacja (zmierzona): w 60 turach tor zapisał 0 linii "Pakt o nieagresji" (NAP), ale 2 linie "Sojusz ... (pełny, bezterminowy), dopłata 966 ¤ od Celtowie(13)" i "dopłata 431 ¤ od Fenicjanie(22)", oraz 59 linii "Umowa Handlowa". Asercja A3 szuka NAP z dopłatą. Tor zawiera dopłatę D przy SOJUSZACH. Rozstrzygnięcie: albo A3 jest STARY-PIN (powinna objąć sojusz z dopłatą D), albo tor NAP AI↔AI nie zawiera się w 60 turach (BŁĄD-GRY albo decyzja, otwarte w KOLEJKA: "tor NAP AI↔AI"). Operator NIE zmienia A3 bez decyzji właściciela. Status: CZERWONY, DECYZJA_WYMAGANA.
-7. PRZYJMUJĘ I ZROBIONE: wojna-wymuszona dostała S2-NEG (dwie asercje negatywne, para 'stone', leftover 'bronze'). WYNIK: PASSED 49 / FAILED 0 (przed: 47/0). Mutacji kodu NIE pokazano (NIE ZMIERZONO).
+Zarzut 1 (dyplo-bilans runda2, 6 FAIL): PRZYJĘTY, naprawiony.
+  Przyczyny (klasyfikacja z dowodem na bieżącym kodzie):
+  - (0e) STARY-PIN liczby: po R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1 (commit e27418db7) gałąź reject 'pokoj' znów zawiera `pwBalance: pokojPwBalance` -> 2 wystąpienia, nie 1. Pin zmieniony na 2.
+  - (1-PRZED) STARY-PIN wartości: mutacja A na fixturze daje net=-2100 (nie -210); symptom (ujemny net przy canAccept=true) nadal odtworzony. Pin -> -2100.
+  - (2-PRZED) STARY-PIN: symptom „dodatni bilans przy zablokowanym pakiecie granic” NIE odtwarza się na tym fixturze (mutacja A: net=-188, canAccept=false). Pin przyjmuje stan mutacji A. NIE ZMIERZONO na oryginalnym pakiecie ze zrzutu.
+  - (5-REGRESJA/PLAYER) i (5-KONTROLA/PLAYER) STARY-PIN decyzji właściciela: runda 4 zniosła bramkę w obu kierunkach, ale e27418db7 (R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1, Maciej, ECHO 2026-09-07) przywrócił bramkę KIERUNKOWO dla gracza-AUTORA. Kod diplomacy-proposals.ts ~2171: `if (authorIsPlayer && pokojPwBalance < 0) return accepted:false`. Asercje zmienione na accepted:false + „Brakuje N PW”. (5-KONTROLA) mutE (bez pola pwBalance) nadal daje accepted:false -> blokada wynika z logiki, nie z pola.
+  - (6-setup) HARNESS: brak fixtur dla 4 typów z AIDiplomacyCommand (oferuj_miasto_za_pokoj, zada_miasto_za_pokoj, zaproponuj_wymiane_cykliczna, zaproponuj_przemarsz). Dodane fixtury; (6-PO) przechodzi dla wszystkich 14 typów.
+  Wynik: dyplo-bilans-gate-n-e1-reprodukcja-runda2-test.cjs -> PODSUMOWANIE: 24 PASS / 0 FAIL (przed: 18/6).
 
-BRAMKI:
-- Ponownie uruchomione testy z allowlisty: hud-moc-warstwa 26/2 (czerwone, BŁĄD-GRY kandydat); granice 52/0; hotseat 77/0; wojna-wymuszona 49/0; ai-player-parity 45/0.
-- NIE PONOWIONO (brak zmian w gra/src): tsc, logic-test, tech-tree, research, unit-replace, combat, ai-test, era-war-pairing, ai-ai-alliance-surcharge. Wynik rundy 1 dla kodu gry nadal obowiązuje, ponowny pomiar NIE ZMIERZONO w tej rundzie.
-- dyplo-runda2 18/6, dyplo-runda3 10/17, ai-army 331/10: bez zmian (zarzuty 1, 2, 4).
+Zarzut 2 (dyplo-bilans runda3, 17 FAIL): PRZYJĘTY, naprawiony.
+  Przyczyny:
+  - Needle mutacji nie pasował do kodu (e27418db7 zmienił gałąź AI na `gapBasePn` + `relationTotal(relation)`; PRE_R4_BLOCK/POST_R4_RETURN zdezaktualizowane). Needle R2 (R2_AI_NEEDLE) przepisany na bieżący tekst; mutR2 przywraca formułę rundy 2 w gałęzi AI. Mutacja czerwona potwierdzona: pwBalance -554/-307/-31 (zła/neutralna/bardzo dobra), canAccept=false we wszystkich trzech.
+  - Test 1 i 2: wartości PO re-pinowane do bieżącego kodu (zła -554, neutralna 0, bardzo dobra 554; dar 300: zła -254, neutralna 300, bardzo dobra 854). Dar 300 przy neutralnej w wersji rundy 2 = -7 (regresja odtworzona).
+  - Test 3: STARY-PIN wobec R-DYPLO-POKOJ-KIERUNEK (e27418db7): gracz-AUTOR z pwBalance<0 -> accepted:false; (3b) = accepted === (pwBalance >= 0); (3c) kontrola: bramka realnie blokuje >=1 scenariusz (przed: anyAcceptedDiffered, tautologiczne po przywróceniu bramki w kodzie).
+  - Test 4 (PROOF): needle swap naprawiony (R2_AI_NEEDLE). Zmierzone: swap pusty koszyk neutralna = -307 (bit-identyczny z R2); swap dar 300 neutralna = -607 (R2 = -7; gorzej). Wartości zapisane jako SWAP_4A_EXPECTED / SWAP_4B_EXPECTED.
+  Wynik: dyplo-bilans-gate-n-e1-reprodukcja-runda3-test.cjs -> PODSUMOWANIE: 27 PASS / 0 FAIL (przed: 10/17).
+
+Zarzut 3 (A3 bez świeżego przebiegu live i bez mutacji toru): PRZYJĘTY, wykonany.
+  - Świeży przebieg: ziarno 4242, 60 tur, resumed=false, bundle vite zbudowany poza repo (scratchpad .../q14d-live/dist, 08:53). Wynik: .../scratchpad/q14d-live/out3/ (seed4242.jsonl, .wiring.log, .events.log, .summary.json: endTurn 60, wallSec 249). Analizator: 4 OK / 0 FAIL. Linie sojuszu: „AI↔AI Sojusz Egipt(1)-Celtowie(13) (pełny, bezterminowy), dopłata 966 ¤ od Celtowie(13)” oraz „... Egipt(1)-Fenicjanie(22) ..., dopłata 431 ¤”.
+  - Mutacja TORU (nie logu): w src/game/ai-ai-alliance-tick.ts linia 254 `const D = result.paymentGold;` -> `const D = 0;`, bundle zbudowany poza repo, świeży przebieg 60 tur (out-mut/, wallSec 246). Analizator: A3 FAIL (sojuszD [0,0], dopl 0), 3 OK / 1 FAIL, exit 1 -> asercja czerwona bez dopłaty D z toru. Plik src przywrócony z kopii (cmp identyczny; git diff src pusty).
+  - NIE ZMIERZONO: skutek gry (balans) — to tylko dowód wiringu.
+
+Zarzut 4 (A3 gałąź sojuszu słabsza niż NAP): PRZYJĘTY, poprawiony.
+  Gałąź sojuszu wymaga teraz: sojusze.length >= 1 AND KAŻDY sojusz (pełny) niesie dopłatę D>0 w swojej linii AND liczba linii „dopłata N ¤ od …” >= liczby sojuszy. Dawne some(d>0) pozwalało na jeden sojusz z D i inne bez przelewu.
+  Weryfikacja: świeży out3 -> 4 OK; mutant out-mut -> FAIL (3 OK / 1 FAIL).
+
+Zarzut 5 (bramki nie ponowione): PRZYJĘTY, ponowione w tej rundzie (wszystkie zielone):
+  - tsc --noEmit: exit 0
+  - logic-test: LOGIC OK (213/213), exit 0
+  - tech-tree-test: 20 pass, 0 fail
+  - research-test: PASSED 33 / FAILED 0 / TOTAL 33
+  - unit-replace-test: 21 [OK], 0 FAIL (grep liczby [OK]=21)
+  - combat-test: COMBAT TEST 6/6 pass
+  - ai-test: 297 passed, 0 failed
+  - era-war-pairing-alliance-test: 19 pass, 0 fail
+  - ai-ai-alliance-surcharge-test: RESULT: ALL GREEN (live + mutants detected)
+  - dyplo runda2: 24/0; dyplo runda3: 27/0; ai-ai-treaty-live-proof-wiring: 4 OK / 0 FAIL (świeży przebieg).
+
+ZMIANY/COMMIT (allowlista, git add tylko te ścieżki):
+- gra/tools/dyplo-bilans-gate-n-e1-reprodukcja-runda2-test.cjs (re-pin + fixtury 4 typów; asercje nie osłabione)
+- gra/tools/dyplo-bilans-gate-n-e1-reprodukcja-runda3-test.cjs (needle R2/swap, re-pin wartości, bramka kierunkowa)
+- gra/tools/ai-ai-treaty-live-proof-wiring-test.cjs (A3: spójność gałęzi sojuszu)
+- dyspozycje/autobot/runs/R-WEB-TEST-DEBT-Q14-B/30-obrona-claude.md (ten raport)
+Brak zmian w gra/src, gra/data, wiki, gra/tools/ai-army-composition-per-civ*, hud-moc-warstwa*, climate-band-test. Mutacja toru w ai-ai-alliance-tick.ts była TYMCZASOWA i wycofana przed commitem.
+
+TESTY: patrz ODPOWIEDZI NA ZARZUTY (surowe wyniki z przebiegów; logi w scratchpad: g-*.txt, r2b.txt, r3c.txt, q14d-live/mut-run.log).
 
 BLOKADY:
-- dyplo-bilans runda2 (6 FAIL) i runda3 (17 FAIL): wymagają przepisania (zarzuty 1, 2). Nie zrobione w tej rundzie.
-- ai-army-composition-per-civ: DECYZJA_WŁAŚCICIELA (zarzut 4).
-- ai-ai-treaty-live-proof-wiring: A3 czerwone, DECYZJA_WYMAGANA (sojusz z dopłatą vs NAP), zarzut 6.
-- hud-moc-warstwa: 2 checki czerwone = BŁĄD-GRY kandydat (literał 0 w main.ts:24044 i :3140).
+- ai-army-composition-per-civ: 10 FAIL, nietknięte (czeka na decyzję właściciela, ABC).
+- hud-moc-warstwa: 26/2, BŁĄD-GRY kandydat (literał 0 w gra/src main.ts:3140, :24044; R-WEB-HUD-ME-MIGRATION-Q1). Nietknięte.
+- Dyplomacja (zarzut 2 STARY-PIN) — części pinów przyjmują stan kodu bieżącego, a nie historyczny zrzut; zaznaczone w komentarzach.
 
 UWAGI-DLA-ORKIESTRATORA:
-1. BŁĄD-GRY kandydat (drobny): main.ts:3140 (objectiveRespektPctTowardEffective) i main.ts:24044 (buildHudState) nadal używają literału 0 zamiast ME(). Pozostałość migracji. Kandydat R-WEB-HUD-ME-MIGRATION-Q1 (2 linie w gra/src, decyzja orkiestratora).
-2. Decyzja dla właściciela (ABC): tor AI↔AI. Czy NAP ma się zawierać w 60 turach (ziarno 4242: 0 NAP, 2 sojusze z dopłatą D)? Bez tego nie wiadomo, czy A3 to stary pin, czy błąd gry.
-3. Wznowienie przebiegu live ze slotu -> SIGSEGV Chromium w openGame (dwukrotnie). Kandydat do osobnego tematu harness (CHROMEHELPER).
-4. Dyplo runda2/3: osobny dispatch zakresowy (Operator Haiku, kolejna runda tego tematu lub nowe ID).
-5. Poza zakresem: rydwan-konnica-x2-test i unit-context-card-test (z raportu rundy 1) bez zmian.
+1. Pin (2-PRZED) dyplo-runda2: symptom ze zrzutu 2 (dodatni bilans przy zablokowanym pakiecie granic) nie reprodukuje się na obecnym fixturze. Decyzja ABC: czy pakiet ze zrzutu trzeba odtworzyć innym fixturem (NIE ZMIERZONO).
+2. Kierunkowa bramka pokoju (e27418db7) jest zgodna z testem (5-REGRESJA/PLAYER) i (3b). Rundy 4 zalecenie „oba kierunki” jest nieaktualne dla gracza-autora — do potwierdzenia przez właściciela, jeśli dyspozycja rundy 4 nadal obowiązuje.
+3. Dysk: po zakończeniu sprzątam node_modules (gra/) i dist w scratchpad; logi out3/out-mut zostają jako dowód.
+4. Brak nowych sesji/zadań/harmonogramów. Brak run_in_background.
 
-TESTY (surowe wyniki tej rundy):
-- wojna-wymuszona-parowanie-test: "PASSED: 49 / FAILED: 0 / TOTAL: 49", ALL GREEN, exit 0
-- ai-player-parity-fixes-test: "45 passed, 0 failed", exit 0
-- granice-relacja-dyplomatyczna-test: "52 passed, 0 failed", exit 0
-- hotseat-etap6d-podetap-e-source-test: "77 PASS, 0 FAIL", exit 0
-- hud-moc-warstwa-test: "WYNIK: 26 PASS, 2 FAIL", exit 1 (BŁĄD-GRY kandydat)
-- ai-ai-treaty-live-proof-wiring-test (live, świeży przebieg): "3 OK / 1 FAIL", exit 1 (A3)
-
-RUNDY: 2/5 (po tej rundzie zarzuty 1, 2, 4, 6 otwarte)
-NASTĘPNY KROK: (a) owner: ABC o A3 (NAP vs sojusz z dopłatą) i o progu ai-army; (b) Operator (Haiku, runda 3): dyplo-runda2/3 re-pin do reguły e27418db7 + mutacje na bieżących needle; (c) Evaluator rundy 3 po (b).
+RUNDY: 3/5 (obrona rundy 3)
+NASTĘPNY KROK: Evaluator rundy 3 na czubku tej gałęzi (commit wpisany w odpowiedzi Operatora jako sha).
 DEPLOY/PUSH: NIE WYKONANO

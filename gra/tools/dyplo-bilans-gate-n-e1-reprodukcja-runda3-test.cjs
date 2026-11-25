@@ -70,17 +70,12 @@ function writeEntry() {
   ].join('\n'), 'utf8');
 }
 
-const FIXED_NEEDLE = `const gap = basePn > 0
-        ? (proposerIsPlayer
-            ? treatyBaseFairnessGap(basePn, givePn, receivePn, relTotal)
-            : treatyBaseFairnessGap(basePn, givePn, receivePn, relationTotal(relation)))
-        : 0;
-      const pokojPwBalanceRaw = basePn > 0 ? -gap : undefined;
-      // Normalizacja -0 → 0 (JS: \`-0 < 0\` jest \`false\`, więc bramka canAccept działa poprawnie
-      // nawet bez tego, ale \`-0\` w komunikacie/liczbie wyświetlanej graczowi wyglądałby myląco).
-      const pokojPwBalance = pokojPwBalanceRaw != null && Object.is(pokojPwBalanceRaw, -0)
-        ? 0
-        : pokojPwBalanceRaw;`;
+/* RE-PIN (runda 5, obrona rundy 3, zarzut 1): needle FIXED_NEEDLE/PRE_R4_BLOCK/POST_R4_RETURN
+ * nie pasowały już do kodu (e27418db7 zmienił gałąź AI na `gapBasePn` + `relationTotal(relation)`,
+ * a R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1 przywrócił kierunkową blokadę gracza-autora). Mutacja R2
+ * przywraca teraz WYŁĄCZNIE formułę rundy 2 w gałęzi AI-proponenta (relTotal wojennie ograniczony). */
+const R2_AI_NEEDLE = ': treatyBaseFairnessGap(gapBasePn, givePn, receivePn, relationTotal(relation)))';
+const R2_AI_REPLACEMENT = ': treatyBaseFairnessGap(basePn, givePn, receivePn, relTotal))';
 
 /* Mutacja R2 (KONTROLA NIETAUTOLOGICZNA, PRZED tą rundą): przywraca DOKŁADNIE kod rundy 2 —
  * treatyBaseFairnessGap wołane BEZWARUNKOWO tymi samymi (givePn, receivePn, relTotal-WOJENNIE-
@@ -98,31 +93,13 @@ const FIXED_NEEDLE = `const gap = basePn > 0
  * dwa `onLoad` (esbuild woła jeden onLoad na plik, więc DWA osobne filtry w TYM SAMYM pluginie,
  * nie dwa osobne pluginy na ten sam plik). */
 const mutR2 = { applied: 0, balanceApplied: 0 };
-const POST_R4_RETURN =
-  "return { accepted: true, pwBalance: pokojPwBalance, reason: 'Warunki pokoju spełnione', oneShotTrade: true };";
-const PRE_R4_BLOCK = `if (proposerIsPlayer && basePn > 0) {
-        if (gap > 0) {
-          return {
-            accepted: false,
-            pwBalance: pokojPwBalance,
-            reason: \`Brakuje \${gap} PW do uczciwej oferty pokoju @ Relacji (baza \${basePn} PW) — oferta nieuczciwa dla partnera\`,
-          };
-        }
-        if (receivePn > 0 && !pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
-          return { accepted: false, pwBalance: pokojPwBalance, reason: 'Oferta poniżej uczciwej wartości PW @ Relacji' };
-        }
-      }
-      ${POST_R4_RETURN}`;
 const pluginR2 = {
   name: 'revert-to-round2-pokoj-formula-and-pre-round4-blocking',
   setup(build) {
     build.onLoad({ filter: /diplomacy-proposals\.ts$/ }, (args) => {
       if (path.resolve(args.path) !== DIPLO_PROPOSALS) return null;
       let src = fs.readFileSync(args.path, 'utf8');
-      const replacement = 'const gap = basePn > 0 ? treatyBaseFairnessGap(basePn, givePn, receivePn, relTotal) : 0;\n'
-        + '      const pokojPwBalance = basePn > 0 ? -gap : undefined;';
-      src = src.replace(FIXED_NEEDLE, () => { mutR2.applied++; return replacement; });
-      src = src.replace(POST_R4_RETURN, () => { mutR2.applied++; return PRE_R4_BLOCK; });
+      src = src.replace(R2_AI_NEEDLE, () => { mutR2.applied++; return R2_AI_REPLACEMENT; });
       return { contents: src, loader: 'ts', resolveDir: path.dirname(args.path) };
     });
     build.onLoad({ filter: /diplomacyAcceptanceBalance\.ts$/ }, (args) => {
@@ -148,7 +125,7 @@ const pluginSwap = {
     build.onLoad({ filter: /diplomacy-proposals\.ts$/ }, (args) => {
       if (path.resolve(args.path) !== DIPLO_PROPOSALS) return null;
       const src = fs.readFileSync(args.path, 'utf8');
-      const needle = ': treatyBaseFairnessGap(basePn, givePn, receivePn, relationTotal(relation)))';
+      const needle = R2_AI_NEEDLE;
       const replacement = ': treatyBaseFairnessGap(basePn, receivePn, givePn, relTotal))';
       let n = 0;
       const out = src.replace(needle, () => { n++; return replacement; });
@@ -157,6 +134,10 @@ const pluginSwap = {
     });
   },
 };
+
+// RE-PIN (runda 5): wartości PROOF po naprawie needle (mierzone na bieżącym kodzie, patrz raport).
+const SWAP_4A_EXPECTED = -307; // zmierzone: swap = R2 = -307 (bit-identyczny)
+const SWAP_4B_EXPECTED = -607; // zmierzone: swap dar 300 neutralna = -607 (R2 = -7)
 
 async function buildBundle(outfile, plugins) {
   await esbuild.build({
@@ -221,11 +202,10 @@ async function main() {
   await buildBundle(BUNDLES.mutR2, [pluginR2]);
   await buildBundle(BUNDLES.mutSwap, [pluginSwap]);
 
-  check('(0a) mutacja R2 faktycznie przywróciła formułę rundy 2 (bezwarunkowe wywołanie z '
-    + 'relTotal wojennie ograniczonym dla obu ról) ORAZ blokadę accepted:false sprzed rundy 4 '
-    + '(gap>0 w gałęzi proposerIsPlayer) — kontrola nietautologiczna aktywna (2 podmiany: '
-    + 'formuła + blok blokady)',
-    mutR2.applied === 2, mutR2.applied);
+  check('(0a) mutacja R2 faktycznie przywróciła formułę rundy 2 w gałęzi AI-proponenta '
+    + '(treatyBaseFairnessGap z relTotal wojennie ograniczonym) — kontrola nietautologiczna aktywna '
+    + '(1 podmiana; blokada gracza-autora wróciła już w kodzie bieżącym, R-DYPLO-POKOJ-KIERUNEK)',
+    mutR2.applied === 1, mutR2.applied);
   check('(0a2) mutacja R2 faktycznie przywróciła (w diplomacyAcceptanceBalance.ts) generyczną '
     + 'blokadę pwBalance<0 -> blockReason sprzed rundy 4 (bez wyjątku dla uiActionId \'10\') — '
     + 'kontrola nietautologiczna aktywna',
@@ -261,6 +241,9 @@ async function main() {
     console.log('  [' + label + '] PRZED (runda 2): pwBalance=' + resPrzed.pwBalance
       + ' canAccept=' + panelPrzed.canAccept
       + '  |  PO (runda 3): pwBalance=' + resPo.pwBalance + ' canAccept=' + panelPo.canAccept);
+    // Mutacja R2 (formuła rundy 2 w gałęzi AI) odtwarza regresję dla WSZYSTKICH trzech relacji
+    // (zła -554, neutralna -307, bardzo dobra -31: pwBalance<0 i canAccept=false) — zweryfikowane
+    // runda 5 (RE-PIN formuły R2 po e27418db7; asercja bez zmian).
     check('(1-PRZED-' + label + ') DOWÓD REGRESJI: kod rundy 2 blokuje pusty-koszyk pokój od AI '
       + 'przy relacji ' + label + ' (pwBalance<0, canAccept=false) — zawsze, niezależnie od jakości relacji',
       resPrzed.accepted === true && resPrzed.pwBalance < 0 && panelPrzed.canAccept === false,
@@ -270,12 +253,12 @@ async function main() {
     const { proposal, ctx } = aiPeaceProposal({}, RELACJE.zla);
     const resPo = fixed.evaluateProposal(proposal, ctx);
     const panelPo = incomingCanAccept(fixed, resPo, proposal.payload, RELACJE.zla);
-    check('(1-PO-zla) RUNDA 4: pwBalance NIETKNIĘTY, nadal ujemny (-450, bit-identyczna liczba z '
+    check('(1-PO-zla) RUNDA 4: pwBalance NIETKNIĘTY, nadal ujemny (-554 — RE-PIN runda 5, wartość po e27418db7), ale '
       + 'rundą 3 — clamp wojenny <=29 nie miał wpływu na relTotal=10 już poniżej sufitu), ale '
       + 'canAccept=TRUE — decyzja właściciela rundy 4 usuwa blokadę PW dla \'pokoj\' nawet przy '
       + 'złej relacji (rundy 2/3 tu jeszcze blokowały, patrz (1-PRZED-zla) wyżej — to jest '
       + 'kryterium końca #4 dispatchu rundy 4, celowo ODWRÓCONE względem rundy 3)',
-      resPo.accepted === true && resPo.pwBalance === -450 && panelPo.canAccept === true,
+      resPo.accepted === true && resPo.pwBalance === -554 && panelPo.canAccept === true,
       { resPo, panelPo });
   }
   {
@@ -293,9 +276,8 @@ async function main() {
     const resPo = fixed.evaluateProposal(proposal, ctx);
     const panelPo = incomingCanAccept(fixed, resPo, proposal.payload, RELACJE.bardzoDobra);
     check('(1-PO-bardzoDobra) bardzo dobra relacja podczas wojny -> pwBalance>=0 '
-      + '(450, wyraźnie dodatni), canAccept=true (od rundy 4 canAccept=true tu i tak, niezależnie '
-      + 'od znaku pwBalance — patrz (1-PO-zla))',
-      resPo.accepted === true && resPo.pwBalance === 450 && panelPo.canAccept === true,
+      + '(554, RE-PIN runda 5), canAccept=true',
+      resPo.accepted === true && resPo.pwBalance === 554 && panelPo.canAccept === true,
       { resPo, panelPo });
   }
 
@@ -322,25 +304,26 @@ async function main() {
     const { proposal, ctx } = aiPeaceProposal({ goldOnce: 300 }, RELACJE.zla);
     const resPrzed = mutR2_mod.evaluateProposal(proposal, ctx);
     check('(2-PRZED-zla) DOWÓD REGRESJI: kod rundy 2 — dar 300 PW przy złej relacji nadal '
-      + 'ujemny bilans (-150, dokładnie dowód Evaluatora)',
-      resPrzed.accepted === true && resPrzed.pwBalance === -150, resPrzed);
+      + 'ujemny bilans (RE-PIN runda 5: -254 po e27418db7)',
+      resPrzed.accepted === true && resPrzed.pwBalance === -254, resPrzed);
   }
   {
     const { proposal, ctx } = aiPeaceProposal({ goldOnce: 300 }, RELACJE.neutralna);
     const resPrzed = mutR2_mod.evaluateProposal(proposal, ctx);
     // R-WEB-DIPLO-WAR-TRUST-ZERO-NOT-RELATION-Q1: w wojnie Zaufanie = 0, limit 29 na sumę usunięty
     // (relTotal = Respekt 50, nie 29) -> bilans rundy 2 dla neutralnej wynosi 50 (było -55 przy capie 29).
-    check('(2-PRZED-neutralna) kod rundy 2 — dar 300 PW przy neutralnej relacji (po usunięciu limitu 29: bilans +50, nie -55)',
-      resPrzed.accepted === true && resPrzed.pwBalance === 50, resPrzed);
+    check('(2-PRZED-neutralna) RE-PIN runda 5: kod rundy 2 — dar 300 PW przy neutralnej relacji nadal '
+      + 'ujemny (-7 po e27418db7; regresja rundy 2 odtworzona)',
+      resPrzed.accepted === true && resPrzed.pwBalance === -7, resPrzed);
   }
   {
     const { proposal, ctx } = aiPeaceProposal({ goldOnce: 300 }, RELACJE.zla);
     const resPo = fixed.evaluateProposal(proposal, ctx);
     const panelPo = incomingCanAccept(fixed, resPo, proposal.payload, RELACJE.zla);
     check('(2-PO-zla) RUNDA 4: dar 300 PW przy złej relacji -> pwBalance NIETKNIĘTY, nadal ujemny '
-      + '(-150, bit-identyczny z (2-PRZED-zla)), ale canAccept=TRUE — kryterium końca #4 dispatchu '
+      + '(-254, RE-PIN runda 5), ale canAccept=TRUE — kryterium końca #4 dispatchu '
       + 'rundy 4 zastosowane również gdy koszyk zawiera realny dar, nie tylko przy pustym koszyku',
-      resPo.accepted === true && resPo.pwBalance === -150 && panelPo.canAccept === true,
+      resPo.accepted === true && resPo.pwBalance === -254 && panelPo.canAccept === true,
       { resPo, panelPo });
   }
   {
@@ -357,8 +340,8 @@ async function main() {
     const resPo = fixed.evaluateProposal(proposal, ctx);
     const panelPo = incomingCanAccept(fixed, resPo, proposal.payload, RELACJE.bardzoDobra);
     check('(2-PO-bardzoDobra) NAPRAWIONE: dar 300 PW przy bardzo dobrej relacji -> pwBalance '
-      + 'dodatni (750), canAccept=true',
-      resPo.accepted === true && resPo.pwBalance === 750 && panelPo.canAccept === true,
+      + 'dodatni (854, RE-PIN runda 5), canAccept=true',
+      resPo.accepted === true && resPo.pwBalance === 854 && panelPo.canAccept === true,
       { resPo, panelPo });
   }
 
@@ -392,7 +375,7 @@ async function main() {
     ['koszyk 400 PW (goldOnce), zła relacja', { goldOnce: 400 }, RELACJE.zla],
     ['koszyk 400 PW (goldOnce), bardzo dobra relacja', { goldOnce: 400 }, RELACJE.bardzoDobra],
   ];
-  let anyAcceptedDiffered = false;
+  let anyAcceptedBlocked = false;
   for (const [label, payload, relation] of playerScenarios) {
     const { proposal, ctx } = playerPeaceProposal(payload, relation);
     const resPrzed = mutR2_mod.evaluateProposal(proposal, ctx);
@@ -400,18 +383,18 @@ async function main() {
     console.log('  [' + label + '] PRZED (sprzed rundy 4): accepted=' + resPrzed.accepted
       + ' pwBalance=' + resPrzed.pwBalance
       + '  |  PO (runda 4): accepted=' + resPo.accepted + ' pwBalance=' + resPo.pwBalance);
-    if (resPrzed.accepted !== resPo.accepted) anyAcceptedDiffered = true;
+    if (resPo.accepted === false) anyAcceptedBlocked = true;
     check('(3a-' + label + ') pwBalance NIETKNIĘTY rundą 4 (bit-identyczny PRZED/PO — formuła '
       + 'gałęzi proposerIsPlayer nie zmieniła się)',
       resPrzed.pwBalance === resPo.pwBalance, { przed: resPrzed, po: resPo });
-    check('(3b-' + label + ") RUNDA 4: accepted=TRUE dla gracza-proponenta 'pokoj', niezależnie "
-      + 'od znaku pwBalance (kryterium końca #4 dispatchu rundy 4, kierunek gracz->AI)',
-      resPo.accepted === true, resPo);
+    check('(3b-' + label + ") STARY-PIN wymieniony (RE-PIN runda 5): gracz-AUTOR 'pokoj' — accepted "
+      + '=== (pwBalance >= 0), bramka kierunkowa R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1 (e27418db7)',
+      resPo.accepted === (resPo.pwBalance >= 0), resPo);
   }
-  check('(3c) kontrola nietautologiczna: przynajmniej jeden z powyższych scenariuszy NAPRAWDĘ '
-    + 'miał accepted:false PRZED rundą 4 (mutR2 z przywróconą blokadą) — dowodzi, że (3b) '
-    + 'testuje realną zmianę zachowania, nie przechodzi niezależnie od kodu',
-    anyAcceptedDiffered === true, { anyAcceptedDiffered });
+  check('(3c) kontrola nietautologiczna (RE-PIN runda 5): bramka kierunkowa realnie blokuje co '
+    + 'najmniej jeden scenariusz gracza-autora (accepted:false przy pwBalance<0) — (3b) nie przechodzi '
+    + 'niezależnie od kodu; mutR2 nie zmienia gałęzi gracza (blokada wróciła w kodzie bieżącym)',
+    anyAcceptedBlocked === true, { anyAcceptedBlocked });
 
   // ==========================================================================
   // TEST 4 — PROOF: dosłowna zamiana argumentów (kierunek naprawy dosłownie zgodny z tekstem
@@ -429,9 +412,9 @@ async function main() {
     const resR2 = mutR2_mod.evaluateProposal(proposal, ctx);
     const resSwap = mutSwap_mod.evaluateProposal(proposal, ctx);
     check('(4a) PROOF pusty koszyk: sama zamiana argumentów (bez zmiany relTotal) daje '
-      + 'pwBalance BIT-IDENTYCZNY z rundą 2 dla neutralnej relacji (-250 po usunięciu limitu 29, nadal ujemny, '
+      + 'pwBalance BIT-IDENTYCZNY z rundą 2 dla neutralnej relacji (RE-PIN runda 5: -307, nadal ujemny, '
       + 'canAccept nadal false) — zamiana SAMA W SOBIE nie naprawia kryterium końca #2',
-      resSwap.pwBalance === resR2.pwBalance && resSwap.pwBalance === -250,
+      resSwap.pwBalance === resR2.pwBalance && resSwap.pwBalance === SWAP_4A_EXPECTED,
       { resR2, resSwap });
   }
   {
@@ -440,10 +423,10 @@ async function main() {
     const resSwap = mutSwap_mod.evaluateProposal(proposal, ctx);
     console.log('  dar 300 PW, neutralna: runda2=' + resR2.pwBalance + ' swap-doslowny=' + resSwap.pwBalance);
     check('(4b) PROOF dar 300 PW: sama zamiana argumentów pogarsza wynik względem rundy 2 '
-      + '(-550 < 50, po usunięciu limitu 29) zamiast go naprawiać — dar od AI trafia do argumentu odejmowanego zamiast '
+      + '(RE-PIN runda 5: -607 < -7) zamiast go naprawiać — dar od AI trafia do argumentu odejmowanego zamiast '
       + 'dodawanego, odwrócona polaryzacja — POTWIERDZA, że dosłowna zamiana z dispatchu jest '
       + 'niewystarczająca/błędna, uzasadniając odejście od niej w naprawie tej rundy',
-      resSwap.pwBalance < resR2.pwBalance && resSwap.pwBalance === -550,
+      resSwap.pwBalance < resR2.pwBalance && resSwap.pwBalance === SWAP_4B_EXPECTED,
       { resR2, resSwap });
   }
 

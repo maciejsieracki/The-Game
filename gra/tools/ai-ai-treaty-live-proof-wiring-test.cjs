@@ -59,7 +59,10 @@ console.log('Asercje:');
 assert('A1 ≥59 zakończonych tur EOT z torem włączonym (turn 60 osiągnięty: 59 wierszy)', rows.length >= 59, { rows: rows.length });
 assert('A2 skarbiec ≥ 0 we wszystkich turach i właścicielach', negCount === 0, { min: minS, minWhere, negCount });
 const napZDoplata = nap.length >= 1 && napD.some(d => d > 0) && dopl.length >= napD.filter(d => d > 0).length;
-const sojuszZDoplata = sojuszD.some(d => d > 0);
+// R-WEB-TEST-DEBT-Q14-B (obrona rundy 3, zarzut 4): spójność sojuszu z przelewem D — KAŻDY sojusz (pełny)
+// musi nieść dopłatę D>0 w SWOJEJ linii, a liczba linii „dopłata N ¤ od …” nie może być mniejsza niż liczba
+// sojuszy (wcześniej wystarczyło jedno some(d>0), co nie wiązało linii sojuszu z przelewem).
+const sojuszZDoplata = sojusze.length >= 1 && sojuszD.every(d => d > 0) && dopl.length >= sojusze.length;
 assert('A3 dopłata D AI↔AI zalogowana: NAP z dopłatą D>0 LUB sojusz (pełny) z dopłatą D>0 (przelew D zaplanowany i zapisany)',
   napZDoplata || sojuszZDoplata,
   { nap: nap.length, napD, sojusze: sojusze.length, sojuszD, dopl: dopl.length });
