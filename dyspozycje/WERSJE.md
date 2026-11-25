@@ -1,3 +1,9 @@
+## ROBOCZA 6daf42ce -- 2026-11-25 -- FALA 891: Wojny epoki: sojusz nie blokuje, parowanie do skutku (testowa)
+
+- R-WEB-ERA-WAR-PAIRING-ALLIANCE-NO-BLOCK-Q1: sojusz nie blokuje wojny epoki; parowanie preferuje pary bez sojuszu, fallback po trzech bez zmian (decyzja wlasciciela 2026-11-22)
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; era-war-pairing-alliance 19/0 (mutacje czerwone); era-war/forced-war suites zielone po re-pinie 5 testow
+- Limity: NIE ZMIERZONO: skutek w grze (pomiar seed 4242 czy wojna Braz nie stoi 68 tur); wojna-wymuszona-parowanie-test czerwony od bazy (S2,S7)
+
 ## ROBOCZA 668f6110 -- 2026-11-18 -- FALA 890: AI: darmowe utrzymanie jednostek wojskowych w turach 1-40 (testowa)
 
 - Cywilizacje AI nie płacą utrzymania jednostek wojskowych (złoto, surowce, żywność) w turach 1–40 włącznie; od tury 41 pełny koszt wg ustawienia „Koszty jednostek”. Rekrutacja nadal płatna; gracz bez zmian; bramka rekrutacji AI widzi utrzymanie 0 w oknie. Dane: gra/data/ai-free-unit-upkeep-params.json (wlaczone, tury=40).
