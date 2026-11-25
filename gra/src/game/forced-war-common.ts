@@ -216,7 +216,7 @@ export interface ForcedWarPairingOpts {
    * (dotyczy kandydatów gracza-pierwszego, parowania 1v1, dołączania trzeciego). Brak = brak bramki.
    */
   pairRelationScore?: (a: number, b: number) => number;
-  /** Symetryczny predykat pary (main.ts). Dla wojny epoki blokuje TYLKO aktywny sojusz MIĘDZY a i b (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1, `isWarTreatyBlocked`); NAP / peaceLocked / Relacja nie blokują. Zwykłe wypowiedzenie respektuje NAP i peaceLocked w main.ts. */
+  /** Symetryczny predykat pary (main.ts). Dla wojny epoki (R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1: `isWarTreatyBlocked` = false) predykat NIE blokuje żadnej pary przez sojusz, NAP, peaceLocked ani Relację; blokuje tylko to, co przekaże main.ts. Zwykłe wypowiedzenie respektuje NAP i peaceLocked w main.ts. */
   isPairBlocked: (a: number, b: number) => boolean;
   /**
    * R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1 (decyzja właściciela 2026-11-22): sojusz formalny NIE blokuje

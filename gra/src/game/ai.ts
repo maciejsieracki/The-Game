@@ -7236,11 +7236,11 @@ export function decideAIDiplomacy(
 
   // R-EPOKA-BRAZU-WYMUSZONA-WOJNA: wymuszona wojna głównej cywilizacji z sąsiadem
   // terytorialnym (awans do Brązu / nowy cel po odpoczynku) — patrz forced-war-bronze.ts.
-  // B3 (runda 2, Evaluator FAIL): !forcedRel.hasAllianceTreaty domyka guard obok NAP/
-  // peaceLocked/stanWojny — cel z aktywnym sojuszem wykluczony z wymuszonej wojny.
-  // EN: Bronze-era forced war on a territorial neighbor (era advance / new target after
-  // rest). B3 (round 2): !forcedRel.hasAllianceTreaty closes the guard next to NAP/
-  // peaceLocked/at-war — a target with an active alliance is excluded.
+  // R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1 (decyzja właściciela 2026-11-22): aktywny sojusz z celem
+  // NIE wyklucza wymuszonej wojny epoki (guard hasAllianceTreaty usunięty; sojusz jest tylko
+  // preferencją parowania w assignForcedWarPairings). Wykluczenia: stanWojny (już w wojnie).
+  // EN: R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1: an active alliance with the target does NOT exclude
+  // the era-forced war (hasAllianceTreaty guard removed; alliance is only a pairing preference).
   if (inp.bronzeForceWarTargetId != null) {
     const forcedId = String(inp.bronzeForceWarTargetId);
     const forcedRel = inp.relacje.find(r => r.partnerId === forcedId);

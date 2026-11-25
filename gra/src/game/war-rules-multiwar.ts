@@ -437,8 +437,9 @@ export function evaluateEraForcedWarGate(
 
 /**
  * R-WEB-ERA-WAR-IGNORE-TREATIES-Q1 (decyzja właściciela 2026-11-08): wojna epoki omija WSZYSTKIE
- * umowy i blokady pokoju pary (NAP, blokada pokoju/cooldown, umowy handlowe, Relacja), a blokuje
- * ją WYŁĄCZNIE aktywny sojusz formalny. Zwykłe (nie-epokowe) wypowiedzenie wojny nadal respektuje
+ * umowy i blokady pokoju pary (NAP, blokada pokoju/cooldown, umowy handlowe, Relacja). Od
+ * R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1 wojna epoki (eraWar=true) NIE jest blokowana niczym
+ * (sojusz też nie). Zwykłe (nie-epokowe) wypowiedzenie wojny nadal respektuje
  * NAP i blokadę pokoju; sojusz w zwykłym wypowiedzeniu nie jest tą funkcją rozstrzygany (zostaje
  * dotychczasowy guard celu Kamienia/Żelaza w main.ts). Czysta funkcja — testowana wprost.
  */

@@ -121,6 +121,21 @@ if (api) {
     const again = JSON.stringify(run());
     assert(again === JSON.stringify(res), 'B1: wynik deterministyczny (dwa wywołania identyczne)');
   }
+  {
+    // B1b (dyskryminujący dla wagi preferencji w DP): kolejność 1,2,3,4 daje dopasowanie 1-2,3-4
+    // (oba sojusznicze) bez wagi; z wagą wybierane są pary bez sojuszu 1-3,2-4.
+    const subjects = [subj(1, 0, 0), subj(2, 1, 0), subj(3, 2, 0), subj(4, 3, 0)];
+    const allied = alliancePredicate([[1, 2], [3, 4]]);
+    const res = assignForcedWarPairings(subjects, [], {
+      isPairBlocked: noBlock, isAllied: allied, hexDistanceFn: dist,
+      totalActiveForcedWarsByOwner: () => 0,
+    });
+    const pairs = pairsOf(res.assignments);
+    assert(
+      pairs.length === 2 && pairs.every(p => !allied(...p.split('-').map(Number))),
+      'B1b: waga preferencji w DP -- obie pary bez sojuszu (' + pairs.join(', ') + ')',
+    );
+  }
 
   console.log('--- B2: gdy jedyny możliwy partner jest sojusznikiem -- para zawiązana (do skutku) ---');
   {
@@ -179,6 +194,32 @@ if (api) {
     });
     const mutantRed = mutant.assignments.length !== 2;
     assert(mutantRed, 'D1: MUTACJA (blokada sojuszem przywrócona) daje czerwony wynik: assignments=' + mutant.assignments.length + ', unresolved=' + mutant.unresolvedOwnerIds.join());
+  }
+
+  console.log('--- E1/E2: isWarTreatyBlocked (PRAWDZIWY moduł war-rules-multiwar.ts) + mutacja ŹRÓDŁA ---');
+  {
+    const wrSrc = fs.readFileSync(path.join(SRC, 'game', 'war-rules-multiwar.ts'), 'utf8');
+    const orig = 'if (input.eraWar) return false;';
+    const buildWr = (contents, tag) => {
+      const out = path.join(__dirname, '.era-war-pairing-wr-' + tag + '-bundle.cjs');
+      try {
+        esbuild.buildSync({
+          stdin: { contents, resolveDir: path.join(SRC, 'game'), sourcefile: 'wr-' + tag + '.ts', loader: 'ts' },
+          bundle: true, platform: 'node', format: 'cjs', target: 'node18', outfile: out,
+          absWorkingDir: GRA_ROOT, logLevel: 'silent',
+        });
+        return require(out);
+      } finally {
+        try { fs.unlinkSync(out); } catch (e) { /* nieistotne */ }
+      }
+    };
+    const warIn = { eraWar: true, hasNap: true, peaceLocked: true, hasAlliance: true };
+    assert(wrSrc.includes(orig), 'E0: wzorzec mutacji obecny w źródle isWarTreatyBlocked');
+    const real = buildWr(wrSrc, 'real');
+    assert(real.isWarTreatyBlocked(warIn) === false, 'E1: wojna epoki (eraWar) z sojuszem/NAP/pokojem NIE jest blokowana (prawdziwy moduł)');
+    const mut = buildWr(wrSrc.replace(orig, 'if (input.eraWar) return input.hasAlliance;'), 'mut');
+    const mutRed = mut.isWarTreatyBlocked(warIn) !== false;
+    assert(mutRed, 'E2: MUTACJA ŹRÓDŁA (return hasAlliance przywrócony) daje czerwony wynik: isWarTreatyBlocked=' + mut.isWarTreatyBlocked(warIn));
   }
 } else {
   failed++;

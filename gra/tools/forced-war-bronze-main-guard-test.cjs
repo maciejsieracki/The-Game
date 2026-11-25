@@ -89,9 +89,10 @@ check(
 );
 
 check(
-  'ai.ts: decideAIDiplomacy guard bronzeForceWarTargetId sprawdza !forcedRel.hasAllianceTreaty '
-    + 'obok !forcedRel.stanWojny (R-WEB-ERA-WAR-IGNORE-TREATIES-Q1: NAP i blokada pokoju NIE blokują)',
-  /if \(inp\.bronzeForceWarTargetId != null\) \{[\s\S]{0,400}?&& !forcedRel\.stanWojny\s*&& !forcedRel\.hasAllianceTreaty\s*\)/.test(aiSrc),
+  'ai.ts: decideAIDiplomacy guard bronzeForceWarTargetId NIE sprawdza sojuszu (R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1: '
+    + 'guard !forcedRel.stanWojny bez hasAllianceTreaty)',
+  /if \(inp\.bronzeForceWarTargetId != null\) \{[\s\S]{0,400}?&& !forcedRel\.stanWojny\s*\)/.test(aiSrc)
+    && !/if \(inp\.bronzeForceWarTargetId != null\) \{[\s\S]{0,400}?hasAllianceTreaty/.test(aiSrc),
 );
 
 console.log('');

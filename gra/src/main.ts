@@ -45883,8 +45883,9 @@ async function boot(): Promise<void> {
 
             // Krok E: R-WEB-ERA-WAR-IGNORE-TREATIES-Q1 (decyzja właściciela 2026-11-08): wojna
             // epoki omija NAP, blokadę pokoju/cooldown, umowy handlowe i Relację (R8 wyłączone
-            // dla wojen epoki); blokuje ją WYŁĄCZNIE aktywny sojusz formalny. Jeden predykat
-            // symetryczny (ECHO 2: KTÓRAKOLWIEK strona blokuje CAŁĄ parę) -- `isWarTreatyBlocked`.
+            // dla wojen epoki) oraz sojusz (R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1: nic nie blokuje
+            // pary wojny epoki; sojusz to tylko preferencja parowania). Predykat symetryczny --
+            // `isWarTreatyBlocked` (eraWar=true -> false) + ewentualne twarde blokady z assignForcedWarPairings.
             const isForcedWarPairBlocked = (a: number, b: number): boolean =>
               isWarTreatyBlocked({
                 eraWar: true,
@@ -47324,17 +47325,16 @@ async function boot(): Promise<void> {
                         emRej('typCityCopyOwner');
                         continue;
                       }
-                      // R-WEB-ERA-WAR-IGNORE-TREATIES-Q1: wojna epoki (powód R-EPOKA-*-WYMUSZONA-WOJNA)
-                      // omija NAP i blokadę pokoju; blokuje ją tylko sojusz. Zwykłe wypowiedzenie AI
-                      // nadal respektuje NAP i blokadę pokoju (`isWarTreatyBlocked`, eraWar=false).
+                      // R-WEB-ERA-WAR-IGNORE-TREATIES-Q1 + R-WOJNA-EPOKA-SOJUSZ-NIE-BLOKUJE-Q1: wojna epoki
+                      // (powód R-EPOKA-*-WYMUSZONA-WOJNA) omija NAP, blokadę pokoju i sojusz (eraWar=true ->
+                      // isWarTreatyBlocked = false). Zwykłe wypowiedzenie AI nadal respektuje NAP i blokadę
+                      // pokoju (`isWarTreatyBlocked`, eraWar=false); sojusz zrywa breakTreatiesOnWar.
                       if (isWarTreatyBlocked({
                         eraWar: gateForcedTagAny !== null,
                         hasNap: hasTreaty(activeDeals, ownerId, targetId, RodzajTraktatu.PaktNieagresji),
                         peaceLocked: isPeaceLockedBetween(ownerId, targetId),
                         hasAlliance: allianceFormalKindBetween(activeDeals, ownerId, targetId) !== null,
                       })) { emRej('isWarTreatyBlocked(sojusz/NAP/pokoj)'); continue; }
-                      // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: ten sam ostatni guard sojuszu
-                      // co dla Kamienia — wymuszona wojna Żelaza nie zrywa własnego sojuszu.
                       // R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: limit 1 epoki + 1 naturalna per cywilizacja
                       // (AI jako deklarujący; gracz nieograniczony). Flaga OFF -> zawsze wolno (parytet).
                       const warTypTagAi: TypWojny = gateForcedTagAny !== null ? 'epoki' : 'naturalna';
