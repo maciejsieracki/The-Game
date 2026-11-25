@@ -1,3 +1,9 @@
+## ROBOCZA ffbd121b -- 2026-11-25 -- FALA 907: Okno dyplomacji: Wydarzenia na świecie (wojny i pokoje innych cywilizacji) (testowa)
+
+- W oknie dyplomacji (lista cywilizacji) trwała sekcja „Wydarzenia na świecie”: ostatnie 20 wojen, pokojów, rozejmów i sojuszy między cywilizacjami, które gracz zna; zapisywana w grze
+- Weryfikacja: tsc 0; logic 213/213; diplo-world-news 67/0 (mutacje czerwone); diplo-truce-impl 91/0; era-war-start-at-entry 32/0; truce-end-war-notice PASS; hud-me-literal-zero 150/0; main-guard 21/0; hotseat e-source 77/0, B 48/0, D 46/0, E 24/0; bramki-tmpdir 18/0; ai-test 297/0; vite 0
+- Limity: Zrzut okna dyplomacji, odświeżanie otwartego okna w trakcie tury i hotseat NIE ZMIERZONO; brak powodu w wpisie; pre-existing czerwony diplo-forced-peace-pending r2-3
+
 ## ROBOCZA 023ddaf2 -- 2026-11-25 -- FALA 906: Wojna epoki brązu i żelaza od pierwszej tury wejścia w epokę (testowa)
 
 - Wojna wymuszona epoki Brązu i Żelaza może wybuchnąć od pierwszej tury po wejściu w epokę (było: 40 tur później; Kamień bez zmian); gdy cywilizacja prowadzi jeszcze wojnę wcześniejszej epoki, nowa zaczyna się po jej pokoju; stare zapisy: wojna epoki dopiero 40 tur po wczytaniu
