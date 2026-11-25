@@ -3,8 +3,9 @@
  * R-WEB-MAP-POLAR-RESTORE-CONTINENTS-Q1 (A1, 2026-11-25): dowód, że mapa „kontynenty” ma pas
  * polarny (TerenBazowy.Polarny) dla kilku ziaren, a typ „ziemia” nadal nie ma Antarktydy.
  * Regresja: MAP-POLAR-ZERO (od 40a29e4c6 kontynenty miały 0 heksów Polarny).
- * Mutacja: wyłączenie ochrony pasa polarnego w gen-helpers.ts (isProtectedPolarBandKey → false)
- * musi dawać czerwony wynik.
+ * Mutacja: wyłączenie ochrony pasa polarnego dla kontynentów (generator.ts: argument
+ * `typ === 'kontynenty'` przekazywany do applyLandFractionByContinent → false, czyli
+ * polarBandLastForErosion zwraca kolejkę bez zmian) musi dawać czerwony wynik.
  */
 
 const fs = require('fs');
@@ -75,14 +76,16 @@ function polarCount(map) {
   return n;
 }
 
-// Sufit: co najwyżej połowa grywalnych heksów pasa polarnego (bez bufora oceanu) może być Polarny.
-// Pomiar po poprawce: seed 1 = 300, 7 = 286, 42 = 364, 4242 = 328; bez poprawki 0.
+// Sufit (R-WEB-MAP-POLAR-RESTORE-CONTINENTS-Q1 obrona r1, nit 5): zmierzone po poprawce (168x120,
+// standardowy, kontynenty) seed 1 = 387, 42 = 404, 99 = 381, 7777 = 449; pas grywalny ~2016 heksów.
+// Sufit 600 = ~1,35 x najwyższy pomiar: wykrywa zarówno zero (regresja), jak i nadmiar.
+const POLAR_CEILING = 600;
 const SEEDS = [1, 7, 42, 4242];
 for (const seed of SEEDS) {
   const map = M.generujSwiat(seed, 'standardowy', 'kontynenty', OPTS);
   const polar = polarCount(map);
   const band = polarBandHexCount(map, false);
-  const ceiling = Math.floor(band / 2);
+  const ceiling = POLAR_CEILING;
   console.log(`  seed=${seed} kontynenty standardowy: polar=${polar} pasPolarny=${band} sufit=${ceiling}`);
   assert(polar > 0, `kontynenty seed ${seed}: polar > 0 (${polar})`);
   assert(polar <= ceiling, `kontynenty seed ${seed}: polar <= sufit ${ceiling} (${polar})`);

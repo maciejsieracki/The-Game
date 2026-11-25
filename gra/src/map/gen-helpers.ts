@@ -3536,11 +3536,12 @@ export function rebalanceLandFractionWithMargins(
   targetLandFraction: number,
   width: number,
   height: number,
+  protectPolarBand = false,
 ): void {
-  applyLandFractionByScore(hexes, landScores, targetLandFraction, width, height, 'center', undefined, true);
+  applyLandFractionByScore(hexes, landScores, targetLandFraction, width, height, 'center', undefined, protectPolarBand);
   applyMarginalLandZoneCaps(hexes, landScores, width, height);
   enforceMapBorderOcean(hexes, width, height);
-  applyLandFractionByScore(hexes, landScores, targetLandFraction, width, height, 'center', undefined, true);
+  applyLandFractionByScore(hexes, landScores, targetLandFraction, width, height, 'center', undefined, protectPolarBand);
   applyMarginalLandZoneCaps(hexes, landScores, width, height);
   enforceMapBorderOcean(hexes, width, height);
   applyDoubleCoastRing(hexes);
@@ -3857,6 +3858,7 @@ export function applyLandFractionByContinent(
   targetLandFraction: number,
   width?: number,
   height?: number,
+  protectPolarBand = false,
 ): number {
   const clamped = Math.max(0.15, Math.min(0.85, targetLandFraction));
   const total = Object.keys(hexes).length;
@@ -3917,7 +3919,7 @@ export function applyLandFractionByContinent(
         width ?? 1,
         height ?? 1,
       );
-      for (const k of polarBandLastForErosion(landCandidates, height, true)) {
+      for (const k of polarBandLastForErosion(landCandidates, height, protectPolarBand)) {
         if (land <= quota) break;
         setHexToMorze(hexes[k]!);
         land--;
