@@ -180,3 +180,6 @@ Uzupełnienie 2026-11-22 (druga seria ABC):
 11. Pytania o wyścig o terytorium (P1–P5), drenaż Spichlerza i garnizon AI (sufit rezerwy, homeDefenderPool) były już rozstrzygnięte i wdrożone wcześniej (forty: decyzja B; Spichlerz: ABC A, FALA 867; garnizon: FALA 857) — wpisy w taskach usunięte jako nieaktualne.
 
 FALA 890 WDROŻONA (2026-11-22): AI bez utrzymania jednostek w turach 1–40 (ROBOCZA MD5 668f6110, main aa96cfc61). NASTĘPNE po poleceniu właściciela: polar A1 → Q14 (z Konnicą 98 i garnizonem) → parowanie wojen epoki → dopłata D 0,5. NIE ZMIERZONO skutku na żywo (Wysoki ×4); do weryfikacji w grze przez właściciela.
+
+## PRIORYTET PRAC (właściciel 2026-11-25): „w pierwszej kolejności modyfikacje i naprawianie błędów, a nie testy”
+Kolejność wyboru tematu: (1) zmiany w grze i naprawy błędów gry (FALE na ROBOCZĄ); (2) pomiary potrzebne do decyzji o grze; (3) dług testowy/higiena testów — dopiero gdy nie ma gotowego tematu z (1)–(2). Wstrzymane do czasu braku tematów z (1)–(2): R-WEB-TEST-DEBT-Q14-MUTATIONS-Q1 i R-WEB-ALLIANCE-REMOVAL-PATH-Q1 (dispatche zapisane, bez startu), #108, #112. Źródła kandydatów błędów gry: raporty Q14-D1C/E2, HUDFOOD (literały 0), WARLIM (omijanie limitu), POLARCMP (rozdrobnienie lądów), pytania do właściciela (Mennica, NNS tura 1, status relacji „sojusz”, koszt ulepszeń żywnościowych).

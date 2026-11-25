@@ -118,6 +118,8 @@ Workflow uruchamiaj z czytelną nazwą: `scratchpad/mkwf.sh <ID> "<opis po polsk
 
 9. **TRYB AUTONOMICZNY (właściciel, 2026-11-25: „pracuj autonomicznie, a wszystkie tematy z tasków zakończysz”):** bez ponownego pytania prowadź kolejkę z TaskList (poza #56 „PÓŹNIEJ”) aż do końca. Po KAŻDYM zakończonym temacie: integracja po FC (i deploy na ROBOCZĄ, jeśli zmiana dotyka gra/src) → wpis w rejestrze → `git push` → sprzątanie dysku (worktree, `node_modules`, `/tmp`, `df -h /`) → DOPIERO POTEM start kolejnego tematu z kolejki, tak by działały 4 sloty (wolne sloty dopełniaj od razu, nie czekaj na heartbeat). Pytanie do właściciela tylko wg „ZASAD PYTAŃ ABC”; w tym czasie nie blokuj pracy — zapisz „CZEKA NA WŁAŚCICIELA” i rób dalej.
 
+10. **PRIORYTET PRAC (właściciel, 2026-11-25: „w pierwszej kolejności powinieneś robić modyfikacje, naprawianie błędów, a nie testy”):** przy wyborze następnego tematu KOLEJNOŚĆ jest: (1) zmiany w grze i naprawy błędów gry (R-WEB-* z gra/src i gra/data, wdrażane jako FALE na ROBOCZĄ); (2) pomiary potrzebne do decyzji o grze; (3) dług testowy i higiena testów — DOPIERO gdy nie ma tematu z punktu 1 i 2 gotowego do startu bez decyzji właściciela. Nie zapełniaj wolnych slotów dla samego zapełnienia tematami testowymi; zamiast tego szukaj kandydatów błędów gry w raportach (kandydaci BŁĄD-GRY, regresje kierunkowe pomiarów, zgłoszenia właściciela) i zakładaj z nich tematy naprawcze (decyzje o grze → pytanie wg ZASAD ABC).
+
 ## Bariery krytyczne
 
 - Każdy temat ma pełne ID, `GOAL`, kryteria końca, allowlistę i izolowany worktree.
