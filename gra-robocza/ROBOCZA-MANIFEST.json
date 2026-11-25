@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "ffbd121ba78e9a54a246099a7dab7ad2",
-  "bundleSha256": "a184697de8c2d6d578fd9648644d1a2f3034a077fde72e81d436af14683d7c35",
-  "bundleBytes": 15018991,
+  "bundleMd5": "8d3b4ba062eb2564e477599df39766bf",
+  "bundleSha256": "d42c4d6e8fd2fb1101c1fc277eef223fbbb4b077256208a6a9858bfaa005329a",
+  "bundleBytes": 15018877,
   "sourceSnapshot": {
-    "source": "WORLDWIN FC 17710ec5 + main",
+    "source": "ERAEND FC d5ddf122 + main",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 907: W oknie dyplomacji (lista cywilizacji) trwała sekcja „Wydarzenia na świecie”: ostatnie 20 wojen, pokojów, rozejmów i sojuszy między cywilizacjami, które gracz zna; zapisywana w grze"
+    "FALA 908: Wojny epoki między cywilizacjami AI kończą się teraz tak samo jak zwykłe: auto-pokój po 2 zdobytych miastach i prośby o pokój AI↔AI obejmują też wojny epoki (sprzątanie i karencja po pokoju bez zmian); wojna z graczem bez zmian"
   ],
   "verification": [
-    "tsc 0; logic 213/213; diplo-world-news 67/0 (mutacje czerwone); diplo-truce-impl 91/0; era-war-start-at-entry 32/0; truce-end-war-notice PASS; hud-me-literal-zero 150/0; main-guard 21/0; hotseat e-source 77/0, B 48/0, D 46/0, E 24/0; bramki-tmpdir 18/0; ai-test 297/0; vite 0"
+    "tsc 0; logic 213/213; era-war-end-like-classic 17/0; ai-war-nearest-city-peace-2t PASS (mutacje 15/15); main-guard multiwar 21/0, bronze 22/0, stone 15/0, iron 36/0; era-war-start-at-entry 32/0; diplo-world-news 67/0; truce-end-war-notice PASS; hud-me-literal-zero 150/0; hotseat e-source 77/0; bramki-tmpdir 18/0; ai-test 297/0; vite 0"
   ],
   "limits": [
-    "Zrzut okna dyplomacji, odświeżanie otwartego okna w trakcie tury i hotseat NIE ZMIERZONO; brak powodu w wpisie; pre-existing czerwony diplo-forced-peace-pending r2-3"
+    "Testy live (R9, blok live ai-wojny-zwykle-cap) i test behawioralny na main.ts NIE ZMIERZONO; pre-existing czerwone: forced-war-iron 53/2, diplo-forced-peace-pending 39/1"
   ],
   "finalControl": "FC PASS-WITH-NOTES",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-25T22:01:22",
+  "hubGeneratedAt": "2026-11-25T22:06:39",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "ffbd121ba78e9a54a246099a7dab7ad2",
-      "sizeBytes": 15018991
+      "md5": "8d3b4ba062eb2564e477599df39766bf",
+      "sizeBytes": 15018877
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "ffbd121ba78e9a54a246099a7dab7ad2",
-      "sizeBytes": 15018991
+      "md5": "8d3b4ba062eb2564e477599df39766bf",
+      "sizeBytes": 15018877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "ffbd121ba78e9a54a246099a7dab7ad2",
-      "sizeBytes": 15018991
+      "md5": "8d3b4ba062eb2564e477599df39766bf",
+      "sizeBytes": 15018877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "ffbd121ba78e9a54a246099a7dab7ad2",
-      "sizeBytes": 15018991
+      "md5": "8d3b4ba062eb2564e477599df39766bf",
+      "sizeBytes": 15018877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "ffbd121ba78e9a54a246099a7dab7ad2",
-      "sizeBytes": 15018991
+      "md5": "8d3b4ba062eb2564e477599df39766bf",
+      "sizeBytes": 15018877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "ffbd121ba78e9a54a246099a7dab7ad2",
-      "sizeBytes": 15018991
+      "md5": "8d3b4ba062eb2564e477599df39766bf",
+      "sizeBytes": 15018877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "ffbd121ba78e9a54a246099a7dab7ad2",
-      "sizeBytes": 15018991
+      "md5": "8d3b4ba062eb2564e477599df39766bf",
+      "sizeBytes": 15018877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "ffbd121ba78e9a54a246099a7dab7ad2",
-      "sizeBytes": 15018991
+      "md5": "8d3b4ba062eb2564e477599df39766bf",
+      "sizeBytes": 15018877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "ffbd121ba78e9a54a246099a7dab7ad2",
-      "sizeBytes": 15018991
+      "md5": "8d3b4ba062eb2564e477599df39766bf",
+      "sizeBytes": 15018877
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "ffbd121ba78e9a54a246099a7dab7ad2",
-      "sizeBytes": 15018991
+      "md5": "8d3b4ba062eb2564e477599df39766bf",
+      "sizeBytes": 15018877
     }
   ],
-  "md5": "ffbd121ba78e9a54a246099a7dab7ad2",
+  "md5": "8d3b4ba062eb2564e477599df39766bf",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

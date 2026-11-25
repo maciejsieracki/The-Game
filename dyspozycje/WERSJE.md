@@ -1,3 +1,9 @@
+## ROBOCZA 8d3b4ba0 -- 2026-11-25 -- FALA 908: Wojny epoki AI↔AI kończą się jak klasyczne (testowa)
+
+- Wojny epoki między cywilizacjami AI kończą się teraz tak samo jak zwykłe: auto-pokój po 2 zdobytych miastach i prośby o pokój AI↔AI obejmują też wojny epoki (sprzątanie i karencja po pokoju bez zmian); wojna z graczem bez zmian
+- Weryfikacja: tsc 0; logic 213/213; era-war-end-like-classic 17/0; ai-war-nearest-city-peace-2t PASS (mutacje 15/15); main-guard multiwar 21/0, bronze 22/0, stone 15/0, iron 36/0; era-war-start-at-entry 32/0; diplo-world-news 67/0; truce-end-war-notice PASS; hud-me-literal-zero 150/0; hotseat e-source 77/0; bramki-tmpdir 18/0; ai-test 297/0; vite 0
+- Limity: Testy live (R9, blok live ai-wojny-zwykle-cap) i test behawioralny na main.ts NIE ZMIERZONO; pre-existing czerwone: forced-war-iron 53/2, diplo-forced-peace-pending 39/1
+
 ## ROBOCZA ffbd121b -- 2026-11-25 -- FALA 907: Okno dyplomacji: Wydarzenia na świecie (wojny i pokoje innych cywilizacji) (testowa)
 
 - W oknie dyplomacji (lista cywilizacji) trwała sekcja „Wydarzenia na świecie”: ostatnie 20 wojen, pokojów, rozejmów i sojuszy między cywilizacjami, które gracz zna; zapisywana w grze
