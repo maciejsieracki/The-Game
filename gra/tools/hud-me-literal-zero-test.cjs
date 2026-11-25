@@ -373,6 +373,60 @@ check(
     && !/const shortageRows = ownerId === 0\b/.test(rawCode),
 );
 
+// R-WEB-HUD-ME-RESIDUAL-Q1: ostatnie literały 0 (gracz aktywny) -> ME().
+// Każda zmieniona linia ma strażnika: wiersz = [tekst nowej linii, liczba zmian w diffie,
+// oczekiwana liczba wystąpień tekstu w main.ts]. Przywrócenie `=== 0` w zmienionej linii
+// zmienia liczbę wystąpień nowego tekstu -> FAIL (mutacja czerwona dla każdej linii).
+const RESIDUAL_ROWS = [
+  ["const openCity = cities.find(c => c.id === openId && c.ownerId === ME());", 1, 1],
+  ["return cities.find(c => c.ownerId === ME())?.id ?? null;", 1, 1],
+  ["if (city.ownerId === ME()) {", 3, 3],
+  ["if (completed.id === 'spichlerz' && city.ownerId === ME()) updateHud();", 1, 1],
+  ["...(city.ownerId === ME() ? { followGeneral: recruitFollowGeneralForOrder('city', recruitFollowGeneralDefault) } : {}),", 1, 1],
+  ["if (ownerId === ME()) showHintMessage(CITY_SIEGE_RECRUIT_BLOCK_PL, 2800);", 2, 2],
+  ["if (ownerId === ME()) showHintMessage(superMsg, 3200);", 2, 2],
+  ["if (ownerId === ME()) {", 12, 12],
+  ["if (ownerId === ME()) showHintMessage(recruitHint, 2800);", 1, 1],
+  ["const followIntent = city.ownerId === ME()", 1, 1],
+  ["if (ownerId === ME()) showHintMessage(`Za mało złota na ${count} jedn. rekrutacji`, 2800);", 1, 1],
+  ["if (ownerId === ME()) showHintMessage(`Za mało rekrutów (Manpower) na ${count} jedn.`, 2800);", 1, 1],
+  ["const batchFollowIntent = ownerId === ME()", 1, 1],
+  ["if (site.ownerId === ME()) {", 2, 2],
+  ["const site = wonderBuildSites.find(s => s.wonderId === wonderId && s.ownerId === ME());", 1, 1],
+  ["const cityLabel = cityAtUnit(u)?.name ?? cities.find(c => c.ownerId === ME())?.name ?? 'imperium';", 1, 1],
+  ["typeId, data, civBonusyForOwnerId(ME()), player.kosztJednostekPace ?? 'niski', 0, _menuDifficulty,", 1, 1],
+  ["return u.ownerId === ME() && isUnitInPlayerTerritory(u) && u.replaceUsedThisTurn !== true", 1, 1],
+  ["if (t.ownerId === ME() && isUnitInPlayerTerritory(t) && t.replaceUsedThisTurn !== true) {", 1, 1],
+  ["const replaceCity = unitReplaceGarrisonCity(u) ?? cities.find(c => c.ownerId === ME());", 1, 1],
+  ["isPlayer: id === ME(),", 1, 1],
+  ["if (w.ownerId === ME()) return w;", 1, 1],
+  ["for (const c of cities.filter(c => c.ownerId === ME())) {", 1, 2],
+  ["sc.ownerId === ME()", 1, 1],
+  ["if (toOwnerId === ME()) {", 1, 1],
+  ["for (const t of basketTransferCtx.researchedByOwner.get(ME()) ?? []) {", 1, 1],
+  ["if (su.ownerId === ME()) {", 1, 1],
+  ["if (showPlayerHints && u.ownerId === ME()) {", 1, 1],
+  ["if (u.ownerId === ME()) continue;", 1, 1],
+  ["if (ownerId === ME()) return player.zbadane.has(EMBARK_TECH);", 1, 1],
+  [".filter(c => c.ownerId === ME())", 1, 12],
+  ["const ownUnitHere = units.some(u => u.ownerId === ME() && u.q === q && u.r === r);", 1, 1],
+  ["if (u && u.ownerId === ME() && stackCanMove(u) && !u.oblegaCityId) {", 1, 1],
+  ["if (ctx.oblegajacyOwnerId === ME()) {", 2, 2],
+  ["const isPlayerRoute = (r: TradeRoute): boolean => r.ownerId === ME() || r.toOwnerId === ME();", 1, 1],
+  ["const playerCityIdOf = (r: TradeRoute): string => (r.ownerId === ME() ? r.fromCityId : r.toCityId);", 1, 1],
+  ["const civLabel = wewnetrzna ? 'handel wewnętrzny' : ownerDiploLabel(route.ownerId === ME() ? route.toOwnerId : route.ownerId);", 1, 1],
+  ["if (ownerId === ME()) return String(player.civType || _menuCivId || 'gracz');", 1, 1],
+  ["getNaukaRate: (ownerId: number) => buildHudState(ownerId).naukaRate ?? 0,", 1, 1]
+];
+for (const [text, changes, expectedOcc] of RESIDUAL_ROWS) {
+  const occ = src.split(text).length - 1;
+  check(
+    'RESIDUAL (zmian ' + changes + '): ' + text.slice(0, 80),
+    occ === expectedOcc,
+    'wystąpień ' + occ + ', oczekiwano ' + expectedOcc + ' -- literał 0 wrócił albo linia zmieniona cofnięta',
+  );
+}
+
 console.log('\nWynik: ' + passCount + ' PASS / ' + failCount + ' FAIL');
 if (failCount > 0) {
   process.exit(1);
