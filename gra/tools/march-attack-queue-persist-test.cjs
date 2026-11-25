@@ -289,8 +289,11 @@ function zbudujHarness(marchTxt, selTxt) {
   // R-WEB-WAR-ALLIN-CAPITAL-TEST-DEBT-Q1 (kat. A): 98e9f6ee7 (przelacznik "zbiorka u wodza") dodal 5. gałąź --
   // 'general-follow' wylaczany (`followGeneral=false`) jawnie kasuje plan marszu do wodza (force=true). To tez nowy,
   // jawny rozkaz gracza, wiec 5 wywolan (4 stare + general-follow), nadal wszystkie z force=true.
-  ok(forceCallsInHud === 5,
-    `(g5) handleSelectedUnitHudAction: DOKŁADNIE 5 wywołań clearPlannedMarch(u.id, true) — skip/garnizon/sentry/scout-explore + general-follow (got ${forceCallsInHud})`);
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN, przeglad): galaz 'ambush' (R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1, nowszy niz
+  // ostatnia edycja testu) dodaje 6. wywolanie clearPlannedMarch(u.id, true) -- zastawienie zasadzki to jawny
+  // rozkaz gracza nadpisujacy plan marszu (ten sam wzorzec co skip/fortify/sentry). Asercja nie oslabiona.
+  ok(forceCallsInHud === 6,
+    `(g5) handleSelectedUnitHudAction: DOKŁADNIE 6 wywołań clearPlannedMarch(u.id, true) — skip/garnizon/sentry/ambush/scout-explore + general-follow (got ${forceCallsInHud})`);
   ok(!/clearPlannedMarch\(u\.id\);/.test(hudActionTxt),
     '(g5) kontrola: ŻADNE wywołanie w tej funkcji nie zostało z domyślnym (bezargumentowym) force — wszystkie jawnie force=true');
 
@@ -318,7 +321,9 @@ function zbudujHarness(marchTxt, selTxt) {
   // R-WEB-WAR-ALLIN-CAPITAL-TEST-DEBT-Q1 (kat. A): bed15cb82 (R-HOTSEAT-ETAP8-DYPLOMACJA-UI-Q1) dodal 2 swiadome
   // wywolania (toggleInterHumanDiplomacyHud, onOpenInterHumanDiplo) -- otwarcie panelu dyplomacji hot-seat czyści
   // zaznaczenie jak inne panele; nie dotyka planow marszu. Przeglad: 33 -> 35 (1 definicja + 34 wywolania).
-  ok(wystapieniaWKodzie === 35,
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN, przeglad): galaz 'ambush' (R-WEB-ARMY-AMBUSH-ACTION-CORE-Q1) dodaje 1 wywolanie
+  // clearPlayerUnitSelection() po setAmbush(stack) -- jawny rozkaz zasadzki, bez zmiany planow marszu. 35 -> 36.
+  ok(wystapieniaWKodzie === 36,
     `(g8) DOKŁADNIE 35 wystąpień "clearPlayerUnitSelection(" w KODZIE main.ts, bez komentarzy (1 definicja + 34 realne wywołania; +2 z bed15cb82) — zgodne z przeglądem (got ${wystapieniaWKodzie})`);
 }
 

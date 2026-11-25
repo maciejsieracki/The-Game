@@ -270,9 +270,11 @@ async function main() {
   await buildBundle(BUNDLES.mutDC, [pluginDC]);
   await buildBundle(BUNDLES.mutE, [pluginE]);
 
-  check('(0a) mutacja A faktycznie usunęła 29 dodanych pól pwBalance (7 accept + 22 reject) w '
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): aaece58c2 (R-WEB-DIPLO-NAP-TRUST-30-Q1) dodal 1 nowe miejsce odrzucenia
+  // z pwBalance: -1 w evaluateProposalImpl (pakt bez Zaufania >= 30). Oczekiwana liczba 29 -> 30 (7 accept + 23 reject).
+  check('(0a) mutacja A faktycznie usunęła 30 dodanych pól pwBalance (7 accept + 23 reject) w '
     + '6 case\'ach evaluateProposal — kontrola nietautologiczna dla Testów 1/2 aktywna',
-    mutA.applied === 29, mutA.applied);
+    mutA.applied === 30, mutA.applied);
   check('(0b) mutacja B faktycznie wyłączyła regułę GOAL 3 w balancePanelDataFromRows — '
     + 'kontrola nietautologiczna dla Testu 3 aktywna',
     mutB.applied === 1, mutB.applied);
@@ -283,7 +285,8 @@ async function main() {
     + 'wersję tryPayload w generateCounterOffer (bez sprawdzenia pwBalance<0) — kontrola '
     + 'nietautologiczna dla Testu 4 aktywna',
     mutDC.appliedD === 1 && mutDC.appliedC === 1, mutDC);
-  if (mutA.applied !== 29 || mutB.applied !== 1 || mutD.applied !== 1
+  // R-WEB-TEST-DEBT-Q14: 29 -> 30 (patrz komentarz przy (0a), aaece58c2).
+  if (mutA.applied !== 30 || mutB.applied !== 1 || mutD.applied !== 1
     || mutDC.appliedD !== 1 || mutDC.appliedC !== 1) {
     console.log('\nPRZERWANE: co najmniej jedna mutacja nie zadziałała — kod się przesunął, '
       + 'testy niżej byłyby tautologiczne.');

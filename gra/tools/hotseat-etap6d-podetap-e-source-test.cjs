@@ -116,9 +116,11 @@ console.log('hotseat-etap6d-podetap-e-source-test (R-HOTSEAT-ETAP6D-PODETAP-E-Q1
 const mainSrcPo = fs.readFileSync(path.join(GRA, 'src', 'main.ts'), 'utf8');
 let mainSrcPrzed;
 try {
-  mainSrcPrzed = execSync('git show HEAD:gra/src/main.ts', { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  // R-WEB-TEST-DEBT-Q14 (HARNESS): baza PRZED = rodzic commita migracji 4e07a9aa9 (przypięty SHA),
+  // a nie git HEAD -- HEAD od tamtej pory zawiera już migrację, więc porównanie z HEAD było tautologiczne-odwrotnie.
+  mainSrcPrzed = execSync('git show 4e07a9aa9^:gra/src/main.ts', { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
 } catch (e) {
-  console.error('FAIL: nie udało się odczytać gra/src/main.ts z HEAD:', e.message);
+  console.error('FAIL: nie udało się odczytać gra/src/main.ts sprzed migracji (4e07a9aa9^):', e.message);
   process.exit(1);
 }
 
@@ -131,16 +133,28 @@ for (const name of FUNCTIONS) {
   if (bodyPo === null || bodyPrzed === null) continue;
 
   ok(!hasHardcode(bodyPo), `${name}: PO -- zero pozostałych literałów 0 (proposerOwnerId/responderOwnerId/awaitingOwnerId ===0/!==0 lub jako 2. argument)`);
-  ok(hasIsMeOrMe(bodyPo), `${name}: PO -- zawiera isMe()/ME()`);
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): dwie funkcje sa cienkimi wrapperami bez literalu fotela (deleguja do
+  // ...Impl / ...Uncached, ktore juz sa migrowane) -- wymog obecnosci isMe()/ME() nie dotyczy ich ciala.
+  const DELEGATING_WRAPPERS = new Set(['previewNegotiationEntry', 'collectTurnEvents']);
+  ok(hasIsMeOrMe(bodyPo) || DELEGATING_WRAPPERS.has(name),
+    `${name}: PO -- zawiera isMe()/ME() (lub cienki wrapper delegujacy bez literalu fotela)`);
   ok(hasHardcode(bodyPrzed), `${name}: PRZED (HEAD) -- MIAŁO hardkod (dowód, że test nie jest tautologiczny -- odróżnia stan sprzed migracji)`);
 }
 
 console.log('\nC. applyProposalOutcome -- WYKLUCZONA z migracji, ciało nietknięte\n');
 {
   const bodyPo = extractFunctionBody(mainSrcPo, 'applyProposalOutcome');
-  const bodyPrzed = extractFunctionBody(mainSrcPrzed, 'applyProposalOutcome');
-  ok(bodyPo !== null && bodyPrzed !== null, 'applyProposalOutcome: ciało znalezione w obu wersjach');
-  ok(bodyPo === bodyPrzed, 'applyProposalOutcome: ciało PO === ciało PRZED, bajt w bajt (funkcja nietknięta)');
+  // R-WEB-TEST-DEBT-Q14 (HARNESS): wzorcem jest wersja z COMMITA MIGRACJI (4e07a9aa9) -- ta runda jej nie
+  // dotykala. Porownanie z rodzicem (^) lapaloby pozniejsze, niezwiazane z migracja zmiany tej funkcji.
+  const mainSrcMigracja = execSync('git show 4e07a9aa9:gra/src/main.ts', { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  // Po commicie migracji ciało applyProposalOutcome zmienił LEGALNIE późniejszy R-WEB-DIPLO-TRADE-PRICE-ERA-MULT-Q1
+  // (230fd049f), więc niezmienność liczymy względem RODZICA migracji vs samego commita migracji:
+  // sama migracja nie może zmieniać tej funkcji.
+  const mainSrcRodzicMigracji = execSync('git show 4e07a9aa9^:gra/src/main.ts', { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  const bodyMigracja = extractFunctionBody(mainSrcMigracja, 'applyProposalOutcome');
+  const bodyRodzic = extractFunctionBody(mainSrcRodzicMigracji, 'applyProposalOutcome');
+  ok(bodyRodzic !== null && bodyMigracja !== null, 'applyProposalOutcome: ciało znalezione w rodzicu migracji i w commicie migracji');
+  ok(bodyRodzic === bodyMigracja, 'applyProposalOutcome: ciało rodzic migracji === commit migracji, bajt w bajt (migracja nie dotknęła funkcji)');
 }
 
 console.log(`\nhotseat-etap6d-podetap-e-source-test: ${pass} PASS, ${fail} FAIL`);

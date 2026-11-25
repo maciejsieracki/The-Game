@@ -304,7 +304,10 @@ console.log('\n-- 3. miasta-państwa: trudność w zakupie == trudność w produ
   const viaGlobal = unitProductionItem(unitId, data, undefined, 'niski', 7, 'easy');
   const viaOwner = unitProductionItem(unitId, data, undefined, 'niski', 7, effEasyGame);
   console.log(`   ${unitId}: koszt miasta-państwa przy globalnej Easy = ${viaGlobal && viaGlobal.koszt}, przy trudności właściciela (hard) = ${viaOwner && viaOwner.koszt}`);
-  ok(viaGlobal && viaOwner && viaGlobal.koszt !== viaOwner.koszt, 'fixture: globalna i właścicielska trudność dają RÓŻNY koszt (stąd asymetria)');
+  // R-WEB-TEST-DEBT-Q14 (STARY-PIN): decyzja wlasciciela 2026-11-19 (DODATEK 1) -- trudnosc NIE wplywa na
+  // koszt jednostek (production.ts::unitMoneyCost ignoruje difficulty; skale steruje tylko 'Koszty jednostek').
+  // Stara asercja zakladala roznice kosztu; nowa pilnuje obowiazujacej reguly: koszt identyczny.
+  ok(viaGlobal && viaOwner && viaGlobal.koszt === viaOwner.koszt, 'fixture: globalna i właścicielska trudność dają TEN SAM koszt (decyzja 2026-11-19: trudność nie wpływa na koszt jednostek)');
 
   // BEHAWIORALNIE (stan decyzji zakupu): dla każdej kombinacji trudności gry x miasta-państwa,
   // cena, którą zakup dostaje z trudnością właściciela (ta sama wartość co w purchaseRecruitmentUnit),
@@ -329,7 +332,9 @@ console.log('\n-- 3. miasta-państwa: trudność w zakupie == trudność w produ
     }
     eq(mism.length, 0, 'zakup miasta-państwa == produkcja miasta-państwa dla 9 kombinacji (gracz nietknięty)');
     if (mism.length) console.log('   niezgodne: ' + mism.join(', '));
-    ok(buyDiffersFromGlobal.length > 0, 'zakup miasta-państwa: przy różnych trudnościach cena ZMIENIA się względem globalnej (poprawka działa)',
+    // R-WEB-TEST-DEBT-Q14 (STARY-PIN): po decyzji 2026-11-19 cena zakupu NIE zmienia sie z trudnoscia
+    // (ta sama co globalna); asercja odwrocona na obowiazujaca regule, nie oslabiona.
+    ok(buyDiffersFromGlobal.length === 0, 'zakup miasta-państwa: przy różnych trudnościach cena JEST TAKA SAMA jak globalna (koszt jednostek niezależny od trudności, 2026-11-19)',
       `kombinacje: ${buyDiffersFromGlobal.join(', ') || 'brak'}`);
   }
 
@@ -358,8 +363,10 @@ console.log('\n-- 3. miasta-państwa: trudność w zakupie == trudność w produ
   const empireWide = functionSource(MAIN, 'function replaceAvailabilityCtxEmpireWide(');
   ok(empireWide && /difficulty:\s*effectiveGameDifficultyForOwner\(ownerId\)/.test(empireWide),
     'replaceAvailabilityCtxEmpireWide: difficulty per właściciel');
-  ok(/difficulty:\s*effectiveGameDifficultyForOwner\(city\.ownerId\)/.test(MAIN),
-    'kontekst zastępowania dla miasta: difficulty per właściciel');
+  // R-WEB-TEST-DEBT-Q14 (HARNESS): kontekst zastepowania miasta idzie przez unitReplaceCtx(u) ->
+  // replaceAvailabilityCtxEmpireWide(u.ownerId) (per wlasciciel), stary wzorzec city.ownerId zniknal po refaktorze.
+  ok(/function unitReplaceCtx\(u: RuntimeUnit\): AvailabilityContext \{\s*return replaceAvailabilityCtxEmpireWide\(u\.ownerId\);/.test(MAIN),
+    'kontekst zastępowania dla miasta: unitReplaceCtx -> difficulty per właściciel (u.ownerId)');
   void ctxFns;
 }
 

@@ -123,7 +123,10 @@ try {
       { ownerId: 2, q: 1, r: 0, era: 'bronze' },
       { ownerId: 5, q: 50, r: 0, era: 'iron' }, // leftover -- nikt inny wolny w puli
     ];
-    const existingPairs = [{ attackerId: 3, targetId: 4, era: 'stone' }];
+    // R-WEB-TEST-DEBT-Q14 (STARY-PIN): para byla 'stone', a regula R-WEB-ERA-WAR-DEFER-NOT-CANCEL-Q1 r3
+    // zabrania dolaczenia Brazu/Zelaza do pary Kamienia (strona juz toczy wojne). Para na 'bronze' -- ten sam
+    // scenariusz (leftover dolacza jako trzeci), zgodny z obowiazujaca regula. Asercje bez zmian.
+    const existingPairs = [{ attackerId: 3, targetId: 4, era: 'bronze' }];
     const result = assignForcedWarPairings(subjects, existingPairs, {
       isPairBlocked: blockedPairsOpt([]),
       hexDistanceFn: hexDistance,
@@ -259,7 +262,9 @@ try {
       { ownerId: RZYM, q: 0, r: 0, era: 'bronze' }, // Rzym, sojusznik gracza, szuka nowego celu
     ];
     // Istniejąca para AI-AI (2,3) NIEpowiązana z Rzymem ani graczem -- jedyna dostępna do dołączenia.
-    const existingPairs = [{ attackerId: 2, targetId: 3, era: 'stone' }];
+    // R-WEB-TEST-DEBT-Q14 (STARY-PIN): para 'bronze' zamiast 'stone' -- Rzym (bronze) nie dolacza do pary
+    // Kamienia wg R-WEB-ERA-WAR-DEFER-NOT-CANCEL-Q1 r3. Scenariusz incydentu bez zmian.
+    const existingPairs = [{ attackerId: 2, targetId: 3, era: 'bronze' }];
     const isPairBlocked = (a, b) => {
       // Rzym i gracz są sojusznikami -- ta para jest zablokowana WZAJEMNIE (nieistotne tu,
       // bo gracz nie jest w tym scenariuszu w ogóle triggered/warless -- ma już wojnę).

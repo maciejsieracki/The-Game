@@ -39,7 +39,10 @@ const GUARDS = {
   ],
   candidatesAllMajors: [
     'main.ts: kandydaci na partnera gracza = WSZYSCY major AI (nie tylko pula)',
-    s => /candidates: aiOwnerList\.flatMap\(\(oid\): ForcedWarPairingSubject\[\] => \{/.test(s.main),
+    // R-WEB-TEST-DEBT-Q14 (STARY-PIN): lista kandydatów wyodrębniona do stałej forcedWarMajorAiSubjects
+    // (ta sama budowa: aiOwnerList.flatMap po WSZYSTKICH major AI), przekazywana jako candidates.
+    s => /const forcedWarMajorAiSubjects: ForcedWarPairingSubject\[\] = aiOwnerList\.flatMap\(\(oid\): ForcedWarPairingSubject\[\] => \{/.test(s.main)
+      && /candidates: forcedWarMajorAiSubjects,/.test(s.main),
   ],
   candidatesInCommon: [
     'forced-war-common.ts: partner wybierany z candidates (fallback pula)',
@@ -139,7 +142,7 @@ for (const [key, [name, fn]] of Object.entries(GUARDS)) {
 const MUTATIONS = [
   ['playerFirst wyłączony', 'main', 'playerOwnerId: 0,\n                isPlayerPairGateOpen', 'playerOwnerId: -1,\n                isPlayerPairGateOpen', 'playerFirstWiring'],
   ['bramka R1/R2 gracza zdjęta', 'main', 'targetIsPlayer: true,', 'targetIsPlayer: false,', 'aiGateForPlayerPair'],
-  ['kandydaci ograniczeni do pustej listy (partner nie z wszystkich AI)', 'main', 'candidates: aiOwnerList.flatMap((oid): ForcedWarPairingSubject[] => {', 'candidates: aiOwnerList.filter(() => false).flatMap((oid): ForcedWarPairingSubject[] => {', 'candidatesAllMajors'],
+  ['kandydaci ograniczeni do pustej listy (partner nie z wszystkich AI)', 'main', 'const forcedWarMajorAiSubjects: ForcedWarPairingSubject[] = aiOwnerList.flatMap((oid): ForcedWarPairingSubject[] => {', 'const forcedWarMajorAiSubjects: ForcedWarPairingSubject[] = aiOwnerList.filter(() => false).flatMap((oid): ForcedWarPairingSubject[] => {', 'candidatesAllMajors'],
   ['partner ograniczony do puli warless (mutacja w common)', 'common', 'const pool = (playerFirst.candidates ?? warlessAll)', 'const pool = (warlessAll)', 'candidatesInCommon'],
   ['kolejnosc: AI przed graczem (mutacja D2)', 'main', 'return [lead, ...aiOwnerList.filter(oid => oid !== lead)];', 'return aiOwnerList;', 'leadFirstInLoop'],
   ['opcja K2 zignorowana w puli', 'main', 'if (isWarEpochPlayerFirstEnabled() && !playerEpochWarEnabled) {', 'if (false) {', 'playerInPoolOnlyWhenOption'],
