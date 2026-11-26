@@ -1,0 +1,4 @@
+# R-WEB-CULT-REL-MODEL2-Q1 — CULTRELMODEL2 (#176): model kultury i religii wg projektu właściciela (kultura i religia wpływają na SZCZĘŚCIE i na PRAWO; poziomy łatwy/normalny/trudny; skala rośnie z epoką)
+STATUS: DISPATCH | DOMAIN: GAME (analiza/model z silnika; zero zmian gra/src) | tag CULTRELMODEL2 | priorytet 1 (decyzja właściciela 2026-11-26)
+GOAL: policzyć na prawdziwych funkcjach silnika, jak projekt właściciela zmienia Szczęście, Prawo i Porządek miast oraz ile jednostek garnizonu trzeba w nowo zdobytym mieście obcej kultury/religii na poziomach „łatwy / normalny / trudny (duży wpływ)”; cel właściciela: obca kultura i religia bez budynków wymusza garnizon 2 / 3 / 4 jednostek (odp. 24A; jednostka nadal daje 20 pkt Prawa — odp. 29), a „najwyższy poziom” ok. 4 jednostek. Wynik ma pokazać, czy same liczby projektu to dają, i co się dzieje z miastami własnej kultury (efekt na całą grę).
+BAZA: args.cand = origin/main (pełny SHA)
