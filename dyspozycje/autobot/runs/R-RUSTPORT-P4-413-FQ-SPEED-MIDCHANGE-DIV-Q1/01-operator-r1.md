@@ -70,6 +70,11 @@ Uzasadnienie wyboru (zamiast przyrostowego liczenia po klatkach): ciało liczy a
 - `p6_k5loop_wiring_a_pin.rs`: poza skróceniem listy (`[&str; 9]` → `[&str; 0]`) — patrz §6.1.
 
 ### 3.5 Odcinki NIE objęte (świadomie, udokumentowane)
+
+> **KOREKTA (obrona, zarzut Z1 Evaluatora):** lista poniżej była niekompletna. W sesji (`march_incremental = true`) bez planu
+> zostały w r1 także dwa kroki `_doMove` liczone atomowo jako `BodyDone`: krok falangi (`_phalanxStep` `:6635`) i
+> `_advanceToward` (`:7915`). Naprawione w obronie (commit `2e9588c16`); pełna lista odcinków `_raf` pinu z odpowiednikami w
+> Rust: `02a-obrona.md` §1.1.
 - Odcinki złożone liczone atomowo z `attack_pre > 0` (marsz nieprzyrostowy `march_incremental = false`, poza sesją) — bez planu, bez przeliczenia (strażnik planu). W sesji marsze są przyrostowe, więc `attack_pre = 0`.
 - Akcje dla renderera wyliczone w chwili startu: `BattleAction::Melee.hit_at`, `BattleAction::Shot.land_at` (i `TowerShot.land_at`) zakładają siatkę z chwili startu; nie są porównywane z pinem (nie są zdarzeniami `_pushClash/_startRout/_startFade/_spawnDamageLabel`) i zmiana kontraktu renderera jest poza zakresem (D-413-2). Do decyzji orkiestratora jako osobny drobny dług (np. do #405 SHOT-LAND-AT-RENDER).
 
