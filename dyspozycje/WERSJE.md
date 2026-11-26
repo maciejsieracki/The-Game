@@ -1,3 +1,9 @@
+## ROBOCZA 0999e34f -- 2026-11-26 -- FALA 926: AI na trudnej kulturze: garnizon wg potrzeby miasta i budynki Prawa/Szczescia (testowa)
+
+- AI przy poziomie Kultura i religia normalny/trudny trzyma w miescie tyle jednostek garnizonu, ile potrzeba do wyjscia z buntu (potrzeba liczona z rozbicia Porzadku), wyklucza garnizon z puli armii i preferuje budynki Prawa/Szczescia w miescie z deficytem Porzadku; latwy i zgodnosc bez zmian
+- Weryfikacja: tsc 0; logic 213; ai-test 297/0; wiring 231/0 (mutanty MW1-MW8 wykryte); order-need 35/0; garrison-min-one 38/0; society-breakdown 56/0; culture-religion-level 59/0; culture-religion 65/0; pomiar 60 tur seed 4242 i 7 na trudnym
+- Limity: Efekt w grze mieszany: puste miasta na trudnym 32,1->31,4% i 34,7->34,5%; przyczyna -30% jednostek AI NIE ZMIERZONO (brak licznika buntow); poziom gry w pomiarze Normalny; przegladarka NIE ZMIERZONO
+
 ## ROBOCZA 7398bd08 -- 2026-11-26 -- FALA 925: Generator map: 0 łąk poza maską Ziemi i 0 samotnych lądów; grubsze i wyraźniej różne trzy poziomy rzek (testowa)
 
 - Generator map: po generowaniu Ziemi 0 heksów lądu poza maską szablonu (było 72 łąki) i 0 samotnych heksów lądu na oceanie (było 1 na wyspach 108x74); 5 izolowanych heksów szablonu Ziemi znika z mapy (zmiana maski); render rzek: średnie rzeki 0,7x szerokości głównej, dopływy i krótkie 0,45 (było 0,30), główne bez zmian — trzy poziomy wyraźniej różne
