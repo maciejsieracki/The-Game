@@ -1,3 +1,9 @@
+## ROBOCZA c07b5722 -- 2026-11-26 -- FALA 913: Relacja „sojusz” znika razem z umową (testowa)
+
+- Gdy umowa sojuszu pary znika (wygaśnięcie, odmowa wezwania do wojny, odmowa obrony sojusznika, zerwanie trybutu, wasalizacja), relacja pary wraca do pokoju (zaufanie i respekt zostają); wyjątek: pary major AI ↔ miasto-państwo tej samej cywilizacji zachowują status sojusz (nowe: isStaleAllianceStatus i alliancePairsToReset w diplomacy-treaties.ts, reconcileAllianceStatusAfterDeals w main.ts)
+- Weryfikacja: tsc 0; logic 213/213; alliance-label-clean 26/0 (mutacje czerwone); ai-ai-alliance-tick 19/19 (mutanty 8/8); alliance-war-obligation 14/0; city-state-alliance 74/0; alliance-limit-ai-t66 6/6; diplo-alliance-gate 21/0; main-guard 21/0; ai-test 297/0 (FC); vite build OK
+- Limity: NIE ZMIERZONO: liczba sojuszy AI przed/po (Chromium #90, zadanie #153), zachowanie w żywej grze; reconcile w main.ts pokryte tylko testem tekstowym i czystą funkcją; brak migracji starych zapisów (czyszczenie przy najbliższym ticku)
+
 ## ROBOCZA 9f9f3a0d -- 2026-11-26 -- FALA 912: Koniec rozejmu = propozycja pokoju z ceną (testowa)
 
 - Po wygaśnięciu rozejmu AI zawsze składa ofertę pokoju z ceną (różnica sił ≤20%: przegrywająca płaci surowcami, remis: inicjator rozejmu; >20%: słabsza płaci miastem, przy braku cedowalnego miasta wariant surowcowy); pokój po rozejmie nie jest za darmo, odmowa = wojna; AI↔AI z nieujemnym bilansem; oferta w skrzynce niesie kierunek, walutę i wartość (nowy moduł diplomacy-truce-end-price.ts)

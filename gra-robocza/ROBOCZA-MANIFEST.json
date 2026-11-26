@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "9f9f3a0d0db0ae7e044545ff98a9cc7c",
-  "bundleSha256": "3e6b43512b4495abcd503de648b1a4e9b60b320354a26389f0a29e7b8594ad33",
-  "bundleBytes": 15023439,
+  "bundleMd5": "c07b5722d62606e1a8b055165a02089d",
+  "bundleSha256": "62564ad32b5dbbba59d65f214ab67a8ddc3809086363639ce0ec934211e28926",
+  "bundleBytes": 15023871,
   "sourceSnapshot": {
-    "source": "FC b0f909f5d (TRUCEPRICE-wip/fc 2cb07a68d, baza main e70abe718)",
+    "source": "FC eb4d249d0 (ALLYCLEAN-wip/fc 283d47fb6, baza main b1e4e04ab)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 912: Po wygaśnięciu rozejmu AI zawsze składa ofertę pokoju z ceną (różnica sił ≤20%: przegrywająca płaci surowcami, remis: inicjator rozejmu; >20%: słabsza płaci miastem, przy braku cedowalnego miasta wariant surowcowy); pokój po rozejmie nie jest za darmo, odmowa = wojna; AI↔AI z nieujemnym bilansem; oferta w skrzynce niesie kierunek, walutę i wartość (nowy moduł diplomacy-truce-end-price.ts)"
+    "FALA 913: Gdy umowa sojuszu pary znika (wygaśnięcie, odmowa wezwania do wojny, odmowa obrony sojusznika, zerwanie trybutu, wasalizacja), relacja pary wraca do pokoju (zaufanie i respekt zostają); wyjątek: pary major AI ↔ miasto-państwo tej samej cywilizacji zachowują status sojusz (nowe: isStaleAllianceStatus i alliancePairsToReset w diplomacy-treaties.ts, reconcileAllianceStatusAfterDeals w main.ts)"
   ],
   "verification": [
-    "tsc 0; logic 213/213; truce-end-peace-price 54/0 (mutanty czerwone); diplo-truce-impl 93/0; truce-end-war-notice PASS; war-limit-truce-count 19/0; diplo-human-peace-no-war 13/0; diplo-war-tribute-once 8/0; main-guard 21/0; diplomacy-war-limit-unit 57/0; ai-test 297/0 (FC); vite build OK"
+    "tsc 0; logic 213/213; alliance-label-clean 26/0 (mutacje czerwone); ai-ai-alliance-tick 19/19 (mutanty 8/8); alliance-war-obligation 14/0; city-state-alliance 74/0; alliance-limit-ai-t66 6/6; diplo-alliance-gate 21/0; main-guard 21/0; ai-test 297/0 (FC); vite build OK"
   ],
   "limits": [
-    "NIE ZMIERZONO: testy live, wykonawczy test przelewu, UI oferty; pkt 6 (pokój gracza po rozejmie wg zrównoważonej ceny) niezrobiony; cena 0 = wojna i wariant surowcowy przy braku miasta to założenia do potwierdzenia"
+    "NIE ZMIERZONO: liczba sojuszy AI przed/po (Chromium #90, zadanie #153), zachowanie w żywej grze; reconcile w main.ts pokryte tylko testem tekstowym i czystą funkcją; brak migracji starych zapisów (czyszczenie przy najbliższym ticku)"
   ],
-  "finalControl": "FC PASS-WITH-NOTES (Sonnet): bramki zielone, 2 mutacje czerwone, zarzuty 2/4/5 naprawione, 1/3/6 oddane jako uwagi",
+  "finalControl": "FC PASS-WITH-NOTES (Sonnet): bramki zielone, zarzut 1 (regres same-civ) naprawiony, mutacje czerwone",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-26T07:47:20",
+  "hubGeneratedAt": "2026-11-26T08:05:07",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "9f9f3a0d0db0ae7e044545ff98a9cc7c",
-      "sizeBytes": 15023439
+      "md5": "c07b5722d62606e1a8b055165a02089d",
+      "sizeBytes": 15023871
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "9f9f3a0d0db0ae7e044545ff98a9cc7c",
-      "sizeBytes": 15023439
+      "md5": "c07b5722d62606e1a8b055165a02089d",
+      "sizeBytes": 15023871
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "9f9f3a0d0db0ae7e044545ff98a9cc7c",
-      "sizeBytes": 15023439
+      "md5": "c07b5722d62606e1a8b055165a02089d",
+      "sizeBytes": 15023871
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "9f9f3a0d0db0ae7e044545ff98a9cc7c",
-      "sizeBytes": 15023439
+      "md5": "c07b5722d62606e1a8b055165a02089d",
+      "sizeBytes": 15023871
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "9f9f3a0d0db0ae7e044545ff98a9cc7c",
-      "sizeBytes": 15023439
+      "md5": "c07b5722d62606e1a8b055165a02089d",
+      "sizeBytes": 15023871
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "9f9f3a0d0db0ae7e044545ff98a9cc7c",
-      "sizeBytes": 15023439
+      "md5": "c07b5722d62606e1a8b055165a02089d",
+      "sizeBytes": 15023871
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "9f9f3a0d0db0ae7e044545ff98a9cc7c",
-      "sizeBytes": 15023439
+      "md5": "c07b5722d62606e1a8b055165a02089d",
+      "sizeBytes": 15023871
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "9f9f3a0d0db0ae7e044545ff98a9cc7c",
-      "sizeBytes": 15023439
+      "md5": "c07b5722d62606e1a8b055165a02089d",
+      "sizeBytes": 15023871
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "9f9f3a0d0db0ae7e044545ff98a9cc7c",
-      "sizeBytes": 15023439
+      "md5": "c07b5722d62606e1a8b055165a02089d",
+      "sizeBytes": 15023871
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "9f9f3a0d0db0ae7e044545ff98a9cc7c",
-      "sizeBytes": 15023439
+      "md5": "c07b5722d62606e1a8b055165a02089d",
+      "sizeBytes": 15023871
     }
   ],
-  "md5": "9f9f3a0d0db0ae7e044545ff98a9cc7c",
+  "md5": "c07b5722d62606e1a8b055165a02089d",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
