@@ -38,6 +38,7 @@ export {
   mennicaCityIdsReplacedByCapital,
   builtWithoutMennica,
   demolishBuildingIds,
+  applyMennicaCompletedInCapital,
 } from '../src/game/mennica-orphan';
 `, 'utf8');
 
@@ -66,7 +67,7 @@ try {
 
 const M = require(BUNDLE_FILE);
 const { ownersWithMennica, setOwnerCapitalCityResolver } = M;
-const { MENNICA_BUILDING_ID, mennicaCityIdsReplacedByCapital, builtWithoutMennica, demolishBuildingIds } = M;
+const { MENNICA_BUILDING_ID, mennicaCityIdsReplacedByCapital, builtWithoutMennica, demolishBuildingIds, applyMennicaCompletedInCapital } = M;
 
 let pass = 0;
 let fail = 0;
@@ -86,15 +87,13 @@ const cities = [
 ];
 
 /** Symulacja hooka z main.ts: po ukończeniu budynku w `completedCityId`. */
+// Używa TEJ SAMEJ funkcji co main.ts (applyMennicaCompletedInCapital). skipHook = mutacja „bez hooka”.
 function applyCompletion(built, completedCityId, capitalCityId, ownerId, skipHook) {
   const next = new Map(built);
   const prev = next.get(completedCityId) ?? [];
   if (!prev.includes(MENNICA_BUILDING_ID)) next.set(completedCityId, [...prev, MENNICA_BUILDING_ID]);
-  // Hook: tylko gdy ukończono Mennicę w stolicy (guard jak w main.ts).
-  if (!skipHook && completedCityId === capitalCityId) {
-    for (const oid of mennicaCityIdsReplacedByCapital(cities, next, ownerId, capitalCityId)) {
-      next.set(oid, builtWithoutMennica(next.get(oid) ?? []));
-    }
+  if (!skipHook) {
+    applyMennicaCompletedInCapital(cities, next, ownerId, MENNICA_BUILDING_ID, completedCityId, capitalCityId);
   }
   return next;
 }
@@ -202,12 +201,30 @@ setOwnerCapitalCityResolver((oid) => (oid === 0 ? 'c0' : oid === 1 ? 'c2' : null
     eq(noGuardMutant, ['c1']) && eq(mennicaCityIdsReplacedByCapital(cities, b, 0, 'c0'), []));
 }
 
-// --- Okablowanie hooka w main.ts (statyczne: hook wpięty w applyProductionCompleted z guardem stolicy) ---
+// --- Scenariusz (6): helper hooka sam pilnuje guardu (ukończenie poza stolicą nic nie usuwa) ---
+{
+  const b = new Map([['c1', [MENNICA_BUILDING_ID]], ['c0', [MENNICA_BUILDING_ID]]]);
+  const removed = applyMennicaCompletedInCapital(cities, b, 0, MENNICA_BUILDING_ID, 'c1', 'c0');
+  check('(6) ukończenie Mennicy w NIE-stolicy: nic nie usunięte', eq(removed, []) && (b.get('c1') ?? []).includes(MENNICA_BUILDING_ID));
+  const b2 = new Map([['c1', [MENNICA_BUILDING_ID]], ['c0', [MENNICA_BUILDING_ID]]]);
+  const r2 = applyMennicaCompletedInCapital(cities, b2, 0, 'koszary', 'c0', 'c0');
+  check('(6) ukończenie innego budynku w stolicy: nic nie usunięte', eq(r2, []));
+  const b3 = new Map([['c0', [MENNICA_BUILDING_ID]], ['c1', [MENNICA_BUILDING_ID]]]);
+  const r3 = applyMennicaCompletedInCapital(cities, b3, 0, MENNICA_BUILDING_ID, 'c0', 'c0');
+  check('(6) ukończenie w stolicy: usuwa z c1, zostawia stolicę', eq(r3, ['c1']) && !(b3.get('c1') ?? []).includes(MENNICA_BUILDING_ID) && (b3.get('c0') ?? []).includes(MENNICA_BUILDING_ID));
+  // (6b) guard „completed == capital” w helperze: ukończenie w c1 (≠ stolica c0) nie usuwa nic.
+  const b4 = new Map([['c0', [MENNICA_BUILDING_ID]], ['c1', [MENNICA_BUILDING_ID]]]);
+  const r4 = applyMennicaCompletedInCapital(cities, b4, 0, MENNICA_BUILDING_ID, 'c1', 'c0');
+  check('(6b) guard stolicy w helperze: ukończenie w c1 (≠ stolica c0) nic nie usuwa', eq(r4, []));
+}
+
+// --- Okablowanie hooka w main.ts (statyczne: wywołanie helpera z capitalCityIdForOwner) ---
 {
   const mainSrc = fs.readFileSync(path.resolve(GRA, 'src', 'main.ts'), 'utf8');
-  const hookOk = mainSrc.includes('completed.id === MENNICA_BUILDING_ID && capitalCityIdForOwner(city.ownerId) === cityId')
-    && mainSrc.includes('mennicaCityIdsReplacedByCapital(cities, cityBuilt, city.ownerId, cityId)');
-  check('okablowanie: hook Mennicy w main.ts z guardem stolicy', hookOk);
+  const hookOk = mainSrc.includes('applyMennicaCompletedInCapital(')
+    && mainSrc.includes('capitalCityIdForOwner(city.ownerId)')
+    && /applyMennicaCompletedInCapital\(\s*cities,\s*cityBuilt,\s*city\.ownerId,\s*completed\.id,\s*cityId,\s*capitalCityIdForOwner\(city\.ownerId\)/.test(mainSrc);
+  check('okablowanie: main.ts wywołuje helper z completed.id, cityId i capitalCityIdForOwner', hookOk);
 }
 
 console.log('');

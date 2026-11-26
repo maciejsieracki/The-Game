@@ -58,3 +58,27 @@ export function demolishBuildingIds(
   if (!built.includes(buildingId)) return null;
   return built.filter(id => id !== buildingId);
 }
+
+/**
+ * Hook po UKOŃCZENIU budynku (wołany z main.ts applyProductionCompleted, po zapisaniu budynku
+ * w `builtByCity`). Gdy ukończona Mennica stoi w stolicy właściciela, usuwa (bez zwrotu) stare
+ * Mennice tego właściciela w pozostałych miastach. Mutuje `builtByCity`. Zwraca id miast, z których
+ * usunięto Mennicę (pusta lista, gdy hook nic nie robi). Ta sama funkcja jest testowana przez
+ * mint-orphan-test.cjs.
+ */
+export function applyMennicaCompletedInCapital(
+  cities: ReadonlyArray<MennicaCityRef>,
+  builtByCity: Map<string, string[]>,
+  ownerId: number,
+  completedBuildingId: string,
+  completedCityId: string,
+  capitalCityId: string | null,
+): string[] {
+  if (completedBuildingId !== MENNICA_BUILDING_ID) return [];
+  if (capitalCityId === null || capitalCityId !== completedCityId) return [];
+  const removed = mennicaCityIdsReplacedByCapital(cities, builtByCity, ownerId, capitalCityId);
+  for (const id of removed) {
+    builtByCity.set(id, builtWithoutMennica(builtByCity.get(id) ?? []));
+  }
+  return removed;
+}
