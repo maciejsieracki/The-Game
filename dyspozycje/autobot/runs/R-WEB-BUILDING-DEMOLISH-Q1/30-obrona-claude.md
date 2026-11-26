@@ -1,3 +1,54 @@
+# R-WEB-BUILDING-DEMOLISH-Q1 — obrona Operatora, RUNDA 2/5 (HAIKU 5.5)
+
+STATUS: PASS-WITH-NOTES (kod bez zmian w tej rundzie; zarzuty 1–3 rozstrzygnięte z dowodem; luka końca tury pozostaje NIE ZMIERZONO)
+DOMAIN: GAME
+TEMAT: R-WEB-BUILDING-DEMOLISH-Q1 (WYBURZ, #175; odp. 22C + 28a)
+GOAL: gracz wyburza każdy swój budynek z panelu miasta za połowę surowców (w dół); Pieniądz i Praca nie wracają; Mennica wg reguł właściciela; AI bez zmian.
+BAZA/KANDYDAT: 792b294119c4b7582105005123cd616ab8f99cd1 (kod funkcji 3a00fd6ca, bez zmian). Runda 2 nie zmienia gra/.
+ZMIANY-COMMIT: tylko ten plik (`30-obrona-claude.md`, runda 2 na górze; runda 1 zachowana niżej).
+
+## Odpowiedzi na zarzuty Evaluatora (b53c8d1ea)
+
+1. Ekonomia po wyburzeniu Mennicy — ODRZUCAM część logiczną z DOWODEM; żywy koniec tury pozostaje NIE ZMIERZONO.
+   - Ekonomia liczy bonus przez `ownersWithMennica(cities, builtByCity)`: `gra/src/game/turn-economy.ts` l.2228 i l.2871 (na każdy tick). Funkcja (l.298–307) zwraca właściciela tylko gdy `builtByCity` stolicy zawiera `mennica`. Wyburzenie czyści tę listę, więc bonus znika.
+   - `gra/tools/building-demolish-test.cjs` sekcja [7]: przed wyburzeniem właściciel 1 ma bonus, po `demolishBuilding(st,'stolica','mennica')` bonus znika. Wynik: 36 pass / 0 fail.
+   - Mennica poza stolicą nie daje bonusu (ta sama bramka): mint-orphan 28/0, mint-capital-only 8/0.
+   - NIE ZMIERZONO: koniec tury w przeglądarce i odczyt HUD po turze.
+
+2. Zrzut 02 bez okna potwierdzenia — ODRZUCAM z DOWODEM. Okno to natywny `window.confirm`; treść przechwycona w `zrzuty/wyburz-live.json` (`dialogsAll`): „Wyburzyć „Pałac”? / Zwrot surowców: brak (połowa kosztu, w dół). / Pieniądz i Praca nie wracają. Efekty budynku znikną od następnej tury.” Ograniczenie zrzutu headless, nie błąd gry.
+
+3. Zwrot liczony z `buildingStockCost` na danych bazowych — ODRZUCAM z DOWODEM.
+   - Płatność i zwrot używają tej samej funkcji i danych: budowa `gra/src/ui/cityPanel.ts` l.6360–6363 (`buildingStockCostForItem` → `buildingStockCost(def)`); zwrot `gra/src/game/building-demolish.ts` (`paidStockCostForBuilding` → `buildingStockCost(cur)`).
+   - `buildingStockCost` (`gra/src/game/building-stock-cost.ts`) przyjmuje tylko definicję budynku, bez argumentu ustawienia. Mnożniki: stała `R_STAWKI_FALA2_MULT = 2` (`gra/src/game/r-stawki-strojenie.ts` l.9) i era `buildingEraCostMultiplier(epokaWejscia)`.
+   - Przeszukanie `gra/src` nie znalazło ustawienia „koszt ulepszeń wg epoki”. Jedyne ustawienie z epoką (`newGameFlow.ts` l.1880, „Wzrost surowców z epoką”) dotyczy produkcji, nie kosztu budowy.
+   - Wniosek: zwrot = floor(zapłacone/2). Żywej zmiany ustawień nie testowano (NIE ZMIERZONO), ale brak ścieżki, którą ustawienie zmieniałoby koszt między budową a wyburzeniem.
+
+## Bramki (liczby z surowego wyjścia; worktree na 792b29411; `gra/node_modules` z `npm ci --ignore-scripts`)
+- `tsc --noEmit`: exit 0
+- `tools/building-demolish-test.cjs`: RESULT 36 pass / 0 fail
+- `tools/mint-orphan-test.cjs`: 28 PASS / 0 FAIL
+- `tools/mint-capital-only-test.cjs`: 8 PASS / 0 FAIL
+- `tools/logic-test.cjs`: LOGIC OK (213/213)
+- `tools/tech-tree-test.cjs`: 20 pass, 0 fail
+- `tools/research-test.cjs`: ALL GREEN (33/0)
+- `tools/unit-replace-test.cjs`: WSZYSTKIE TESTY ZIELONE (21/21)
+- `tools/combat-test.cjs`: All sanity checks passed (6/6)
+- `tools/ai-test.cjs`: ai-test: 297 passed, 0 failed
+
+Uwaga: w tej rundzie nie powtórzono live w Chromium (kod bez zmian; zrzuty i JSON z rundy 2 Operatora pozostają w `zrzuty/`).
+
+## BLOKADY
+- Techniczne: brak.
+- Decyzyjne: wyjątki strukturalne wg odp. 28a — bez wyjątków; zakaz podczas oblężenia to runda 3 (#181). Bez zmian w tej rundzie.
+
+RUNDY: 2/5 (runda 1: Operator → FC PASS-WITH-NOTES; runda 2: obrona przed zarzutami Evaluatora)
+NASTĘPNY KROK: Final Control (rozstrzygnięcie zarzutów 1–3; luka końca tury w NIE ZMIERZONO)
+DEPLOY/PUSH: NIE WYKONANO
+
+UWAGI-DLA-ORKIESTRATORA: Nie tworzono sesji ani zadań (zakaz). `gra/node_modules` usunięto po testach. Zarzut 1 (koniec tury) to jedyna żywa luka; orkiestrator decyduje, czy ją domknąć przed deployem.
+
+---
+
 STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-WEB-BUILDING-DEMOLISH-Q1 (WYBURZ, #175; odp. 22C właściciela)
