@@ -263,6 +263,32 @@ export function setOwnerCapitalCityResolver(
 }
 
 /**
+ * Stolica każdego ownera w TYM ticku (ownerId -> cityId). JEDNO źródło prawdy dla efektów stolicy
+ * w tickach ekonomii (R-WEB-CAPITAL-RESOLVER-ECONOMY-Q1, MINTDEBT #165): korupcja (dystans 0 dla
+ * stolicy, odległość od niej dla reszty miast) i Mennica. Używane jest wskazanie resolvera
+ * (capitalCityIdForOwner z main.ts), gdy wskazuje miasto tego ownera obecne w `cities`; w pozostałych
+ * przypadkach (brak resolvera w testach) -- pierwsze miasto ownera w tablicy (heurystyka dotychczasowa).
+ */
+export function capitalCityIdByOwnerForTick(
+  cities: ReadonlyArray<{ id: string; ownerId: number }>,
+): Map<number, string> {
+  const firstByOwner = new Map<number, string>();
+  for (const c of cities) {
+    if (!firstByOwner.has(c.ownerId)) firstByOwner.set(c.ownerId, c.id);
+  }
+  const resolver = _ownerCapitalCityResolver;
+  if (!resolver) return firstByOwner;
+  const ownerOfCity = new Map<string, number>();
+  for (const c of cities) ownerOfCity.set(c.id, c.ownerId);
+  const result = new Map<number, string>();
+  for (const [ownerId, firstId] of firstByOwner) {
+    const capId = resolver(ownerId);
+    result.set(ownerId, capId !== null && ownerOfCity.get(capId) === ownerId ? capId : firstId);
+  }
+  return result;
+}
+
+/**
  * Właściciele (ownerId), którzy mają Mennicę zbudowaną w AKTUALNEJ stolicy (R-WEB-MINT-CAPITAL-ONLY-Q1,
  * odp. 8A, 2026-11-26): bonus Waluta+Mennica działa na całą cywilizację, ale liczy się WYŁĄCZNIE z
  * Mennicy stojącej w stolicy (pytanie 71/C: bramka Efektu 1 patrzy na imperium, nie na pojedyncze
@@ -274,23 +300,11 @@ export function ownersWithMennica(
   builtByCity: ReadonlyMap<string, readonly string[]>,
 ): Set<number> {
   const owners = new Set<number>();
-  const resolver = _ownerCapitalCityResolver;
-  if (resolver) {
-    for (const c of cities) {
-      if (owners.has(c.ownerId)) continue;
-      const capId = resolver(c.ownerId);
-      if (capId !== null && capId === c.id && (builtByCity.get(c.id) ?? []).includes('mennica')) {
-        owners.add(c.ownerId);
-      }
-    }
-    return owners;
-  }
-  // Heurystyka bez resolvera: stolica = pierwsze miasto ownera w `cities` (jak isCapital w tickach).
-  const capitalSeen = new Set<number>();
+  const capitalByOwner = capitalCityIdByOwnerForTick(cities);
   for (const c of cities) {
-    const isCapital = !capitalSeen.has(c.ownerId);
-    capitalSeen.add(c.ownerId);
-    if (isCapital && (builtByCity.get(c.id) ?? []).includes('mennica')) owners.add(c.ownerId);
+    if (capitalByOwner.get(c.ownerId) === c.id && (builtByCity.get(c.id) ?? []).includes('mennica')) {
+      owners.add(c.ownerId);
+    }
   }
   return owners;
 }
@@ -2206,21 +2220,21 @@ export function previewCityEconomy(
     difficulty,
   );
   const rationParams = buildRationParams(rawEconParams, difficulty);
-  const capitalSeen = new Set<number>();
+  // Stolice ownerów w tym ticku: jedno źródło (resolver main.ts), patrz capitalCityIdByOwnerForTick.
+  const capitalIdByOwner = capitalCityIdByOwnerForTick(cities);
   // Pytanie 71/C (Maciej 2026-07-25): Mennica stoi wyłącznie w stolicy (pytanie 70/B)
   // -> bramka Efektu 1 musi patrzeć na CAŁE imperium ownera, nie tylko to miasto.
   // Liczone RAZ na tick, nie per-city.
   const mennicaOwners = ownersWithMennica(cities, builtByCity);
   // D2 (Maciej 2026-07-25): pre-pass dla korupcji -- wspolrzedne "stolicy" per owner wg
-  // TEJ SAMEJ heurystyki co isCapital nizej (pierwsze miasto ownera w tablicy `cities`;
-  // ten modul nie ma dostepu do autorytatywnego capitalCityIdForOwner z main.ts). Musi
+  // TEGO SAMEGO resolvera co isCapital nizej (capitalCityIdByOwnerForTick). Musi
   // powstac PRZED glowna petla, bo miasto regionalne moze byc iterowane przed swoja
   // stolica. Rownolegle: liczbaWszystkichMiast per owner (PARYTET AI -- ta sama liczba
   // dla gracza i AI, zero galezi po ownerId).
   const capitalCoordsByOwner = new Map<number, { q: number; r: number }>();
   const cityCountByOwner = new Map<number, number>();
   for (const c of cities) {
-    if (!capitalCoordsByOwner.has(c.ownerId)) {
+    if (capitalIdByOwner.get(c.ownerId) === c.id) {
       capitalCoordsByOwner.set(c.ownerId, { q: c.q, r: c.r });
     }
     cityCountByOwner.set(c.ownerId, (cityCountByOwner.get(c.ownerId) ?? 0) + 1);
@@ -2259,8 +2273,7 @@ export function previewCityEconomy(
   const perCity: CityEconomyTick[] = [];
 
   for (const city of cities) {
-    const isCapital = !capitalSeen.has(city.ownerId);
-    capitalSeen.add(city.ownerId);
+    const isCapital = capitalIdByOwner.get(city.ownerId) === city.id;
 
     const worked = cityWorkedTilesForEconomy(
       city, map, territoryNodes, lostToSiblingByCity.get(city.id),
@@ -2850,21 +2863,21 @@ export function advanceCityEconomy(
   );
 
   // Track the first city seen per owner -> treat as that owner's capital.
-  const capitalSeen = new Set<number>();
+  // Stolice ownerów w tym ticku: jedno źródło (resolver main.ts), patrz capitalCityIdByOwnerForTick.
+  const capitalIdByOwner = capitalCityIdByOwnerForTick(cities);
   // Pytanie 71/C (Maciej 2026-07-25): Mennica stoi wyłącznie w stolicy (pytanie 70/B)
   // -> bramka Efektu 1 musi patrzeć na CAŁE imperium ownera, nie tylko to miasto.
   // Liczone RAZ na tick, nie per-city.
   const mennicaOwners = ownersWithMennica(cities, builtByCity);
   // D2 (Maciej 2026-07-25): pre-pass dla korupcji -- wspolrzedne "stolicy" per owner wg
-  // TEJ SAMEJ heurystyki co isCapital nizej (pierwsze miasto ownera w tablicy `cities`;
-  // ten modul nie ma dostepu do autorytatywnego capitalCityIdForOwner z main.ts). Musi
+  // TEGO SAMEGO resolvera co isCapital nizej (capitalCityIdByOwnerForTick). Musi
   // powstac PRZED glowna petla, bo miasto regionalne moze byc iterowane przed swoja
   // stolica. Rownolegle: liczbaWszystkichMiast per owner (PARYTET AI -- ta sama liczba
   // dla gracza i AI, zero galezi po ownerId).
   const capitalCoordsByOwner = new Map<number, { q: number; r: number }>();
   const cityCountByOwner = new Map<number, number>();
   for (const c of cities) {
-    if (!capitalCoordsByOwner.has(c.ownerId)) {
+    if (capitalIdByOwner.get(c.ownerId) === c.id) {
       capitalCoordsByOwner.set(c.ownerId, { q: c.q, r: c.r });
     }
     cityCountByOwner.set(c.ownerId, (cityCountByOwner.get(c.ownerId) ?? 0) + 1);
@@ -2941,8 +2954,7 @@ export function advanceCityEconomy(
   );
 
   for (const city of cities) {
-    const isCapital = !capitalSeen.has(city.ownerId);
-    capitalSeen.add(city.ownerId);
+    const isCapital = capitalIdByOwner.get(city.ownerId) === city.id;
 
     const worked    = cityWorkedTilesForEconomy(
       city, map, territoryNodes, lostToSiblingByCity.get(city.id),
