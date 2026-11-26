@@ -110,6 +110,11 @@ check('HUD: „Akceptuj” zablokowane dla propozycji pokoju przy aktywnym liczn
   && hudSrc.includes('ihd-accept"${blocked ? \' disabled\' : \'\'}'));
 check('HUD: klik „Wyślij” przy zablokowanym pokoju nie wywołuje onPropose',
   hudSrc.includes("if (k === 'zaproponuj_pokoj' && peaceNote !== null) return;"));
+// Synchronizacja blokady z listą rodzajów (zarzut Evaluatora nr 1): usunięcie któregokolwiek wywołania MUSI czerwienić test.
+check('HUD: stan początkowy blokady synchronizowany dla domyślnego rodzaju (syncPeaceBlock(defaultKind))',
+  hudSrc.includes('syncPeaceBlock(defaultKind);'));
+check('HUD: zmiana rodzaju w liście ponownie synchronizuje blokadę (syncPeaceBlock(k) w handlerze change)',
+  /addEventListener\('change', \(\) => \{[\s\S]*?syncPeaceBlock\(k\);[\s\S]*?\}\);/.test(hudSrc));
 
 // main.ts: ta sama para i to samo źródło co bramka humanPeaceRejectReason.
 check('main.ts: openInterHumanDiplomacyHud przekazuje peaceTurnsAtWar',
