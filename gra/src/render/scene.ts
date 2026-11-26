@@ -1538,16 +1538,16 @@ export function getRiverRenderStage(): number {
 
 /**
  * RIVERS3A: półszerokość (mnożnik mainHalfWidth) per poziom rzeki.
- * main: bez zmian (0,85–1,35 wg długości). medium: 0,7 × dotychczasowej reguły długości
- * (0,4/0,55/0,7), nie mniej niż 0,35. tributary/short: stała 0,3 (czytelność; patrz raport).
+ * main: bez zmian (0,85–1,35 wg długości). medium: 0,7 × szerokość głównej przy tej samej
+ * długości (≈0,6–0,95). tributary/short: stała 0,45 (≈0,33–0,53 głównej; zawsze < medium,
+ * bo najmniejsze medium = 0,7 × 0,85 = 0,595). Odpowiedź właściciela 31b: dopływy ok. 0,45,
+ * średnie ok. 0,6–0,8 szerokości głównej.
  */
 export function riverWidthMulForKind(kind: RiverPathKind, landLen: number): number {
-  if (kind === 'main') return Math.min(1.35, 0.85 + landLen * 0.008);
-  if (kind === 'medium') {
-    const legacy = landLen < 10 ? 0.4 : landLen < 18 ? 0.55 : 0.7;
-    return Math.max(0.35, 0.7 * legacy);
-  }
-  return 0.3;
+  const main = Math.min(1.35, 0.85 + landLen * 0.008);
+  if (kind === 'main') return main;
+  if (kind === 'medium') return 0.7 * main;
+  return 0.45;
 }
 
 export function filterRiverPathsForStage(

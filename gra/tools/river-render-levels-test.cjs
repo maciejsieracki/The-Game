@@ -77,6 +77,16 @@ for (const L of lens) {
   if (t < 0.3 - 1e-9) orderOk = false;
 }
 ok(orderOk, 'dla każdej długości: main > medium > tributary == short, tributary ≥ 0,3');
+let bandOk = true;
+for (const L of lens) {
+  const m = M.riverWidthMulForKind('main', L);
+  const d = M.riverWidthMulForKind('medium', L);
+  const t = M.riverWidthMulForKind('tributary', L);
+  if (Math.abs(d / m - 0.7) > 1e-9) bandOk = false;      // medium = 0,7 × main (owner 31b: 0,6–0,8)
+  if (Math.abs(t - 0.45) > 1e-9) bandOk = false;         // tributary = 0,45 (owner 31b: ok. 0,45)
+  if (!(d >= t + 0.1 - 1e-9)) bandOk = false;            // medium ≥ tributary + 0,1 (zawsze wyraźnie różne)
+}
+ok(bandOk, 'medium = 0,7 × main; tributary = 0,45; medium ≥ tributary + 0,1 dla każdej długości');
 const tributaryVal = M.riverWidthMulForKind('tributary', 20);
 const mediumVal = M.riverWidthMulForKind('medium', 20);
 const mainVal = M.riverWidthMulForKind('main', 20);
