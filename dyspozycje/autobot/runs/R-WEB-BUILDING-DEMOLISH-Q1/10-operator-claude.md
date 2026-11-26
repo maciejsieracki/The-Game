@@ -1,3 +1,65 @@
+# R-WEB-BUILDING-DEMOLISH-Q1 — raport Operatora, RUNDA 2/5 (HAIKU 5.5): weryfikacja NA ŻYWO przed deployem
+
+STATUS: PASS-WITH-NOTES (żywa weryfikacja w Chromium wykonana i zielona; kod NIE zmieniany w rundzie 2; wyjątki strukturalne Pałac/cuda/mury nadal czekają na decyzję właściciela — nie blokują kodu)
+DOMAIN: GAME
+TEMAT: R-WEB-BUILDING-DEMOLISH-Q1 (WYBURZ, #175; odp. 22C)
+GOAL: gracz wyburza budynek z panelu miasta i dostaje połowę surowców z kosztu budynku (w dół); Pieniądz i Praca nie wracają; AI bez zmian.
+BAZA/KANDYDAT: b8d28d17fad563e90003370e743dc1f958cc6293 (FC r1 tip; kod 3a00fd6ca43e0cb0c61693ed8e3740009b90f699). Runda 2 nie dodaje commitów z kodem; commit zawiera tylko ten raport i katalog `zrzuty/`.
+ZMIANY-COMMIT: `dyspozycje/autobot/runs/R-WEB-BUILDING-DEMOLISH-Q1/10-operator-claude.md` (runda 2 na górze, runda 1 zachowana niżej) oraz `dyspozycje/autobot/runs/R-WEB-BUILDING-DEMOLISH-Q1/zrzuty/` (4 zrzuty PNG + `wyburz-live.json`). Brak zmian w gra/src, gra/tools, gra-robocza, gra-kanon, WERSJE.md, rust-port.
+
+## Bramki (liczby z surowego wyjścia, worktree na b8d28d17f)
+- `node ./node_modules/typescript/bin/tsc --noEmit`: exit 0
+- `tools/building-demolish-test.cjs`: RESULT 36 pass / 0 fail
+- `tools/mint-orphan-test.cjs`: 28 PASS / 0 FAIL; `tools/mint-capital-only-test.cjs`: 8 PASS / 0 FAIL
+- `tools/logic-test.cjs`: LOGIC OK (213/213)
+- `tools/tech-tree-test.cjs`: 20 pass, 0 fail
+- `tools/research-test.cjs`: PASSED 33 / FAILED 0 / TOTAL 33
+- `tools/unit-replace-test.cjs`: WSZYSTKIE TESTY ZIELONE (21/21)
+- `tools/combat-test.cjs`: COMBAT TEST 6/6 pass
+- `tools/ai-test.cjs`: ai-test: 297 passed, 0 failed
+
+Build do testów live (NIE `npm run build`): `node ./node_modules/vite/bin/vite.js build --outDir <scratchpad>/dist-wyburz --emptyOutDir` — "✓ built in 14.33s", exit 0. (Katalog wyjściowy w scratchpadzie zamiast /tmp/<unikalny>, zgodnie z zasadami sesji.)
+
+## Żywy test w Chromium (Playwright, /opt/pw-browsers/chromium, headless, --no-sandbox)
+Jeden bieg bez awarii przeglądarki (brak SIGSEGV w tym biegu); `errors` w JSON: 0. Ścieżka: nowa gra (normal, 2 państwa-miasta, ziarno domyślne) → założenie stolicy „Rzym” (realna ścieżka) → zamknięcie ekranu powitalnego (helper `_live-ready.cjs`) → hak `civTest.adminSetup` (budynki: Pałac, Koszary, Mennica; zapas 200/200/200; skarbiec 500) → klik w hex stolicy, wybór „Miasto” → panel miasta.
+
+| Krok | Wynik (z surowego JSON `zrzuty/wyburz-live.json`) |
+|---|---|
+| Panel miasta | „Budynki w mieście (3)”; przy każdym wierszu przycisk „Wyburz” (3 przyciski). Zrzut `zrzuty/01-panel-miasta-przycisk-wyburz.png` |
+| Start | budynki `["palac","koszary","mennica"]`, skarbiec 500, „Dostępne do budowy” = 200 / 200 / 200 |
+| A: Wyburz Pałac → Anuluj | potwierdzenie: „Zwrot surowców: brak (połowa kosztu, w dół). Pieniądz i Praca nie wracają.”; po anulowaniu budynki bez zmian (`unchanged: true`). Zrzut `02-potwierdzenie-odrzucone-palac.png` |
+| B: Wyburz Koszary → OK | potwierdzenie: „drewno: +80, kamien: +80”; budynki `["palac","mennica"]`; zapas 200/200/200 → **280/280/200** (dokładnie +80 i +80 jak w podglądzie); skarbiec 500 → 500 (Pieniądz nie wraca). Zrzut `03-po-wyburzeniu-koszary.png` |
+| C: Wyburz Mennicę → OK | potwierdzenie: „drewno: +80, kamien: +80, cegla: +80”; budynki `["palac"]`; wiersz Mennicy zniknął z panelu („Budynki w mieście (1)”, sekcja „Podatek i pieniądz” ukryta); zapas na zrzucie 360 / 360 / 280 (zgodnie z 280+80 / 280+80 / 200+80). Zrzut `04-po-wyburzeniu-mennicy.png` |
+| D: Wyburz Pałac → OK | potwierdzenie: „Zwrot surowców: brak”; budynki `[]`; Pałac usunięty bez zwrotu (w danych brak kosztu surowcowego). |
+
+Zgodność z regułą 22C: zwrot = połowa (w dół) surowców z kosztu budynku wg `buildingStockCost` (ta sama funkcja, którą panel pokazuje jako koszt budowy); Koszary/Mennica mają koszt 160 na surowiec, więc zwrot 80. Pieniądz i Praca nie są zwracane (potwierdzone: skarbiec 500 → 500).
+
+## NIE ZMIERZONO (jawnie)
+- Efekt ekonomiczny Mennicy po zakończeniu tury (bonus znika „od następnej tury”): NIE wykonano końca tury. Zmierzono tylko: `builtIds` bez „mennica”, wiersz Mennicy zniknął z panelu.
+- Liczby HUD „Skarbiec” netto przed/po (w zrzutach było +4 / −1, po wyburzeniach +3 / −1) — NIE interpretowano, bez końca tury nie wiadomo, co z tego wynika.
+- Zapis i wczytanie gry po wyburzeniu — NIE ZMIERZONO (kod nie dodaje stanu, więc zapis bit-w-bit powinien pozostać bez zmian; to tylko wnioskowanie).
+- Hotseat (aktywny gracz inny niż 0) — NIE ZMIERZONO.
+- AI nie wyburza — kod nie ma ścieżki do hooka; NIE ZMIERZONO w biegu live.
+- Okno potwierdzenia to natywny `window.confirm`: w headless nie da się zrobić jego zrzutu; dowodem jest tekst okna przechwycony przez Playwright (podany wyżej).
+
+## Uwagi i założenia Operatora (runda 2)
+- Pałac można wyburzyć bez zwrotu (brak kosztu surowcowego w danych) — zgodne z obecnym kodem; pytanie o wyjątki strukturalne (Pałac/cuda/mury w oblężeniu) pozostaje otwarte jako decyzja właściciela (#181, Q28). Kodu nie zmieniałem.
+- Zrzuty 02 i 01 mają ten sam rozmiar pliku: obie migawki pokazują ten sam stan panelu (po anulowaniu nic się nie zmieniło), więc to nie błąd zapisu.
+
+## BLOKADY
+- Techniczne: brak.
+- Decyzyjne (poza zakresem Operatora): Pałac/cuda/mury — pytanie Q28 do właściciela (#181), nie blokuje deployu tej funkcji wg dispatchu.
+
+RUNDY: 2/5 (runda 1: Operator → FC PASS-WITH-NOTES; runda 2: ten raport)
+NASTĘPNY KROK: integracja po FC (orkiestrator); deploy na ROBOCZĄ tylko po osobnej autoryzacji orkiestratora.
+DEPLOY/PUSH: NIE WYKONANO
+
+UWAGI-DLA-ORKIESTRATORA: Nie uruchamiałem żadnych nowych sesji ani tworzonych zadań (zakaz w dispatchu). `gra/node_modules` zainstalowane przez `npm ci --ignore-scripts` (katalog ignorowany przez git) i usunięte po pracy; katalog zrzutów przygotowany w scratchpadzie. Zrzut z kliknięciem przycisku „Wyburz” wykonano na tej samej wersji kodu co FC r1 (b8d28d17f).
+
+---
+
+# Runda 1 (archiwum, bez zmian)
+
 # R-WEB-BUILDING-DEMOLISH-Q1 — raport Operatora (runda 1/5, HAIKU 5.5)
 
 STATUS: PASS-WITH-NOTES (kod gotowy; wyjątki strukturalne czekają na decyzję właściciela, patrz BLOKADY)
