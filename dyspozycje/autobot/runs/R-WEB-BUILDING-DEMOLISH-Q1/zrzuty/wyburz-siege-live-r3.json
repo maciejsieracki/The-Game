@@ -1,0 +1,47 @@
+{
+  "steps": {
+    "adminSetup": "ok",
+    "beforeSiege": {
+      "n": 3,
+      "disabled": [
+        false,
+        false,
+        false
+      ],
+      "title": [
+        "",
+        "",
+        ""
+      ],
+      "label": [
+        "Wyburz budynek Pałac",
+        "Wyburz budynek Mennica",
+        "Wyburz budynek Stolarnia"
+      ]
+    },
+    "startSiegeOk": true,
+    "duringSiege": {
+      "n": 3,
+      "disabled": [
+        true,
+        true,
+        true
+      ],
+      "title": [
+        "Nie można wyburzać podczas oblężenia",
+        "Nie można wyburzać podczas oblężenia",
+        "Nie można wyburzać podczas oblężenia"
+      ],
+      "label": [
+        "Wyburz budynek Pałac",
+        "Wyburz budynek Mennica",
+        "Wyburz budynek Stolarnia"
+      ]
+    },
+    "blockedTextVisibleInDom": true,
+    "confirmCallsAfterClick": 0,
+    "pageErrors": []
+  },
+  "cityId": "city0",
+  "ok": true
+}

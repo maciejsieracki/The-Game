@@ -9893,6 +9893,14 @@ function appendOwnedBuildingRow(
         }
       });
       tail.appendChild(demoBtn);
+      // Widoczny komunikat blokady (odp. 28a): sama podpowiedź (title) nie jest widoczna w panelu.
+      if (demoSiegeBlocked) {
+        const demoNote = document.createElement('div');
+        demoNote.className = 'bld-demolish-siege-note';
+        demoNote.textContent = DEMOLISH_SIEGE_BLOCK_PL;
+        demoNote.style.cssText = 'font-size:12px;opacity:0.85;margin-top:4px;';
+        tail.appendChild(demoNote);
+      }
     }
     // P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE: DRUGA linia, oddzielona od
     // `tail` (koszt utrzymania) -- bilans produkcji konwertera (Garncarnia i in.).

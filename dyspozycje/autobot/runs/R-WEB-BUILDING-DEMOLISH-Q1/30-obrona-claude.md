@@ -1,86 +1,81 @@
-# R-WEB-BUILDING-DEMOLISH-Q1 — obrona Operatora, RUNDA 2/5 (HAIKU 5.5)
+# R-WEB-BUILDING-DEMOLISH-Q1 — obrona Operatora, RUNDA 3/5 (HAIKU 5.5)
 
-STATUS: PASS-WITH-NOTES (kod bez zmian w tej rundzie; zarzuty 1–3 rozstrzygnięte z dowodem; luka końca tury pozostaje NIE ZMIERZONO)
+STATUS: PASS-WITH-NOTES (zarzuty 1–4 przyjęte; poprawki w tej rundzie; dowód live zrobiony; NIE ZMIERZONO: patrz niżej)
 DOMAIN: GAME
 TEMAT: R-WEB-BUILDING-DEMOLISH-Q1 (WYBURZ, #175; odp. 22C + 28a)
-GOAL: gracz wyburza każdy swój budynek z panelu miasta za połowę surowców (w dół); Pieniądz i Praca nie wracają; Mennica wg reguł właściciela; AI bez zmian.
-BAZA/KANDYDAT: 792b294119c4b7582105005123cd616ab8f99cd1 (kod funkcji 3a00fd6ca, bez zmian). Runda 2 nie zmienia gra/.
-ZMIANY-COMMIT: tylko ten plik (`30-obrona-claude.md`, runda 2 na górze; runda 1 zachowana niżej).
+GOAL: gracz wyburza każdy swój budynek z panelu miasta za połowę surowców (w dół); podczas oblężenia miasta wyburzanie zablokowane (bez wyjątków dla Pałacu, cudów, murów, Mennicy); widoczny komunikat blokady.
+BAZA/KANDYDAT: b837c8ac393666f17b1dbc74b6adde1f39ef3589 (origin/main), kod gra/ z rundy 3 (Operator), baza zarzutów: b8c6e72c2 (raport Evaluatora d544985b4).
+ZMIANY-COMMIT: patrz sekcja „Zmiany” (pliki w allowliście; commit podpisany; SHA w polu sha).
 
-## Odpowiedzi na zarzuty Evaluatora (b53c8d1ea)
+## Odpowiedzi na zarzuty Evaluatora (d544985b4)
 
-1. Ekonomia po wyburzeniu Mennicy — ODRZUCAM część logiczną z DOWODEM; żywy koniec tury pozostaje NIE ZMIERZONO.
-   - Ekonomia liczy bonus przez `ownersWithMennica(cities, builtByCity)`: `gra/src/game/turn-economy.ts` l.2228 i l.2871 (na każdy tick). Funkcja (l.298–307) zwraca właściciela tylko gdy `builtByCity` stolicy zawiera `mennica`. Wyburzenie czyści tę listę, więc bonus znika.
-   - `gra/tools/building-demolish-test.cjs` sekcja [7]: przed wyburzeniem właściciel 1 ma bonus, po `demolishBuilding(st,'stolica','mennica')` bonus znika. Wynik: 36 pass / 0 fail.
-   - Mennica poza stolicą nie daje bonusu (ta sama bramka): mint-orphan 28/0, mint-capital-only 8/0.
-   - NIE ZMIERZONO: koniec tury w przeglądarce i odczyt HUD po turze.
+1. Test okablowania UI tylko regexem; strażnik w handlerze bez mutacji — PRZYJMUJĘ (częściowo rozwiązane).
+   - Dodano w `gra/tools/building-demolish-siege-test.cjs` sekcję [7]: czerwona mutacja tekstu cityPanel.ts (usunięta linia strażnika handlera) → test wykrywa brak strażnika; strażnik obecny dokładnie raz.
+   - Ograniczenie uczciwie: w node nie ma DOM, więc zachowanie kliknięcia sprawdza dopiero live (zarzut 3): wymuszony klik w zablokowany przycisk → `confirmCallsAfterClick: 0`.
 
-2. Zrzut 02 bez okna potwierdzenia — ODRZUCAM z DOWODEM. Okno to natywny `window.confirm`; treść przechwycona w `zrzuty/wyburz-live.json` (`dialogsAll`): „Wyburzyć „Pałac”? / Zwrot surowców: brak (połowa kosztu, w dół). / Pieniądz i Praca nie wracają. Efekty budynku znikną od następnej tury.” Ograniczenie zrzutu headless, nie błąd gry.
+2. onDemolishBuilding w main.ts cicho ignoruje blocked='siege' — PRZYJMUJĘ (naprawione).
+   - `gra/src/main.ts` (oba miejsca onDemolishBuilding, l.~35519 i ~50418): `if (dm.blocked === 'siege') { showHintMessage(DEMOLISH_SIEGE_BLOCK_PL, 6000); return; }`; import `DEMOLISH_SIEGE_BLOCK_PL` z building-demolish.
+   - Komunikat PL nie jest już tylko tooltipem: w `gra/src/ui/cityPanel.ts` przy każdym budynku w oblężonym mieście pojawia się widoczny tekst `bld-demolish-siege-note` = „Nie można wyburzać podczas oblężenia” (obok nieaktywnego przycisku „Wyburz”).
+   - Test [7] pilnuje obu wywołań w main.ts (liczba = 2) i mutacją (usunięcie komunikatu → wykryte).
+   - Ścieżka main.ts jest nieosiągalna z UI (przycisk nieaktywny, strażnik w handlerze), więc nie była testowana live — tylko źródłowo.
 
-3. Zwrot liczony z `buildingStockCost` na danych bazowych — ODRZUCAM z DOWODEM.
-   - Płatność i zwrot używają tej samej funkcji i danych: budowa `gra/src/ui/cityPanel.ts` l.6360–6363 (`buildingStockCostForItem` → `buildingStockCost(def)`); zwrot `gra/src/game/building-demolish.ts` (`paidStockCostForBuilding` → `buildingStockCost(cur)`).
-   - `buildingStockCost` (`gra/src/game/building-stock-cost.ts`) przyjmuje tylko definicję budynku, bez argumentu ustawienia. Mnożniki: stała `R_STAWKI_FALA2_MULT = 2` (`gra/src/game/r-stawki-strojenie.ts` l.9) i era `buildingEraCostMultiplier(epokaWejscia)`.
-   - Przeszukanie `gra/src` nie znalazło ustawienia „koszt ulepszeń wg epoki”. Jedyne ustawienie z epoką (`newGameFlow.ts` l.1880, „Wzrost surowców z epoką”) dotyczy produkcji, nie kosztu budowy.
-   - Wniosek: zwrot = floor(zapłacone/2). Żywej zmiany ustawień nie testowano (NIE ZMIERZONO), ale brak ścieżki, którą ustawienie zmieniałoby koszt między budową a wyburzeniem.
+3. Brak dowodu live (zrzut oblężonego miasta, przycisk nieaktywny + komunikat) — PRZYJMUJĘ, ZMIERZONO w tej rundzie.
+   - Build z kandydata (`node ./node_modules/vite/bin/vite.js build --outDir <scratchpad>`, NIE npm run build), Chromium `/opt/pw-browsers/chromium` headless, `?civTest=1`, nowa gra, stolica z budynkami (stolarnia, mennica, palac) przez hak `__civTest.adminSetup`.
+   - Oblężenie: realny hak `__ledgerRealPathDebug.startSiege(cityId, 1, 12)` (ustawia wojnę i `City.oblegane = true`, ta sama flaga co silnik).
+   - Wynik (`zrzuty/wyburz-siege-live-r3.json`, liczby z surowego wyjścia):
+     - przed oblężeniem: 3 przyciski „Wyburz”, `disabled: [false,false,false]`, brak podpowiedzi;
+     - w oblężeniu: `disabled: [true,true,true]`, `title` = „Nie można wyburzać podczas oblężenia” (x3), `blockedTextVisibleInDom: true`;
+     - wymuszony klik w zablokowany przycisk: `confirmCallsAfterClick: 0` (okno potwierdzenia nie pojawiło się);
+     - `pageErrors: []`.
+   - Zrzuty: `zrzuty/04-r3-przed-oblezeniem.png`, `zrzuty/05-r3-oblezenie-przycisk-zablokowany-komunikat.png` (na zrzucie widać szarą pozycję „Wyburz” przy Pałacu, Mennicy i Stolarni oraz tekst „Nie można wyburzać podczas oblężenia”).
 
-## Bramki (liczby z surowego wyjścia; worktree na 792b29411; `gra/node_modules` z `npm ci --ignore-scripts`)
-- `tsc --noEmit`: exit 0
-- `tools/building-demolish-test.cjs`: RESULT 36 pass / 0 fail
-- `tools/mint-orphan-test.cjs`: 28 PASS / 0 FAIL
-- `tools/mint-capital-only-test.cjs`: 8 PASS / 0 FAIL
+4. Brak testu hotseat (blokada per miasto) — PRZYJMUJĘ, dodano test [8] w `building-demolish-siege-test.cjs`:
+   - dwa miasta, dwóch ownerów (1 i 2); oblężone miasto gracza 2 → odmowa `blocked='siege'`, budynek stoi; miasto gracza 1 nieoblężone → wyburzenie działa, zwrot 25 drewna trafia do ownera miasta 1; predykat per miasto (false/true).
+   - Live hotseat NIE ZMIERZONO (patrz niżej).
+
+## Zmiany w tej rundzie (pliki allowlisty)
+- `gra/src/main.ts`: import `DEMOLISH_SIEGE_BLOCK_PL`; w dwóch miejscach onDemolishBuilding obsługa `dm.blocked === 'siege'` (komunikat).
+- `gra/src/ui/cityPanel.ts`: widoczna notatka `bld-demolish-siege-note` przy blokadzie (poza zmianą warunku przycisku bez zmian).
+- `gra/tools/building-demolish-siege-test.cjs`: sekcja [7] (mutacje handlera i main.ts, komunikat) i sekcja [8] (hotseat).
+- `dyspozycje/autobot/runs/R-WEB-BUILDING-DEMOLISH-Q1/30-obrona-claude.md` (ten raport; runda 2 zastąpiona, zachowana w historii gita).
+- `dyspozycje/autobot/runs/R-WEB-BUILDING-DEMOLISH-Q1/zrzuty/` — nowe pliki: `04-r3-przed-oblezeniem.png`, `05-r3-oblezenie-przycisk-zablokowany-komunikat.png`, `wyburz-siege-live-r3.json`.
+- Logika `gra/src/game/building-demolish.ts` NIEZMIENIONA w tej rundzie (predykat i guard z rundy 3 bez zmian).
+
+## Bramki (liczby z surowego wyjścia tej sesji; `gra/node_modules` = symlink do innego worktree, usunięty przed commitem)
+- `tsc --noEmit -p .`: exit 0 (po wszystkich edycjach gra/src, także po notatce cityPanel)
+- `tools/building-demolish-siege-test.cjs`: RESULT 32 pass / 0 fail (po ostatniej zmianie; przed notatką cityPanel: 31/0)
+- `tools/building-demolish-test.cjs` (regresja, nieruszana): RESULT 36 pass / 0 fail
 - `tools/logic-test.cjs`: LOGIC OK (213/213)
 - `tools/tech-tree-test.cjs`: 20 pass, 0 fail
-- `tools/research-test.cjs`: ALL GREEN (33/0)
+- `tools/research-test.cjs`: ALL GREEN
 - `tools/unit-replace-test.cjs`: WSZYSTKIE TESTY ZIELONE (21/21)
-- `tools/combat-test.cjs`: All sanity checks passed (6/6)
-- `tools/ai-test.cjs`: ai-test: 297 passed, 0 failed
+- `tools/combat-test.cjs`: All sanity checks passed
+- `tools/ai-test.cjs`: 297 passed, 0 failed (exit 0)
+- `tools/mint-capital-only-test.cjs`: 8 PASS / 0 FAIL
+- `tools/mint-orphan-test.cjs`: 28 PASS / 0 FAIL
+- Uwaga: logic/tech-tree/research/unit-replace/combat/ai-test/mint-* uruchomiono PRZED ostatnią zmianą wyłącznie w `cityPanel.ts` (dodanie notatki UI, bez zmian logiki); tsc po niej: exit 0; `building-demolish-siege-test` i `building-demolish-test` po niej: zielone.
 
-Uwaga: w tej rundzie nie powtórzono live w Chromium (kod bez zmian; zrzuty i JSON z rundy 2 Operatora pozostają w `zrzuty/`).
+## Mutacje (czerwone) — wykryte przez test
+- brak guarda w `demolishBuilding` (r3, sekcja [6]) → wykryte;
+- odwrócony guard → wykryte;
+- usunięty strażnik handlera w cityPanel.ts (nowa, sekcja [7]) → wykryte;
+- usunięty komunikat w main.ts (nowa, sekcja [7]) → wykryte.
 
-## BLOKADY
-- Techniczne: brak.
-- Decyzyjne: wyjątki strukturalne wg odp. 28a — bez wyjątków; zakaz podczas oblężenia to runda 3 (#181). Bez zmian w tej rundzie.
+## Live (Chromium, headless) — ZMIERZONO
+- Przebieg: `/tmp`-free, skrypt w scratchpad (nie w repo); build do scratchpad; plik `zrzuty/wyburz-siege-live-r3.json`.
+- Potwierdzone: blokada przycisku + widoczny komunikat przy oblężeniu; klik nie otwiera potwierdzenia; brak błędów strony.
 
-RUNDY: 2/5 (runda 1: Operator → FC PASS-WITH-NOTES; runda 2: obrona przed zarzutami Evaluatora)
-NASTĘPNY KROK: Final Control (rozstrzygnięcie zarzutów 1–3; luka końca tury w NIE ZMIERZONO)
-DEPLOY/PUSH: NIE WYKONANO
+## NIE ZMIERZONO (jawnie)
+- Odblokowanie po zakończeniu oblężenia (przycisk znowu aktywny) — nie testowano live.
+- Hotseat na żywo (dwóch graczy, zmiana aktywnego gracza) — tylko test logiki [8].
+- Ścieżka `onDemolishBuilding` z blocked='siege' w main.ts — nieosiągalna z UI, tylko źródłowo.
+- Zwrot i Mennica live z rundy 2 — bez zmian w kodzie, wynik r2 (`zrzuty/wyburz-live.json`) nadal obowiązuje.
+- Pytanie właściciela o wyjątki: rozstrzygnięte 28a (bez wyjątków) — implementacja zgodna.
 
-UWAGI-DLA-ORKIESTRATORA: Nie tworzono sesji ani zadań (zakaz). `gra/node_modules` usunięto po testach. Zarzut 1 (koniec tury) to jedyna żywa luka; orkiestrator decyduje, czy ją domknąć przed deployem.
+## Dodatkowe spostrzeżenia (UWAGI-DLA-ORKIESTRATORA)
+- Hak live `__ledgerRealPathDebug.startSiege` ustawia wojnę i oblężenie; nazwa jest myląca (to hak ledger), ale działa jako realna flaga miasta. Bez zmian w kodzie.
+- Harness Chromium nie zgłosił SIGSEGV w tej rundzie (jeden przebieg, bez ponowień).
+- Nic poza zakresem nie zostało zmienione.
 
----
-
-STATUS: PASS-WITH-NOTES
-DOMAIN: GAME
-TEMAT: R-WEB-BUILDING-DEMOLISH-Q1 (WYBURZ, #175; odp. 22C właściciela)
-GOAL: gracz może wyburzyć każdy swój budynek z panelu miasta za zwrotem połowy surowców (zaokrąglenie w dół); Mennica wg reguł właściciela; AI bez zmian.
-ZMIANY-COMMIT: baza f2c332c1d (kandydat); runda obrony 1 (Operator Haiku). Zmienione pliki:
-  - gra/src/game/building-demolish.ts: wydzielona czysta funkcja refundFromPaidCost(paid) (połowa w dół + pominięcie wpisów 0); demolishRefundFor deleguje do niej. Zachowanie w grze bez zmian (koszty i tak parzyste).
-  - gra/tools/building-demolish-test.cjs: eksport refundFromPaidCost; nowa sekcja [9] (51 -> 25, 3 -> 1, 1 -> pominięte, mieszane, pusty).
-  - gra/src/main.ts: wcięcie hooka onDemolishBuilding w drugim configureCityPanel poprawione z 6 na 8 spacji (tylko białe znaki i komentarz).
-  SHA: patrz sekcja „sha” w StructuredOutput (czubek commita obrony).
-
-ODPOWIEDZI NA ZARZUTY EVALUATORA:
-  1. (zaokrąglenie w dół nieprzetestowane) PRZYJMUJĘ. Dowód: mutacja Math.floor -> Math.ceil w refundFromPaidCost daje 4 FAIL (51 drewna -> 26; 3 kamienia -> 2; 1 cegły -> 1; mieszane -> 26). Poprawka: reguła wydzielona do refundFromPaidCost i testowana na nieparzystych wartościach. Uwaga: w danych gry zaokrąglenie nie jest widoczne, bo koszty są zawsze parzyste (FALA2 ×2; mnożnik ery 1/2/4), więc mutacja na samych danych przechodziła z przyczyny strukturalnej, nie z braku uwagi.
-  2. (brak asercji pomijania zerowych wpisów) PRZYJMUJĘ. Dowód: mutacja usuwająca if (half > 0) daje 2 FAIL (cegla: 0 w zwrocie; mieszane -> {drewno:25,kamien:0,cegla:0}). Asercja dodana w sekcji [9].
-  3. (wcięcie hooka) PRZYJMUJĘ. Poprawione w gra/src/main.ts (drugi blok, 8 spacji).
-  4. (wyjątki strukturalne: Ratusz/cuda/mury w oblężeniu/Palac) PRZYJMUJĘ jako DECISION_REQUIRED, BEZ zmiany kodu w tej rundzie. Dispatch zakazuje rozstrzygania tego przez Operatora. Skutki do oceny właściciela: Palac wpływa na hasPalac (conquest-stability), korupcję (economy.ts) i ulepszenia (building-upgrades.ts); wyburzenie Palacu nie ma dziś blokady. Wymaga odpowiedzi właściciela (wariant A: wszystko wyburzalne; wariant B: Palac i cuda zablokowane), zanim zostanie dodana blokada.
-  5. (UI niezweryfikowane na żywo) PRZYJMUJĘ jako NIE ZMIERZONO. Zrzutu z przeglądarki nie wykonano w tej rundzie (brak live buildu do /tmp; zakres rundy: poprawki zarzutów 1–3). Test [8] nadal jest wyłącznie źródłowy (dopasowanie tekstu).
-
-TESTY (surowe wyniki z tej rundy):
-  - node tools/building-demolish-test.cjs: RESULT: 36 pass / 0 fail
-  - mutacja Math.floor -> Math.ceil (building-demolish.ts): 32 pass / 4 fail (czerwona, wykryta)
-  - mutacja usunięcia if (half > 0): 34 pass / 2 fail (czerwona, wykryta)
-  - po przywróceniu pliku: 36 pass / 0 fail
-  - cd gra && node node_modules/typescript/bin/tsc --noEmit -p . : exit 0
-  - node tools/mint-orphan-test.cjs: 28 PASS / 0 FAIL
-  - node tools/mint-capital-only-test.cjs: 8 PASS / 0 FAIL
-  - NIE ZMIERZONO: logic 213, tech-tree 20, research 33, unit-replace, combat 6, ai-test 297/0 (nie uruchamiano w tej rundzie; zmiana obejmuje tylko czysty moduł wyburzania i wcięcie w main.ts).
-  - Środowisko: w worktree wykonano npm ci --ignore-scripts w gra/ (tylko zależności, bez npm run build/dev). node_modules usunięto po pracy.
-
-BLOKADY: brak wpływu na kod poza pytaniem o wyjątki strukturalne (pkt 4) i live UI (pkt 5), oba opisane wyżej.
-
-RUNDY: 1/5 (obrona). Werdykt Evaluatora: zarzuty 1–5 jak w dispatchu.
-
-NASTĘPNY KROK: Evaluator ponownie na SHA obrony; decyzja właściciela o wyjątkach strukturalnych (DECISION_REQUIRED) przed domknięciem; live w przeglądarce do wykonania przed deployem.
-
+NASTĘPNY KROK: Evaluator (r4) — sprawdzić mutacje sekcji [7] i [8] oraz zrzut 05; Final Control po PASS.
 DEPLOY/PUSH: NIE WYKONANO

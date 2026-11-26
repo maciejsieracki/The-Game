@@ -154,7 +154,43 @@ console.log('[7] Okablowanie UI: przycisk nieaktywny przy oblężeniu');
   const panel = fs.readFileSync(path.resolve(GRA, 'src/ui/cityPanel.ts'), 'utf8');
   check('cityPanel: isDemolishBlockedBySiege -> demoBtn.disabled', /isDemolishBlockedBySiege\(\[city\], city\.id\)[\s\S]{0,200}demoBtn\.disabled = true/.test(panel));
   check('cityPanel: podpowiedź = DEMOLISH_SIEGE_BLOCK_PL', panel.includes('demoBtn.title = DEMOLISH_SIEGE_BLOCK_PL'));
-  check('cityPanel: klik przy oblężeniu nie otwiera potwierdzenia', /if \(isDemolishBlockedBySiege\(\[city\], city\.id\)\) return;[\s\S]{0,120}demolishRefundFor/.test(panel));
+  const handlerGuard = /if \(isDemolishBlockedBySiege\(\[city\], city\.id\)\) return;[\s\S]{0,120}demolishRefundFor/;
+  const handlerGuardLine = 'if (isDemolishBlockedBySiege([city], city.id)) return;';
+  check('cityPanel: klik przy oblężeniu nie otwiera potwierdzenia', handlerGuard.test(panel));
+  // Czerwona mutacja strażnika w handlerze kliknięcia (odp. zarzut ewaluatora 1): bez linii
+  // strażnika test MUSI zgłosić błąd (klik otworzyłby potwierdzenie w oblężonym mieście).
+  const panelMutB = panel.replace(handlerGuardLine, '');
+  check('mutacja strażnika handlera: test wykrywa brak guarda', panelMutB !== panel && !handlerGuard.test(panelMutB));
+  check('strażnik handlera obecny dokładnie raz', panel.split(handlerGuardLine).length - 1 === 1);
+  check('cityPanel: widoczny komunikat blokady (bld-demolish-siege-note = DEMOLISH_SIEGE_BLOCK_PL)', /demoNote\.textContent = DEMOLISH_SIEGE_BLOCK_PL/.test(panel) && panel.includes("demoNote.className = 'bld-demolish-siege-note'"));
+  // Okablowanie akcji w main.ts (odp. zarzut 2): odmowa przez oblężenie pokazuje komunikat.
+  const mainTs = fs.readFileSync(path.resolve(GRA, 'src/main.ts'), 'utf8');
+  const mainWire = /if \(dm\.blocked === 'siege'\) \{ showHintMessage\(DEMOLISH_SIEGE_BLOCK_PL, 6000\); return; \}/g;
+  const mainWireCount = (mainTs.match(mainWire) || []).length;
+  check('main.ts: obie ścieżki onDemolishBuilding pokazują komunikat oblężenia', mainWireCount === 2, mainWireCount);
+  const mainMut = mainTs.replace(mainWire, 'return;');
+  check('mutacja main.ts (brak komunikatu): test wykrywa', (mainMut.match(mainWire) || []).length === 0 && mainMut !== mainTs);
+}
+
+console.log('[8] Hotseat: blokada per miasto właściciela (dwóch graczy, bez względu na aktywnego)');
+{
+  const st = {
+    cities: [
+      { id: 'stolica1', ownerId: 1, surowce: { drewno: 0 }, oblegane: false },
+      { id: 'miasto2', ownerId: 2, surowce: { drewno: 0 }, oblegane: true },
+    ],
+    builtByCity: new Map([
+      ['stolica1', ['stolarnia']],
+      ['miasto2', ['stolarnia']],
+    ]),
+  };
+  const r2 = demolishBuilding(st, 'miasto2', 'stolarnia');
+  check('hotseat: miasto gracza 2 oblężone -> odmowa (blocked=siege)', r2.removed === false && r2.blocked === 'siege', r2);
+  check('hotseat: miasto gracza 2 -> budynek nadal stoi', st.builtByCity.get('miasto2').includes('stolarnia'));
+  const r1 = demolishBuilding(st, 'stolica1', 'stolarnia');
+  check('hotseat: miasto gracza 1 nieoblężone -> wyburzenie działa', r1.removed === true, r1);
+  check('hotseat: zwrot trafia do ownera miasta (gracz 1)', st.cities[0].surowce.drewno === 25 && st.cities[1].surowce.drewno === 0, st.cities.map(c => c.surowce));
+  check('hotseat: predykat per miasto (gracz 1 false, gracz 2 true)', isDemolishBlockedBySiege(st.cities, 'stolica1') === false && isDemolishBlockedBySiege(st.cities, 'miasto2') === true);
 }
 
 console.log('');
