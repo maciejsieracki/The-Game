@@ -22,3 +22,22 @@ Moduły (żywe źródło, bundle esbuild): diplomacy-peace-lock.ts (truceEndTick
 Wynik: baza 14/14 zielonych; mutacje czerwone 19/19 (m1–m11 w main.ts, k1–k8 w modułach).
 
 Nie pokryte w tym teście: pełny finalizePeaceTreatyBetween (atrapa spy), transferBasketItems jako całość (atrapa rejestruje wywołanie, bez zmiany zapasów), aiPeacePaymentAssets i peacePlanWithTail (atrapy kształtu), wiring obsługi odpowiedzi gracza (main.ts ok. 22953) oraz tyk AI↔człowiek przez UI.
+
+## Runda 2 (obrona) — wywołania poza wyciętymi ciałami i węzły dopięte do testu
+
+Wywołania w funkcjach, których nie da się wykonać w izolacji, są wiązane źródłowo (kotwica dokładnie raz w pliku i w bloku funkcji):
+
+| Węzeł | Funkcja main.ts | Kotwica | Pokryty przez |
+|---|---|---|---|
+| handler akceptacji gracza → truceEndAcceptCore | resolvePendingDiplomacy | truceEndAcceptCore(truceEndPorts(), ME(), p.ownerId) | K1, c1 |
+| handler odmowy gracza → truceEndToWar | resolvePendingDiplomacy | truceEndToWar(ME(), p.ownerId); | K2, c2 |
+| koniec tury → tickTruceExpiries | runDiplomacyTurnTick | tickTruceExpiries(); | K3, c3 |
+| kontekst propozycji → truceEndWindowFor | buildProposalEvalContext | truceEndWindow: truceEndWindowFor(...) | K4, c4 |
+| skutki propozycji → clearTruceEndOffer | applyProposalOutcomeImpl | if (...truceEndOffer != null) clearTruceEndOffer(...) | K5, c5 |
+| wypowiedzenie wojny → clearTruceEndOffer | chargeWarDeclarationCredibility | clearTruceEndOffer(declarerId, targetId); | K6, c6 |
+| odpowiedź na propozycję człowieka → humanPeaceRejectReason | respondToHumanProposal | const odrzutPokoj = humanPeaceRejectReason(...) | K7, c7 |
+| port transferBasketItems (realna funkcja) | transferBasketItems | const qty = item.ilosc ?? 1; / case 'zloto' | R1 (tylko źródło; ciało nie jest wykonywane) |
+
+Porty i moduły dopięte w runda 2: clearTruceEndOffer (S9), truceEndToWar (S9b), quotePn (S5e), okno: bramka statusu (S3b, S3c, m14), pn>0 (S3d, m15), wyjątek bilansu gracza (S4g, S4h, m21, m22), wpisy „Ważne” dla AI↔AI i dedup (S5b–S5d, m18–m20), kolejność wyceny (S3, S4, m27–m29), koszyk miasta (S4c, m12, m13).
+
+Mutant równoważny (nie wchodzi do zestawu): usunięcie warunku `proposerId !== ME()` w truceEndWindowFor. Uzasadnienie: truceEndPriceFor zwraca płatnika ze standardowej pary (a, b); aby payerId === ME(), ME musi należeć do pary; warunek `isHuman(responderId)` odrzuca każdą parę z ME jako odbiorcą; więc ME jest w parze tylko jako proposer, a wtedy proposerId === ME() i warunek i tak jest prawdziwy. Potwierdzone uruchomieniem: po tej mutacji zestaw 34/34 zielony.

@@ -8,14 +8,21 @@
  * w new Function na atrapach (portów i silnika). Moduły czyste (diplomacy-peace-lock,
  * diplomacy-truce-end-price) są bundlowane z żywego źródła (esbuild, stdin — bez plików tymczasowych).
  *
- * Węzły pokryte (main.ts): truceEndPorts (declareWarAfterTruce, enqueueOffer, finalizePeace, settlePeacePrice),
- * enqueueTruceEndOffer, truceEndWindowFor (okno gracza, flaga forbidden, cena 0), settleTruceEndPrice
- * (cena 0 → 1 Pn, płatnik → odbiorca, port transferBasketItems, bramka bilansu AI↔AI), tickTruceExpiries,
- * clearTruceEndOffer, truceEndToWar, allWiarygodnoscOwnerIds.
+ * Węzły wykonywane (main.ts): truceEndPorts (declareWarAfterTruce, enqueueOffer, removeOffer, finalizePeace,
+ * settlePeacePrice, quotePn), enqueueTruceEndOffer, truceEndWindowFor (okno gracza, bramka statusu, flaga
+ * forbidden, cena 0, pn>0), settleTruceEndPrice (cena 0 → 1 Pn, płatnik → odbiorca, port transferBasketItems,
+ * kształt koszyka, wyjątek bilansu dla gracza), tickTruceExpiries, clearTruceEndOffer, truceEndToWar,
+ * allWiarygodnoscOwnerIds.
  * Moduły: truceEndTickPair (wygaśnięcie = wojna trwa, AI↔AI bez zapłaty = wojna), truceEndPriceRule
  * (płatnik poza pasmem), truceEndDuePn (symboliczna opłata), truceEndWindowOpen, truceEndAcceptCore.
  *
- * Test jest zielony na bazie i czerwony dla każdej mutacji (kopia tekstu main.ts / modułu; plik nie jest zapisywany).
+ * Kotwice źródłowe (CALL_SITES, REAL_TRANSFER): wywołania w funkcjach, których nie da się wykonać w izolacji
+ * (tura gry, handler UI, ekwipunek gospodarki), są wiązane źródłowo: kotwica musi wystąpić dokładnie raz
+ * w pliku i w bloku właściwej funkcji. Nie są to wykonania całej tury — to dowód okablowania w źródle.
+ *
+ * Mutacje: scope „chunk” (domyślnie) działa na wyciętych ciałach funkcji; scope „full” zmienia cały main.ts
+ * przed wycinaniem (dla wywołań spoza wyciętych ciał). Plik src nie jest zapisywany.
+ * Test jest zielony na bazie i czerwony dla każdej mutacji.
  */
 const fs = require('fs');
 const path = require('path');
@@ -28,6 +35,7 @@ try { esbuild = require('esbuild'); } catch (e) {
 const SRC = path.resolve(__dirname, '..', 'src');
 const MAIN = path.join(SRC, 'main.ts');
 const MAIN_TXT = fs.readFileSync(MAIN, 'utf8');
+let CUR_FULL = MAIN_TXT; // main.ts po mutacjach „full” bieżącego przebiegu (używa kotwic źródłowych)
 
 const MAIN_FNS = [
   'truceEndPorts', 'enqueueTruceEndOffer', 'truceEndWindowFor', 'settleTruceEndPrice',
@@ -40,8 +48,15 @@ function replaceOnce(text, oldS, newS) {
   return text.replace(oldS, () => newS);
 }
 
+function fullText(mainMuts) {
+  let t = MAIN_TXT;
+  for (const m of mainMuts) if (m.scope === 'full') t = replaceOnce(t, m.old, m.neu);
+  return t;
+}
+
 function extractMain(mainMuts) {
-  const lines = MAIN_TXT.split('\n');
+  CUR_FULL = fullText(mainMuts);
+  const lines = CUR_FULL.split('\n');
   const chunks = MAIN_FNS.map(name => {
     const start = lines.findIndex(l => l.startsWith('    function ' + name + '('));
     if (start < 0) throw new Error('brak funkcji w main.ts: ' + name);
@@ -51,7 +66,7 @@ function extractMain(mainMuts) {
     return lines.slice(start, end + 1).join('\n');
   });
   let text = chunks.join('\n\n');
-  for (const m of mainMuts) text = replaceOnce(text, m.old, m.neu);
+  for (const m of mainMuts) if (m.scope !== 'full') text = replaceOnce(text, m.old, m.neu);
   return esbuild.transformSync(text, { loader: 'ts' }).code;
 }
 
@@ -89,7 +104,7 @@ function makeWorld() {
   return {
     metas: new Map(), rel: new Map(), army: new Map([[0, 100], [1, 100], [2, 100], [3, 100]]),
     price: 40, balanceOk: true, tailFull: true, cityFull: false, cityAssets: [],
-    inbox: null, warLog: null, finalize: [], transfers: [],
+    inbox: null, warLog: null, finalize: [], transfers: [], quotes: [],
   };
 }
 
@@ -112,12 +127,16 @@ function makeEngine(M, mainJs, w) {
     refreshD1bHud: () => {},
     finalizePeaceTreatyBetween: (a, b) => { w.finalize.push([a, b]); },
     aiOwnerCivMap: new Map([[1, 'a'], [2, 'b'], [3, 'c']]),
-    aiAiPeacePriceFor: () => ({ requiredPn: w.price, balanceFor: () => 0, loserBalanceFor: () => 0, tolerancePn: 0 }),
+    // Rejestruje kolejność argumentów (sprzedawca/odbiorca, płatnik): zamiana argumentów daje inną krotkę.
+    aiAiPeacePriceFor: (a, b) => {
+      w.quotes.push([a, b]);
+      return { requiredPn: w.price, balanceFor: () => 0, loserBalanceFor: () => 0, tolerancePn: 0 };
+    },
     aiPeacePaymentAssets: () => w.cityAssets,
     peacePlanWithTail: inp => {
       if (inp.maxCities > 0) {
         return { full: w.cityFull, coveredPn: w.cityFull ? inp.duePn : 0,
-          items: w.cityFull ? [{ kind: 'miasto', id: 'city-7', pn: inp.duePn, amount: 1 }] : [] };
+          items: w.cityFull ? [{ kind: 'miasto', id: 'city-7', pn: inp.duePn, amount: 3 }] : [] };
       }
       return { full: w.tailFull, coveredPn: w.tailFull ? inp.duePn : 0,
         items: [{ kind: 'zloto', id: 'zloto', amount: inp.duePn }] };
@@ -126,6 +145,7 @@ function makeEngine(M, mainJs, w) {
     peaceTailWiringDeps: () => ({}),
     peaceTailPricingFor: () => ({}),
     isAiAiPeaceBalanceAllowed: () => w.balanceOk,
+    // Atrapa portu przelewu: sprawdzany jest kierunek, koszyk i liczba wywołań (realna implementacja: REAL_TRANSFER).
     transferBasketItems: (payer, payee, basket) => { w.transfers.push({ payer, payee, basket }); },
     truceEndPriceFor: M.truceEndPriceFor,
     truceEndTickPair: M.truceEndTickPair,
@@ -151,9 +171,17 @@ return { truceEndPorts, enqueueTruceEndOffer, truceEndWindowFor, settleTruceEndP
   return E;
 }
 
-/* Sceneria. Każda zwraca liczbę niespełnionych oczekiwań (opis w `errs`). */
+const hasQuote = (w, a, b) => w.quotes.some(q => q[0] === a && q[1] === b);
+const countPrefix = (w, p) => w.warLog.filter(e => String(e.id).startsWith(p)).length;
+
+function setWindow(w, army0, army1, extra) {
+  w.army.set(0, army0); w.army.set(1, army1);
+  w.metas.set(key(0, 1), Object.assign({ truceInitiatorId: 0, truceEndTurn: 5 }, extra || {}));
+}
+
+/* Sceneria. Każda zwraca listę niespełnionych oczekiwań (pusta = zielona). */
 const SCENARIOS = [
-  ['S1 wygasły rozejm (AI-gracz): AI składa ofertę do skrzynki gracza, bez wojny', (E, w, M) => {
+  ['S1 wygasły rozejm (AI-gracz): AI składa ofertę do skrzynki gracza, bez wojny', (E, w) => {
     const errs = [];
     w.price = 40;
     w.metas.set(key(0, 1), { truceInitiatorId: 1, truceUntilTurn: 5 });
@@ -198,24 +226,21 @@ const SCENARIOS = [
     if (m.truceEndOffer != null) errs.push('meta.truceEndOffer nie wyczyszczona po wojnie');
     return errs;
   }],
-  ['S3 okno propozycji gracza: płatnik = gracz, cena, waluta, okno 1 tura', (E, w) => {
+  ['S3 okno propozycji gracza: płatnik = gracz, cena, waluta, okno 1 tura, kolejność wyceny', (E, w) => {
     const errs = [];
-    const setup = (army0, army1) => {
-      w.army.set(0, army0); w.army.set(1, army1);
-      w.metas.set(key(0, 1), { truceInitiatorId: 0, truceEndTurn: 5,
-        truceEndOffer: { turn: 5, fromOwnerId: 1, toOwnerId: 0, inboxId: 'x' } });
-    };
+    const offer = { turn: 5, fromOwnerId: 1, toOwnerId: 0, inboxId: 'x' };
     E.setTurn(5);
     // W1 równe armie → płaci inicjator (gracz): surowce, cena 40
-    setup(100, 100); w.price = 40;
+    setWindow(w, 100, 100, { truceEndOffer: offer }); w.price = 40;
     let r = E.truceEndWindowFor(0, 1);
     if (!r.open || r.requiredPn !== 40 || r.currency !== 'surowce') errs.push('W1 ' + JSON.stringify(r));
+    if (!hasQuote(w, 1, 0)) errs.push('W1 wycena nie w kolejności (odbiorca,płatnik)=(1,0): ' + JSON.stringify(w.quotes));
     // W1b cena 0 → symboliczna 1
     w.price = 0;
     r = E.truceEndWindowFor(0, 1);
     if (!r.open || r.requiredPn !== 1) errs.push('W1b cena 0 nie daje symbolicznej opłaty 1: ' + JSON.stringify(r));
     // W2 gracz słabszy poza pasmem → płaci miastem, miasto cedowalne
-    setup(50, 100); w.price = 40; w.cityAssets = [{ kind: 'miasto', forbidden: false, pn: 30 }];
+    setWindow(w, 50, 100, { truceEndOffer: offer }); w.price = 40; w.cityAssets = [{ kind: 'miasto', forbidden: false, pn: 30 }];
     r = E.truceEndWindowFor(0, 1);
     if (!r.open || r.currency !== 'miasto' || r.cityAvailable !== true) errs.push('W2 ' + JSON.stringify(r));
     // W3 to samo, ale miasto `forbidden` (stolica/ostatnie) → brak cedowalnego miasta
@@ -223,20 +248,50 @@ const SCENARIOS = [
     r = E.truceEndWindowFor(0, 1);
     if (r.cityAvailable !== false) errs.push('W3 miasto forbidden liczone jako cedowalne: ' + JSON.stringify(r));
     // W5 gracz silniejszy poza pasmem → płaci AI → okno zamknięte dla gracza
-    setup(100, 50); w.price = 40;
+    setWindow(w, 100, 50, { truceEndOffer: offer }); w.price = 40;
     r = E.truceEndWindowFor(0, 1);
     if (r.open) errs.push('W5 okno otwarte, a płaci AI');
     // W4 po jednej turze od końca rozejmu okno zamknięte
-    setup(100, 100); w.price = 40; E.setTurn(7);
+    setWindow(w, 100, 100, { truceEndOffer: offer }); w.price = 40; E.setTurn(7);
     r = E.truceEndWindowFor(0, 1);
     if (r.open) errs.push('W4 okno otwarte po 2 turach od końca rozejmu');
     return errs;
   }],
-  ['S4 płatność: przelew payer→payee przez transferBasketItems, kształt koszyka', (E, w) => {
+  ['S3b okno: bramka statusu — pokój bez wojny i bez oferty = zamknięte', (E, w) => {
+    const errs = [];
+    E.setTurn(5);
+    w.rel.set(key(0, 1), 'pokoj');
+    w.metas.set(key(0, 1), { truceInitiatorId: 0, truceEndTurn: 5 });
+    w.price = 40;
+    const r = E.truceEndWindowFor(0, 1);
+    if (r.open) errs.push('okno otwarte bez wojny i bez oferty: ' + JSON.stringify(r));
+    return errs;
+  }],
+  ['S3c okno: wojna bez oferty = otwarte (bramka przepuszcza wojnę)', (E, w) => {
+    const errs = [];
+    E.setTurn(5);
+    w.rel.set(key(0, 1), 'wojna');
+    w.metas.set(key(0, 1), { truceInitiatorId: 0, truceEndTurn: 5 });
+    w.price = 40;
+    const r = E.truceEndWindowFor(0, 1);
+    if (!r.open || r.requiredPn !== 40) errs.push('wojna bez oferty zamknięta: ' + JSON.stringify(r));
+    return errs;
+  }],
+  ['S3d okno: miasto z pn 0 nie jest cedowalne', (E, w) => {
+    const errs = [];
+    E.setTurn(5);
+    setWindow(w, 50, 100, { truceEndOffer: { turn: 5, fromOwnerId: 1, toOwnerId: 0, inboxId: 'x' } });
+    w.price = 40; w.cityAssets = [{ kind: 'miasto', forbidden: false, pn: 0 }];
+    const r = E.truceEndWindowFor(0, 1);
+    if (r.cityAvailable !== false) errs.push('miasto pn 0 liczone jako cedowalne: ' + JSON.stringify(r));
+    return errs;
+  }],
+  ['S4 płatność: przelew payer→payee przez transferBasketItems, kształt koszyka, kolejność wyceny', (E, w) => {
     const errs = [];
     w.price = 40;
     const ok = E.truceEndPorts().settlePeacePrice(1, 0, 'surowce');
     if (ok !== true) errs.push('settle zwrócił ' + ok);
+    if (!hasQuote(w, 0, 1)) errs.push('settle wycena nie w kolejności (odbiorca,płatnik)=(0,1): ' + JSON.stringify(w.quotes));
     if (w.transfers.length !== 1) errs.push('przelewów: ' + w.transfers.length + ' (oczekiwano 1)');
     const t = w.transfers[0] || {};
     if (t.payer !== 1 || t.payee !== 0) errs.push('kierunek przelewu ' + t.payer + '→' + t.payee + ' (oczekiwano 1→0)');
@@ -252,12 +307,14 @@ const SCENARIOS = [
     if (w.transfers.length !== 1 || !t.basket || t.basket[0].ilosc !== 1) errs.push('opłata symboliczna: ' + JSON.stringify(w.transfers));
     return errs;
   }],
-  ['S4c waluta miasto z cedowalnym miastem → przelew typu miasto', (E, w) => {
+  ['S4c waluta miasto: przelew typu miasto, ilość 1, cityPn = cena', (E, w) => {
     const errs = [];
     w.price = 40; w.cityFull = true; w.cityAssets = [{ kind: 'miasto', forbidden: false, pn: 40 }];
     const ok = E.truceEndPorts().settlePeacePrice(0, 1, 'miasto');
     const t = w.transfers[0] || {};
     if (ok !== true || !t.basket || t.basket[0].typ !== 'miasto' || t.payer !== 0 || t.payee !== 1) errs.push('miasto: ' + ok + ' ' + JSON.stringify(w.transfers));
+    if (t.basket && t.basket[0] && t.basket[0].ilosc !== 1) errs.push('miasto ilosc ' + t.basket[0].ilosc + ' (oczekiwano 1)');
+    if (t.basket && t.basket[0] && t.basket[0].cityPn !== 40) errs.push('miasto cityPn ' + t.basket[0].cityPn + ' (oczekiwano 40)');
     return errs;
   }],
   ['S4d para AI↔AI z ujemnym bilansem PW → brak przelewu, brak pokoju', (E, w) => {
@@ -281,7 +338,21 @@ const SCENARIOS = [
     if (ok !== false || w.transfers.length !== 0) errs.push('niepełna płatność: ok=' + ok + ' przelewy=' + w.transfers.length);
     return errs;
   }],
-  ['S5 porty: enqueueOffer, finalizePeace, declareWarAfterTruce, removeOffer', (E, w) => {
+  ['S4g wyjątek bilansu: gracz jako odbiorca przy ujemnym bilansie AI↔AI nie blokuje zapłaty', (E, w) => {
+    const errs = [];
+    w.price = 40; w.balanceOk = false;
+    const ok = E.truceEndPorts().settlePeacePrice(1, 0, 'surowce');
+    if (ok !== true || w.transfers.length !== 1) errs.push('odbiorca=gracz: ok=' + ok + ' przelewy=' + w.transfers.length);
+    return errs;
+  }],
+  ['S4h wyjątek bilansu: gracz jako płatnik przy ujemnym bilansie AI↔AI nie blokuje zapłaty', (E, w) => {
+    const errs = [];
+    w.price = 40; w.balanceOk = false;
+    const ok = E.truceEndPorts().settlePeacePrice(0, 1, 'surowce');
+    if (ok !== true || w.transfers.length !== 1) errs.push('płatnik=gracz: ok=' + ok + ' przelewy=' + w.transfers.length);
+    return errs;
+  }],
+  ['S5 porty: enqueueOffer, removeOffer, finalizePeace, declareWarAfterTruce (wpisy dla gracza)', (E, w) => {
     const errs = [];
     const P = E.truceEndPorts();
     const id = P.enqueueOffer(1, 'powod');
@@ -297,7 +368,44 @@ const SCENARIOS = [
     if (!w.warLog.some(e => String(e.id).startsWith('truce-war-'))) errs.push('brak wpisu „wojna wraca” dla gracza');
     return errs;
   }],
-  ['S6 AI↔AI tick: płatność payer→payee i pokój (initiator,target) gdy bilans OK', (E, w, M) => {
+  ['S5b wpisy „Ważne” tylko gdy gracz jest stroną (para AI↔AI bez wpisu)', (E, w) => {
+    const errs = [];
+    const P = E.truceEndPorts();
+    P.finalizePeace(1, 2);
+    if (countPrefix(w, 'truce-peace-') !== 0) errs.push('wpis pokoju dla pary AI↔AI');
+    w.rel.set(key(1, 2), 'pokoj');
+    P.declareWarAfterTruce(1, 2);
+    if (countPrefix(w, 'truce-war-') !== 0) errs.push('wpis wojny dla pary AI↔AI');
+    return errs;
+  }],
+  ['S5c wpis „wojna wraca”: dedup per tura i para (druga para tej samej tury = drugi wpis)', (E, w) => {
+    const errs = [];
+    const P = E.truceEndPorts();
+    E.setTurn(5);
+    w.rel.set(key(0, 1), 'pokoj'); P.declareWarAfterTruce(0, 1);
+    w.rel.set(key(0, 1), 'pokoj'); P.declareWarAfterTruce(0, 1);
+    if (countPrefix(w, 'truce-war-') !== 1) errs.push('dedup tej samej pary: ' + countPrefix(w, 'truce-war-') + ' (oczekiwano 1)');
+    w.rel.set(key(0, 2), 'pokoj'); P.declareWarAfterTruce(0, 2);
+    if (countPrefix(w, 'truce-war-') !== 2) errs.push('druga para zdeduplikowana: ' + countPrefix(w, 'truce-war-') + ' (oczekiwano 2)');
+    return errs;
+  }],
+  ['S5d wpis „pokój”: dedup per tura i para', (E, w) => {
+    const errs = [];
+    const P = E.truceEndPorts();
+    E.setTurn(5);
+    P.finalizePeace(0, 1);
+    P.finalizePeace(0, 1);
+    if (countPrefix(w, 'truce-peace-') !== 1) errs.push('dedup pokoju: ' + countPrefix(w, 'truce-peace-') + ' (oczekiwano 1)');
+    return errs;
+  }],
+  ['S5e port quotePn: wycena w kolejności (odbiorca, płatnik) i zwrot ceny', (E, w) => {
+    const errs = [];
+    const v = E.truceEndPorts().quotePn(1, 0);
+    if (!hasQuote(w, 0, 1)) errs.push('quotePn(1,0) nie wołał wyceny (0,1): ' + JSON.stringify(w.quotes));
+    if (v !== 40) errs.push('quotePn zwrócił ' + v + ' (oczekiwano 40)');
+    return errs;
+  }],
+  ['S6 AI↔AI tick: płatność payer→payee i pokój (initiator,target) gdy bilans OK', (E, w) => {
     const errs = [];
     w.price = 40; w.balanceOk = true;
     w.metas.set(key(1, 2), { truceInitiatorId: 1, truceUntilTurn: 5 });
@@ -318,7 +426,16 @@ const SCENARIOS = [
     if (w.rel.get(key(1, 2)) !== 'wojna') errs.push('brak zapłaty nie daje wojny (status ' + w.rel.get(key(1, 2)) + ')');
     return errs;
   }],
-  ['S8 zgoda gracza (truceEndAcceptCore): płatność → pokój, oferta czyszczona; brak płatności → wojna', (E, w, M, mainJs) => {
+  ['S7b tick: AI↔AI bez wygaśnięcia = nic; wszystkie pary zbierane (AI 1,2,3)', (E, w) => {
+    const errs = [];
+    w.price = 40;
+    w.metas.set(key(2, 3), { truceInitiatorId: 3, truceUntilTurn: 5 });
+    E.setTurn(5);
+    E.tickTruceExpiries();
+    if (JSON.stringify(w.finalize) !== '[[3,2]]' && JSON.stringify(w.finalize) !== '[[2,3]]') errs.push('para 2–3 pominięta: ' + JSON.stringify(w.finalize));
+    return errs;
+  }],
+  ['S8 zgoda gracza (truceEndAcceptCore): płatność → pokój, oferta czyszczona; brak płatności → wojna', (E, w, M) => {
     const errs = [];
     w.price = 40;
     w.metas.set(key(0, 1), { truceInitiatorId: 1, truceEndTurn: 5,
@@ -329,10 +446,36 @@ const SCENARIOS = [
     if (JSON.stringify(w.finalize) !== '[[1,0]]') errs.push('finalize przy akceptacji: ' + JSON.stringify(w.finalize));
     if ((w.metas.get(key(0, 1)) || {}).truceEndOffer != null) errs.push('oferta nie wyczyszczona po zgodzie');
     if (w.inbox.length !== 0) errs.push('wpis skrzynki nie usunięty po zgodzie');
-    // bez płatności
     const w2 = makeWorld(); w2.price = 40; w2.tailFull = false;
-    const E2 = makeEngine(M, mainJs, w2);
+    const E2 = makeEngine(M, E.__mainJs, w2);
     return errs.concat(acceptUnpaid(M, E2, w2));
+  }],
+  ['S9 clearTruceEndOffer (wołany port): czyści ofertę i wpis skrzynki', (E, w) => {
+    const errs = [];
+    w.metas.set(key(0, 1), { truceEndOffer: { turn: 5, fromOwnerId: 1, toOwnerId: 0, inboxId: 'ib' } });
+    w.inbox.push({ id: 'ib', ownerId: 1 });
+    E.clearTruceEndOffer(0, 1);
+    if (w.inbox.length !== 0) errs.push('wpis skrzynki nie usunięty przez clearTruceEndOffer');
+    if ((w.metas.get(key(0, 1)) || {}).truceEndOffer != null) errs.push('oferta nie wyczyszczona przez clearTruceEndOffer');
+    return errs;
+  }],
+  ['S9b truceEndToWar (wołany port): odmowa = wojna, czyszczenie oferty, wpis „wojna wraca”', (E, w) => {
+    const errs = [];
+    w.rel.set(key(0, 1), 'pokoj');
+    w.metas.set(key(0, 1), { truceEndOffer: { turn: 5, fromOwnerId: 1, toOwnerId: 0, inboxId: 'ib' } });
+    w.inbox.push({ id: 'ib', ownerId: 1 });
+    E.truceEndToWar(0, 1);
+    if (w.rel.get(key(0, 1)) !== 'wojna') errs.push('truceEndToWar nie ustawił wojny: ' + w.rel.get(key(0, 1)));
+    if (w.inbox.length !== 0) errs.push('wpis skrzynki nie usunięty przez truceEndToWar');
+    if ((w.metas.get(key(0, 1)) || {}).truceEndOffer != null) errs.push('oferta nie wyczyszczona przez truceEndToWar');
+    if (countPrefix(w, 'truce-war-') !== 1) errs.push('brak wpisu „wojna wraca” przy odmowie');
+    return errs;
+  }],
+  ['R1 realny transferBasketItems: źródło czyta ilosc (domyślnie 1) i gałąź zloto', () => {
+    return blockErrs('transferBasketItems', [
+      'const qty = item.ilosc ?? 1;',
+      "case 'zloto': {",
+    ]);
   }],
 ];
 
@@ -347,7 +490,40 @@ function acceptUnpaid(M, E, w) {
   return errs;
 }
 
-// Mutacje: m = w main.ts (wycinane ciała), k = w modułach czystych. Każda musi zaczerwienić test.
+/* Kotwice źródłowe: blok funkcji (wcięcie 4) musi zawierać dokładnie jedną kotwicę (w całym pliku). */
+function blockOf(text, fn) {
+  const L = text.split('\n');
+  const s = L.findIndex(l => new RegExp('^    (export )?(async )?function ' + fn + '\\(').test(l));
+  if (s < 0) return null;
+  let e = s;
+  while (e < L.length && L[e] !== '    }') e++;
+  return L.slice(s, e + 1).join('\n');
+}
+
+function blockErrs(fn, anchors) {
+  const block = blockOf(CUR_FULL, fn);
+  if (block == null) return ['brak funkcji ' + fn];
+  const errs = [];
+  for (const a of anchors) {
+    const n = CUR_FULL.split(a).length - 1;
+    if (n !== 1) errs.push(`kotwica „${a.slice(0, 60)}” ×${n} w pliku (oczekiwano 1)`);
+    else if (!block.includes(a)) errs.push(`kotwica „${a.slice(0, 60)}” poza funkcją ${fn}`);
+  }
+  return errs;
+}
+
+// Wywołania poza wyciętymi ciałami (tura, handlery UI, zapis skutków propozycji). Każde musi być w swojej funkcji.
+const CALL_SITES = [
+  ['K1 handler akceptacji gracza wywołuje truceEndAcceptCore', 'resolvePendingDiplomacy', ['truceEndAcceptCore(truceEndPorts(), ME(), p.ownerId)']],
+  ['K2 handler odmowy gracza wywołuje truceEndToWar', 'resolvePendingDiplomacy', ['truceEndToWar(ME(), p.ownerId);']],
+  ['K3 koniec tury wywołuje tickTruceExpiries', 'runDiplomacyTurnTick', ['tickTruceExpiries();']],
+  ['K4 kontekst propozycji podaje oknoPokoju z truceEndWindowFor', 'buildProposalEvalContext', ['truceEndWindow: truceEndWindowFor(proposerId, responderId),']],
+  ['K5 skutki propozycji czyszczą ofertę po końcu rozejmu', 'applyProposalOutcomeImpl', ['if (getDiploPairMeta(proposerId, responderId).truceEndOffer != null) clearTruceEndOffer(proposerId, responderId);']],
+  ['K6 wypowiedzenie wojny czyści ofertę po końcu rozejmu', 'chargeWarDeclarationCredibility', ['clearTruceEndOffer(declarerId, targetId);']],
+  ['K7 propozycja człowieka: powód odrzucenia pokoju (brak wojny) wołany w odpowiedzi', 'respondToHumanProposal', ['humanPeaceRejectReason(p.fromOwnerId, p.toOwnerId, p.cmd)']],
+];
+
+/* Mutacje: domyślnie (scope chunk) w wyciętych ciałach funkcji, „full” w całym main.ts. Każda musi dać czerwień. */
 const MAIN_MUTS = [
   { id: 'm1', what: 'settle: usunięty przelew transferBasketItems', old: 'transferBasketItems(payer, payee, basket);', neu: 'void basket;' },
   { id: 'm2', what: 'settle: zamiana płatnika z odbiorcą', old: 'transferBasketItems(payer, payee, basket);', neu: 'transferBasketItems(payee, payer, basket);' },
@@ -360,7 +536,32 @@ const MAIN_MUTS = [
   { id: 'm9', what: 'okno: brak zamknięcia po końcu okna', old: 'if (!truceEndWindowOpen(meta.truceEndTurn, turn)) return closed;', neu: 'if (false) return closed;' },
   { id: 'm10', what: 'okno: brak sprawdzenia, że płaci gracz', old: 'if (rule == null || rule.payerId !== ME()) return closed;', neu: 'if (rule == null) return closed;' },
   { id: 'm11', what: 'settle: bramka bilansu AI↔AI pominięta', old: '|| isAiAiPeaceBalanceAllowed(price.balanceFor', neu: '|| true || isAiAiPeaceBalanceAllowed(price.balanceFor' },
+  { id: 'm12', what: 'settle: ilość miasta = wartość zamiast 1', old: "ilosc: i.kind === 'miasto' ? 1 : i.amount,", neu: 'ilosc: i.amount,' },
+  { id: 'm13', what: 'settle: brak cityPn w koszyku miasta', old: "...(i.kind === 'miasto' ? { cityPn: i.pn } : {}),", neu: '' },
+  { id: 'm14', what: 'okno: brak bramki statusu wojna/oferta', old: "if (getDiploRelation(proposerId, responderId).status !== 'wojna' && meta.truceEndOffer == null) return closed;", neu: '' },
+  { id: 'm15', what: 'okno: miasto z pn 0 liczone jako cedowalne', old: '!a.forbidden && a.pn > 0', neu: '!a.forbidden' },
+  { id: 'm18', what: 'wpis „wojna wraca”: stałe id (brak dedupu per para)', old: 'const evId = `truce-war-${turn}-${diploPairKey(a, b)}`;', neu: 'const evId = `truce-war-${turn}`;' },
+  { id: 'm19', what: 'wpis „wojna wraca” także dla pary AI↔AI', old: 'if (a === ME() || b === ME()) {', neu: 'if (true) {' },
+  { id: 'm20', what: 'wpis „pokój” także dla pary AI↔AI', old: 'if (proposerId === ME() || responderId === ME()) {', neu: 'if (true) {' },
+  { id: 'm21', what: 'bilans: wyjątek gracza tylko dla odbiorcy (płatnik pominięty)', old: 'balanceOk: plan => isHuman(payerId) || isHuman(payeeId)', neu: 'balanceOk: plan => false || isHuman(payeeId)' },
+  { id: 'm22', what: 'bilans: wyjątek gracza tylko dla płatnika (odbiorca pominięty)', old: 'balanceOk: plan => isHuman(payerId) || isHuman(payeeId)', neu: 'balanceOk: plan => isHuman(payerId) || false' },
+  { id: 'm23', what: 'port truceEndToWar: ciało wycięte', old: 'truceEndToWarCore(truceEndPorts(), a, b);', neu: 'void 0;' },
+  { id: 'm24', what: 'port clearTruceEndOffer: ciało wycięte', old: 'clearTruceEndOfferCore(truceEndPorts(), a, b);', neu: 'void 0;' },
+  { id: 'm25', what: 'tick: ciało wycięte (brak obsługi par)', old: 'truceEndTickPair(ports, ids[i]!, ids[j]!, turn);', neu: 'void 0;' },
+  { id: 'm26', what: 'lista ownerów: bez AI (tick widzi tylko gracza)', old: 'return [0, ...Array.from(aiOwnerCivMap.keys())];', neu: 'return [0];' },
+  { id: 'm27', what: 'port quotePn: zamiana argumentów wyceny', old: 'quotePn: (payerId, payeeId) => aiAiPeacePriceFor(payeeId, payerId, ', neu: 'quotePn: (payerId, payeeId) => aiAiPeacePriceFor(payerId, payeeId, ' },
+  { id: 'm28', what: 'okno: zamiana argumentów wyceny (odbiorca,płatnik)', old: 'truceEndDuePn(aiAiPeacePriceFor(rule.payeeId, rule.payerId,', neu: 'truceEndDuePn(aiAiPeacePriceFor(rule.payerId, rule.payeeId,' },
+  { id: 'm29', what: 'settle: zamiana argumentów wyceny (odbiorca,płatnik)', old: "const price0 = aiAiPeacePriceFor(payeeId, payerId, 'pokoj');", neu: "const price0 = aiAiPeacePriceFor(payerId, payeeId, 'pokoj');" },
+  // Mutacje „full”: wywołania spoza wyciętych ciał (kotwice K1–K7 muszą pęknąć).
+  { id: 'c1', scope: 'full', what: 'handler akceptacji: truceEndAcceptCore zastąpiony stałą', old: 'truceEndAcceptCore(truceEndPorts(), ME(), p.ownerId)', neu: 'true' },
+  { id: 'c2', scope: 'full', what: 'handler odmowy: truceEndToWar nie wołany', old: 'truceEndToWar(ME(), p.ownerId);', neu: 'void 0;' },
+  { id: 'c3', scope: 'full', what: 'koniec tury: tickTruceExpiries nie wołany', old: 'tickTruceExpiries();', neu: 'void 0;' },
+  { id: 'c4', scope: 'full', what: 'kontekst propozycji: okno gracza nie podpięte', old: 'truceEndWindow: truceEndWindowFor(proposerId, responderId),', neu: 'truceEndWindow: undefined,' },
+  { id: 'c5', scope: 'full', what: 'skutki propozycji: oferta nie czyszczona', old: 'if (getDiploPairMeta(proposerId, responderId).truceEndOffer != null) clearTruceEndOffer(proposerId, responderId);', neu: 'void 0;' },
+  { id: 'c6', scope: 'full', what: 'wypowiedzenie wojny: oferta nie czyszczona', old: 'clearTruceEndOffer(declarerId, targetId);', neu: 'void 0;' },
+  { id: 'c7', scope: 'full', what: 'propozycja człowieka: powód odrzucenia pokoju pominięty', old: 'const odrzutPokoj = humanPeaceRejectReason(p.fromOwnerId, p.toOwnerId, p.cmd);', neu: 'const odrzutPokoj = null;' },
 ];
+
 const MOD_MUTS = [
   { id: 'k1', what: 'tick: oferta nie wołana przez enqueueOffer', file: 'diplomacy-peace-lock.ts', old: 'const inboxId = ports.enqueueOffer(ai, reason);', neu: "const inboxId = 'none';" },
   { id: 'k2', what: 'reguła ceny: płatnik poza pasmem zamieniony', file: 'diplomacy-truce-end-price.ts', old: "return { band: 'outside', payerId: weakerId, payeeId: other(weakerId), currency: 'miasto' };", neu: "return { band: 'outside', payerId: other(weakerId), payeeId: weakerId, currency: 'miasto' };" },
@@ -380,25 +581,30 @@ async function runSuite(mainMuts, modMuts) {
     const w = makeWorld();
     try {
       const E = makeEngine(M, mainJs, w);
+      E.__mainJs = mainJs;
       const errs = fn(E, w, M, mainJs);
       results.push({ name, errs });
     } catch (e) {
       results.push({ name, errs: ['wyjątek: ' + (e && e.message)] });
     }
   }
+  for (const [name, fn, anchors] of CALL_SITES) {
+    const errs = blockErrs(fn, anchors);
+    results.push({ name, errs });
+  }
   return results;
 }
 
 (async () => {
   let fail = 0;
-  // Baza: wszystkie sceneria zielone.
+  // Baza: wszystkie sceneria i kotwice zielone.
   const base = await runSuite([], []);
   for (const r of base) {
     if (r.errs.length) { fail++; console.error('FAIL ' + r.name + ': ' + r.errs.join(' | ')); }
     else console.log('PASS ' + r.name);
   }
   const baseFail = fail;
-  // Mutacje: każda musi dać co najmniej jedną czerwoną scenerię.
+  // Mutacje: każda musi dać co najmniej jedną czerwoną scenerię lub kotwicę.
   let red = 0;
   const all = [...MAIN_MUTS.map(m => ({ ...m, kind: 'main' })), ...MOD_MUTS.map(m => ({ ...m, kind: 'modul' }))];
   for (const m of all) {
@@ -412,7 +618,8 @@ async function runSuite(mainMuts, modMuts) {
     if (nRed > 0) { red++; console.log('MUT-RED ' + m.id + ' (' + nRed + ' czerwonych) ' + m.what); }
     else { fail++; console.error('MUT-SURVIVED ' + m.id + ' ' + m.what); }
   }
-  console.log(`\nBAZA: ${SCENARIOS.length - baseFail}/${SCENARIOS.length} zielonych`);
+  const total = SCENARIOS.length + CALL_SITES.length;
+  console.log(`\nBAZA: ${total - baseFail}/${total} zielonych`);
   console.log(`MUTACJE CZERWONE: ${red}/${all.length}`);
   process.exit(fail === 0 ? 0 : 1);
 })().catch(e => { console.error(e); process.exit(1); });
