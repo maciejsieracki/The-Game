@@ -88,40 +88,52 @@ const lock = bundleLock();
 const makePort = makePortFactory(portBody || '(a, b) => {}');
 
 /**
- * Scenariusz przez czysta logike rozejmu: rozejm wygasa w turze 10 dla pary (a,b).
- * Status pary = 'pokoj'; declareWarAfterTruce ustawia 'wojna' i wola regule wpisu.
+ * Scenariusz przez czysta logike rozejmu (R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-Q1): rozejm wygasa w turze 10.
+ * Para z graczem → AI składa ofertę z ceną (bez wojny w tej turze); odmowa/timeout = wojna przez declareWarAfterTruce.
+ * Para AI↔AI → pokój, gdy płatność wg reguły wchodzi (settleOk), inaczej wojna przez declareWarAfterTruce.
+ * `ticks` = tury, w których wołany jest tick (ta sama para, kolejne tury = timeout oferty).
  */
-function runExpiry({ a, b, initiator, armyAI = 0, variant }) {
-  const state = { me: 0, turn: 10, rel: {}, warEventLog: [], trimmed: 0 };
+function runExpiry({ a, b, initiator, armyAI = 0, variant, settleOk = true, ticks = [10] }) {
+  const state = { me: 0, turn: ticks[0], rel: {}, warEventLog: [], trimmed: 0, settleOk };
   const pk = a < b ? `${a}-${b}` : `${b}-${a}`;
   state.rel[pk] = { status: 'pokoj', zaufanie: 0, respekt: 0 };
   const metas = { [pk]: { truceUntilTurn: 10, truceInitiatorId: initiator } };
   const k = (x, y) => (x < y ? `${x}-${y}` : `${y}-${x}`);
-  const port = makePort(state, variant);
-  lock.truceEndTickPair({
-    getMeta: (x, y) => metas[k(x, y)] ?? {},
-    setMeta: (x, y, m) => { metas[k(x, y)] = m; },
-    getStatus: (x, y) => state.rel[k(x, y)].status,
-    getArmyM: id => (id === 0 ? 100 : armyAI),
-    isHuman: id => id === 0,
-    declareWarAfterTruce: (x, y) => {
-      state.rel[k(x, y)] = { ...state.rel[k(x, y)], status: 'wojna' };
-      port(x, y);
-    },
-    enqueueOffer: () => 'inbox-1',
-    removeOffer: () => {},
-    finalizePeace: () => {},
-  }, a, b, 10);
+  for (const t of ticks) {
+    state.turn = t;
+    const port = makePort(state, variant);
+    lock.truceEndTickPair({
+      getMeta: (x, y) => metas[k(x, y)] ?? {},
+      setMeta: (x, y, m) => { metas[k(x, y)] = m; },
+      getStatus: (x, y) => state.rel[k(x, y)].status,
+      getArmyM: id => (id === 0 ? 100 : armyAI),
+      isHuman: id => id === 0,
+      declareWarAfterTruce: (x, y) => {
+        state.rel[k(x, y)] = { ...state.rel[k(x, y)], status: 'wojna' };
+        port(x, y);
+      },
+      enqueueOffer: () => 'inbox-1',
+      removeOffer: () => {},
+      finalizePeace: () => {},
+      settlePeacePrice: () => state.settleOk,
+    }, a, b, t);
+  }
   return state;
 }
 
 console.log('== Czesc 1: runtime ==');
 {
-  // AI (1) odmawia: gracz 0 zainicjowal rozejm, armia AI 0 < prog -> wojna bez oferty.
+  // Gracz zainicjował rozejm, AI składa ofertę z ceną: w turze wygaśnięcia BRAK wojny i BRAK wpisu.
   const s = runExpiry({ a: 0, b: 1, initiator: 0, armyAI: 0 });
-  ok(s.rel['0-1'].status === 'wojna', 'odmowa AI: status wraca do wojny');
-  ok(s.warEventLog.length === 1, 'odmowa AI: dokladnie 1 wpis dla gracza');
-  ok(s.warEventLog[0] && s.warEventLog[0].id === 'truce-war-10-0-1', 'wpis ma id truce-war-<tura>-<para>');
+  ok(s.rel['0-1'].status === 'pokoj', 'oferta AI z ceną: w turze wygaśnięcia brak wojny');
+  ok(s.warEventLog.length === 0, 'oferta AI z ceną: brak wpisu „Ważne” w tym kroku');
+}
+{
+  // Ten sam scenariusz, brak odpowiedzi gracza w kolejnej turze (timeout) = wojna, dokładnie 1 wpis dla gracza.
+  const s = runExpiry({ a: 0, b: 1, initiator: 0, armyAI: 0, ticks: [10, 11] });
+  ok(s.rel['0-1'].status === 'wojna', 'timeout oferty: status wraca do wojny');
+  ok(s.warEventLog.length === 1, 'timeout oferty: dokładnie 1 wpis dla gracza');
+  ok(s.warEventLog[0] && s.warEventLog[0].id === 'truce-war-11-0-1', 'wpis ma id truce-war-<tura>-<para>');
   ok(s.warEventLog[0] && s.warEventLog[0].kind === 'enemy' && s.warEventLog[0].icon === '⚔', 'wpis typu enemy z ikona ⚔ (styl logPeaceVazne)');
 }
 {
@@ -130,15 +142,21 @@ console.log('== Czesc 1: runtime ==');
   ok(s.warEventLog.length === 1, 'brak inicjatora: 1 wpis dla gracza');
 }
 {
-  // Gracz jako adresat (AI 1 zainicjowal) i brak zgody gracza: oferta w skrzynce, nie wojna od razu -> 0 wpisow tu.
+  // Gracz jako adresat (AI 1 zainicjowal) i oferta z ceną: brak wpisu w tym kroku.
   const s = runExpiry({ a: 0, b: 1, initiator: 1 });
   ok(s.warEventLog.length === 0, 'oferta dla gracza (nie wojna) -> brak wpisu w tym kroku');
 }
 {
-  // Para AI↔AI: zero wpisow.
-  const s = runExpiry({ a: 1, b: 2, initiator: 1, armyAI: 0 });
-  ok(s.rel['1-2'].status === 'wojna', 'AI↔AI: wojna wraca (logika bez zmian)');
+  // Para AI↔AI, płatność wchodzi: pokój (bez wojny), 0 wpisów.
+  const s = runExpiry({ a: 1, b: 2, initiator: 1, armyAI: 0, settleOk: true });
+  ok(s.rel['1-2'].status === 'pokoj', 'AI↔AI z zapłatą: pokój stały po rozejmie (bez wojny)');
   ok(s.warEventLog.length === 0, 'AI↔AI: 0 wpisow');
+}
+{
+  // Para AI↔AI, płatność NIE wchodzi (np. ujemny bilans PW): wojna wraca, 0 wpisów (para bez gracza).
+  const s = runExpiry({ a: 1, b: 2, initiator: 1, armyAI: 0, settleOk: false });
+  ok(s.rel['1-2'].status === 'wojna', 'AI↔AI bez zapłaty: wojna wraca');
+  ok(s.warEventLog.length === 0, 'AI↔AI bez zapłaty: 0 wpisow');
 }
 {
   // Dedup: wielokrotne wywolanie portu w tej samej turze dla tej pary -> 1 wpis.

@@ -33,6 +33,8 @@ const BUNDLE = path.resolve(__dirname, '.dip-truce-impl.cjs');
 const BUNDLE_M1 = path.resolve(__dirname, '.dip-truce-impl-m1.cjs');
 const BUNDLE_M2 = path.resolve(__dirname, '.dip-truce-impl-m2.cjs');
 const BUNDLE_M3 = path.resolve(__dirname, '.dip-truce-impl-m3.cjs');
+const PRICE = path.resolve(GRA, 'src', 'game', 'diplomacy-truce-end-price.ts');
+const BUNDLE_M1_PRICE = path.resolve(__dirname, '.dip-truce-impl-m1.cjs');
 
 let pass = 0;
 let fail = 0;
@@ -47,9 +49,10 @@ const ENTRY_SRC = [
   '  TRUCE_AI_FATIGUE_PEACE_MIN, TRUCE_AI_WILLINGNESS_PEACE_MIN, TRUCE_AI_TRUST_PEACE_MIN,',
   '  normalizeTruceDuration, truceUntilTurn, truceExpiryAction,',
   '  isTruceWindowBreach, peaceFinalizeTrustEvent,',
-  '  truceEndTickPair, truceEndToWarCore, clearTruceEndOfferCore,',
+  '  truceEndTickPair, truceEndToWarCore, clearTruceEndOfferCore, truceEndAcceptCore, truceEndSettleCore,',
   '} from \'./game/diplomacy-peace-lock\';',
   'export { TRUCE_DEFAULT_TURNS, TRUCE_DURATION_OPTIONS } from \'./game/diplomacy-peace-lock\';',
+  'export { truceEndPriceRule } from \'./game/diplomacy-truce-end-price\';',
   'export { applyDiplomaticEvent } from \'./game/diplomacy\';',
   'export { decideAIDiplomacy, aiPeaceProposalKind } from \'./game/ai\';',
   'export { aiCommandToPendingProposal, evaluateProposal } from \'./game/diplomacy-proposals\';',
@@ -101,6 +104,7 @@ function src(file) {
 function makeWorld() {
   const world = {
     meta: {}, status: {}, army: {}, humans: new Set([0]), warCalls: [], finalize: [], inbox: [], seq: 0,
+    settle: [], settleOk: true,
   };
   const key = (a, b) => (a < b ? a + '|' + b : b + '|' + a);
   world.key = key;
@@ -119,6 +123,7 @@ function makeWorld() {
     },
     removeOffer: id => { world.inbox = world.inbox.filter(x => x.id !== id); },
     finalizePeace: (p, r) => { world.finalize.push([p, r]); world.status[key(p, r)] = 'pokoj'; },
+    settlePeacePrice: (payer, payee, cur) => { world.settle.push([payer, payee, cur]); return world.settleOk; },
   };
   return world;
 }
@@ -187,38 +192,59 @@ function makeWorld() {
     check('B-3: timeout jednej pary usuwa tylko jej wpis',
       w.inbox.length === 1 && w.inbox[0].ownerId === 9 && w.status[w.key(0, 9)] === 'pokoj', w.inbox);
   }
-  // B-4: AI-adresat (inicjator = gracz 0, adresat = AI 7): zgoda przy Zaufaniu ≥ progu, odmowa poniżej.
+  // B-4 (R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-Q1): gracz (0) = inicjator, AI (7) = adresat. AI ZAWSZE składa
+  // propozycję pokoju z ceną: oferta do gracza (od AI), BEZ darmowej zgody AI i bez wojny w tej turze.
   {
     const w = makeWorld();
     w.humans.add(0);
     w.status[w.key(0, 7)] = 'pokoj';
     w.meta[w.key(0, 7)] = { truceUntilTurn: 110, truceInitiatorId: 0 };
-    // r5: inicjator (gracz 0) ma 80% armii AI(7) → słabszy o ≥20% → zgoda = finalizePeace(gracz, AI).
     w.army[0] = 80; w.army[7] = 100;
     lib.truceEndTickPair(w.ports, 0, 7, 110);
-    check('B-4 (r5): AI-adresat, inicjator słabszy o ≥20% → zgoda = finalizePeace(gracz, AI)',
-      w.finalize.length === 1 && w.finalize[0][0] === 0 && w.finalize[0][1] === 7, w.finalize);
-    check('B-4 (r5): zgoda AI nie daje wojny i nie tworzy oferty', w.warCalls.length === 0 && w.inbox.length === 0);
+    const m = w.meta[w.key(0, 7)];
+    check('B-4 (PRICE): gracz-inicjator, AI-adresat → oferta od AI do gracza (ownerId=AI)',
+      m.truceEndOffer != null && m.truceEndOffer.fromOwnerId === 7 && m.truceEndOffer.toOwnerId === 0
+      && w.inbox.length === 1 && w.inbox[0].ownerId === 7, { m, inbox: w.inbox });
+    check('B-4 (PRICE): brak darmowego pokoju i brak wojny w turze wygaśnięcia',
+      w.finalize.length === 0 && w.warCalls.length === 0 && w.settle.length === 0);
   }
+  // B-4b: odpowiedź gracza (zgoda) = zapłata wg reguły siły; cena zapłacona → pokój.
   {
     const w = makeWorld();
+    w.humans.add(0);
     w.status[w.key(0, 7)] = 'pokoj';
     w.meta[w.key(0, 7)] = { truceUntilTurn: 110, truceInitiatorId: 0 };
-    // r5: inicjator tylko o 10% słabszy → odmowa = wojna (bez pokoju).
-    w.army[0] = 90; w.army[7] = 100;
+    w.army[0] = 80; w.army[7] = 100;
     lib.truceEndTickPair(w.ports, 0, 7, 110);
-    check('B-4 (r5): AI-adresat, inicjator słabszy o < 20% → odmowa = wojna (bez pokoju)',
-      w.finalize.length === 0 && w.warCalls.length === 1, { f: w.finalize, w: w.warCalls });
+    const ok = lib.truceEndAcceptCore(w.ports, 0, 7);
+    check('B-4b (PRICE): zgoda gracza, gracz słabszy o ponad 20% (80 vs 100) → płaci gracz miastem',
+      ok === true && w.settle.length === 1 && w.settle[0][0] === 0 && w.settle[0][2] === 'miasto', w.settle);
+    check('B-4b (PRICE): po zapłacie pokój (finalize od AI do gracza), oferta wyczyszczona',
+      w.finalize.length === 1 && w.finalize[0][0] === 7 && w.finalize[0][1] === 0 && w.meta[w.key(0, 7)].truceEndOffer === undefined);
   }
+  // B-4c: zgoda gracza, ale zapłata nie pokrywa ceny → wojna (bez pokoju).
   {
-    // r5: Zaufanie bez wpływu — wysokie Zaufanie, ale silniejszy inicjator → wojna.
     const w = makeWorld();
+    w.humans.add(0);
     w.status[w.key(0, 7)] = 'pokoj';
     w.meta[w.key(0, 7)] = { truceUntilTurn: 110, truceInitiatorId: 0 };
-    w.army[0] = 120; w.army[7] = 100;
+    w.army[0] = 10; w.army[7] = 100;
     lib.truceEndTickPair(w.ports, 0, 7, 110);
-    check('B-4 (r5): wysokie Zaufanie nie zmienia odmowy przy silniejszym inicjatorze',
-      w.finalize.length === 0 && w.warCalls.length === 1, { f: w.finalize, w: w.warCalls });
+    w.settleOk = false;
+    const ok = lib.truceEndAcceptCore(w.ports, 0, 7);
+    check('B-4c (PRICE): brak pełnej zapłaty → pokoju nie ma, wojna (bez kary)',
+      ok === false && w.finalize.length === 0 && w.warCalls.length === 1, { f: w.finalize, w: w.warCalls });
+  }
+  // B-4d: odmowa gracza = wojna (bez zapłaty).
+  {
+    const w = makeWorld();
+    w.humans.add(0);
+    w.status[w.key(0, 7)] = 'pokoj';
+    w.meta[w.key(0, 7)] = { truceUntilTurn: 110, truceInitiatorId: 0 };
+    lib.truceEndTickPair(w.ports, 0, 7, 110);
+    lib.truceEndToWarCore(w.ports, 0, 7);
+    check('B-4d (PRICE): odmowa gracza = wojna, bez płatności i pokoju',
+      w.warCalls.length === 1 && w.settle.length === 0 && w.finalize.length === 0);
   }
   // B-5: stare zapisy bez inicjatora → wojna (zachowanie sprzed rundy 3).
   {
@@ -315,8 +341,8 @@ function makeWorld() {
     lib.peaceFinalizeTrustEvent(7) === 'pokoj');
   check('Z9: walidacja propozycji rozejmu (diplomacy-proposals) odrzuca długość spoza 5/10/15',
     /actionId === 'rozejm' && normalizeTruceDuration\(payload\.turns \?\? TRUCE_DEFAULT_TURNS\) == null/.test(src(path.resolve(GRA, 'src', 'game', 'diplomacy-proposals.ts'))));
-  check('B-r5: truceEndTickPair liczy siłę (getArmyM), nie Zaufanie',
-    /truceEndAiAccepts\(ports\.getArmyM\(initiator\), ports\.getArmyM\(target\)\)/.test(lockSrc) && !/getZaufanie/.test(lockSrc));
+  check('B-r5/PRICE: truceEndPriceFor liczy siłę (getArmyM) przez regułę ceny, nie Zaufanie',
+    /truceEndPriceRule\(\{[\s\S]*?armyA: ports\.getArmyM\(a\)/.test(lockSrc) && !/getZaufanie/.test(lockSrc));
   check('B: DiploPairMeta ma pola truceInitiatorId / truceEndOffer.inboxId',
     /truceInitiatorId\?: number/.test(engineSrc) && /truceEndOffer\?:[^\n]*inboxId\?: string/.test(engineSrc));
 
@@ -344,16 +370,18 @@ function makeWorld() {
   check('stała: TRUCE_AI_WILLINGNESS_PEACE_MIN = 0.7 (ZAŁOŻENIE)', /TRUCE_AI_WILLINGNESS_PEACE_MIN = 0\.7;/.test(lockSrc));
 
   // ---- Mutanty (wykrywalność testów części 1) ----
-  const m1 = mutantPlugin(LOCK, 'return proposerArmyM <= (1 - prog + eps) * addresseeArmyM;', 'return true;');
+  const m1 = mutantPlugin(PRICE, 'const within = hi <= (1 + prog + eps) * lo;', 'const within = true;');
   const libM1 = await buildBundle(BUNDLE_M1, [m1.plugin]);
-  check('M1 (zgoda AI zawsze) zastosowany', m1.info.applied === 1, m1.info);
+  check('M1 (pasmo ±20% zawsze w paśmie) zastosowany', m1.info.applied === 1, m1.info);
   {
     const w = makeWorld();
-    w.status[w.key(0, 7)] = 'pokoj';
-    w.meta[w.key(0, 7)] = { truceUntilTurn: 110, truceInitiatorId: 0 };
-    w.army[0] = 120; w.army[7] = 100;
-    libM1.truceEndTickPair(w.ports, 0, 7, 110);
-    check('M1 wykryty: silniejszy inicjator → czysta wersja wojna, mutant pokój', w.finalize.length === 1, w.finalize);
+    w.status[w.key(7, 9)] = 'pokoj';
+    w.meta[w.key(7, 9)] = { truceUntilTurn: 110, truceInitiatorId: 7 };
+    w.humans.delete(0);
+    w.army[7] = 150; w.army[9] = 100;
+    libM1.truceEndTickPair(w.ports, 7, 9, 110);
+    const curM1 = w.settle.length ? w.settle[0][2] : null;
+    check('M1 wykryty: mutant (pasmo zawsze) zmienia walutę przy przewadze 50% (czysta: miasto)', curM1 !== 'miasto', { curM1 });
   }
 
   const m2 = mutantPlugin(LOCK, 'if (input.fatigueFraction >= TRUCE_AI_FATIGUE_PEACE_MIN) return \'pokoj\';', '');
@@ -469,11 +497,13 @@ function makeWorld() {
   check('R6 (C): 0 vs 100 → zgoda (proponujący bez armii, adresat z armią)', lib.truceEndAiAccepts(0, 100) === true);
   {
     const w = makeWorld();
-    w.status[w.key(0, 7)] = 'pokoj';
-    w.meta[w.key(0, 7)] = { truceUntilTurn: 110, truceInitiatorId: 0 };
-    w.army[0] = 0; w.army[7] = 0;
-    lib.truceEndTickPair(w.ports, 0, 7, 110);
-    check('R6 (C): truceEndTickPair 0 vs 0 → wojna, bez pokoju', w.finalize.length === 0 && w.warCalls.length === 1, { f: w.finalize, w: w.warCalls });
+    w.humans.delete(0);
+    w.status[w.key(7, 9)] = 'pokoj';
+    w.meta[w.key(7, 9)] = { truceUntilTurn: 110, truceInitiatorId: 7 };
+    w.army[7] = 0; w.army[9] = 0;
+    lib.truceEndTickPair(w.ports, 7, 9, 110);
+    check('R6 (C/PRICE): AI↔AI 0 vs 0 (remis) → płaci inicjator surowcami, zapłata OK = pokój',
+      w.settle.length === 1 && w.settle[0][0] === 7 && w.settle[0][2] === 'surowce' && w.finalize.length === 1 && w.warCalls.length === 0, { s: w.settle, f: w.finalize });
   }
 
   for (const f of [BUNDLE, BUNDLE_M1, BUNDLE_M2, BUNDLE_M3]) {

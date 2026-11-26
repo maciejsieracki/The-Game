@@ -7,6 +7,7 @@
 import type { DiploPairMeta } from './diplomacy-pn-engine';
 import type { AllianceObligation } from './diplomacy-treaties';
 import { WAR_PEACE_PARAMS } from './diplomacy-war-peace-profile';
+import { truceEndOfferReason, truceEndPriceRule, type TruceEndPayCurrency, type TruceEndPriceRule } from './diplomacy-truce-end-price';
 
 /** Liczba tur pokoju po akceptacji traktatu pokoju / rozejmu. */
 export const PEACE_TREATY_LOCK_TURNS = 10;
@@ -168,6 +169,10 @@ export function aiTruceOrPeaceMode(input: {
  * Adresat bez armii (≤ 0) → odmowa (r6, ZAŁOŻENIE-R5-C: „o 20% słabszy" wymaga przewagi > 0).
  * ZAŁOŻENIE orkiestratora (do potwierdzenia): „mniejsza o 20%" = proponujący ≤ 80% adresata.
  */
+/**
+ * R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-Q1: NIE jest już używana przez truceEndTickPair. Pokój po końcu rozejmu
+ * ma cenę (truceEndPriceRule + settlePeacePrice), a nie zgodę za darmo. Zostaje jako helper testów starego kontraktu.
+ */
 export function truceEndAiAccepts(
   proposerArmyM: number,
   addresseeArmyM: number,
@@ -242,6 +247,13 @@ export interface TruceEndPorts {
   removeOffer(inboxId: string): void;
   /** Zgoda = pokój stały (finalizePeaceTreatyBetween bez truceTurns). */
   finalizePeace(proposerId: number, responderId: number): void;
+  /**
+   * R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-Q1: zapłata ceny pokoju po rozejmie (payer → payee, waluta wg reguły).
+   * Zwraca true tylko, gdy płatność pokrywa cenę w całości (brak pełnej zapłaty = pokoju nie ma).
+   */
+  settlePeacePrice(payerId: number, payeeId: number, currency: TruceEndPayCurrency): boolean;
+  /** Wartość ceny pokoju po rozejmie dla pary (do treści oferty w skrzynce; cena liczona na żywo). */
+  quotePn?(payerId: number, payeeId: number): number;
 }
 
 /** Usuwa ofertę pokoju po rozejmie (meta + własny wpis w skrzynce). */
@@ -260,9 +272,53 @@ export function truceEndToWarCore(ports: TruceEndPorts, a: number, b: number): v
 }
 
 /**
- * Jeden tick dla pary (raz na turę). Wygasły rozejm: adresat = strona niebędąca inicjatorem;
- * gracz → oferta w skrzynce (`truceEndOffer`, timeout w kolejnej turze); AI → od razu wg
- * Zaufania (zgoda = pokój stały, brak zgody = wojna). Bez inicjatora → wojna (stare zapisy).
+ * R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-Q1: reguła ceny pokoju po końcu rozejmu dla pary (siła w chwili wywołania).
+ * Brak inicjatora → null (stare zapisy: wojna).
+ */
+export function truceEndPriceFor(ports: TruceEndPorts, a: number, b: number): TruceEndPriceRule | null {
+  const initiator = ports.getMeta(a, b).truceInitiatorId;
+  if (initiator == null) return null;
+  return truceEndPriceRule({
+    initiatorId: initiator,
+    a,
+    b,
+    armyA: ports.getArmyM(a),
+    armyB: ports.getArmyM(b),
+  });
+}
+
+/**
+ * R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-Q1: płaci cenę wg reguły. true = cena w całości zapłacona (pokój może wejść).
+ * Brak reguły (brak inicjatora) = false.
+ */
+export function truceEndSettleCore(ports: TruceEndPorts, a: number, b: number): boolean {
+  const rule = truceEndPriceFor(ports, a, b);
+  if (rule == null) return false;
+  return ports.settlePeacePrice(rule.payerId, rule.payeeId, rule.currency);
+}
+
+/**
+ * R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-Q1: zgoda gracza na pokój po końcu rozejmu. Cena płacona wg reguły;
+ * zapłata OK → pokój (offer czyszczona, finalizePeace od strony AI do gracza); brak zapłaty → wojna (bez kary).
+ * Zwraca true, gdy pokój zawarty.
+ */
+export function truceEndAcceptCore(ports: TruceEndPorts, a: number, b: number): boolean {
+  const offer = ports.getMeta(a, b).truceEndOffer;
+  if (offer == null) return false;
+  if (!truceEndSettleCore(ports, a, b)) {
+    truceEndToWarCore(ports, a, b);
+    return false;
+  }
+  clearTruceEndOfferCore(ports, a, b);
+  ports.finalizePeace(offer.fromOwnerId, offer.toOwnerId);
+  return true;
+}
+
+/**
+ * Jeden tick dla pary (raz na turę). Wygasły rozejm: AI ZAWSZE składa propozycję pokoju z ceną.
+ * Para z graczem → oferta w skrzynce gracza (od AI, `truceEndOffer`, timeout w kolejnej turze).
+ * Para AI↔AI → pokój od razu, gdy płaci strona wskazana regułą ceny; brak zapłaty = wojna.
+ * Bez inicjatora → wojna (stare zapisy).
  */
 export function truceEndTickPair(ports: TruceEndPorts, a: number, b: number, turn: number): void {
   const meta = ports.getMeta(a, b);
@@ -280,15 +336,24 @@ export function truceEndTickPair(ports: TruceEndPorts, a: number, b: number, tur
     truceEndToWarCore(ports, a, b);
     return;
   }
-  if (ports.isHuman(target)) {
-    const inboxId = ports.enqueueOffer(initiator, 'Rozejm wygasł — propozycja pokoju stałego (odmowa = wojna)');
+  if (ports.isHuman(target) || ports.isHuman(initiator)) {
+    // AI składa propozycję: stroną składającą jest ta, która NIE jest człowiekiem.
+    const ai = ports.isHuman(target) ? initiator : target;
+    const human = ai === target ? initiator : target;
+    const rule = truceEndPriceFor(ports, a, b);
+    // Port quotePn opcjonalny (stare atrapy bez wyceny): bez niego treść bez kwoty, reguła i tak liczona w chwili zgody.
+    const quote = rule != null && ports.quotePn ? ports.quotePn(rule.payerId, rule.payeeId) : null;
+    const reason = rule != null && quote != null
+      ? truceEndOfferReason(rule, ports.isHuman(rule.payerId), quote)
+      : 'Rozejm wygasł — propozycja pokoju stałego z ceną (odmowa = wojna)';
+    const inboxId = ports.enqueueOffer(ai, reason);
     ports.setMeta(a, b, {
       ...ports.getMeta(a, b),
-      truceEndOffer: { turn, fromOwnerId: initiator, toOwnerId: target, inboxId },
+      truceEndOffer: { turn, fromOwnerId: ai, toOwnerId: human, inboxId },
     });
     return;
   }
-  if (truceEndAiAccepts(ports.getArmyM(initiator), ports.getArmyM(target))) {
+  if (truceEndSettleCore(ports, a, b)) {
     ports.finalizePeace(initiator, target);
   } else {
     truceEndToWarCore(ports, a, b);

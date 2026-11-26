@@ -1764,8 +1764,10 @@ import {
   truceEndTickPair,
   truceEndToWarCore,
   clearTruceEndOfferCore,
+  truceEndAcceptCore,
   type TruceEndPorts,
 } from './game/diplomacy-peace-lock';
+import { pickTruceEndSettlementPlan, type TruceEndPayCurrency } from './game/diplomacy-truce-end-price';
 import {
   computeIncomingPlayerAcceptNetPw,
   computePlayerAcceptanceSides,
@@ -13174,6 +13176,8 @@ async function boot(): Promise<void> {
           const k = pendingDiplomacyInbox.findIndex(p => p.id === inboxId);
           if (k >= 0) pendingDiplomacyInbox.splice(k, 1);
         },
+        settlePeacePrice: (payerId, payeeId, currency) => settleTruceEndPrice(payerId, payeeId, currency),
+        quotePn: (payerId, payeeId) => aiAiPeacePriceFor(payeeId, payerId, 'pokoj').requiredPn,
         finalizePeace: (proposerId, responderId) => {
           finalizePeaceTreatyBetween(proposerId, responderId);
           // DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1 (Z7): pokój po końcu rozejmu (AI przyjęła pokój stały) nie może
@@ -22892,12 +22896,20 @@ async function boot(): Promise<void> {
           // PEACEVAZNE (R-WEB-UI-DIPLO-PEACE-CONCLUDED-VAZNE-ALWAYS-Q1): każdy pokój z graczem = wpis w „Ważne”.
           // Znacznik końca rozejmu czytany PRZED finalize (finalize go czyści).
           const koniecRozejmuPokoj = getDiploPairMeta(ME(), p.ownerId).truceEndOffer != null;
-          finalizePeaceTreatyBetween(ME(), p.ownerId);
-          logPeaceVazne(
-            ME(), p.ownerId, 'Pokój zawarty: ',
-            koniecRozejmuPokoj ? 'Koniec rozejmu: pokój przyjęty przez gracza' : 'Oferta pokoju od AI przyjęta przez gracza',
-          );
-          showHintMessage('Pokój z: ' + p.civName, 4000);
+          // R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-Q1: pokój po końcu rozejmu wchodzi dopiero po zapłacie ceny (wg reguły
+          // siły); brak pełnej zapłaty = pokoju nie ma, wojna wraca bez kary (truceEndAcceptCore).
+          const pokojZawarty = koniecRozejmuPokoj
+            ? truceEndAcceptCore(truceEndPorts(), ME(), p.ownerId)
+            : (finalizePeaceTreatyBetween(ME(), p.ownerId), true);
+          if (pokojZawarty) {
+            logPeaceVazne(
+              ME(), p.ownerId, 'Pokój zawarty: ',
+              koniecRozejmuPokoj ? 'Koniec rozejmu: pokój przyjęty przez gracza' : 'Oferta pokoju od AI przyjęta przez gracza',
+            );
+            showHintMessage('Pokój z: ' + p.civName, 4000);
+          } else {
+            showHintMessage('Brak zapłaty ceny pokoju: wojna trwa (' + p.civName + ')', 4500);
+          }
         } else {
           const cmd = {
             type: p.cmdType,
@@ -40748,6 +40760,88 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-Q1: cena pokoju AI↔AI (wydzielona z tickAiAiPeaceRequests bez zmiany wyceny).
+     * Używa jej też płatność po końcu rozejmu (settleTruceEndPrice).
+     */
+    function aiAiPeacePriceFor(winner: number, loser: number, kind: 'pokoj' | 'rozejm') {
+      const basePn = treatyBasePnFromConfig(kind, kind === 'rozejm' ? { turns: TRUCE_DEFAULT_TURNS } : undefined);
+      const relTotal = treatyEvalRelationTotal(getDiploRelation(winner, loser));
+      const difficulty = effectiveGameDifficultyForOwner(winner);
+      // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: JEDNA cena pokoju = wearinessPeaceCashPn(L) (rozejm bez zmian).
+      // Bramka relacji (zero dla relacji, przy ktorej dzisiejsza wycena daje 0) zostaje; stale 185/554 odpadaja.
+      const relBasedPn = aiAiPeaceRequiredPn(
+        peaceOfferAiRequestPn(0, 0, relTotal, basePn, difficulty),
+        peaceOfferAiOwnBilans(0, 0, relTotal, basePn),
+      );
+      // R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (r3, P2): pokój AI↔AI — słabszy przegrany dopłaca D = S − W (POWER),
+      // cena bazowa P = wearinessPeaceCashPn(L) bez zmian (D1). Rozejm bez zmian.
+      // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (r3): rozejm AI↔AI = parytet siły z X = 2000 × (1 − L) (słabszy
+      // przegrany dopłaca D = S − W wg POWER; r = 1 ⇒ D = 0). Dawniej cena rozejmu szła z relacji × baza 200 — po
+      // skali ×10 (baza 2000) tor zażądałby 10× więcej, więc częstość rozejmów AI↔AI spadłaby (test diplo-treaties-ai-parity).
+      const rozejmDuePn = kind === 'rozejm'
+        ? aiTreatyParityDuePn('rozejm', objectivePowerForOwner(loser), objectivePowerForOwner(winner), aiAiPairWearinessLevel(winner, loser))
+        : 0;
+      const requiredPn = kind === 'rozejm' ? (relBasedPn > 0 ? rozejmDuePn : 0)
+        : (relBasedPn > 0
+          ? peaceAiAiPaymentPn(
+            wearinessPeaceCashPn(aiAiPairWearinessLevel(winner, loser)),
+            objectivePowerForOwner(loser),
+            objectivePowerForOwner(winner),
+          )
+          : 0);
+      const loserRelTotal = treatyEvalRelationTotal(getDiploRelation(loser, winner));
+      // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (r3): rozejm — bilans liczony od ceny = wymaganej dopłaty D (0 ⇒ neutralny),
+      // nie od bazy 2000 (×10), która odrzucałaby rozejm przy D = 0 (r = 1).
+      const balBasePn = kind === 'rozejm' ? requiredPn : basePn;
+      return {
+        requiredPn,
+        balanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(0, coveredPn, relTotal, balBasePn),
+        loserBalanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(coveredPn, 0, loserRelTotal, balBasePn),
+        tolerancePn: aiOfferPwSurplusTolerance(difficulty),
+      };
+    }
+
+    /**
+     * R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-Q1: płatność ceny pokoju po końcu rozejmu. Cena = aiAiPeacePriceFor (pokój).
+     * surowce = ogon (złoto → brąz → żelazo → rudy) bez miast; miasto = wyłącznie miasta płatnika (bez ogona).
+     * Przelew tylko gdy plan pokrywa cenę w całości; inaczej false (bez przelewu) i pokoju nie ma.
+     */
+    function settleTruceEndPrice(payerId: number, payeeId: number, currency: TruceEndPayCurrency): boolean {
+      const price = aiAiPeacePriceFor(payeeId, payerId, 'pokoj');
+      const cityAssets = aiPeacePaymentAssets(payerId, payeeId, new Set<string>()).filter(a => a.kind === 'miasto');
+      // Wybór planu (cena > 0, plan pełny, bilans PW, wariant zastępczy surowcami przy braku cedowalnego miasta)
+      // — czysta funkcja pickTruceEndSettlementPlan (testowana w truce-end-peace-price-test.cjs).
+      const pick = pickTruceEndSettlementPlan({
+        requiredPn: price.requiredPn,
+        currency,
+        planCity: () => peacePlanWithTail({
+          ...peaceTailPricingForPayer(payerId, payeeId, peaceTailWiringDeps(), []),
+          duePn: price.requiredPn, cities: cityAssets, maxCities: cityAssets.length,
+        }),
+        planTail: () => peacePlanWithTail({
+          ...peaceTailPricingFor(payerId, payeeId),
+          duePn: price.requiredPn, cities: [], maxCities: 0,
+        }),
+        // Reguła właściciela 2026-11-09 (pokojAiAi.minBilansPW): pokój AI↔AI nie wchodzi przy ujemnym bilansie
+        // PW którejkolwiek strony po zapłacie. Wyjątek gracza (pokój zawsze do przyjęcia) — tylko gdy para jest AI↔AI.
+        balanceOk: plan => isHuman(payerId) || isHuman(payeeId)
+          || isAiAiPeaceBalanceAllowed(price.balanceFor(plan.coveredPn), price.loserBalanceFor?.(plan.coveredPn)),
+      });
+      if (pick == null) return false;
+      const plan = pick.plan;
+      if (plan.items.length > 0) {
+        const basket: BasketItem[] = plan.items.map(i => ({
+          typ: i.kind,
+          id: i.id,
+          ilosc: i.kind === 'miasto' ? 1 : i.amount,
+          ...(i.kind === 'miasto' ? { cityPn: i.pn } : {}),
+        }));
+        transferBasketItems(payerId, payeeId, basket);
+      }
+      return true;
+    }
+
+    /**
      * R-WEB-AI-WAR-NEAREST-CITY-PEACE-2T-Q1 (B): rozstrzyga prośby AI↔AI o pokój/rozejm, raz na turę po fazie AI.
      * Cena z ISTNIEJĄCEJ wyceny (jak AI→gracz, main.ts ok. :18305): baza PW traktatu wg rodzaju (rozejm 200 / pokój 500),
      * `peaceOfferAiRequestPn` (relacja zwycięzcy→przegranego, trudność zwycięzcy), cesja miasta przez `cityCessionPlanFor`
@@ -40799,43 +40893,7 @@ async function boot(): Promise<void> {
             resolveWarPeaceProfile(civKeyForOwnerId(winner)),
           ).verdict;
         },
-        price: (winner, loser, kind) => {
-          const basePn = treatyBasePnFromConfig(kind, kind === 'rozejm' ? { turns: TRUCE_DEFAULT_TURNS } : undefined);
-          const relTotal = treatyEvalRelationTotal(getDiploRelation(winner, loser));
-          const difficulty = effectiveGameDifficultyForOwner(winner);
-          // R-WEB-DIPLO-PEACE-PRICE-DECAY-WITH-WEARINESS-Q1: JEDNA cena pokoju = wearinessPeaceCashPn(L) (rozejm bez zmian).
-          // Bramka relacji (zero dla relacji, przy ktorej dzisiejsza wycena daje 0) zostaje; stale 185/554 odpadaja.
-          const relBasedPn = aiAiPeaceRequiredPn(
-            peaceOfferAiRequestPn(0, 0, relTotal, basePn, difficulty),
-            peaceOfferAiOwnBilans(0, 0, relTotal, basePn),
-          );
-          // R-WEB-DIPLO-PEACE-PW-POWER-RATIO-IMPL-Q1 (r3, P2): pokój AI↔AI — słabszy przegrany dopłaca D = S − W (POWER),
-          // cena bazowa P = wearinessPeaceCashPn(L) bez zmian (D1). Rozejm bez zmian.
-          // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (r3): rozejm AI↔AI = parytet siły z X = 2000 × (1 − L) (słabszy
-          // przegrany dopłaca D = S − W wg POWER; r = 1 ⇒ D = 0). Dawniej cena rozejmu szła z relacji × baza 200 — po
-          // skali ×10 (baza 2000) tor zażądałby 10× więcej, więc częstość rozejmów AI↔AI spadłaby (test diplo-treaties-ai-parity).
-          const rozejmDuePn = kind === 'rozejm'
-            ? aiTreatyParityDuePn('rozejm', objectivePowerForOwner(loser), objectivePowerForOwner(winner), aiAiPairWearinessLevel(winner, loser))
-            : 0;
-          const requiredPn = kind === 'rozejm' ? (relBasedPn > 0 ? rozejmDuePn : 0)
-            : (relBasedPn > 0
-              ? peaceAiAiPaymentPn(
-                wearinessPeaceCashPn(aiAiPairWearinessLevel(winner, loser)),
-                objectivePowerForOwner(loser),
-                objectivePowerForOwner(winner),
-              )
-              : 0);
-          const loserRelTotal = treatyEvalRelationTotal(getDiploRelation(loser, winner));
-          // R-WEB-DIPLO-TREATIES-POWER-PARITY-IMPL-Q1 (r3): rozejm — bilans liczony od ceny = wymaganej dopłaty D (0 ⇒ neutralny),
-          // nie od bazy 2000 (×10), która odrzucałaby rozejm przy D = 0 (r = 1).
-          const balBasePn = kind === 'rozejm' ? requiredPn : basePn;
-          return {
-            requiredPn,
-            balanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(0, coveredPn, relTotal, balBasePn),
-            loserBalanceFor: (coveredPn: number) => peaceOfferAiOwnBilans(coveredPn, 0, loserRelTotal, balBasePn),
-            tolerancePn: aiOfferPwSurplusTolerance(difficulty),
-          };
-        },
+        price: (winner, loser, kind) => aiAiPeacePriceFor(winner, loser, kind),
         assets: aiPeacePaymentAssets,
         // R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (ABC D): pokój AI↔AI — miasta, potem ogon z zapasów przegranego (ta sama funkcja).
         tailPlan: (requiredPn, cityAssets, maxCities, loser, winner) => peacePlanWithTail({
