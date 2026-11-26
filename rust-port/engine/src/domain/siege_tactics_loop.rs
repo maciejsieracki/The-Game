@@ -802,6 +802,10 @@ impl<B: LoopBody> SiegeLoop<B> {
             };
             let planned = first_frame_at_or_after(now, p.frame, st.target) + p.then;
             if p.frame > 0.0 && due.is_some_and(|d| d.to_bits() == planned.to_bits()) {
+                // R-RUSTPORT-P4-413 r2 (U3): plany klocków już odpalonych (nieobecnych w kolejce) są martwe — usuwane tu,
+                // więc lista nie rośnie ponad liczbę zaplanowanych klocków (wynik bez zmian: `respeed` i tak je pomija).
+                self.raf_plans
+                    .retain(|(pid, _)| clock.timers.iter().any(|t| t.id == *pid));
                 self.raf_plans.push((id, st));
             }
         }
@@ -5310,8 +5314,32 @@ impl<R: RollSource> ProdBody<R> {
                 let enemies = self.enemies_of(unit.side, st);
                 let now = self.now;
                 let (ml, ms) = self.body_step(unit, int_tile((col, row)), move_left, now, &enemies);
+                // R-RUSTPORT-P4-413 r2: `_phalanxStep` `:6635` `_doMove(ru, nc, nr, () => { done(); })`.
+                self.put_step_done_plan(unit, ms);
                 PhalanxRun::Finished(ms, Some(ml))
             }
+        }
+    }
+
+    /// R-RUSTPORT-P4-413 (D-413-4): plan odcinka `_raf` klocka `key` (zastępuje wcześniejszy, nieodebrany plan tego klocka).
+    fn put_raf_plan(&mut self, key: RafPlanKey, plan: RafPlan) {
+        self.raf_plans.retain(|(k, _)| *k != key);
+        self.raf_plans.push((key, plan));
+    }
+
+    /// R-RUSTPORT-P4-413 r2 (D-413-4): pojedynczy krok `_doMove` kończący aktywację (`done` w callbacku kroku, `p >= 1`,
+    /// `:8753-8768`) liczony atomowo jako [`LoopTimer::BodyDone`]: plan odcinka `_raf` (`MOVE_STEP_MS` od chwili kroku),
+    /// gdy krok wykonany (`ms > 0`; odmowa/brak kroku = `done()` od razu, bez odcinka).
+    fn put_step_done_plan(&mut self, unit: UnitRef, ms: f64) {
+        if ms > 0.0 && self.frame_ms > 0.0 {
+            self.put_raf_plan(
+                RafPlanKey::Done(unit),
+                RafPlan {
+                    ms: MOVE_STEP_MS,
+                    then: 0.0,
+                    frame: self.frame_ms,
+                },
+            );
         }
     }
 
@@ -5319,12 +5347,6 @@ impl<R: RollSource> ProdBody<R> {
     /// ku polu celu (`facingFromTo`, `:9182-9184`, zawsze `rotation.y`), potem pocisk (`:9218-9221`) z trafieniem po
     /// `RANGED_FLY_MS`. Brak szablonu strzału na cel (wejście adaptera [`Self::ranged_blows`]) = jawny tag
     /// `strzal-bez-szablonu` i brak strzału.
-    /// R-RUSTPORT-P4-413 (D-413-4): plan odcinka `_raf` klocka `key` (zastępuje wcześniejszy, nieodebrany plan tego klocka).
-    fn put_raf_plan(&mut self, key: RafPlanKey, plan: RafPlan) {
-        self.raf_plans.retain(|(k, _)| *k != key);
-        self.raf_plans.push((key, plan));
-    }
-
     fn begin_shot(&mut self, unit: UnitRef, target: usize, at: f64) -> Option<ProdShot> {
         let ix = side_ix(unit.side);
         if self.blow_composer.is_none() && !self.ranged_blows[ix][unit.idx].contains_key(&target) {
@@ -7473,10 +7495,13 @@ impl<R: RollSource> ProdBody<R> {
         let Ok(res) = self.move_step_core(unit, nc, nr, false, seq.move_left, None, enemies) else {
             return AtkRun::tagged("marsz-brak-terenu");
         };
+        let dur = step_ms(&res, self.frame_ms);
+        // R-RUSTPORT-P4-413 r2: `_advanceToward` `:7915` `_doMove(ru, nc, nr, done)`.
+        self.put_step_done_plan(unit, dur);
         arrive(
             self,
             AtkRun {
-                dur: step_ms(&res, self.frame_ms),
+                dur,
                 move_left: Some(res.move_left),
                 tag: None,
             },
@@ -10156,6 +10181,93 @@ mod march_incremental_tests {
             "czas akcji trafienia = klatka odpalenia: {acts:?}"
         );
     }
+
+    /// R-RUSTPORT-P4-413 r2 (zarzut Z1a): pin `_phalanxStep` `:6635` `this._doMove(ru, nc, nr, () => { done(); })` — jeden
+    /// krok falangi kończący aktywację; koniec = pierwsza klatka z `p >= 1` (`_doMove` `:8753-8768`). Ciało liczy go atomowo
+    /// jako `BodyDone`, więc oddaje plan odcinka `_raf` (`MOVE_STEP_MS` od chwili kroku, klatka kwantyzacji).
+    #[test]
+    fn p413_krok_falangi_ma_plan_raf() {
+        let mut ph0 = unit_at(true, 0);
+        ph0.activate.phalanx = true;
+        let mut ph1 = unit_at(true, 0);
+        ph1.activate.phalanx = true;
+        ph1.activate.r = 1;
+        let scene = ActivateScene {
+            finished: false,
+            manual_mode: false,
+            is_player_side: false,
+            wall_col: -1,
+            gate_open: false,
+            wall_tile_hp: Vec::new(),
+            siege_machine_range: 0.0,
+        };
+        let mut b = ProdBody::new(
+            [vec![ph0, ph1], vec![unit_at(false, 8)]],
+            scene,
+            SequenceRolls::new(Vec::new()),
+        );
+        b.pin_blow_timing = true;
+        b.frame_ms = 1024.0;
+        b.march_incremental = true;
+        b.terrain = Some(Box::new(Flat));
+        let (_b0, mut st) = setup(3.0);
+        st.atk.push(SeqUnit { id: 9, c: cu(3.0) });
+        b.set_now(1000.0);
+        match b.phalanx_action(A0, &st, None) {
+            PhalanxRun::Finished(ms, Some(_)) => assert_eq!(ms, 1024.0, "krok na siatce 1024"),
+            _ => panic!("oczekiwany krok falangi (PhalanxDecision::Move)"),
+        }
+        assert_eq!(b.cell_of(A0), (1, 0), "krok w stronę wroga w pasie linii");
+        assert_eq!(
+            b.take_raf_plan(RafPlanKey::Done(A0)),
+            Some(RafPlan {
+                ms: MOVE_STEP_MS,
+                then: 0.0,
+                frame: 1024.0
+            })
+        );
+        // Brak kroku (`moveLeft <= 0` => `done()` od razu, `:6589`): bez odcinka, bez planu.
+        st.atk[0].c.move_left = 0.0;
+        match b.phalanx_action(A0, &st, None) {
+            PhalanxRun::Finished(ms, None) => assert_eq!(ms, 0.0),
+            _ => panic!("oczekiwane done() bez kroku"),
+        }
+        assert_eq!(b.take_raf_plan(RafPlanKey::Done(A0)), None);
+    }
+
+    /// R-RUSTPORT-P4-413 r2 (zarzut Z1b): pin `_advanceToward` `:7892-7916` — jeden zachłanny krok
+    /// `this._doMove(ru, nc, nr, done)`; `done` w callbacku kroku (`p >= 1`). Ciało liczy go atomowo (`AtkRun.dur`), więc
+    /// oddaje plan odcinka `_raf` dla `BodyDone`.
+    #[test]
+    fn p413_krok_advance_toward_ma_plan_raf() {
+        let (mut b, st) = setup(3.0);
+        b.frame_ms = 64.0;
+        b.set_now(1000.0);
+        let enemies = b.enemies_of(BattleSide::Attacker, &st);
+        let run = b.siege_atk_advance_toward(A0, &st, 6, 5, 0, None, &enemies);
+        assert_eq!(run.dur, 256.0, "krok na siatce 64 (ceil(240/64)*64)");
+        assert_eq!(b.cell_of(A0), (1, 0));
+        assert_eq!(
+            b.take_raf_plan(RafPlanKey::Done(A0)),
+            Some(RafPlan {
+                ms: MOVE_STEP_MS,
+                then: 0.0,
+                frame: 64.0
+            })
+        );
+        // `moveLeft <= 0` (`:7895`): `done()` od razu, bez kroku i bez planu.
+        let (mut c, mut st0) = setup(3.0);
+        st0.atk[0].c.move_left = 0.0;
+        c.frame_ms = 64.0;
+        c.set_now(1000.0);
+        let en = c.enemies_of(BattleSide::Attacker, &st0);
+        let run0 = c.siege_atk_advance_toward(A0, &st0, 6, 5, 0, None, &en);
+        assert_eq!(run0.dur, 0.0);
+        assert_eq!(c.take_raf_plan(RafPlanKey::Done(A0)), None);
+        // Krok odmówiony (`_siegeMoveRefused`/bramka muru: `step_ms = 0`, `done()` od razu) nie jest odcinkiem `_raf`.
+        c.put_step_done_plan(A0, 0.0);
+        assert_eq!(c.take_raf_plan(RafPlanKey::Done(A0)), None);
+    }
 }
 
 #[cfg(test)]
@@ -10184,6 +10296,9 @@ mod respeed_tests {
         frame: f64,
         now: f64,
         march: bool,
+        /// R-RUSTPORT-P4-413 r2: jeden krok `_doMove` kończący aktywację (`BodyDone` po `frame_raf(F, MOVE_STEP_MS)` z planem
+        /// `_raf`, jak krok falangi i `_advanceToward` w [`ProdBody`]).
+        step_done: bool,
         /// Zepsuty plan (klatka inna niż kwantyzacja `due`): sterownik nie może go przyjąć.
         bad_plan: bool,
         lunge_t0: Option<f64>,
@@ -10208,6 +10323,17 @@ mod respeed_tests {
                     },
                 ));
                 return 0.0;
+            }
+            if self.step_done {
+                self.plans.push((
+                    RafPlanKey::Done(unit),
+                    RafPlan {
+                        ms: MOVE_STEP_MS,
+                        then: 0.0,
+                        frame: self.frame,
+                    },
+                ));
+                return frame_raf(self.frame, MOVE_STEP_MS);
             }
             self.lunge_t0 = Some(self.now);
             let frame = if self.bad_plan { 16.0 } else { self.frame };
@@ -10426,6 +10552,94 @@ mod respeed_tests {
             vec![("koniec-kroku", 1240.0), ("cios", 1240.0)],
             "koniec kroku i done() marszu w klatce 1240"
         );
+    }
+
+    /// R-RUSTPORT-P4-413 r2 (Z1): krok falangi / `_advanceToward` (`BodyDone` po kroku `_doMove`) przy x64 (start 1000,
+    /// koniec kroku 2024), zmiana na x1 po starcie: pin kończy krok w pierwszej klatce siatki 16 z `p >= 1` = 1240 i tam
+    /// woła `done()` (`complete` w atrapie loguje „cios”).
+    #[test]
+    fn krok_konczacy_aktywacje_na_nowej_siatce() {
+        let body = RafMock {
+            step_done: true,
+            ..RafMock::default()
+        };
+        let (mut lp, mut clock) = run_start(body, 64.0);
+        assert_eq!(due_of(&clock, is_done), Some(2024.0));
+        change(&mut lp, &mut clock, 1.0);
+        assert_eq!(due_of(&clock, is_done), Some(1240.0));
+        frames(&mut lp, &mut clock, 15);
+        assert_eq!(lp.env.body.log, vec![("cios", 1240.0)]);
+    }
+
+    /// R-RUSTPORT-P4-413 r2 (Z2): dwie zmiany w jednym ogonie wypadu. x4 (siatka 64): lunge od 1000, cios w klatce 1192,
+    /// koniec lunge zaplanowany na 1320 (`1192 + ceil(68/64)*64`), `due` settle 1540. Zmiana na x1 w 1192: pin kończy lunge
+    /// w pierwszej klatce siatki 16 `>= 1260` = 1272, `due` 1492. Druga zmiana (x2) w 1288 — PO końcu lunge (1272), przed
+    /// starym końcem (1320): `_schedule(BLOW_SETTLE_MS)` już nominalny z klatki 1272, `due` zostaje 1492, `done()` w
+    /// pierwszej klatce siatki 32 `>= 1492` = 1512. Plan bez aktualizacji kotwicy/klatki po pierwszej zmianie
+    /// (mutant E4) uznałby lunge za trwający (koniec 1320 na siatce 64) i przeliczył `due` na 1288 + 220 = 1508.
+    #[test]
+    fn dwie_zmiany_druga_po_koncu_lunge_nie_rusza_settle() {
+        let (mut lp, mut clock) = run_start(RafMock::default(), 4.0);
+        frames(&mut lp, &mut clock, 3);
+        assert_eq!(clock.v_now, 1192.0);
+        assert_eq!(lp.env.body.log, vec![("cios", 1192.0)]);
+        assert_eq!(due_of(&clock, is_tail), Some(1540.0));
+        change(&mut lp, &mut clock, 1.0);
+        assert_eq!(due_of(&clock, is_tail), Some(1492.0));
+        frames(&mut lp, &mut clock, 6);
+        assert_eq!(clock.v_now, 1288.0);
+        change(&mut lp, &mut clock, 2.0);
+        assert_eq!(due_of(&clock, is_tail), Some(1492.0), "settle nominalny");
+        while due_of(&clock, is_tail).is_some() && clock.v_now < 3000.0 {
+            frames(&mut lp, &mut clock, 1);
+        }
+        assert_eq!(
+            clock.v_now, 1512.0,
+            "done() w pierwszej klatce siatki 32 >= 1492"
+        );
+    }
+
+    /// R-RUSTPORT-P4-413 r2 (Z2): dwie zmiany w jednym ogonie, pierwsza PO ciosie. Wypad przy x1 (lunge od 1000, cios
+    /// w 1160, koniec lunge zaplanowany na 1272, `due` 1492). Zmiana na x64 w 1160: pin kończy lunge w pierwszej klatce
+    /// siatki 1024 `>= 1260` = 2184, `due` 2404. Druga zmiana (x1) w klatce 2184 = koniec lunge na nowej siatce: settle już
+    /// nominalny z 2184, `due` 2404 bez zmian; `done()` w pierwszej klatce siatki 16 `>= 2404` = 2408.
+    /// (Uwaga: rozjazd kotwicy/klatki planu jest obserwowalny tylko wtedy, gdy stary koniec odcinka leży PO końcu na nowej
+    /// siatce — test [`dwie_zmiany_druga_po_koncu_lunge_nie_rusza_settle`]; odwrotny przypadek jest niemożliwy, bo pierwsza
+    /// klatka nowej siatki `>= target` jest zarazem pierwszą klatką po kotwicy, która może leżeć za starym końcem.)
+    #[test]
+    fn dwie_zmiany_w_jednym_ogonie_po_ciosie() {
+        let (mut lp, mut clock) = run_start(RafMock::default(), 1.0);
+        frames(&mut lp, &mut clock, 10);
+        assert_eq!(lp.env.body.log, vec![("cios", 1160.0)]);
+        assert_eq!(due_of(&clock, is_tail), Some(1492.0));
+        change(&mut lp, &mut clock, 64.0);
+        assert_eq!(due_of(&clock, is_tail), Some(2404.0));
+        frames(&mut lp, &mut clock, 1);
+        assert_eq!(clock.v_now, 2184.0);
+        change(&mut lp, &mut clock, 1.0);
+        assert_eq!(
+            due_of(&clock, is_tail),
+            Some(2404.0),
+            "lunge zakończony w 2184"
+        );
+        while due_of(&clock, is_tail).is_some() && clock.v_now < 5000.0 {
+            frames(&mut lp, &mut clock, 1);
+        }
+        assert_eq!(clock.v_now, 2408.0);
+    }
+
+    /// R-RUSTPORT-P4-413 r2 (U3): plany klocków już odpalonych nie zalegają bez zmiany prędkości — po ciosie (klocek
+    /// `BodyDone` odpalony) i zaplanowaniu ogona zostaje wyłącznie plan ogona; po odpaleniu ogona i kolejnym planie —
+    /// znów tylko żywe klocki.
+    #[test]
+    fn plany_odpalonych_klockow_nie_zalegaja() {
+        let (mut lp, mut clock) = run_start(RafMock::default(), 1.0);
+        assert_eq!(lp.raf_plans.len(), 1, "plan ciosu");
+        frames(&mut lp, &mut clock, 10);
+        assert_eq!(lp.env.body.log, vec![("cios", 1160.0)]);
+        let live: Vec<u64> = clock.timers.iter().map(|t| t.id).collect();
+        assert_eq!(lp.raf_plans.len(), 1, "tylko plan ogona");
+        assert!(lp.raf_plans.iter().all(|(id, _)| live.contains(id)));
     }
 
     /// Strażnik planu: plan niezgodny z kwantyzacją `due` (inna klatka) nie jest przyjmowany — bez przeliczenia.
