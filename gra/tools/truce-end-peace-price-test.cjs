@@ -35,7 +35,7 @@ function check(name, cond, detail) {
 }
 
 const ENTRY_SRC = [
-  'export { truceEndPriceRule, pickTruceEndSettlementPlan, truceEndOfferReason } from \'./game/diplomacy-truce-end-price\';',
+  'export { truceEndPriceRule, pickTruceEndSettlementPlan, truceEndOfferReason, executeTruceEndSettlement } from \'./game/diplomacy-truce-end-price\';',
   'export {',
   '  truceEndTickPair, truceEndToWarCore, truceEndAcceptCore, truceEndSettleCore, truceEndPriceFor,',
   '} from \'./game/diplomacy-peace-lock\';',
@@ -175,6 +175,46 @@ function expiringPair(w, a, b, initiator) {
       m.truceEndOffer && m.truceEndOffer.fromOwnerId === 7 && m.truceEndOffer.toOwnerId === 0 && w.inbox[0].ownerId === 7, m);
     check('(d) oferta nie zawiera płatności ani wojny w turze wygaśnięcia', w.settle.length === 0 && w.warCalls.length === 0);
   }
+  // (d0) cena 0 (quotePn ≤ 0) → brak oferty w skrzynce gracza i brak wpisu oferty; wojna wraca (wpis przez declareWarAfterTruce).
+  {
+    const w = makeWorld();
+    w.quoteValue = 0;
+    expiringPair(w, 0, 7, 0);
+    w.army[0] = 100; w.army[7] = 100;
+    lib.truceEndTickPair(w.ports, 0, 7, 110);
+    const m = w.meta[w.key(0, 7)];
+    check('(d0) cena 0 gracz↔AI: brak oferty w skrzynce (inbox pusty)', w.inbox.length === 0, w.inbox);
+    check('(d0) cena 0: brak wpisu truceEndOffer w meta pary', m.truceEndOffer === undefined, m);
+    check('(d0) cena 0: wojna wraca przez declareWarAfterTruce (wpis „Rozejm wygasł, wojna wraca”)', w.warCalls.length === 1 && w.status[w.key(0, 7)] === 'wojna', w.warCalls);
+  }
+  {
+    const w = makeWorld();
+    w.quoteValue = 40;
+    expiringPair(w, 0, 7, 0);
+    w.army[0] = 100; w.army[7] = 100;
+    lib.truceEndTickPair(w.ports, 0, 7, 110);
+    check('(d0) cena > 0: oferta w skrzynce nadal składana (kontrola, brak regresji)', w.inbox.length === 1 && w.warCalls.length === 0, w.inbox);
+  }
+  // (d0b) cena 0 NIE dotyczy pary AI↔AI: bramka jest w gałęzi gracza; AI↔AI nadal kończy się pokojem, gdy płatność wchodzi.
+  {
+    const w = makeWorld();
+    w.humans.delete(0);
+    w.quoteValue = 0;
+    expiringPair(w, 7, 9, 7);
+    w.army[7] = 100; w.army[9] = 100;
+    lib.truceEndTickPair(w.ports, 7, 9, 110);
+    check('(d0b) cena 0 AI↔AI: nie wchodzi w gałąź gracza (brak oferty w skrzynce)', w.inbox.length === 0, w.inbox);
+    check('(d0b) cena 0 AI↔AI: zachowanie sprzed zmiany (pokój przez truceEndSettleCore, bez wojny)', w.finalize.length === 1 && w.warCalls.length === 0, { f: w.finalize, w: w.warCalls });
+  }
+  // (d0c) wycena NaN (brak liczby) traktowana jak brak ceny: wojna wraca, bez oferty (decyzja ZAŁOŻENIE, patrz raport).
+  {
+    const w = makeWorld();
+    w.quoteValue = NaN;
+    expiringPair(w, 0, 7, 0);
+    w.army[0] = 100; w.army[7] = 100;
+    lib.truceEndTickPair(w.ports, 0, 7, 110);
+    check('(d0c) wycena NaN gracz↔AI: brak oferty, wojna wraca', w.inbox.length === 0 && w.warCalls.length === 1, { i: w.inbox, w: w.warCalls });
+  }
   // (e) odmowa lub brak odpowiedzi = wojna (bez płatności).
   {
     const w = makeWorld();
@@ -262,8 +302,10 @@ function expiringPair(w, a, b, initiator) {
     && /const price = aiAiPeacePriceFor\(payeeId, payerId, 'pokoj'\);/.test(main));
   check('wiring: płatność po rozejmie AI↔AI sprawdza nieujemny bilans PW (pokojAiAi.minBilansPW), gracz wyłączony',
     /balanceOk: plan => isHuman\(payerId\) \|\| isHuman\(payeeId\)\s*\|\|\s*isAiAiPeaceBalanceAllowed\(price\.balanceFor\(plan\.coveredPn\), price\.loserBalanceFor\?\.\(plan\.coveredPn\)\)/.test(main));
-  check('wiring: settleTruceEndPrice wybiera plan przez pickTruceEndSettlementPlan (cena >0, pełny plan, fallback)',
-    /pickTruceEndSettlementPlan\(\{/.test(main) && /if \(pick == null\) return false;/.test(main));
+  check('wiring: settleTruceEndPrice wybiera i płaci przez executeTruceEndSettlement (cena >0, pełny plan, fallback)',
+    /executeTruceEndSettlement\(\{/.test(main) && /return pick != null;/.test(main) && !/pickTruceEndSettlementPlan\(\{/.test(main));
+  check('wiring: cena 0 w truceEndTickPair = powrót do wojny, bez oferty w skrzynce',
+    /!\(ports\.quotePn\(rule\.payerId, rule\.payeeId\) > 0\)\)\s*\{\s*truceEndToWarCore\(ports, a, b\);\s*return;/.test(lock));
   check('wiring: oferta po rozejmie niesie cenę przez truceEndOfferReason (port quotePn)',
     /truceEndOfferReason\(rule, ports\.isHuman\(rule\.payerId\), quote\)/.test(lock) && /ports\.quotePn\(rule\.payerId, rule\.payeeId\)/.test(lock)
     && /quotePn: \(payerId, payeeId\) => aiAiPeacePriceFor\(payeeId, payerId, 'pokoj'\)\.requiredPn/.test(main));

@@ -1766,9 +1766,11 @@ import {
   truceEndToWarCore,
   clearTruceEndOfferCore,
   truceEndAcceptCore,
+  truceEndPriceFor,
+  truceEndWindowOpen,
   type TruceEndPorts,
 } from './game/diplomacy-peace-lock';
-import { pickTruceEndSettlementPlan, type TruceEndPayCurrency } from './game/diplomacy-truce-end-price';
+import { executeTruceEndSettlement, type TruceEndPayCurrency } from './game/diplomacy-truce-end-price';
 import {
   computeIncomingPlayerAcceptNetPw,
   computePlayerAcceptanceSides,
@@ -13019,6 +13021,7 @@ async function boot(): Promise<void> {
           // B: inicjator rozejmu → adresatem propozycji pokoju po jego wygaśnięciu jest druga strona.
           truceInitiatorId: proposerId,
           truceEndOffer: undefined,
+          truceEndTurn: undefined,
         });
       } else {
         const metaS = getDiploPairMeta(proposerId, responderId);
@@ -13026,7 +13029,7 @@ async function boot(): Promise<void> {
           proposerId,
           responderId,
           startPeaceTreatyLock(
-            { ...metaS, truceInitiatorId: undefined, truceEndOffer: undefined, truceUntilTurn: undefined },
+            { ...metaS, truceInitiatorId: undefined, truceEndOffer: undefined, truceUntilTurn: undefined, truceEndTurn: undefined },
             turn,
             lockTurnsOverride,
           ),
@@ -13272,6 +13275,26 @@ async function boot(): Promise<void> {
         });
         setDiploRelation(gracz, o, next);
       }
+    }
+
+    /**
+     * R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-2-Q1 (r2): okno „po rozejmie” dla propozycji pokoju GRACZA do AI.
+     * open = tura w oknie (truceEndWindowOpen), para w wojnie albo z ofertą po rozejmie, a GRACZ płaci wg
+     * truceEndPriceRule. requiredPn = cena pokoju liczona jak w ofercie AI (aiAiPeacePriceFor, jak quotePn).
+     */
+    function truceEndWindowFor(
+      proposerId: number,
+      responderId: number,
+    ): { open: boolean; requiredPn: number; currency?: 'surowce' | 'miasto' } {
+      const closed = { open: false, requiredPn: 0 };
+      if (proposerId !== ME() || isHuman(responderId)) return closed;
+      const meta = getDiploPairMeta(proposerId, responderId);
+      if (!truceEndWindowOpen(meta.truceEndTurn, turn)) return closed;
+      if (getDiploRelation(proposerId, responderId).status !== 'wojna' && meta.truceEndOffer == null) return closed;
+      const rule = truceEndPriceFor(truceEndPorts(), proposerId, responderId);
+      if (rule == null || rule.payerId !== ME()) return closed;
+      const requiredPn = aiAiPeacePriceFor(rule.payeeId, rule.payerId, 'pokoj').requiredPn;
+      return requiredPn > 0 ? { open: true, requiredPn, currency: rule.currency } : closed;
     }
 
     function tickTruceExpiries(): void {
@@ -26957,6 +26980,8 @@ async function boot(): Promise<void> {
         // ZARZUT 6 (Evaluator r2): złoto to Skarbiec państwa (ownerTreasury), nie suma c.surowce miast (tam złota nie ma).
         // Brąz/żelazo/rudy: suma Spichlerzy miast właściciela (ownerResourceStock).
         payerStock: peaceTailPricingForPayer(proposerId, responderId, peaceTailWiringDeps()).holdings,
+        // R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-2-Q1 (r2): okno „po rozejmie” dla propozycji pokoju gracza (tylko proposer = gracz).
+        truceEndWindow: truceEndWindowFor(proposerId, responderId),
         // r3: płatnikiem ogona w ścieżce „gracz jest autorem pokoju" jest GRACZ (nie zawsze proponent: kontroferta, AI proponuje graczowi).
         playerStock: peaceTailPricingForPayer(ME(), proposerId, peaceTailWiringDeps()).holdings,
         // R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1 (r2): stopień technologii nośnika dopłaty D — techy gracza i drugiej strony.
@@ -27419,6 +27444,9 @@ async function boot(): Promise<void> {
           const cur = getDiploRelation(proposerId, responderId);
           setDiploRelation(proposerId, responderId, applyDiploEventTracked(proposerId, responderId, cur, 'trybut_oferta_przyjeta'));
         } else if (cywAction === 'pokoj') {
+          // R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-2-Q1 (r2): oferta AI po rozejmie (wpis w skrzynce) traci sens po pokoju
+          // z propozycji gracza — usuwamy wpis i meta (clearTruceEndOffer), zanim finalize zawiera pokój.
+          if (getDiploPairMeta(proposerId, responderId).truceEndOffer != null) clearTruceEndOffer(proposerId, responderId);
           finalizePeaceTreatyBetween(proposerId, responderId);
           // DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1 (Z7): akceptacja pokoju przez AI (propozycja ze stołu)
           // zostaje też w „Ważne" — sam toast znika po 4 s.
@@ -40840,7 +40868,9 @@ async function boot(): Promise<void> {
       const cityAssets = aiPeacePaymentAssets(payerId, payeeId, new Set<string>()).filter(a => a.kind === 'miasto');
       // Wybór planu (cena > 0, plan pełny, bilans PW, wariant zastępczy surowcami przy braku cedowalnego miasta)
       // — czysta funkcja pickTruceEndSettlementPlan (testowana w truce-end-peace-price-test.cjs).
-      const pick = pickTruceEndSettlementPlan({
+      // R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-2-Q1 (pkt 2): wybór + przelew przez executeTruceEndSettlement
+      // (przelew wołany dokładnie raz, tylko gdy plan ma pozycje; test: truce-end-settle-exec-test.cjs).
+      const pick = executeTruceEndSettlement({
         requiredPn: price.requiredPn,
         currency,
         planCity: () => peacePlanWithTail({
@@ -40855,19 +40885,16 @@ async function boot(): Promise<void> {
         // PW którejkolwiek strony po zapłacie. Wyjątek gracza (pokój zawsze do przyjęcia) — tylko gdy para jest AI↔AI.
         balanceOk: plan => isHuman(payerId) || isHuman(payeeId)
           || isAiAiPeaceBalanceAllowed(price.balanceFor(plan.coveredPn), price.loserBalanceFor?.(plan.coveredPn)),
-      });
-      if (pick == null) return false;
-      const plan = pick.plan;
-      if (plan.items.length > 0) {
+      }, payerId, payeeId, (plan, payer, payee) => {
         const basket: BasketItem[] = plan.items.map(i => ({
           typ: i.kind,
           id: i.id,
           ilosc: i.kind === 'miasto' ? 1 : i.amount,
           ...(i.kind === 'miasto' ? { cityPn: i.pn } : {}),
         }));
-        transferBasketItems(payerId, payeeId, basket);
-      }
-      return true;
+        transferBasketItems(payer, payee, basket);
+      });
+      return pick != null;
     }
 
     /**
