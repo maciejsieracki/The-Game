@@ -129,7 +129,7 @@ function wiring(src) {
   // P4: koniec rozejmu -> pokoj (finalizePeace z truce-peace)
   if (!/const evId = `truce-peace-\$\{turn\}-\$\{diploPairKey\(proposerId, responderId\)\}`;\s*if \(!warEventLog\.some\(e => e\.id === evId\)\) \{\s*warEventLog\.unshift\(/.test(src)) problems.push('P4 brak wpisu truce-peace');
   // P5: rozmowa gracz<->gracz
-  const p5 = blockAfter(src, "if (p.cmd.type === 'zaproponuj_pokoj') {\n        finalizePeaceTreatyBetween(p.fromOwnerId, p.toOwnerId);");
+  const p5 = blockAfter(src, "if (p.cmd.type === 'zaproponuj_pokoj') {\n        // P21c");
   if (!p5 || !/logPeaceVazne\(\s*p\.fromOwnerId\s*,\s*p\.toOwnerId/.test(p5)) problems.push('P5 rozmowa gracz<->gracz bez logPeaceVazne');
   // Bramka gracza w logPeaceVazne (AI<->AI bez wpisu) i dedup po id
   const lp = extractFunction(src, 'logPeaceVazne');

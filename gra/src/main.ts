@@ -23000,12 +23000,26 @@ async function boot(): Promise<void> {
      * aktywny (ABC-Q1: czysto turowy model, bez wspólnego ekranu). Zero UI w tym temacie —
      * jedyne wywołanie to hak testowy `__hotSeatTestDebug.proposeToHumanForTest` niżej.
      */
+    /** P21c (R-WEB-DIPLO-HUMAN-PEACE-AND-WAR-TRIBUTE-FIX-Q1): pokój między dwoma fotelami ludzkimi
+     *  wymaga trwającej wojny (jak AI w diplomacy-proposals.ts „Pokój — brak trwającej wojny").
+     *  Zwraca powód odrzucenia albo null (propozycja dopuszczona). */
+    function humanPeaceRejectReason(fromOwnerId: number, toOwnerId: number, cmd: AIDiplomacyCommand): string | null {
+      if (cmd.type !== 'zaproponuj_pokoj') return null;
+      if (getDiploRelation(fromOwnerId, toOwnerId).status === 'wojna') return null;
+      return 'Pokój — brak trwającej wojny';
+    }
+
     function proposeToHuman(
       fromOwnerId: number,
       toOwnerId: number,
       cmd: AIDiplomacyCommand,
       reason: string,
     ): string {
+      const odrzut = humanPeaceRejectReason(fromOwnerId, toOwnerId, cmd);
+      if (odrzut) {
+        showHintMessage(DIPLOMACY_MSG_PREFIX + ' ' + odrzut, 4000);
+        return '';
+      }
       const id = 'inter-human-diplo-' + fromOwnerId + '-' + toOwnerId + '-' + cmd.type + '-'
         + turn + '-' + interHumanDiplomacyInbox.length;
       interHumanDiplomacyInbox.push({ id, fromOwnerId, toOwnerId, cmd, reason, createdTurn: turn });
@@ -23045,8 +23059,9 @@ async function boot(): Promise<void> {
       if (action === 'reject') return true;
       if (action === 'counter') {
         if (!counterCmd) return false;
-        proposeToHuman(p.toOwnerId, p.fromOwnerId, counterCmd, counterReason ?? p.reason);
-        return true;
+        // P21c: proposeToHuman zwraca '' gdy strażnik odrzucił kontrpropozycję (np. pokój bez wojny).
+        const wyslano = proposeToHuman(p.toOwnerId, p.fromOwnerId, counterCmd, counterReason ?? p.reason);
+        return wyslano !== '';
       }
       // action === 'accept' — DOKŁADNIE ta sama gałąź akceptacji co resolvePendingDiplomacy()
       // dla AI, z jawną parą (p.fromOwnerId, p.toOwnerId) zamiast niejawnego (p.ownerId, ME()).
@@ -23054,6 +23069,12 @@ async function boot(): Promise<void> {
       // ustawia `rodzaj`, a rozejm AI idzie stołem (enqueueNegotiationFromAiCmd → applyProposalOutcome),
       // nie tą ścieżką; warunek `rodzaj !== 'rozejm'` był więc martwy i usunięty.
       if (p.cmd.type === 'zaproponuj_pokoj') {
+        // P21c: wojna mogła się zakończyć, gdy propozycja leżała w skrzynce — wtedy pokój odrzucony.
+        const odrzutPokoj = humanPeaceRejectReason(p.fromOwnerId, p.toOwnerId, p.cmd);
+        if (odrzutPokoj) {
+          showHintMessage(DIPLOMACY_MSG_PREFIX + ' ' + odrzutPokoj, 4000);
+          return false;
+        }
         finalizePeaceTreatyBetween(p.fromOwnerId, p.toOwnerId);
         // PEACEVAZNE (R-WEB-UI-DIPLO-PEACE-CONCLUDED-VAZNE-ALWAYS-Q1): pokój z udziałem gracza = wpis w „Ważne”
         // (logPeaceVazne ignoruje pary bez gracza, więc AI↔AI nie dodaje wpisu).

@@ -423,10 +423,15 @@ function readPayload(actionId: string, ctx: NegotiationModalContext): Negotiatio
       const mode = (document.getElementById('cdn-trib-mode') as HTMLSelectElement)?.value;
       const gpt = parseInt((document.getElementById('cdn-gpt') as HTMLInputElement)?.value ?? '10', 10);
       const turns = parseInt((document.getElementById('cdn-turns-trib') as HTMLInputElement)?.value ?? '0', 10);
+      const offer = mode === 'offer';
       return withSweetener({
         ...base,
-        tributeMode: mode === 'offer' ? 'offer' : 'demand',
+        tributeMode: offer ? 'offer' : 'demand',
         goldPerTurn: gpt,
+        // P17b (R-WEB-DIPLO-HUMAN-PEACE-AND-WAR-TRIBUTE-FIX-Q1): w wojnie „zaproponuj trybut” idzie jako
+        // jednorazowy (goldOnce = goldPerTurn), jak w koszyku diplomacyTradeBasket — inaczej silnik tworzy
+        // trwałą wasalizację. Poza wojną bez zmian.
+        ...(offer && ctx.atWar ? { goldOnce: gpt } : {}),
         turns: turns > 0 ? turns : undefined,
       });
     }
