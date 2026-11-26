@@ -1,0 +1,46 @@
+diff --git a/gra/src/map/gen-helpers.ts b/gra/src/map/gen-helpers.ts
+index ac24feffc..cbcb53663 100644
+--- a/gra/src/map/gen-helpers.ts
++++ b/gra/src/map/gen-helpers.ts
+@@ -9777,6 +9777,41 @@ function topUpMainRiverCoastMouthGapsOnce(
+         if (tryAtKey(k)) { okPlace = true; break; }
+       }
+     }
++    if (!okPlace) {
++      // R-WEB-MAP-RIVER-MOUTH-GAP-FIX-Q1 (wariant 2b): w luce ponad limit usuń rzeki NIE-główne
++      // stojące w pobliżu brzegu (blokują pierwszy krok ujścia), potem ponów próbę ujścia w tym heksie.
++      const gapKeys = [...coastal]
++        .map((k) => ({ k, d: mouthDistNow.get(k) ?? coastal.size }))
++        .filter((x) => x.d > maxGap)
++        .sort((a, b) => b.d - a.d || parseHexKey(a.k).q - parseHexKey(b.k).q);
++      for (const { k } of gapKeys.slice(0, 4)) {
++        const { q: kq, r: kr } = parseHexKey(k);
++        const near = new Set<string>();
++        for (let dq = -2; dq <= 2; dq++) {
++          for (let dr = -2; dr <= 2; dr++) near.add(hexKey(kq + dq, kr + dr));
++        }
++        const idx: number[] = [];
++        for (let i = 0; i < gapCtx.riverPaths.length; i++) {
++          if (gapCtx.riverKinds[i] === 'main') continue;
++          if (gapCtx.riverPaths[i]!.some((p) => near.has(hexKey(p.q, p.r)))) idx.push(i);
++        }
++        if (idx.length === 0 || idx.length > 3) continue;
++        const removedKeys = new Set<string>();
++        for (const i of idx) for (const p of gapCtx.riverPaths[i]!) removedKeys.add(hexKey(p.q, p.r));
++        for (let i = gapCtx.riverPaths.length - 1; i >= 0; i--) {
++          if (idx.includes(i)) {
++            gapCtx.riverPaths.splice(i, 1);
++            gapCtx.riverKinds.splice(i, 1);
++          }
++        }
++        for (const p of gapCtx.riverPaths) for (const pp of p) removedKeys.delete(hexKey(pp.q, pp.r));
++        for (const hk of removedKeys) {
++          const hx = gapCtx.hexes[hk];
++          if (hx) hx.rzeka = { obecna: false, krawedzie: [] };
++        }
++        if (tryAtKey(k)) { okPlace = true; break; }
++      }
++    }
+     if (!okPlace) break;
+     placed++;
+   }

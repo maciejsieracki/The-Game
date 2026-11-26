@@ -1,0 +1,3 @@
+# Surowe wyjscie: node repro/r3-river-mouth-gap.cjs kontynenty 42 na BAZIE (gen-helpers.ts = e80d07efb), czas real 1m59.308s
+[civ] mapGen ms | prep=14 terrain=114 landSea=1384 relief=2036 coast=433 riversMain=76388 riversFill=36535 forest=91 deposits=184 starts=946 total=118124
+{"typ":"kontynenty","seed":42,"limitMaxGap":7,"zyskTolerancjiZiemia":null,"landMassesChecked":20,"mainRiverPaths":120,"badMasses":[{"size":265,"worstGap":15},{"size":145,"worstGap":11},{"size":12,"worstGap":12},{"size":12,"worstGap":9},{"size":10,"worstGap":10},{"size":590,"worstGap":10},{"size":1011,"worstGap":8},{"size":19,"worstGap":18}],"worstGapAll":18}

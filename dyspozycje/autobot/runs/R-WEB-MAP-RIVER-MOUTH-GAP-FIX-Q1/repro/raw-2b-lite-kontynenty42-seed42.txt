@@ -1,0 +1,9 @@
+TSC_EXIT=0
+[civ] mapGen ms | prep=18 terrain=149 landSea=1467 relief=2112 coast=389 riversMain=77687 riversFill=39699 forest=97 deposits=174 starts=1135 total=122925
+{"typ":"kontynenty","seed":42,"limitMaxGap":7,"zyskTolerancjiZiemia":null,"landMassesChecked":20,"mainRiverPaths":120,"badMasses":[{"size":265,"worstGap":15},{"size":145,"worstGap":11},{"size":12,"worstGap":12},{"size":12,"worstGap":9},{"size":10,"worstGap":10},{"size":590,"worstGap":10},{"size":1011,"worstGap":8},{"size":19,"worstGap":18}],"worstGapAll":18}
+
+real	2m4.210s
+user	2m2.990s
+sys	0m1.487s
+
+[exited with code 0]
