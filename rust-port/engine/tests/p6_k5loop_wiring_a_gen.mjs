@@ -1154,6 +1154,8 @@ if (process.env.WIRING_A_MOVE_ORDER_STEPS) {
   const cases = [];
   const firstStep = [];
   const doctrineCases = [];
+  const edgeCases = [];
+  const edgeFirst = [];
   const impassableBy = {};
   const N_MOVE = Number(process.env.WIRING_A_MOVE_ORDER_N ?? 900);
   const N_FIRST = Number(process.env.WIRING_A_MOVE_ORDER_NF ?? 400);
@@ -1365,11 +1367,163 @@ if (process.env.WIRING_A_MOVE_ORDER_STEPS) {
       rec = null;
       made += 1;
     }
+    // N-E1 (obrona, runda 1): przypadki przy KRAWEDZI planszy (kolumna 0, wiersz 0, `BF_COLS-1`, `BF_ROWS-1`). Pin:
+    // `_passableForUnit` poza plansza = true, wiec o kroku BFS przy krawedzi decyduje WYLACZNIE test granic `:18509`.
+    // Osobne ziarno LCG (stan glownego ziarna zachowany): przypadki z okna powyzej sa bajt w bajt jak przed dopiskiem,
+    // przypadki krawedzi doklejane na koniec `cases` / `firstStep` (pole `edge`).
+    {
+      const savedSeed = seed;
+      seed = (0xED6E0000 + BASES.indexOf(base)) >>> 0;
+      const EDGES = ['c0', 'cMax', 'r0', 'rMax'];
+      // Scena pinu ma ogrodzenie strefy gry (`_fencePlayableZone` `:4004-4013`: poza `PLAY_COL0..PLAY_COL1` x
+      // `PLAY_ROW0..PLAY_ROW1` = River), wiec w KAZDYM osiagalnym stanie bitwy BFS zatrzymuje sie na ogrodzeniu
+      // i nie dochodzi do krawedzi planszy. Dla kontraktu czystej funkcji (test granic `:18509` przy `_passableForUnit`
+      // poza plansza = true) przypadki krawedzi licza sie na scenie z ZDJETYM ogrodzeniem (River poza strefa -> Plains;
+      // Wall/Gate bez zmian), zapisanej jako osobna plansza `<scena>~bez-ogrodzenia`; kafle przywracane po przypadkach.
+      const B_PLAINS = 0; // `battle-terrain.ts:38`
+      const B_RIVER = 3; // `battle-terrain.ts:41`
+      const tilesT = bs.terrainMap.tiles;
+      const tilesSaved = Array.from(tilesT);
+      let unfenced = 0;
+      for (let c = 0; c < BF_COLS_PIN; c++) {
+        for (let r = 0; r < BF_ROWS_PIN; r++) {
+          const inPlay = c >= 10 && c <= 57 && r >= 23 && r <= 132; // PLAY_COL0..PLAY_COL1 x PLAY_ROW0..PLAY_ROW1 (`:667-670`)
+          if (!inPlay && tilesT[r * BF_COLS_PIN + c] === B_RIVER) { tilesT[r * BF_COLS_PIN + c] = B_PLAINS; unfenced += 1; }
+        }
+      }
+      if (unfenced < 4000 || bs._passableForUnit(all[0], 0, 0) !== true) throw new Error('zdjecie ogrodzenia: ' + unfenced);
+      const edgeBase = base.name + '~bez-ogrodzenia';
+      for (const mounted of [false, true]) {
+        const u = all.find((x) => !!x.mounted === mounted);
+        const out = [];
+        for (let c = 0; c < BF_COLS_PIN; c++) {
+          for (let r = 0; r < BF_ROWS_PIN; r++) if (!bs._passableForUnit(u, c, r)) out.push([c, r]);
+        }
+        impassableBy[edgeBase + (mounted ? '|1' : '|0')] = out;
+      }
+      const edgeLayout = (edge) => {
+        for (const u of all) { u.dead = false; u.fadingOut = false; u.routed = false; u.removed = false; }
+        const used = new Set();
+        const anchorC = edge === 'c0' ? 0 : edge === 'cMax' ? BF_COLS_PIN - 1 : ri(4, BF_COLS_PIN - 5);
+        const anchorR = edge === 'r0' ? 0 : edge === 'rMax' ? BF_ROWS_PIN - 1 : ri(20, 130);
+        for (const u of all) {
+          let ok = false;
+          for (let k = 0; k < 400 && !ok; k++) {
+            const c = anchorC + ri(-4, 4);
+            const r = anchorR + ri(-4, 4);
+            if (c < 0 || c >= BF_COLS_PIN || r < 0 || r >= BF_ROWS_PIN) continue;
+            if (used.has(ck(c, r)) || !bs._passableForUnit(u, c, r)) continue;
+            used.add(ck(c, r));
+            u.q = c; u.r = r;
+            ok = true;
+          }
+          if (!ok) return null;
+        }
+        for (const u of all) {
+          const x = rnd();
+          if (x < 0.04) u.dead = true;
+          else if (x < 0.07) u.routed = true;
+        }
+        bs.occByKey = new Map();
+        for (const u of all) if (!u.dead && !(u.routed && rnd() < 0.5)) bs.occByKey.set(ck(u.q, u.r), u);
+        // Jednostka wykonujaca: zywa, przeniesiona NA linie krawedzi (pole wolne i przejezdne), jesli to mozliwe.
+        const pool = live();
+        if (pool.length === 0) return null;
+        const ru = pick(pool);
+        const onEdge = (c, r) => (edge === 'c0' ? c === 0 : edge === 'cMax' ? c === BF_COLS_PIN - 1 : edge === 'r0' ? r === 0 : r === BF_ROWS_PIN - 1);
+        if (!onEdge(ru.q, ru.r)) {
+          const c = edge === 'c0' ? 0 : edge === 'cMax' ? BF_COLS_PIN - 1 : ru.q;
+          const r = edge === 'r0' ? 0 : edge === 'rMax' ? BF_ROWS_PIN - 1 : ru.r;
+          if (!bs.occByKey.has(ck(c, r)) && bs._passableForUnit(ru, c, r)) {
+            bs.occByKey.delete(ck(ru.q, ru.r));
+            ru.q = c; ru.r = r;
+            bs.occByKey.set(ck(c, r), ru);
+          }
+        }
+        return ru;
+      };
+      // Cel wzdluz krawedzi (2..8 pol) albo w glab planszy; zablokowane pola drogi zachlannej (wymusza BFS).
+      const edgeTarget = (ru, edge) => {
+        let tc;
+        let tr;
+        if (rnd() < 0.7) {
+          if (edge === 'c0' || edge === 'cMax') { tc = ru.q + ri(-1, 1); tr = ru.r + pick([-1, 1]) * ri(2, 8); }
+          else { tr = ru.r + ri(-1, 1); tc = ru.q + pick([-1, 1]) * ri(2, 8); }
+        } else { tc = ru.q + ri(-8, 8); tr = ru.r + ri(-8, 8); }
+        tc = Math.max(0, Math.min(BF_COLS_PIN - 1, tc));
+        tr = Math.max(0, Math.min(BF_ROWS_PIN - 1, tr));
+        return [tc, tr];
+      };
+      const blockGreedy = (ru, tc, tr) => {
+        const dc = Math.sign(tc - ru.q);
+        const dr = Math.sign(tr - ru.r);
+        const want = [[ru.q + dc, ru.r + dr], [ru.q + dc, ru.r], [ru.q, ru.r + dr]].filter(([c, r]) => !(c === ru.q && r === ru.r));
+        const others = all.filter((u) => u !== ru);
+        for (const [c, r] of want) {
+          if (rnd() < 0.85 && !bs.occByKey.has(ck(c, r)) && c >= 0 && c < BF_COLS_PIN && r >= 0 && r < BF_ROWS_PIN) {
+            const b = pick(others);
+            if (bs.occByKey.get(ck(b.q, b.r)) === b) bs.occByKey.delete(ck(b.q, b.r));
+            b.q = c; b.r = r; b.dead = false; b.fadingOut = false; b.routed = false;
+            bs.occByKey.set(ck(c, r), b);
+          }
+        }
+      };
+      const perE = Number(process.env.WIRING_A_MOVE_ORDER_NE ?? 80);
+      made = 0;
+      guard = 0;
+      while (made < perE && guard++ < perE * 20) {
+        const edge = EDGES[made % EDGES.length];
+        const ru = edgeLayout(edge);
+        if (!ru) continue;
+        setDoctrine(ru);
+        const [tc, tr] = edgeTarget(ru, edge);
+        if (rnd() < 0.8) blockGreedy(ru, tc, tr);
+        const snap = snapshot(ru);
+        rec = { kind: 'done', step: null, attack: null };
+        ru.playerOrder = { type: 'move', col: tc, row: tr };
+        let doneCalls = 0;
+        const ret = bs._performPlayerOrder(ru, () => { doneCalls += 1; });
+        edgeCases.push({
+          ...snap, base: edgeBase, order: 'move', target: [tc, tr], edge,
+          expect: {
+            ret, doneCalls, kind: rec.kind, step: rec.step, attack: rec.attack,
+            ...(rec.route !== undefined ? { route: rec.route, routeMax: rec.routeMax, routeAllow: rec.routeAllow } : {}),
+            orderAfter: ru.playerOrder.type,
+            lastAutoMoveFrom: ru.lastAutoMoveFrom ? [ru.lastAutoMoveFrom.q, ru.lastAutoMoveFrom.r] : null,
+          },
+        });
+        rec = null;
+        made += 1;
+      }
+      const perEF = Number(process.env.WIRING_A_MOVE_ORDER_NEF ?? 80);
+      made = 0;
+      guard = 0;
+      while (made < perEF && guard++ < perEF * 20) {
+        const edge = EDGES[made % EDGES.length];
+        const ru = edgeLayout(edge);
+        if (!ru) continue;
+        setDoctrine(ru);
+        const [tc, tr] = edgeTarget(ru, edge);
+        if (rnd() < 0.8) blockGreedy(ru, tc, tr);
+        const maxVisited = pick([1024, 1024, 1024, 2, 3, 5, 10, 25, 60, 200]);
+        const banned = rnd() < 0.4
+          ? [[ru.q, ru.r - 1], [ru.q + 1, ru.r], [ru.q, ru.r + 1], [ru.q - 1, ru.r]].filter(() => rnd() < 0.5)
+          : null;
+        const bannedSet = banned ? new Set(banned.map(([c, r]) => ck(c, r))) : null;
+        const snap = snapshot(ru);
+        const out = oRoute.call(bs, ru, tc, tr, maxVisited, bannedSet ? (c, r) => !bannedSet.has(ck(c, r)) : undefined);
+        edgeFirst.push({ ...snap, base: edgeBase, target: [tc, tr], maxVisited, banned, edge, expect: out == null ? null : out.split(',').map(Number) });
+        made += 1;
+      }
+      for (let i = 0; i < tilesSaved.length; i++) tilesT[i] = tilesSaved[i];
+      console.error(`${base.name} krawedz: ruch ${edgeCases.length} pierwszy-krok ${edgeFirst.length}`);
+      seed = savedSeed;
+    }
     console.error(`${base.name}: ruch ${cases.length} pierwszy-krok ${firstStep.length} hold/none ${doctrineCases.length} (${Date.now() - tS} ms)`);
   }
   const shaS = hash.digest('hex');
   if (shaS !== EXPECTED_SHA256) throw new Error('straznik SHA-256 pinu: ' + shaS + ' != ' + EXPECTED_SHA256);
-  const txt = JSON.stringify({ pin: PIN, pinSha256: shaS, bfCols: BF_COLS_PIN, bfRows: BF_ROWS_PIN, impassable: impassableBy, cases, firstStep, doctrineCases }) + '\n';
+  const txt = JSON.stringify({ pin: PIN, pinSha256: shaS, bfCols: BF_COLS_PIN, bfRows: BF_ROWS_PIN, impassable: impassableBy, cases: [...cases, ...edgeCases], firstStep: [...firstStep, ...edgeFirst], doctrineCases }) + '\n';
   const outPath = process.env.WIRING_A_OUT ?? join(here, 'p6_k5loop_wiring_a_pin_vectors', 'move_order_step_vectors.json');
   writeFileSync(outPath, txt);
   console.log(createHash('md5').update(txt).digest('hex') + '  ' + outPath);

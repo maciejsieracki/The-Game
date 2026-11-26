@@ -373,7 +373,8 @@ pub struct OrderDoctrine {
 pub enum PerformOrder {
     /// `hold` (`:18282-18285`): `done()`.
     Hold,
-    /// `_performSiegeManualOrder` (`:18286`, H3) obsługuje rozkaz: poza zakresem T3 (jawne u wołającego).
+    /// `_performSiegeManualOrder(ru, done)` (`:18286`, `:18435-18475`, H3) zwróciło `true` (obsłużyło rozkaz): poza
+    /// zakresem T3 (jawne u wołającego).
     SiegeManual,
     /// `none` + doktryna AUTO bez `manual`: `_executeGroupDoctrineStep(ru, meta, done)` (`:18288-18291`) z doktryną.
     Doctrine(StateDoctrine),
@@ -385,13 +386,18 @@ pub enum PerformOrder {
     Other,
 }
 
-/// Web `_performPlayerOrder(ru, done)` (`battleScene.ts:18280-18353`) dla `hold` / `none` / `move`. `siege_manual` =
-/// pierwsza bramka `_performSiegeManualOrder` (`:18436`: `siegeWallCol >= 0 && ru.side === 'atk' && ord.type !==
-/// 'move'`); gdy prawdziwa, rozkaz `none` przechodzi do oblężenia ręcznego (H3, poza zakresem). Wartość zwracana przez
-/// pin = `true` dla każdej gałęzi ([`perform_player_order_returns`]).
+/// Web `_performPlayerOrder(ru, done)` (`battleScene.ts:18280-18353`) dla `hold` / `none` / `move`.
+/// `siege_manual_handled` = WYNIK `_performSiegeManualOrder(ru, done)` (`:18286`, ciało `:18435-18475`, H3), nie sama
+/// jego pierwsza bramka (`:18436`: `siegeWallCol >= 0 && ru.side === 'atk' && ord.type !== 'move'`): po przejściu bramki
+/// pin może nadal zwrócić `false` (np. machina inna niż taran/wieża, `none` bez doktryny AUTO i bez celu strzału, `none`
+/// z doktryną AUTO po nieudanych próbach wspinaczki) i wtedy rozkaz `none` przechodzi dalej do gałęzi `none`
+/// (`:18287-18296`). Wymaganie dla H3: wołający liczy pełny wynik `_performSiegeManualOrder`, a nie samą bramkę.
+/// `hold` (`:18282`) jest sprawdzany przed oblężeniem ręcznym, a `move` jest z niego wyłączony bramką `ord.type !==
+/// 'move'`, więc ich wynik od tego argumentu nie zależy. Wartość zwracana przez pin = `true` dla każdej gałęzi
+/// ([`perform_player_order_returns`]).
 pub fn perform_player_order<G: MoveGrid + ?Sized, B: MoveOrderGates + ?Sized>(
     order: PlayerOrder,
-    siege_manual: bool,
+    siege_manual_handled: bool,
     doctrine: OrderDoctrine,
     mv: impl FnOnce() -> MoveOrderInput,
     grid: &G,
@@ -400,7 +406,7 @@ pub fn perform_player_order<G: MoveGrid + ?Sized, B: MoveOrderGates + ?Sized>(
     match order {
         PlayerOrder::Hold => PerformOrder::Hold,
         PlayerOrder::Other => PerformOrder::Other,
-        PlayerOrder::None if siege_manual => PerformOrder::SiegeManual,
+        PlayerOrder::None if siege_manual_handled => PerformOrder::SiegeManual,
         PlayerOrder::None => {
             let auto =
                 is_unit_doctrine_auto(doctrine.unit_doctrine, doctrine.has_group, doctrine.group);

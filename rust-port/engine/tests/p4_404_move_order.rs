@@ -465,6 +465,13 @@ fn rozkaz_ruchu_move_zgodny_z_pinem() {
             *cov.entry("pola-ostrzalu-niepuste".into()).or_default() += 1;
         }
         *cov.entry(class_of(&step, &inp)).or_default() += 1;
+        // N-E1: przypadki przy krawędzi planszy (scena z zdjętym ogrodzeniem, test granic BFS `:18509`).
+        if let Some(edge) = c.get("edge").and_then(Value::as_str) {
+            *cov.entry(format!("brzeg-{edge}")).or_default() += 1;
+            if c["expect"].get("route").is_some() {
+                *cov.entry("brzeg-bfs".into()).or_default() += 1;
+            }
+        }
     }
     report("move", &fails);
     eprintln!("pokrycie move: {cov:?}");
@@ -495,6 +502,10 @@ fn rozkaz_ruchu_move_zgodny_z_pinem() {
         .map(|(_, n)| *n)
         .sum();
     assert!(avoid >= 30, "ruch z unikiem cofania {avoid} < 30");
+    for k in ["brzeg-c0", "brzeg-cMax", "brzeg-r0", "brzeg-rMax"] {
+        at_least(&cov, k, 50);
+    }
+    at_least(&cov, "brzeg-bfs", 30);
     at_least(&cov, "pola-ostrzalu-niepuste", 20);
 }
 
@@ -562,6 +573,12 @@ fn pierwszy_krok_bfs_zgodny_z_pinem() {
                 bump("firingTiles+droga");
             }
         }
+        if let Some(edge) = c.get("edge").and_then(Value::as_str) {
+            bump(&format!("brzeg-{edge}"));
+            if want.is_some() {
+                bump("brzeg-droga");
+            }
+        }
         if steady && lamf.is_some() {
             bump("steady-lastAutoMoveFrom");
         }
@@ -576,6 +593,11 @@ fn pierwszy_krok_bfs_zgodny_z_pinem() {
         ("firingTiles", 30),
         ("firingTiles+droga", 20),
         ("steady-lastAutoMoveFrom", 20),
+        ("brzeg-c0", 50),
+        ("brzeg-cMax", 50),
+        ("brzeg-r0", 50),
+        ("brzeg-rMax", 50),
+        ("brzeg-droga", 60),
     ] {
         at_least(&cov, k, n);
     }
@@ -596,8 +618,14 @@ fn rozkaz_hold_none_zgodny_z_pinem() {
             Some("none") => PlayerOrder::None,
             o => panic!("rozkaz {o:?}"),
         };
+        // Generator pomija `none` atakującego przy murze (bramka `_performSiegeManualOrder` `:18436`, H3), więc
+        // w tych przypadkach oblężenie ręczne nie obsługuje rozkazu (`siege_manual_handled` = false).
         let siege_manual =
             int(&c["wallCol"]) >= 0 && c["side"] == "atk" && order == PlayerOrder::None;
+        assert!(
+            !siege_manual,
+            "#{i}: przypadek z bramką oblężenia ręcznego (H3)"
+        );
         let grid = boards.grid(c);
         let gates = gates_of(c);
         let got = perform_player_order(
@@ -632,6 +660,64 @@ fn rozkaz_hold_none_zgodny_z_pinem() {
 }
 
 /// `firingTiles` (`:18484-18498`): granice planszy, zasięg niecałkowity i ujemny, wróg nieżywy.
+/// N-E2: `siege_manual_handled` = WYNIK `_performSiegeManualOrder` (`:18286`). Gdy `true`, rozkaz `none` kończy się
+/// na oblężeniu ręcznym (H3); gdy `false` (także po przejściu bramki `:18436`), `none` idzie do gałęzi `:18287-18296`.
+/// `hold` jest sprawdzany przed oblężeniem ręcznym (`:18282`), a `move` jest z niego wyłączony (`ord.type !== 'move'`).
+#[test]
+fn oblezenie_reczne_tylko_gdy_obsluzone() {
+    let v = vectors();
+    let boards = Boards::new(&v);
+    let cases = v["doctrineCases"].as_array().expect("doctrineCases");
+    let c = cases
+        .iter()
+        .find(|c| c["order"] == "none" && c["expect"]["kind"] == "doctrine")
+        .expect("przypadek none z doktryną");
+    let grid = boards.grid(c);
+    let gates = gates_of(c);
+    let run = |order: PlayerOrder, handled: bool| {
+        perform_player_order(
+            order,
+            handled,
+            order_doctrine(c),
+            || move_input(c),
+            &grid,
+            &gates,
+        )
+    };
+    assert_eq!(run(PlayerOrder::None, true), PerformOrder::SiegeManual);
+    assert!(matches!(
+        run(PlayerOrder::None, false),
+        PerformOrder::Doctrine(_)
+    ));
+    assert_eq!(run(PlayerOrder::Hold, true), PerformOrder::Hold);
+    let mv = v["cases"].as_array().expect("cases")[0].clone();
+    let mgrid = boards.grid(&mv);
+    let mgates = gates_of(&mv);
+    let inp = move_input(&mv);
+    let target = PlayerOrder::Move {
+        col: inp.target.0,
+        row: inp.target.1,
+    };
+    let a = perform_player_order(
+        target,
+        true,
+        order_doctrine(&mv),
+        || inp.clone(),
+        &mgrid,
+        &mgates,
+    );
+    let b = perform_player_order(
+        target,
+        false,
+        order_doctrine(&mv),
+        || inp.clone(),
+        &mgrid,
+        &mgates,
+    );
+    assert_eq!(a, b);
+    assert!(matches!(a, PerformOrder::Move(_)));
+}
+
 #[test]
 fn pola_ostrzalu_brzegi() {
     let sh = |range: f64| FiringShooter {
