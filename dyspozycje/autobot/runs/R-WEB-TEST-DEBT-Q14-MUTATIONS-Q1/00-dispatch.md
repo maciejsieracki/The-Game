@@ -1,6 +1,6 @@
 # R-WEB-TEST-DEBT-Q14-MUTATIONS-Q1 — brakujące mutacje czerwone w naprawionych testach Q14 (dowód, że testy łapią regresję)
 
-DOMAIN: INFRA (testy) | Operator HAIKU 5.5 | runda 1/5 | BAZA = origin/main b610e71a62f68c5c3052d456facc0deebd86af72. Bez deployu, zero zmian w gra/src i gra/data (mutacje TYLKO na kopii poza repo; po pracy repo bez zmian).
+DOMAIN: INFRA (testy) | Operator HAIKU 5.5 | runda 1/5 | BAZA = origin/main f69561351f34503ff8983d473640c6eec5565904. Bez deployu, zero zmian w gra/src i gra/data (mutacje TYLKO na kopii poza repo; po pracy repo bez zmian).
 
 ## Kontekst
 FC Q14-D1 oznaczył NIE ZMIERZONO: mutacje czerwone dla wierszy 5, 11, 13 i 21 tabeli (runs/R-WEB-TEST-DEBT-Q14-D1/10-operator-claude.md i 50-final-control-claude.md — odczytaj z git show origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0:...), oraz mutacje A/B w Q14-D1B nie przez FC; w Q14-D2/E2 kilka naprawionych testów bez mutacji (war-allin-capital pin REF_OFF, atrybucja do f038fbd2c nie zreprodukowana — pre-f038 ai.ts się nie kompiluje). Cel: dla KAŻDEGO naprawionego testu bez mutacji pokazać, że czerwienieje po zmianie kodu gry, której pilnuje.
