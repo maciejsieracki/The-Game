@@ -1353,12 +1353,11 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     // (getBuiltBuildingIds/getUnlockedTechs/getCivKey/getCivBonusy używane już np. w buildHandelDetailCard).
     const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
     const walutaOdkryta = techs.includes('Waluta') || techs.includes('waluta');
-    // Pytanie 71/C (Maciej 2026-07-25): Mennica stoi wyłącznie w stolicy (pytanie
-    // 70/B) -> bramka Efektu 1 patrzy na CAŁE imperium, nie tylko to miasto.
+    // R-WEB-MINT-CAPITAL-ONLY-Q1 (odp. 8A): Mennica liczy się tylko z AKTUALNEJ stolicy
+    // (ownerHasMennica), bonus działa na całą cywilizację.
     // PYTANIE 83=B: budynek "stoi" nawet bez złota (nie burzymy go), ale EFEKT
     // (mnożnik) śpi bez aktualnego dostępu do złota -- dokładnie
-    // maMennicaEmpireWide z turn-economy.ts (maMennicaBuiltEmpireWide &&
-    // resolveOwnerZlotoAccess). ctx.maMennica poniżej idzie właśnie do
+    // ownersWithMennica z turn-economy.ts && resolveOwnerZlotoAccess. ctx.maMennica poniżej idzie właśnie do
     // cityYieldPerTurn tak samo jak silnik, więc musi być tym samym warunkiem.
     const maMennica = ownerHasMennica(city.ownerId) && (cfg.getOwnerHasZlotoAccess?.(city.ownerId) ?? true);
     const civKey = cfg.getCivKey?.(city.ownerId);
@@ -1504,17 +1503,27 @@ function ownerHasSpichlerz(ownerId: number): boolean {
 }
 
 /**
- * Czy właściciel ma Mennicę zbudowaną GDZIEKOLWIEK w imperium (nie tylko w
- * tym mieście) -- Maciej 2026-07-25, pytanie 71/C: Mennica stoi wyłącznie w
- * stolicy (pytanie 70/B), więc bramka Efektu 1 (Waluta+Mennica) musi patrzeć
- * na całe imperium, inaczej żadne miasto poza stolicą nie dostałoby mnożnika.
- * Spójne z turn-economy.ts ownersWithMennica() (ten sam union, liczony po
- * stronie panelu zamiast silnika tury).
+ * Czy właściciel ma Mennicę zbudowaną w AKTUALNEJ stolicy (R-WEB-MINT-CAPITAL-ONLY-Q1, odp. 8A,
+ * 2026-11-26). Bonus Waluta+Mennica działa na całą cywilizację, ale liczy się tylko z Mennicy
+ * w stolicy. Stolica z tego samego źródła co silnik (cfg.getCapitalCityId = capitalCityIdForOwner
+ * w main.ts, ten sam resolver co turn-economy ownersWithMennica()).
  */
 function ownerHasMennica(ownerId: number): boolean {
+  const capitalId = cfg.getCapitalCityId?.(ownerId) ?? null;
+  if (!capitalId) return false;
+  const ids = cfg.getBuiltBuildingIds?.(capitalId) ?? [];
+  return ids.includes('mennica');
+}
+
+/**
+ * Mennica stoi w mieście NIE będącym stolicą (osierocona po przeniesieniu/utracie stolicy).
+ * Nie daje bonusu -- panel pokazuje to osobną etykietą zamiast „Bez Mennicy".
+ */
+function ownerHasOrphanMennica(ownerId: number): boolean {
+  const capitalId = cfg.getCapitalCityId?.(ownerId) ?? null;
   const cities = cfg.getCities?.() ?? [];
   for (const c of cities) {
-    if (c.ownerId !== ownerId) continue;
+    if (c.ownerId !== ownerId || c.id === capitalId) continue;
     const ids = cfg.getBuiltBuildingIds?.(c.id) ?? [];
     if (ids.includes('mennica')) return true;
   }
@@ -11646,9 +11655,9 @@ function buildHandelDetailCard(
   const maBiblioteka = cityHasBibliotekaLine(built);
   const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
   const walutaOdkryta = techs.includes('Waluta') || techs.includes('waluta');
-  // Zadanie 1 (E1) + PYTANIE 83=B: Mennica dziala TYLKO gdy zbudowana
-  // (gdziekolwiek w imperium) ORAZ Waluta odkryta ORAZ cywilizacja MA TERAZ
-  // dostep do zlota (turn-economy.ts maMennicaEmpireWide && walutaOdkryta) --
+  // Zadanie 1 (E1) + PYTANIE 83=B + R-WEB-MINT-CAPITAL-ONLY-Q1: Mennica dziala TYLKO gdy zbudowana
+  // W AKTUALNEJ STOLICY ORAZ Waluta odkryta ORAZ cywilizacja MA TERAZ
+  // dostep do zlota (turn-economy.ts ownersWithMennica && walutaOdkryta) --
   // identyczna bramka jak silnik, zeby panel nigdy nie pokazywal aktywnego
   // mnoznika, ktorego silnik juz nie liczy.
   const maMennica = maMennicaBudynek && maDostepDoZlota;
@@ -11761,7 +11770,9 @@ function buildHandelDetailCard(
         ? `Mennica zbudowana i Waluta odkryta, ale mnożnik ŚPI: brak Złota w magazynie państwa — wraca sam po uzupełnieniu zapasu.`
         : maMennicaBudynek
           ? 'Mennica zbudowana, ale bez Waluty jeszcze nic nie mnoży (bramka: budynek + technologia, obie wymagane).'
-          : `Bez Mennicy — ${daninaLbl} netto bez mnożnika, niezależnie od tego czy Waluta jest odkryta.`,
+          : ownerHasOrphanMennica(city.ownerId)
+            ? 'Mennica stoi poza stolicą — jest nieaktywna; bonus liczy się tylko z Mennicy w stolicy.'
+            : `Bez Mennicy — ${daninaLbl} netto bez mnożnika, niezależnie od tego czy Waluta jest odkryta.`,
     maBiblioteka ? `Biblioteka dodaje % bonusu do Nauki (łącznie z Nauką z ${daninaLblGen}).` : `Nauka = wyłącznie udział z ${daninaLblGen} + budynki.`,
     `${HANDEL_ZAMOZNOSC_LABEL} nie trafia do skarbca — idzie do puli zamożności miasta.`,
     'Wealth mnoży pieniądz z lokalnego podatku po podziale. Dochód ze szlaków trafia osobno do skarbca i omija Wealth.',

@@ -418,9 +418,12 @@ if (twoCities.length < 2) {
     console.error('  wyjatek:', e && e.message);
   }
   assert(legacyOk, 'Stary zapis (Mennica w miescie regionalnym): advanceCityEconomy NIE rzuca wyjatku');
-  if (legacyOk && legacyResult && legacyResult.capital && withMennica.capital) {
-    assert(legacyResult.capital.pieniadzBrutto > noMennicaAnywhere.capital.pieniadzBrutto,
-      'Stary zapis: Mennica w regionalnym miescie WCIAZ aktywuje mnoznik dla CALEGO imperium (w tym stolicy)');
+  // R-WEB-MINT-CAPITAL-ONLY-Q1 (odp. 8A, 2026-11-26): stara asercja kodowala kontrakt sprzed
+  // zmiany ("mnoznik imperium z Mennicy w regionalnym miescie"). Nowy kontrakt: bonus liczy sie
+  // WYLACZNIE z Mennicy w aktualnej stolicy -- osierocona Mennica poza stolica nie mnozy nic.
+  if (legacyOk && legacyResult && legacyResult.capital && noMennicaAnywhere.capital) {
+    eq(legacyResult.capital.pieniadzBrutto, noMennicaAnywhere.capital.pieniadzBrutto,
+      'Stary zapis: Mennica w regionalnym miescie NIE mnozy (stolica bez Mennicy = mnoznik 1; MINT-CAPITAL-ONLY)');
   }
 
   // -------------------------------------------------------------------------
