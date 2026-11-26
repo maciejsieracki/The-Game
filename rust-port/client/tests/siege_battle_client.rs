@@ -1694,7 +1694,11 @@ fn fq_speed_bridge_zmiana_w_trakcie_cycle_i_panel() {
         n += 1;
         assert!(n < 200_000, "battle without end");
     }
-    on_grid(&c.source().seen.actions[from..], v_change, 64.0);
+    // Obrona r1 (U3 Evaluatora): the count of the checked x4 actions must be positive (an empty slice proves nothing).
+    assert!(
+        on_grid(&c.source().seen.actions[from..], v_change, 64.0) > 0,
+        "x4 actions on the 64 ms grid"
+    );
     // End screen: the speed may still change (the engine accepts it in `Finished`).
     c.set_siege_battle_speed(5, false)
         .expect("speed on the end screen");

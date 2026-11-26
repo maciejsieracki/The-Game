@@ -886,6 +886,75 @@ fn fq_speed_move_arrives_on_the_session_frame_grid() {
     assert!(bad == q, "nothing reached the scene");
 }
 
+/// R-RUSTPORT-P4-407-FQ-SPEED-BRIDGE-Q1 (obrona r1, U4 Evaluatora): [`BattlePlayback::set_frame_ms`] changes ONLY the
+/// session frame of [`BattlePlayback::opts`] (`tower_projectile` kept) and the check of every action applied after the
+/// change uses the new grid (`_setSpeedIdx`, `battleScene.ts:9518-9527`; `FF_STEP_MS = 16 * speedMul`, `:9419`), also
+/// for an action pushed before the change but not yet played. 16 -> 64 ms: the x4 arrival `t0 + 256` is accepted and
+/// played like the nominal one; 64 -> 16 ms: the same arrival is rejected (`ArriveAt`) and nothing reaches the scene.
+#[test]
+fn fq_speed_bridge_set_frame_ms_switches_the_grid_of_later_actions() {
+    let (_, q) = base();
+    let id = uid("atk0");
+    let (c, r) = {
+        let u = unit(&q, id);
+        (u.col, u.row)
+    };
+    let t0 = 1_024.0;
+    let mv = |arrive_at: f64| {
+        act(
+            t0,
+            BattleActionKindDto::Move {
+                id,
+                from_col: c,
+                from_row: r,
+                to_col: c + 1,
+                to_row: r,
+                arrive_at,
+            },
+        )
+    };
+    let run = |frame_from: f64, frame_to: f64, arrive_at: f64| {
+        let mut s = q.clone();
+        let mut pb = BattlePlayback::new(
+            &s,
+            PlaybackOpts {
+                tower_projectile: Some(ProjectileKind::Sling),
+                frame_ms: frame_from,
+            },
+        );
+        assert_eq!(pb.opts().frame_ms, frame_from);
+        pb.push_actions(&[mv(arrive_at)]).expect("push");
+        pb.set_frame_ms(frame_to);
+        assert_eq!(
+            pb.opts(),
+            PlaybackOpts {
+                tower_projectile: Some(ProjectileKind::Sling),
+                frame_ms: frame_to,
+            },
+            "only the frame changes"
+        );
+        let res = pb.play_until(&mut s, t0, 0.0);
+        (s, pb, res)
+    };
+    let (nominal, pb_n, rn) = run(16.0, 16.0, t0 + MOVE_STEP_MS);
+    assert_eq!(rn, Ok(()));
+    let (grid, pb_g, rg) = run(16.0, 64.0, t0 + 256.0);
+    assert_eq!(rg, Ok(()), "16 -> 64 ms: the x4 arrival is on the new grid");
+    assert_eq!(pb_g.calls(), pb_n.calls());
+    assert!(grid == nominal, "same scene as the nominal arrival");
+    let (bad, pb_b, rb) = run(64.0, 16.0, t0 + 256.0);
+    assert_eq!(
+        rb,
+        Err(PlaybackError::ArriveAt {
+            t0,
+            arrive_at: t0 + 256.0
+        }),
+        "64 -> 16 ms: the x4 arrival is off the new grid"
+    );
+    assert!(pb_b.calls().is_empty(), "nothing played");
+    assert!(bad == q, "nothing reached the scene");
+}
+
 /// Obrona r1 FQ-SPEED-Q1 (Z1, mutant R4): the `Shot` branch checks `land_at` on the grid of
 /// [`PlaybackOpts::frame_ms`], not of the constant 16 ms. `_schedule(RANGED_FLY_MS)` (`:9223`) fires in the first frame
 /// with `vNow >= due`: at `speedMul = 16` / `32` (frame 256 / 512 ms, `FF_STEP_MS = 16 * speedMul`, `:9419`) that is
