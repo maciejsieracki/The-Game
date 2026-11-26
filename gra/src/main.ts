@@ -1735,7 +1735,7 @@ import {
 // R-WEB-DIPLO-WAR-LIMIT-1-ERA-1-NATURAL-Q1: limit 1 wojna epoki + 1 naturalna per cywilizacja (flaga OFF = parytet).
 import {
   isWarLimitEnabled, parseTypWojny, setWarLimitEnabledForTest, warLimitAllows, type TypWojny,
-  getWarTypFromMeta, withWarTyp, collectWarTypes, type WarPairRow,
+  getWarTypFromMeta, withWarTyp, collectWarTypes, isWarForLimit, type WarPairRow,
   type PendingPrincipalWar, pendingPrincipalCounts,
 } from './game/diplomacy-war-limit';
 import {
@@ -26142,10 +26142,13 @@ async function boot(): Promise<void> {
       const rows: WarPairRow[] = [];
       for (const oid of allPowerOwnerIds()) {
         if (oid === ownerId || oid === pomijany) continue;
-        const atWar = getDiploRelation(ownerId, oid).status === 'wojna';
+        // R-WEB-WAR-LIMIT-TRUCE-COUNT-Q1: rozejm (pokoj + truceUntilTurn/truceEndOffer) nadal liczy się jako wojna.
+        const relStatus = getDiploRelation(ownerId, oid).status;
+        const pairMeta = getDiploPairMeta(ownerId, oid);
+        const atWar = isWarForLimit(relStatus, pairMeta);
         rows.push({
           otherId: oid, atWar, isBarbarian: isBarbarian(oid), excluded: false,
-          meta: atWar ? getDiploPairMeta(ownerId, oid) : undefined,
+          meta: atWar ? pairMeta : undefined,
         });
       }
       const wars = collectWarTypes(rows);

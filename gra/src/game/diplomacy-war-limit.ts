@@ -71,6 +71,17 @@ export function withWarTyp(meta: DiploPairMeta, typ: TypWojny): DiploPairMeta {
   return out;
 }
 
+/**
+ * R-WEB-WAR-LIMIT-TRUCE-COUNT-Q1: para liczy się w limicie wojen, gdy jest w 'wojna' ALBO w rozejmie
+ * (status 'pokoj' z truceUntilTurn lub oferta pokoju po rozejmie truceEndOffer). Rozejm to pauza
+ * tej samej wojny; dopiero pokój (bez rozejmu) zwalnia limit.
+ */
+export function isWarForLimit(status: string, meta: DiploPairMeta | undefined): boolean {
+  if (status === 'wojna') return true;
+  if (status !== 'pokoj' || meta == null) return false;
+  return meta.truceUntilTurn != null || meta.truceEndOffer != null;
+}
+
 /** Wpis relacji cywilizacji `ownerId` z jedną inną stroną (wejście dla collectWarTypes). */
 export interface WarPairRow {
   /** Strona druga pary. */
