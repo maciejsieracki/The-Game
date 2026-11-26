@@ -695,6 +695,7 @@ import {
   cityHasWaterAccess,
   militaryFoodConsumptionWithSpichlerz,
   setArmyFoodUpkeepResolver,
+  setOwnerCapitalCityResolver,
   spichlerzSolArmyBonusActive,
   applyStolarniaDrewnoMapInflow,
   refreshEconomyFoodTotals,
@@ -10323,6 +10324,10 @@ async function boot(): Promise<void> {
       }
       return cachedUpkeep;
     });
+    // R-WEB-MINT-CAPITAL-ONLY-Q1: bonus Mennicy w silniku liczy się z TEGO SAMEGO źródła stolicy
+    // co panel i produkcja (capitalCityIdForOwner, z przeniesieniem stolicy), nie z heurystyki
+    // „pierwsze miasto w tablicy". Hoisting: capitalCityIdForOwner jest deklaracją tej samej funkcji.
+    setOwnerCapitalCityResolver((oid: number) => capitalCityIdForOwner(oid));
     /** N-1A: nazwa pierwszego miasta gracza z miasta_cywilizacji[0]. */
     let clusterPlayerStartCityName = playerStartCityName(data.civs, _menuCivId, data.cityNamesPools);
     /** Miasta-państwa tego samego typu — spawn po założeniu pierwszego miasta gracza. */

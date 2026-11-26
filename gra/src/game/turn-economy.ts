@@ -250,23 +250,42 @@ function routeCashForCity(total: number, maritime: number, civKey: string | unde
 }
 
 /**
- * Właściciele (ownerId), którzy mają Mennicę zbudowaną w KTÓRYMKOLWIEK ze swoich
- * miast -- liczone RAZ na tick (Maciej 2026-07-25, pytanie 71/C: skoro Mennica
- * stoi wyłącznie w stolicy, bramka Efektu 1 musi sprawdzać całe imperium, nie
- * "to miasto", inaczej żadne miasto poza stolicą nie dostałoby mnożnika).
+ * Resolver AKTUALNEJ stolicy ownera (ownerId -> cityId | null). Ustawiany raz przez main.ts
+ * (ten sam `capitalCityIdForOwner`, z którego korzysta panel miasta). Brak resolvera (testy,
+ * stare wywołania) = heurystyka: pierwsze miasto ownera w tablicy `cities`.
  */
+let _ownerCapitalCityResolver: ((ownerId: number) => string | null) | null = null;
+
+export function setOwnerCapitalCityResolver(
+  resolver: ((ownerId: number) => string | null) | null,
+): void {
+  _ownerCapitalCityResolver = resolver;
+}
+
 /**
- * R-WEB-MINT-CAPITAL-ONLY-Q1 (odp. 8A, 2026-11-26): bonus Mennicy (Waluta+Mennica) działa na całą
- * cywilizację, ale liczy się WYŁĄCZNIE z Mennicy stojącej w aktualnej stolicy właściciela. Stolica =
- * ta sama heurystyka co `isCapital` w silniku tury (pierwsze miasto ownera w `cities`). Mennica
- * osierocona poza stolicą (po przeniesieniu/utracie stolicy) nie daje bonusu. Set = bonus raz na
- * cywilizację, nawet gdy stoją dwie.
+ * Właściciele (ownerId), którzy mają Mennicę zbudowaną w AKTUALNEJ stolicy (R-WEB-MINT-CAPITAL-ONLY-Q1,
+ * odp. 8A, 2026-11-26): bonus Waluta+Mennica działa na całą cywilizację, ale liczy się WYŁĄCZNIE z
+ * Mennicy stojącej w stolicy (pytanie 71/C: bramka Efektu 1 patrzy na imperium, nie na pojedyncze
+ * miasto). Mennica osierocona poza stolicą nie daje bonusu. Set = bonus raz na cywilizację, nawet
+ * gdy stoją dwie. Liczone RAZ na tick.
  */
 export function ownersWithMennica(
   cities: ReadonlyArray<{ id: string; ownerId: number }>,
   builtByCity: ReadonlyMap<string, readonly string[]>,
 ): Set<number> {
   const owners = new Set<number>();
+  const resolver = _ownerCapitalCityResolver;
+  if (resolver) {
+    for (const c of cities) {
+      if (owners.has(c.ownerId)) continue;
+      const capId = resolver(c.ownerId);
+      if (capId !== null && capId === c.id && (builtByCity.get(c.id) ?? []).includes('mennica')) {
+        owners.add(c.ownerId);
+      }
+    }
+    return owners;
+  }
+  // Heurystyka bez resolvera: stolica = pierwsze miasto ownera w `cities` (jak isCapital w tickach).
   const capitalSeen = new Set<number>();
   for (const c of cities) {
     const isCapital = !capitalSeen.has(c.ownerId);
