@@ -1,0 +1,4 @@
+# R-WEB-MEASURE-ERA-WAR-Q2-Q1 — MEASQ2 (#136): pomiar wojen epoki po FALACH 906/908 z polem epoki cywilizacji i powodem końca wojny
+STATUS: DISPATCH | DOMAIN: GAME (pomiar pod decyzje; zero zmian gra/src) | tag MEASQ2 | priorytet 2 (slot dopełniony na polecenie właściciela; Chromium stabilny w ostatnich runach)
+GOAL: zmierzyć na żywo (Chromium) wojny epoki: seed 4242 i 7 do tury 120 (segmentami, slot zapisu po każdym odcinku, wznowienia po awarii Chromium), z polem EPOKI każdej cywilizacji w rekordach tur i logiem powodu końca (__diploWarEndLog), i odpowiedzieć na pytania, na które poprzedni pomiar odpowiedział NIE ZMIERZONO: tura wejścia w epokę każdej strony i opóźnienie start − wejście (FALA 906), liczba wojen naraz u jednej cywilizacji, powód i czas końca wojen epoki (FALA 908), wojna gracza w epoce, wciąganie sojuszników.
+BAZA: args.cand = origin/main (pełny SHA)

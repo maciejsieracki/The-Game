@@ -1,0 +1,4 @@
+# R-WEB-HARNESS-NNS-GATE-ENDTURN-Q1 — NNSQ12 (#156): harness testów live przechodzi bramkę „Zakończ turę” (NNS) w turze 1 (odp. 12A: bramka zostaje, dług harnessu)
+STATUS: DISPATCH | DOMAIN: GAME (harness testów; zero zmian gra/src) | tag NNSQ12 | priorytet 3 (odblokowuje pomiary live)
+GOAL: testy i runnery live nie zatrzymują się na bramce „Zakończ turę” (prognoza skarbca/spichlerza < 0 przy domyślnych podatkach 30/60/10 już w turze 1; diagnoza LEDGER-B r3: to bramka NNS, nie zawieszenie). Właściciel (12A) zostawia bramkę w grze; naprawiamy harness: wspólny helper (np. gra/tools/_live-ready.cjs) ustawia przed turami podatki/stan tak, by bramka przepuszczała, albo używa dozwolonego haka civTest do końca tury — bez zmiany reguły gry. Dowód: 3 ziarna (4242, 777, 7) × 60 tur przechodzą endTurn bez zatrzymania, t57 bez zawieszenia.
+BAZA: args.cand = origin/main (pełny SHA)
