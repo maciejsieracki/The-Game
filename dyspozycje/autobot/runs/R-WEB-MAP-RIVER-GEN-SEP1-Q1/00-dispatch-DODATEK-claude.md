@@ -36,3 +36,8 @@ Rzeki to drzewo: na każdą główną ≥ 4 średnie dopływy, na każdy średni
 3. Domknięcie ≈15 testów rzek/map/pinów (tabela test|przed|po|powód; ciężkie >10 min NIE ZMIERZONO z wypisaniem), piny przepięte TYLKO z uzasadnieniem, nowy test proporcji z mutacją czerwoną.
 4. Dokumentacja: MAPA-RZEKI-SPEC.md (reguła proporcji 1:4:16 i kolejność generacji), MAPA-KANON-GENERATOR.md.
 ## Zakazy jak w r1; Operator Haiku; nie pytaj właściciela (DECISION_REQUIRED).
+
+## KOREKTA DODATKU RUNDY 3 (audyt odpowiedzi właściciela, 2026-11-26)
+1. LIMIT UJŚĆ: zdanie „Limit ujść zostaje 7 (FALA 170); jeśli niewykonalny → DECISION_REQUIRED” było BŁĘDNE. Właściciel w odp. 3B (R-WEB-MAP-RIVER-MOUTH-GAP-FIX-Q1) JUŻ zaakceptował złagodzenie obietnicy 7 pól (wartości nie podał). Zadanie: po przebudowie ZMIERZ rzeczywisty najgorszy odstęp ujść na zestawie map, zaproponuj wartość progu (z uzasadnieniem) i przepnij test; DECISION_REQUIRED tylko gdy proponowana wartość >15 albo zmienia wygląd wybrzeża zauważalnie.
+2. 2× ZIARNA RZEK (odp. 3, polecenie właściciela): „zwiększyć dwukrotnie ilość ziarna dla rzek na wszystkich mapach” (źródła/zalążki rzek; siatka N×N wg tieru kreatora Mało 18 / Normalnie 14 / Dużo 10, 2× = ok. N/√2). RIVRECON ustalił, że sama siatka źródeł nie podwaja liczby rzek. Dołącz do pomiaru wykonalności: ile rzek poszczególnych poziomów daje 2× źródeł (osobno i razem z odstępem 1) i zastosuj 2× źródeł, o ile mieści się w regule proporcji i budżecie czasu generowania.
+3. Interpretacja proporcji: wiążące „co najmniej 4 średnie na główną i 4 małe na średnią” (≥1:4:16); właściciel napisał też „trzy razy więcej” — jeśli pomiar wykaże, że 1:3:9 jest wykonalne a 1:4:16 nie, zwróć obie liczby w DECISION_REQUIRED.
