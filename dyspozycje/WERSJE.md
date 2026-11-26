@@ -1,3 +1,9 @@
+## ROBOCZA d868d786 -- 2026-11-26 -- FALA 919: Mennica osierocona: nieaktywna, stara znika po nowej w stolicy (testowa)
+
+- Po ukończeniu Mennicy w stolicy wszystkie inne Mennice tej cywilizacji stojące poza stolicą znikają automatycznie (komunikat dla gracza); Mennica poza stolicą pozostaje nieaktywna i nie znika, dopóki nie powstanie nowa w stolicy; powrót stolicy do miasta z istniejącą Mennicą reaktywuje bonus (nowy moduł mennica-orphan.ts, hook w applyProductionCompleted)
+- Weryfikacja: tsc 0; logic 213/213; mint-orphan 28/0 (mutacje guardu czerwone); mint-capital-only 8/0; waluta-mennica 61/0; trade-routes-income 135/0; main-guard 21/0; ai-test 297/0, tech-tree 20, research 33, unit-replace 21, combat 6 (FC); vite build OK
+- Limity: NIE ZMIERZONO: przeglądarka; WYBURZANIE BUDYNKÓW NIE ISTNIEJE w grze (kryterium właściciela 'zawsze można ją wyburzyć' niespełnione — pytanie 22, demolishBuildingIds to martwy kod); komunikat o zastąpieniu tylko hint, bez wpisu Ważne; dług MINTDEBT (#165)
+
 ## ROBOCZA 06b7ded2 -- 2026-11-26 -- FALA 918: Pokój po rozejmie: cena 0 = symboliczna opłata, surowce w oknie gracza (testowa)
 
 - Gdy wyliczona cena pokoju po rozejmie wynosi 0, pokój nadal jest oferowany za symboliczną opłatą 1 Pn (klucz pokojPoRozejmie.minimalnaOplataSymbolicznaPn w diplomacy-war-peace-params.json), zamiast wojny; para AI↔AI z warunkiem nieujemnego bilansu; w oknie propozycji gracza przy różnicy sił >20% i braku cedowalnego miasta (stolica, ostatnie miasto) pokój przyjmowany za pokrycie ceny surowcami (filtr forbidden w truceEndWindowFor)
