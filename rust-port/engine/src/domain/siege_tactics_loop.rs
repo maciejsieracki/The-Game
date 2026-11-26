@@ -826,7 +826,7 @@ impl<B: LoopBody> SiegeLoop<B> {
                 continue;
             };
             let end_old = first_frame_at_or_after(p.anchor, p.frame, p.target);
-            if end_old <= now || !(frame > 0.0) {
+            if end_old <= now || frame.is_nan() || frame <= 0.0 {
                 // Odcinek `_raf` już zakończony (zostaje nominalne `then`) albo brak siatki: bez przeliczenia.
                 continue;
             }
