@@ -1,0 +1,17 @@
+{
+  "label": "PRZED-S2",
+  "query": "&riverStage=2",
+  "errors": [],
+  "fps": [],
+  "steps": {
+    "outSteps": 40,
+    "inStepsFromOut": 6,
+    "inStepsTotal4x": 12,
+    "inStepsTotal8x": 18
+  },
+  "worldGenMs": 393,
+  "exitedFoundingBanner": true,
+  "overlayZalozMiasto": true,
+  "uiZoomPct": "100%",
+  "totalMs": 269086
+}
