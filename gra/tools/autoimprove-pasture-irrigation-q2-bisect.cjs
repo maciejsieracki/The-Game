@@ -54,6 +54,11 @@ const TECHS = new Set([
 const SEA = ['morze', 'plytkie_morze', 'wybrzeze'];
 const FLAT = new Set(['laka', 'rownina']);
 const SEED = Number(process.env.SEED || 1);
+// R-WEB-IMPROVEMENT-MASS-ON-DISCOVERY-Q1 (AUTOIMPMASS): tura ODKRYCIA technologii odblokowujacych ulepszenia.
+// DISC_PAST = tura odkrycia „Oswojenie zwierzat” (trzoda, tech bydlo), DISC_IRR = tura odkrycia technologii irygacji (kanoniczna nazwa „Gospodarka wodna”, TECH_CANONICAL: 'Irygacja' → 'Gospodarka wodna').
+// Domyslnie 1 = obie technologie znane od startu (dawne zachowanie). Pomiar „od odkrycia” = firstPast-DISC_PAST / firstIrr-DISC_IRR.
+const DISC_PAST = Number(process.env.DISC_PAST || 1), DISC_IRR = Number(process.env.DISC_IRR || 1);
+const techsAt = t => new Set([...TECHS].filter(x => (x !== 'Oswojenie zwierząt' || t >= DISC_PAST) && (x !== 'Gospodarka wodna' || t >= DISC_IRR)));
 
 const map = generateMap(48, 36, SEED, 'kontynenty');
 const riverSet = new Set();
@@ -98,7 +103,7 @@ for (let t = 1; t <= TURNS; t++) {
   const gBefore = gaps();
   const forestAtStart = new Set(Object.keys(map.hexes).filter(k => map.hexes[k].nakladka === 'las')); // wycinka trwa kilka tur: heks pod wyrab nie jest jeszcze kandydatem na farme
   const picks = pickAutoImprovements({
-    cities, ownerId: PID, map, territoryNodes: tn, placedImprovements: new Map(placed), pracaAvailable: pool, unlockedTechs: TECHS,
+    cities, ownerId: PID, map, territoryNodes: tn, placedImprovements: new Map(placed), pracaAvailable: pool, unlockedTechs: techsAt(t),
     pracaSurplusThreshold: 30, demandDriven: true, resourceDeficitKeys: [], civArchetype: 'grecy', playerEra: ERA, cityLimitExhausted: false,
     getFocus: () => 'zrownowazone', pracaBudgetPercent: 33,
     getPracaBudgetPercent: c => (ZERO_CITY && c.id === ZERO_CITY ? LOW_PCT : 33),
@@ -148,11 +153,11 @@ for (let t = 1; t <= TURNS; t++) {
   }
   if (nPast > 0 && firstPast == null) firstPast = t;
   if (nIrr > 0 && firstIrr == null) firstIrr = t;
-  if (t <= GROW && gBefore.farmNoPast > 0 && nPast === 0 && nIrr === 0 && pool > 500) starved++;
+  if (t <= GROW && t >= DISC_PAST && gBefore.farmNoPast > 0 && nPast === 0 && nIrr === 0 && pool > 500) starved++; // od tury odkrycia trzody (przed nia brak techno = nie glod)
   if (t === GROW) gapGrow = gaps();
   per.push(`${t}:f${nFarm}p${nPast}i${nIrr}`);
 }
 const end = gaps();
 if (process.env.DEBUG_HEX) for (const hk of process.env.DEBUG_HEX.split(';')) console.error('HEX', hk, JSON.stringify(placed.get(hk) ?? null), JSON.stringify({ ...map.hexes[hk], ulepszenia: undefined }).slice(0, 500));
-console.log(JSON.stringify({ orderViol, src: SRC.replace(/.*\/(wt-[^/]+|[^/]+)\/gra\/src$/, '$1'), cities: cities.length, starved, firstPast, firstIrr, gapGrow, end, pool: Math.round(pool), perTurn: process.env.VERBOSE ? per.join(' ') : undefined }));
+console.log(JSON.stringify({ orderViol, src: SRC.replace(/.*\/(wt-[^/]+|[^/]+)\/gra\/src$/, '$1'), seed: SEED, discPast: DISC_PAST, discIrr: DISC_IRR, cities: cities.length, starved, firstPast, firstIrr, afterDiscPast: firstPast == null ? null : firstPast - DISC_PAST, afterDiscIrr: firstIrr == null ? null : firstIrr - DISC_IRR, gapGrow, end, pool: Math.round(pool), perTurn: process.env.VERBOSE ? per.join(' ') : undefined }));
 fs.rmSync(temp, { recursive: true, force: true });

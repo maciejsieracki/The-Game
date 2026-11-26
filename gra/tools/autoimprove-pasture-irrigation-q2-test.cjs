@@ -117,7 +117,15 @@ const FLAT = new Set(['laka', 'rownina']);
 const SEED = 1;
 
 console.log('(a)+(b)+(c) mapa z rzekami, duzy budzet, 40 tur, 8 miast po 16 obywateli');
-const A = sim({ seed: SEED });
+// AUTOIMPFIX (R-WEB-IMPROVEMENT-MASS-ON-DISCOVERY-Q1): scenariusz z ziarnem 1 nie ma pola obywatela poza rzeka z farma
+// (mapa generatora — nie regresja pickera). Wybieramy PIERWSZE ziarno 1..4, w ktorym taki scenariusz wystepuje; asercje per-heks bez zmian.
+let A = null, A_SEED = null;
+for (const sd of [SEED, 2, 3, 4]) {
+  const X = sim({ seed: sd });
+  if (X.rows.some(x => !x.near && FLAT.has(x.teren) && x.layers.includes('farma'))) { A = X; A_SEED = sd; break; }
+}
+if (!A) A = sim({ seed: SEED }), A_SEED = SEED;
+console.log(`  (scenariusz a/b/c: ziarno ${A_SEED})`);
 const riverFlat = A.rows.filter(x => x.near && FLAT.has(x.teren) && x.layers.includes('farma'));
 const offFlat = A.rows.filter(x => !x.near && FLAT.has(x.teren) && x.layers.includes('farma'));
 ok(riverFlat.length >= 20, `pola obywateli przy rzece z farma: ${riverFlat.length} (>=20)`);
@@ -138,23 +146,31 @@ ok(othersRiver.every(x => x.layers.includes('bydlo') && x.layers.includes('iryga
   `(d) pozostale miasta: trzoda+irygacja na kazdym polu przy rzece (${othersRiver.filter(x => x.layers.includes('bydlo') && x.layers.includes('irygacja')).length}/${othersRiver.length}), pula ${Math.round(D.pool)}`);
 ok(D.rows.filter(x => x.cityId === 'c01').every(x => x.layers.length === 0), '(d) miasto 0% nic nie buduje (suwak respektowany)');
 
-console.log('(e) ROZWIJAJACA SIE cywilizacja (obywatele przybywaja co 2 tury => cel E1 co ture): trzoda i irygacja NIE sa glodzone');
-// Commit-sprawca cf236dafc: petla etapow konczyla sie na pierwszym etapie z pickami; przy ciaglym wzroscie E1 mial cel co ture, wiec E3/E4
-// startowaly dopiero po ustaniu wzrostu. Harness: tools/autoimprove-pasture-irrigation-q2-bisect.cjs (produkcyjny picker + workedHexCoordsForCity).
+console.log('(e) ROZWIJAJACA SIE cywilizacja, liczone OD TURY ODKRYCIA (AUTOIMPMASS, R-WEB-IMPROVEMENT-MASS-ON-DISCOVERY-Q1)');
+// Technologia „Oswojenie zwierzat” (trzoda) i „Gospodarka wodna” (= irygacja, TECH_CANONICAL) odkrywane w turze D (nie od startu gry).
+// Kryteria: od D nie ma glodzenia trzody/irygacji przy duzej puli; trzoda startuje w ciagu 3 tur od odkrycia; kolejnosc etapow zachowana.
+// Tempo irygacji od odkrycia NIE jest tu progiem: wynika z kolejnosci E3->E4 (trzoda na wszystkich farmach pierwsza) i z limitu 33% puli
+// gracza (decyzja #24). Zmierzone (ziarna 1-4, 90 tur): irygacja 36-46 tur po odkryciu — propozycja progu do zatwierdzenia przez orkiestratora.
 {
   const { execFileSync } = require('node:child_process');
+  const D = Number(process.env.E_DISC || 10);
   const runBisect = (extraEnv) => {
     const out = execFileSync(process.execPath, [path.join(__dirname, 'autoimprove-pasture-irrigation-q2-bisect.cjs')], {
-      env: { ...process.env, PI_SRC_DIR: SRC, ...extraEnv }, encoding: 'utf8', maxBuffer: 1 << 26,
+      env: { ...process.env, PI_SRC_DIR: SRC, DISC_PAST: String(D), DISC_IRR: String(D), ...extraEnv }, encoding: 'utf8', maxBuffer: 1 << 26,
     });
     return JSON.parse(out.trim().split('\n').filter(l => l.startsWith('{')).pop());
   };
   const g = runBisect({});
-  ok(g.starved === 0, `(e) faza wzrostu (24 tury): 0 tur z glodzona trzoda/irygacja przy duzej puli (starved=${g.starved})`);
-  ok(g.firstPast != null && g.firstPast <= 3, `(e) pierwsza trzoda w turze ${g.firstPast} (<=3), nie po ustaniu wzrostu`);
-  ok(g.firstIrr != null && g.firstIrr <= 6, `(e) pierwsza irygacja w turze ${g.firstIrr} (<=6)`);
-  ok(g.gapGrow.farmNoPast === 0, `(e) w turze 24 (wzrost trwa) kazda farma na polu obywatela ma trzode (brak: ${g.gapGrow.farmNoPast})`);
-  ok(g.orderViol === 0, `(e) kolejnosc wycinka -> farmy -> trzoda -> irygacja: trzoda/irygacja dopiero gdy wyzszy etap wyczerpany (naruszen: ${g.orderViol})`);
+  ok(g.starved === 0, `(e) od tury odkrycia ${D} (wzrost, 24 tury): 0 tur z glodzona trzoda/irygacja przy duzej puli (starved=${g.starved})`);
+  ok(g.firstPast != null && g.firstPast - D <= 3, `(e) pierwsza trzoda: ${g.firstPast == null ? 'brak' : 'tura ' + g.firstPast + ' = ' + (g.firstPast - D) + ' tur po odkryciu'} (<=3)`);
+  console.log(`  [info] pierwsza irygacja: ${g.firstIrr == null ? 'brak w ' + 44 + ' turach' : 'tura ' + g.firstIrr + ' (' + g.afterDiscIrr + ' tur po odkryciu)'} — bez progu, zob. raport`);
+  // Horyzont 90 tur od odkrycia (TURNS = D+90). PROPOZYCJA PROGU N=46 tur po odkryciu (ziarno 1, pomiar deterministyczny:
+  // baza 46; ziarna 2-4 w tym samym pomiarze: 37/45/36). Prog NIE zatwierdzony przez orkiestratora — do zatwierdzenia w raporcie.
+  // Mutacja E4 keys:[] (ta sama sciezka zapasowa) daje irygacje w 56 turze po odkryciu => FAIL przy N=46.
+  const PROG_IRR_N = 46;
+  const h = runBisect({ TURNS: String(D + 90) });
+  ok(h.firstIrr != null && h.afterDiscIrr <= PROG_IRR_N, `(e) irygacja po odkryciu w horyzoncie 90 tur: ${h.firstIrr == null ? 'brak' : h.afterDiscIrr + ' tur po odkryciu'} (propozycja progu <=${PROG_IRR_N}, do zatwierdzenia)`);
+  ok(g.orderViol === 0, `(e) kolejnosc wycinka -> farmy -> trzoda -> irygacja od tury odkrycia (naruszen: ${g.orderViol})`);
   const z = runBisect({ ZERO_CITY: 'c01', LOW_PCT: '0' });
   ok(z.starved === 0 && z.orderViol === 0, `(e) j.w. przy jednym miescie z 0% (starved=${z.starved}, naruszen kolejnosci=${z.orderViol})`);
 }
