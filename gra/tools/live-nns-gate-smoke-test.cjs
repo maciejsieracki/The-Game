@@ -183,7 +183,9 @@ async function main() {
   }
   const sum = { seed: SEED, mutant: MUTANT, status: res.status, turnsDone: res.turnsDone || 0, resumed: resume, gateStop: res.gateStop, pageErrors: res.errors.length, exception: res.exception || null, elapsedS: Math.round((Date.now() - T0) / 1000) };
   console.log(JSON.stringify(sum));
-  process.exit(res.status === 'PASS' || res.status === 'PAUSED' ? 0 : (res.status.startsWith('INFRA') ? 2 : 1));
+  // Kody wyjścia: 0 = PASS (pełne tury zrobione); 3 = PAUSED (niepełny bieg, do wznowienia przez slot — NIE zielony);
+  // 2 = INFRA; 1 = FAIL. Konsument sprawdzający tylko kod wyjścia nie może uznać PAUSED za PASS.
+  process.exit(res.status === 'PASS' ? 0 : (res.status === 'PAUSED' ? 3 : (res.status.startsWith('INFRA') ? 2 : 1)));
 }
 
 main();
