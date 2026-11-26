@@ -1,3 +1,9 @@
+## ROBOCZA 766479f1 -- 2026-11-26 -- FALA 921: Czyszczenie liczników zmęczenia wojną przy eliminacji cywilizacji (testowa)
+
+- Po eliminacji cywilizacji znikają jej wpisy zmęczenia wojną (warWearinessByPairKey) — nowa funkcja pruneWarWearinessPairs wywoływana w eliminateOwner; bez zmiany balansu; martwe stałe wojen epoki (L2) pozostawione celowo, bo przypięte testami
+- Weryfikacja: FC PASS-WITH-NOTES; tsc 0; logic 213/213; war-weariness-elimination 11/0 (mutacja czerwona); ai-war-weariness-peace 96/0; diplo-weariness-forced-peace 14/0; vite build OK; MD5 odczytany z GitHub Raw
+- Limity: Wiązanie testu z main.ts częściowo tekstowe; zapisy sprzed poprawki mogą zawierać stare wpisy zmęczenia; live w przeglądarce NIE ZMIERZONO
+
 ## ROBOCZA 9e1fddb1 -- 2026-11-26 -- FALA 920: Efekty stolicy w ekonomii tury wg prawdziwej stolicy (testowa)
 
 - Efekty zależne od stolicy w ekonomii tury (korupcja: dystans od stolicy, Mennica; pre-pass D2) liczone z jednego helpera opartego na autorytatywnej stolicy (capitalCityIdForOwnerForTick, resolver z main.ts) zamiast heurystyki pierwsze miasto w tablicy; bez resolvera zachowanie dotychczasowe; wartości balansu bez zmian, różnica tylko w imperiach z przeniesioną stolicą
