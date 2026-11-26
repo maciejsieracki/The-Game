@@ -35,7 +35,7 @@ function check(name, cond, detail) {
 }
 
 const ENTRY_SRC = [
-  'export { truceEndPriceRule } from \'./game/diplomacy-truce-end-price\';',
+  'export { truceEndPriceRule, pickTruceEndSettlementPlan, truceEndOfferReason } from \'./game/diplomacy-truce-end-price\';',
   'export {',
   '  truceEndTickPair, truceEndToWarCore, truceEndAcceptCore, truceEndSettleCore, truceEndPriceFor,',
   '} from \'./game/diplomacy-peace-lock\';',
@@ -82,7 +82,7 @@ async function buildBundle(outfile, plugins) {
 function makeWorld() {
   const world = {
     meta: {}, status: {}, army: {}, humans: new Set([0]), warCalls: [], finalize: [], inbox: [], settle: [],
-    settleOk: true, seq: 0,
+    settleOk: true, seq: 0, quoteValue: 50,
   };
   const key = (a, b) => (a < b ? a + '|' + b : b + '|' + a);
   world.key = key;
@@ -102,6 +102,7 @@ function makeWorld() {
     removeOffer: id => { world.inbox = world.inbox.filter(x => x.id !== id); },
     finalizePeace: (p, r) => { world.finalize.push([p, r]); world.status[key(p, r)] = 'pokoj'; },
     settlePeacePrice: (payer, payee, cur) => { world.settle.push([payer, payee, cur]); return world.settleOk; },
+    quotePn: () => world.quoteValue,
   };
   return world;
 }
@@ -260,7 +261,12 @@ function expiringPair(w, a, b, initiator) {
     /function aiAiPeacePriceFor\(/.test(main) && /price: \(winner, loser, kind\) => aiAiPeacePriceFor\(winner, loser, kind\)/.test(main)
     && /const price = aiAiPeacePriceFor\(payeeId, payerId, 'pokoj'\);/.test(main));
   check('wiring: płatność po rozejmie AI↔AI sprawdza nieujemny bilans PW (pokojAiAi.minBilansPW), gracz wyłączony',
-    /!isHuman\(payerId\) && !isHuman\(payeeId\)\s*&& !isAiAiPeaceBalanceAllowed\(price\.balanceFor\(plan\.coveredPn\), price\.loserBalanceFor\?\.\(plan\.coveredPn\)\)/.test(main));
+    /balanceOk: plan => isHuman\(payerId\) \|\| isHuman\(payeeId\)\s*\|\|\s*isAiAiPeaceBalanceAllowed\(price\.balanceFor\(plan\.coveredPn\), price\.loserBalanceFor\?\.\(plan\.coveredPn\)\)/.test(main));
+  check('wiring: settleTruceEndPrice wybiera plan przez pickTruceEndSettlementPlan (cena >0, pełny plan, fallback)',
+    /pickTruceEndSettlementPlan\(\{/.test(main) && /if \(pick == null\) return false;/.test(main));
+  check('wiring: oferta po rozejmie niesie cenę przez truceEndOfferReason (port quotePn)',
+    /truceEndOfferReason\(rule, ports\.isHuman\(rule\.payerId\), quote\)/.test(lock) && /ports\.quotePn\(rule\.payerId, rule\.payeeId\)/.test(lock)
+    && /quotePn: \(payerId, payeeId\) => aiAiPeacePriceFor\(payeeId, payerId, 'pokoj'\)\.requiredPn/.test(main));
   check('wiring: płatność miastem = tylko miasta płatnika (order [] bez ogona)',
     /peaceTailPricingForPayer\(payerId, payeeId, peaceTailWiringDeps\(\), \[\]\)/.test(main));
   check('wiring: płatność surowcami = ogon bez miast', /\.\.\.peaceTailPricingFor\(payerId, payeeId\),\s*duePn: price\.requiredPn, cities: \[\], maxCities: 0/.test(main));
@@ -281,6 +287,71 @@ function expiringPair(w, a, b, initiator) {
   check('M-PAYER wykryty: remis 100:100 mutant każe płacić adresatowi (czysta: inicjator 7)',
     libMpayer.truceEndPriceRule({ initiatorId: 7, a: 7, b: 9, armyA: 100, armyB: 100 }).payerId === 9
     && lib.truceEndPriceRule({ initiatorId: 7, a: 7, b: 9, armyA: 100, armyB: 100 }).payerId === 7);
+
+  // ---- Część 5: wybór planu płatności (pickTruceEndSettlementPlan) i treść oferty — czyste funkcje ----
+  // Te same funkcje wywołuje settleTruceEndPrice w main.ts; plan (planCity/planTail) podają tu atrapy.
+  const pickPlan = lib.pickTruceEndSettlementPlan;
+  const planOf = (full, items = 1) => ({ full, coveredPn: full ? 50 : 10, items: Array.from({ length: items }, (_, i) => i) });
+  const okBal = () => true;
+  check('(g) cena 0 → brak pokoju (pokój za darmo zabroniony), nawet przy pełnym planie',
+    pickPlan({ requiredPn: 0, currency: 'surowce', planCity: () => planOf(true), planTail: () => planOf(true), balanceOk: okBal }) === null);
+  check('(g) cena ujemna / NaN → brak pokoju',
+    pickPlan({ requiredPn: -5, currency: 'surowce', planCity: () => planOf(true), planTail: () => planOf(true), balanceOk: okBal }) === null
+    && pickPlan({ requiredPn: NaN, currency: 'surowce', planCity: () => planOf(true), planTail: () => planOf(true), balanceOk: okBal }) === null);
+  check('(h) surowce: plan niepełny → brak pokoju (wojna)',
+    pickPlan({ requiredPn: 50, currency: 'surowce', planCity: () => planOf(true), planTail: () => planOf(false), balanceOk: okBal }) === null);
+  check('(h) surowce: pełny plan bez pozycji → brak pokoju',
+    pickPlan({ requiredPn: 50, currency: 'surowce', planCity: () => planOf(true), planTail: () => planOf(true, 0), balanceOk: okBal }) === null);
+  check('(h) surowce: bilans PW nie przechodzi → brak pokoju',
+    pickPlan({ requiredPn: 50, currency: 'surowce', planCity: () => planOf(true), planTail: () => planOf(true), balanceOk: () => false }) === null);
+  check('(i) miasto: pełny plan miastem → płaci miastem',
+    (() => { const r = pickPlan({ requiredPn: 50, currency: 'miasto', planCity: () => planOf(true), planTail: () => planOf(true), balanceOk: okBal }); return r && r.currency === 'miasto'; })());
+  check('(i) miasto: brak cedowalnego miasta (plan miastem niepełny) → wariant zastępczy surowcami z tego koszyka',
+    (() => { const r = pickPlan({ requiredPn: 50, currency: 'miasto', planCity: () => planOf(false), planTail: () => planOf(true), balanceOk: okBal }); return r && r.currency === 'surowce'; })());
+  check('(i) miasto: ani miasto, ani surowce nie pokrywają ceny → brak pokoju',
+    pickPlan({ requiredPn: 50, currency: 'miasto', planCity: () => planOf(false), planTail: () => planOf(false), balanceOk: okBal }) === null);
+  {
+    const rule1 = { band: 'within', payerId: 0, payeeId: 7, currency: 'surowce' };
+    const rule2 = { band: 'outside', payerId: 7, payeeId: 0, currency: 'miasto' };
+    const t1 = lib.truceEndOfferReason(rule1, true, 50);
+    const t2 = lib.truceEndOfferReason(rule2, false, 120);
+    check('(j) treść oferty: gracz płaci surowcami — kierunek, waluta i wartość w tekście',
+      /Ty płacisz/.test(t1) && /surowcami/.test(t1) && /ok\. 50/.test(t1), t1);
+    check('(j) treść oferty: AI płaci miastem — kierunek, waluta i wartość w tekście',
+      /AI płaci/.test(t2) && /miastem/.test(t2) && /ok\. 120/.test(t2), t2);
+  }
+  {
+    const w = makeWorld();
+    expiringPair(w, 0, 7, 7);
+    w.army[0] = 100; w.army[7] = 100;
+    w.quoteValue = 77;
+    lib.truceEndTickPair(w.ports, 0, 7, 110);
+    check('(j) oferta w skrzynce gracza niesie cenę z portu quotePn (ok. 77) i kierunek (AI płaci/Ty płacisz)',
+      w.inbox.length === 1 && /ok\. 77/.test(w.inbox[0].reason) && /surowcami/.test(w.inbox[0].reason), w.inbox);
+  }
+
+  // ---- Część 6: mutanty czerwone na pickTruceEndSettlementPlan ----
+  const MFREE = path.resolve(__dirname, '.truce-end-peace-price-mfree.cjs');
+  const MFULL = path.resolve(__dirname, '.truce-end-peace-price-mfull.cjs');
+  const MFALL = path.resolve(__dirname, '.truce-end-peace-price-mfall.cjs');
+  const mfree = mutantPlugin(PRICE, 'if (!Number.isFinite(input.requiredPn) || input.requiredPn <= 0) return null;', 'if (!Number.isFinite(input.requiredPn)) return null;');
+  const libMfree = await buildBundle(MFREE, [mfree.plugin]);
+  check('M-FREE zastosowany', mfree.info.applied === 1, mfree.info);
+  check('M-FREE wykryty: cena 0 przy pełnym planie (mutant wpuszcza pokój za darmo)',
+    libMfree.pickTruceEndSettlementPlan({ requiredPn: 0, currency: 'surowce', planCity: () => planOf(true), planTail: () => planOf(true), balanceOk: okBal }) !== null
+    && pickPlan({ requiredPn: 0, currency: 'surowce', planCity: () => planOf(true), planTail: () => planOf(true), balanceOk: okBal }) === null);
+  const mfull = mutantPlugin(PRICE, 'if (tailPlan.full && tailPlan.items.length > 0 && input.balanceOk(tailPlan)) {', 'if (input.balanceOk(tailPlan)) {');
+  const libMfull = await buildBundle(MFULL, [mfull.plugin]);
+  check('M-FULL zastosowany', mfull.info.applied === 1, mfull.info);
+  check('M-FULL wykryty: niepełny plan surowcami (mutant przyjmuje pokój)',
+    libMfull.pickTruceEndSettlementPlan({ requiredPn: 50, currency: 'surowce', planCity: () => planOf(true), planTail: () => planOf(false), balanceOk: okBal }) !== null
+    && pickPlan({ requiredPn: 50, currency: 'surowce', planCity: () => planOf(true), planTail: () => planOf(false), balanceOk: okBal }) === null);
+  const mfall = mutantPlugin(PRICE, '  const tailPlan = input.planTail();', "  if (input.currency === 'miasto') return null;\n  const tailPlan = input.planTail();");
+  const libMfall = await buildBundle(MFALL, [mfall.plugin]);
+  check('M-FALL zastosowany', mfall.info.applied === 1, mfall.info);
+  check('M-FALL wykryty: brak wariantu zastępczego przy braku miasta (mutant = wojna)',
+    libMfall.pickTruceEndSettlementPlan({ requiredPn: 50, currency: 'miasto', planCity: () => planOf(false), planTail: () => planOf(true), balanceOk: okBal }) === null
+    && pickPlan({ requiredPn: 50, currency: 'miasto', planCity: () => planOf(false), planTail: () => planOf(true), balanceOk: okBal }) !== null);
 
   console.log(`\nWynik: ${pass} PASS, ${fail} FAIL`);
   process.exit(fail === 0 ? 0 : 1);

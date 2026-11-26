@@ -7,7 +7,7 @@
 import type { DiploPairMeta } from './diplomacy-pn-engine';
 import type { AllianceObligation } from './diplomacy-treaties';
 import { WAR_PEACE_PARAMS } from './diplomacy-war-peace-profile';
-import { truceEndPriceRule, type TruceEndPayCurrency, type TruceEndPriceRule } from './diplomacy-truce-end-price';
+import { truceEndOfferReason, truceEndPriceRule, type TruceEndPayCurrency, type TruceEndPriceRule } from './diplomacy-truce-end-price';
 
 /** Liczba tur pokoju po akceptacji traktatu pokoju / rozejmu. */
 export const PEACE_TREATY_LOCK_TURNS = 10;
@@ -252,6 +252,8 @@ export interface TruceEndPorts {
    * Zwraca true tylko, gdy płatność pokrywa cenę w całości (brak pełnej zapłaty = pokoju nie ma).
    */
   settlePeacePrice(payerId: number, payeeId: number, currency: TruceEndPayCurrency): boolean;
+  /** Wartość ceny pokoju po rozejmie dla pary (do treści oferty w skrzynce; cena liczona na żywo). */
+  quotePn?(payerId: number, payeeId: number): number;
 }
 
 /** Usuwa ofertę pokoju po rozejmie (meta + własny wpis w skrzynce). */
@@ -338,7 +340,13 @@ export function truceEndTickPair(ports: TruceEndPorts, a: number, b: number, tur
     // AI składa propozycję: stroną składającą jest ta, która NIE jest człowiekiem.
     const ai = ports.isHuman(target) ? initiator : target;
     const human = ai === target ? initiator : target;
-    const inboxId = ports.enqueueOffer(ai, 'Rozejm wygasł — propozycja pokoju stałego z ceną (odmowa = wojna)');
+    const rule = truceEndPriceFor(ports, a, b);
+    // Port quotePn opcjonalny (stare atrapy bez wyceny): bez niego treść bez kwoty, reguła i tak liczona w chwili zgody.
+    const quote = rule != null && ports.quotePn ? ports.quotePn(rule.payerId, rule.payeeId) : null;
+    const reason = rule != null && quote != null
+      ? truceEndOfferReason(rule, ports.isHuman(rule.payerId), quote)
+      : 'Rozejm wygasł — propozycja pokoju stałego z ceną (odmowa = wojna)';
+    const inboxId = ports.enqueueOffer(ai, reason);
     ports.setMeta(a, b, {
       ...ports.getMeta(a, b),
       truceEndOffer: { turn, fromOwnerId: ai, toOwnerId: human, inboxId },

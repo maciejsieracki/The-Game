@@ -62,3 +62,58 @@ export function truceEndPriceRule(input: TruceEndPriceInput): TruceEndPriceRule 
   const weakerId = armyA < armyB ? a : b;
   return { band: 'outside', payerId: weakerId, payeeId: other(weakerId), currency: 'miasto' };
 }
+
+/** Minimalny kształt planu płatności (zgodny z peacePlanWithTail w main.ts). */
+export interface TruceEndPlanLike {
+  readonly full: boolean;
+  readonly coveredPn: number;
+  readonly items: ReadonlyArray<unknown>;
+}
+
+export interface TruceEndPlanInput<P extends TruceEndPlanLike> {
+  /** Wymagana cena w jednostkach wyceny (z aiAiPeacePriceFor). */
+  requiredPn: number;
+  /** Waluta z reguły ceny (truceEndPriceRule). */
+  currency: TruceEndPayCurrency;
+  /** Plan płatności miastem (tylko miasta płatnika). */
+  planCity: () => P;
+  /** Plan płatności surowcami (ogon złoto → brąz → żelazo → rudy, bez miast). */
+  planTail: () => P;
+  /** Dodatkowy warunek (np. bilans PW dla pary AI↔AI). */
+  balanceOk: (plan: P) => boolean;
+}
+
+/**
+ * R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-Q1: wybór planu płatności po końcu rozejmu. Czysta funkcja (testowalna).
+ * - cena ≤ 0 (lub nieskończona) → null: pokój po rozejmie nie może być za darmo;
+ * - waluta 'miasto': najpierw plan miastem; gdy niepełny (brak cedowalnego miasta, np. stolica/ostatnie miasto)
+ *   → wariant zastępczy: plan surowcami z tego samego koszyka (założenie Operatora wg dispatchu, pkt 4);
+ * - plan musi pokrywać cenę w całości (full), mieć pozycje i przejść balanceOk; inaczej null (brak pokoju, wojna).
+ */
+export function pickTruceEndSettlementPlan<P extends TruceEndPlanLike>(
+  input: TruceEndPlanInput<P>,
+): { plan: P; currency: TruceEndPayCurrency } | null {
+  if (!Number.isFinite(input.requiredPn) || input.requiredPn <= 0) return null;
+  if (input.currency === 'miasto') {
+    const cityPlan = input.planCity();
+    if (cityPlan.full && cityPlan.items.length > 0 && input.balanceOk(cityPlan)) {
+      return { plan: cityPlan, currency: 'miasto' };
+    }
+  }
+  const tailPlan = input.planTail();
+  if (tailPlan.full && tailPlan.items.length > 0 && input.balanceOk(tailPlan)) {
+    return { plan: tailPlan, currency: 'surowce' };
+  }
+  return null;
+}
+
+/**
+ * Treść oferty pokoju po rozejmie w skrzynce gracza: kierunek, waluta i wartość ceny (bez nazw technicznych).
+ * payerIsHuman: true → płaci gracz; false → płaci AI.
+ */
+export function truceEndOfferReason(rule: TruceEndPriceRule, payerIsHuman: boolean, requiredPn: number): string {
+  const kto = payerIsHuman ? 'Ty płacisz' : 'AI płaci';
+  const czym = rule.currency === 'miasto' ? 'miastem' : 'surowcami (złoto, brąz, żelazo, rudy)';
+  const wartosc = Number.isFinite(requiredPn) ? Math.max(0, Math.round(requiredPn)) : 0;
+  return `Rozejm wygasł — pokój stały za cenę: ${kto} ${czym}, wartość ok. ${wartosc} (odmowa = wojna)`;
+}

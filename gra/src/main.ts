@@ -1767,7 +1767,7 @@ import {
   truceEndAcceptCore,
   type TruceEndPorts,
 } from './game/diplomacy-peace-lock';
-import type { TruceEndPayCurrency } from './game/diplomacy-truce-end-price';
+import { pickTruceEndSettlementPlan, type TruceEndPayCurrency } from './game/diplomacy-truce-end-price';
 import {
   computeIncomingPlayerAcceptNetPw,
   computePlayerAcceptanceSides,
@@ -13177,6 +13177,7 @@ async function boot(): Promise<void> {
           if (k >= 0) pendingDiplomacyInbox.splice(k, 1);
         },
         settlePeacePrice: (payerId, payeeId, currency) => settleTruceEndPrice(payerId, payeeId, currency),
+        quotePn: (payerId, payeeId) => aiAiPeacePriceFor(payeeId, payerId, 'pokoj').requiredPn,
         finalizePeace: (proposerId, responderId) => {
           finalizePeaceTreatyBetween(proposerId, responderId);
           // DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1 (Z7): pokój po końcu rozejmu (AI przyjęła pokój stały) nie może
@@ -40808,22 +40809,26 @@ async function boot(): Promise<void> {
     function settleTruceEndPrice(payerId: number, payeeId: number, currency: TruceEndPayCurrency): boolean {
       const price = aiAiPeacePriceFor(payeeId, payerId, 'pokoj');
       const cityAssets = aiPeacePaymentAssets(payerId, payeeId, new Set<string>()).filter(a => a.kind === 'miasto');
-      const plan = currency === 'miasto'
-        ? peacePlanWithTail({
+      // Wybór planu (cena > 0, plan pełny, bilans PW, wariant zastępczy surowcami przy braku cedowalnego miasta)
+      // — czysta funkcja pickTruceEndSettlementPlan (testowana w truce-end-peace-price-test.cjs).
+      const pick = pickTruceEndSettlementPlan({
+        requiredPn: price.requiredPn,
+        currency,
+        planCity: () => peacePlanWithTail({
           ...peaceTailPricingForPayer(payerId, payeeId, peaceTailWiringDeps(), []),
           duePn: price.requiredPn, cities: cityAssets, maxCities: cityAssets.length,
-        })
-        : peacePlanWithTail({
+        }),
+        planTail: () => peacePlanWithTail({
           ...peaceTailPricingFor(payerId, payeeId),
           duePn: price.requiredPn, cities: [], maxCities: 0,
-        });
-      if (!plan.full) return false;
-      // Reguła właściciela 2026-11-09 (pokojAiAi.minBilansPW): pokój AI↔AI nie wchodzi przy ujemnym bilansie
-      // PW którejkolwiek strony po zapłacie. Wyjątek gracza (pokój zawsze do przyjęcia) — tylko gdy para jest AI↔AI.
-      if (!isHuman(payerId) && !isHuman(payeeId)
-        && !isAiAiPeaceBalanceAllowed(price.balanceFor(plan.coveredPn), price.loserBalanceFor?.(plan.coveredPn))) {
-        return false;
-      }
+        }),
+        // Reguła właściciela 2026-11-09 (pokojAiAi.minBilansPW): pokój AI↔AI nie wchodzi przy ujemnym bilansie
+        // PW którejkolwiek strony po zapłacie. Wyjątek gracza (pokój zawsze do przyjęcia) — tylko gdy para jest AI↔AI.
+        balanceOk: plan => isHuman(payerId) || isHuman(payeeId)
+          || isAiAiPeaceBalanceAllowed(price.balanceFor(plan.coveredPn), price.loserBalanceFor?.(plan.coveredPn)),
+      });
+      if (pick == null) return false;
+      const plan = pick.plan;
       if (plan.items.length > 0) {
         const basket: BasketItem[] = plan.items.map(i => ({
           typ: i.kind,
