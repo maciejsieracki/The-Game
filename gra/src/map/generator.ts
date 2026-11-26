@@ -729,6 +729,17 @@ export function generateMap(
   ({ paths: riverPaths, kinds: riverPathKinds } =
     ensureRiverOutlets(hexes, riverPaths, riverPathKinds, width, height));
 
+  // ── Przebieg 3e-final (R-WEB-MAP-OFFMASK-STRANDED-FIX-Q1, P3+P4): ostatnie domknięcie
+  // geografii lądu. finalizeCoastAndInlandWater zamienia odcięte pule morza (także poza
+  // maską Ziemi) w łąkę — dla Ziemi cofamy ląd poza maską do morza (0 heksów poza maską);
+  // wszystkie typy: usuwamy suchy ląd bez sąsiada-lądu (samotny heks na otwartym oceanie).
+  // Wołane PO ostatnim finalize/ensureRiverOutlets, PRZED przebiegami reliefu/złóż (które
+  // działają już tylko na lądzie).
+  if (typ === 'ziemia') {
+    enforceEarthTemplateOnHexes(hexes, width, height);
+  }
+  purgeOpenOceanLandSpecks(hexes);
+
   // ── Przebieg 4-fairplay-final: ostatni pierścień wybrzeża / bramka ujść mogły rozdrobnić
   // masy lądu lub skasować las/złoża — fair-play-grid-test i relief-grid-coverage-test
   // mierzą STAN końcowy (C-MAPA-Q1=B). Wspólne domknięcie dla wszystkich typów świata.

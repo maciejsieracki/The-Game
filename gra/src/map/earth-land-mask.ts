@@ -144,8 +144,29 @@ function earthLandFractionThreshold(width: number, height: number): number {
   return 0.26;
 }
 
-/** Próbka maski dla heksa mapy (q,r) — adaptacyjna gęstość vs rozmiar mapy. */
+/** Sąsiedztwo heksowe (osiowe) — jak HEX_DIRECTIONS w gen-helpers. */
+const EARTH_HEX_DIRS: ReadonlyArray<readonly [number, number]> = [
+  [1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1],
+];
+
+/**
+ * Próbka maski dla heksa mapy (q,r) — adaptacyjna gęstość vs rozmiar mapy.
+ *
+ * R-WEB-MAP-OFFMASK-STRANDED-FIX-Q1 (P4): izolowany heks szablonu (lądowy, bez ani jednego
+ * lądowego sąsiada w szablonie — artefakt próbkowania maski, np. 5 pojedynczych pikseli na
+ * mapie standardowej) NIE jest lądem maski. Dawniej przeżywał jako samotny ląd na oceanie;
+ * teraz maska i reguła „0 samotnych lądów" zgadzają się ze sobą.
+ */
 export function earthTemplateLandAt(q: number, r: number, width: number, height: number): number {
+  if (earthTemplateRawLandAt(q, r, width, height) <= 0) return 0;
+  for (const [dq, dr] of EARTH_HEX_DIRS) {
+    if (earthTemplateRawLandAt(q + dq, r + dr, width, height) > 0) return 1;
+  }
+  return 0;
+}
+
+/** Próbka surowego szablonu (bez wykluczania izolowanych heksów). */
+function earthTemplateRawLandAt(q: number, r: number, width: number, height: number): number {
   const t = earthHexToTemplateNorm(q, r, width, height);
   if (!t) return 0;
 
