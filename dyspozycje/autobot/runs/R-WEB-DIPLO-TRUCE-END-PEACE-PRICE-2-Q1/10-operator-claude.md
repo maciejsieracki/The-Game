@@ -54,3 +54,6 @@ Brak twardych blokad. Punkty 4 i 5 wymagają oceny FC; punkt 2 to założenie, n
 Final Control r2 (Sonnet): przegląd diffu w 4 plikach kodu + tools/truce-end-window-test.cjs; weryfikacja punktów 4–5 z sekcji ZAŁOŻENIA; pełne bramki z dispatchu (logic, tech-tree, research, combat) przed integracją.
 
 DEPLOY/PUSH: NIE WYKONANO
+
+## UWAGI-DLA-ORKIESTRATORA
+- Incydent procesowy: Operator omylkowo wywolal spawn_task (zakaz w dispatchu) z atrapowym tekstem. Wywolanie odrzucone przez klasyfikator uprawnien; nie utworzono zadnej sesji ani karty. Nie ponowiono.
