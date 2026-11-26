@@ -1,0 +1,3 @@
+# R-WEB-DIPLO-TRUCE-END-PRICE-3-Q1 — TRUCEPRICE3: cena 0 = symboliczna opłata (10B), surowce przy braku miasta także w oknie gracza (11A)
+STATUS: DISPATCH | DOMAIN: GAME | tag TRUCEPRICE3 | decyzje właściciela 2026-11-26: 10B, 11A (ECHO w rejestrze)
+GOAL: po końcu rozejmu (a) gdy wyliczona cena pokoju wynosi 0 — pokój nadal jest oferowany i wymaga SYMBOLICZNEJ opłaty (np. 1 surowiec; parametr w gra/data/diplomacy-war-peace-params.json, nowy klucz), zamiast „cena 0 = wojna” z FALI 915; (b) w oknie propozycji gracza (diplomacy-proposals.ts) przy różnicy sił >20% i braku cedowalnego miasta pokój przyjmowany za pokrycie ceny SUROWCAMI (wariant zastępczy jak w ofercie AI).

@@ -1,0 +1,18 @@
+# DODATEK (runda 1/5, Operator HAIKU 5.5; BAZA = args.cand)
+## Fakty (dyspozycje/analizy/NNS-T1-I-KOSZT-ULEPSZEN-ZYWNOSC-2026-11-26.md, sekcja (b))
+- FALA 878: koszt budowy ulepszenia wg epoki właściciela (gra/data/improvement-cost-params.json kosztUlepszenWgEpokiWlasciciela=true; terrain-improvements.ts ~177–189) — BEZ ZMIAN (decyzja 13C).
+- gra/src/game/auto-improvements.ts (picker autoulepszania), gra/tools/autoimprove-pasture-irrigation-q2-test.cjs i -bisect.cjs (14 ziaren: flaga true: irygacja po 35–40 turach w 4 ziarnach, głodzenie 3 z 14 ziaren; test na ziarnie 1: 14 OK / 3 FAIL: „pola poza rzeką ≥1” (niezależnie od flagi), „(e) irygacja ≤ t6” (pada przy true: t7), „w t24 farmy bez trzody: 0” (38 przy true, 19 przy false)).
+- Przyczyny luki 19 farm bez trzody przy fladze false oraz głodzenia ziarna 3 przy obu: NIE ZMIERZONO (kolejka pickera).
+## Zadanie
+1. POMIAR: dla 14 ziaren (SEED 1..14, ten sam harness bisect; baza = args.cand) policz dla KAŻDEGO rodzaju ulepszenia żywnościowego (farma, trzoda, irygacja; dodaj pozostałe ulepszenia, jeśli mają odblokowanie technologią): tura odkrycia technologii (lub gdy ulepszenie staje się dostępne), tura pierwszego ulepszenia przez autoulepszanie, tura gdy wszystkie kwalifikujące się pola są ulepszone (lub nie), liczba pól kwalifikujących się. Raport tabelą (dyspozycje/analizy/ULEPSZENIA-MASOWO-PO-ODKRYCIU-2026-11-26.md), liczby ZMIERZONO/NIE ZMIERZONO.
+2. DIAGNOZA: gdzie autoulepszanie zwleka (kolejka, pula Pracy, limit na turę, kolejność typów, głód miasta), a gdzie to wynika z kosztu wg epoki (zgodnie z regułami — nie ruszać kosztu).
+3. POPRAWKA (tylko jeśli diagnoza wykaże błąd kolejności/limitu niezgodny z zasadą właściciela): w turze odkrycia autoulepszanie ma uruchamiać masowo ulepszenie na wszystkich kwalifikujących się polach w granicach puli i obecnych kosztów (bez zmiany kosztów, bez obchodzenia reguł); zachowaj kolejność etapów (orderViol=0). Jeśli poprawka wymaga decyzji o grze — DECISION_REQUIRED z jednym zdaniem per wariant.
+4. TESTY: autoimprove-pasture-irrigation-q2-test (e) liczony od tury odkrycia (np. pierwsza irygacja ≤ N tur po odkryciu, N uzasadnione pomiarem pkt 1 i zatwierdzone przez orkiestratora w raporcie jako propozycja — NIE wymyślaj progów bez danych), asercja „pola poza rzeką” naprawiona w scenariuszu (osobna sprawa inżynierska), mutacje czerwone na nowych kryteriach; pozostałe autoimprove-*-test zielone.
+## Allowlista
+gra/src/game/auto-improvements.ts (tylko jeśli poprawka z pkt 3), gra/tools/autoimprove-*.cjs, dyspozycje/analizy/ULEPSZENIA-MASOWO-PO-ODKRYCIU-2026-11-26.md, dyspozycje/autobot/runs/R-WEB-IMPROVEMENT-MASS-ON-DISCOVERY-Q1/**. GRA/DATA: bez zmian (koszty!).
+## Zakazy
+gra-robocza/, gra-kanon/, dyspozycje/WERSJE.md, manifest, rust-port/, npm run build/dev w gra/ (build do testów live: node ./node_modules/vite/bin/vite.js build --outDir /tmp/<unikalny> --emptyOutDir), zmiana wartości balansu poza zakresem, osłabianie asercji (zmiana dozwolona WYŁĄCZNIE dla testów kodujących stary kontrakt — wypisz w raporcie z uzasadnieniem), git add -A, push, spawn_task/create_session/create_trigger/send_later, run_in_background w Bash. Dysk >= 6 GB; usuń node_modules i /tmp po bramkach.
+## Bramki ogólne
+tsc 0; logic 213; tech-tree 20; research 33; unit-replace; combat 6; ai-test 297/0; war-rules-multiwar-main-guard 21/0; testy tematu; nowy test z mutacją czerwoną. Zacommituj i zwróć SHA.
+## Binarne kryterium
+Tabela pomiaru dla 14 ziaren; diagnoza; poprawka lub uzasadnienie braku; test (e) liczony od tury odkrycia z mutacją czerwoną; koszty ulepszeń niezmienione (git diff nie dotyka improvement-cost-params.json ani terrain-improvements.ts).
