@@ -1443,6 +1443,29 @@ fn speed_change_vectors() -> Value {
     doc
 }
 
+/// R-RUSTPORT-P4-412-FQ-SPEED-MIDCHANGE-VEC-Q1 (D-412-2): wektory zmiany prędkości w trakcie bitwy JAWNIE rozbieżne z
+/// pinem (zmierzone przez Operatora r1, 9/40; w każdym pierwsza różnica PO pierwszej zmianie, przed nią zgodne).
+/// Klasy (raport `dyspozycje/autobot/runs/R-RUSTPORT-P4-412-FQ-SPEED-MIDCHANGE-VEC-Q1/01-operator-r1.md`):
+/// L = zmiana w trakcie wypadu wręcz przed ciosem (`lunging`): ciało liczy chwilę ciosu i ogon wypadu w `start` siatką
+/// klatki sprzed zmiany (`siege_tactics_loop.rs` `frame_raf(self.frame_ms, …)`, D-FQ-1), pin sprawdza `localT >= BLOW_HIT_T`
+/// w każdej klatce `_raf` nową siatką (`battleScene.ts:9118-9124`) — cios o klatkę wcześniej/później; R = pozostałe
+/// (zmiana przy pocisku tuż przed trafieniem, zmiana tury / klatki przy innym odcinku ciała w toku). Bez poprawki kodu
+/// silnika w tym temacie (D-412-2: rozbieżność = osobny temat). Test pada, gdy pozycja z listy zacznie się zgadzać albo
+/// rozjedzie się wektor spoza listy.
+const ROZBIEZNE_FQ_SPEED_MIDCHANGE: [&str; 9] = [
+    // L
+    "sc_mur_jazda_rzeka_x1to2_lunge",
+    "sc_p3_rown_mix_d8l_palisada_218_x1to4_lunge",
+    "sc_fq_rown_mix_d8l_mury_217_x1to2_lunge",
+    // R
+    "sc_p3_las_mix_d5_mury_123_x2to128_prehit",
+    "sc_fq_las_mix_d8l_palisada_122_x64to1_round",
+    "sc_fq_gory_lucz2_d6l_mury_191_x64to1_prehit",
+    "scm_mr_wzg_jazda3_d3l_mury_333_2_1_64",
+    "scm_mi_las_mix_d3l_palisada_118_1_512_1_4",
+    "scm_rt_mur_machiny_wylom_1_4_64_2",
+];
+
 /// Mutant sterownika zmiany prędkości (kontrola czułości wektorów; `MidMut::None` = model pinu).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum MidMut {
@@ -1498,13 +1521,7 @@ fn pin_event_key(e: &Value) -> String {
     let t = hex_bits(f(&a[0]));
     let s = |i: usize| a[i].as_str().unwrap();
     match s(1) {
-        "C" => format!(
-            "{t} C {} {} {} {}",
-            s(2),
-            s(3),
-            hex_bits(f(&a[4])),
-            s(5)
-        ),
+        "C" => format!("{t} C {} {} {} {}", s(2), s(3), hex_bits(f(&a[4])), s(5)),
         "D" => format!("{t} D {} {}", s(2), hex_bits(f(&a[3]))),
         k @ ("R" | "K") => format!("{t} {k} {}", s(2)),
         k => panic!("rodzaj zdarzenia {k}"),
@@ -1706,6 +1723,8 @@ fn zmiana_predkosci_w_trakcie_bitwy_wektory_pinu_bajt_w_bajt() {
     let data = pin_session_data();
     let list = doc["vectors"].as_array().unwrap();
     let mut rozbiezne = Vec::new();
+    let mut zgodne_z_listy = Vec::new();
+    let mut n_listed = 0;
     let (mut n_changes, mut multi, mut up, mut down, mut n_events) = (0, 0, 0, 0, 0);
     let mut cov = BTreeMap::<&str, usize>::new();
     let mut pairs = std::collections::BTreeSet::<(u64, u64)>::new();
@@ -1725,7 +1744,11 @@ fn zmiana_predkosci_w_trakcie_bitwy_wektory_pinu_bajt_w_bajt() {
         let run = run_midchange(bv, sv, &data, MidMut::None, false);
         let mut d = Vec::new();
         if run.at_change.len() != changes.len() {
-            d.push(format!("zmian {} != {}", run.at_change.len(), changes.len()));
+            d.push(format!(
+                "zmian {} != {}",
+                run.at_change.len(),
+                changes.len()
+            ));
         }
         for (c, got) in changes.iter().zip(&run.at_change) {
             let want: ChangeAt = (
@@ -1741,6 +1764,15 @@ fn zmiana_predkosci_w_trakcie_bitwy_wektory_pinu_bajt_w_bajt() {
         }
         n_events += run.events.len();
         d.extend(mid_diff(bv, sv, run));
+        let listed = ROZBIEZNE_FQ_SPEED_MIDCHANGE.contains(&name);
+        if listed && d.is_empty() {
+            zgodne_z_listy.push(name.to_owned());
+        }
+        if listed {
+            // Pokrycie liczone wyłącznie z wektorów zgodnych z pinem.
+            n_listed += 1;
+            continue;
+        }
         if !d.is_empty() {
             rozbiezne.push(format!("{name}: {}", d.join("; ")));
         }
@@ -1768,10 +1800,23 @@ fn zmiana_predkosci_w_trakcie_bitwy_wektory_pinu_bajt_w_bajt() {
         rozbiezne.is_empty(),
         "zmiana prędkości w trakcie: rozbieżne z pinem: {rozbiezne:#?}"
     );
+    assert!(
+        zgodne_z_listy.is_empty(),
+        "zgodne mimo listy ROZBIEZNE_FQ_SPEED_MIDCHANGE (skróć listę): {zgodne_z_listy:?}"
+    );
+    assert_eq!(
+        n_listed,
+        ROZBIEZNE_FQ_SPEED_MIDCHANGE.len(),
+        "pozycja listy rozbieżności bez wektora w pliku"
+    );
     // Kryteria pokrycia (dispatch #412): ≥ 24 przypadki, różne pary i tury zmiany, pocisk w locie / tuż przed
     // trafieniem, krok ruchu i wypad w trakcie animacji, zmiany w górę i w dół, bitwy z wieloma zmianami.
     if std::env::var("WIRING_A_SPEED_CHANGE_FILE").is_err() {
-        assert!(list.len() >= 24, "przypadków {}", list.len());
+        assert!(
+            list.len() - n_listed >= 24,
+            "zgodnych przypadków {}",
+            list.len() - n_listed
+        );
         assert!(pairs.len() >= 6, "par prędkości {pairs:?}");
         assert!(rounds.len() >= 6, "tur zmiany {rounds:?}");
         assert!(up > 0 && down > 0, "w górę {up}, w dół {down}");
@@ -1785,8 +1830,9 @@ fn zmiana_predkosci_w_trakcie_bitwy_wektory_pinu_bajt_w_bajt() {
         assert!(n_events > 0, "brak zdarzeń");
     }
     eprintln!(
-        "FQ-SPEED-MIDCHANGE: przypadków {}, zmian {n_changes} (w górę {up}, w dół {down}, bitew wielokrotnych {multi}), par {pairs:?}, tur {rounds:?}, chwile {cov:?}, zdarzeń {n_events}",
-        list.len()
+        "FQ-SPEED-MIDCHANGE: przypadków {} (zgodnych {}, jawnie rozbieżnych {n_listed}), zmian {n_changes} (w górę {up}, w dół {down}, bitew wielokrotnych {multi}), par {pairs:?}, tur {rounds:?}, chwile {cov:?}, zdarzeń {n_events}",
+        list.len(),
+        list.len() - n_listed
     );
 }
 
@@ -1804,7 +1850,11 @@ fn zmiana_predkosci_w_trakcie_mutanty_sterownika_daja_fail() {
     let mut killed = BTreeMap::<String, usize>::new();
     for m in MID_MUTANTS {
         let mut n = 0;
-        for sv in list {
+        // Tylko wektory zgodne z pinem (pozycje listy rozbieżności rozjeżdżają się także bez mutanta).
+        for sv in list
+            .iter()
+            .filter(|sv| !ROZBIEZNE_FQ_SPEED_MIDCHANGE.contains(&sv["name"].as_str().unwrap()))
+        {
             let bv = &by_name[sv["base"].as_str().unwrap()];
             if !mid_diff(bv, sv, run_midchange(bv, sv, &data, m, true)).is_empty() {
                 n += 1;
@@ -1813,8 +1863,8 @@ fn zmiana_predkosci_w_trakcie_mutanty_sterownika_daja_fail() {
         killed.insert(format!("{m:?}"), n);
     }
     eprintln!(
-        "FQ-SPEED-MIDCHANGE mutanty (rozbieżne przypadki z {}): {killed:?}",
-        list.len()
+        "FQ-SPEED-MIDCHANGE mutanty (rozbieżne przypadki z {} zgodnych z pinem): {killed:?}",
+        list.len() - ROZBIEZNE_FQ_SPEED_MIDCHANGE.len()
     );
     let survived: Vec<_> = killed.iter().filter(|(_, n)| **n == 0).collect();
     assert!(survived.is_empty(), "mutanty niezabite: {survived:?}");
