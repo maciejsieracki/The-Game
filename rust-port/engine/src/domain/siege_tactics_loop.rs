@@ -7974,6 +7974,61 @@ mod tower_target_tests {
         assert!(lp.tower_in_flight.is_empty());
     }
 
+    /// R-RUSTPORT-P4-406 (E-2 Evaluatora #400, mutant EV6): wpis [`SiegeLoop::tower_in_flight`] niesie NOMINALNY `due`
+    /// trafienia (`vNow + RANGED_FLY_MS`, `_schedule` `battleScene.ts:9605`), a akcja `TowerShot.land_at` chwilę klatki
+    /// trafienia (siatka `ceil(380 / F) * F`, D-LTB-1). Przy kroku klatki, który nie dzieli 380 ms, obie wartości się
+    /// różnią; czytający zegar trafienia ([`LoopBody::set_reader_due`]) dostaje nominał. Skutek (`_drainTimers`
+    /// `:9616-9634`: zegary klatki rosnąco po `due`): wpis osi czasu ciała z tej klatki o kluczu `ord` z przedziału
+    /// `[t0 + 380, t0 + 384)` (np. krok marszu `_schedule(STEP_GAP_MS)` z `due = t0 + 382` przy klatce 8 ms) NIE jest
+    /// jeszcze wykonany dla trafienia wieży; `due` z siatki (EV6) uznałby go za wykonany.
+    #[test]
+    fn wieza_w_locie_nominalny_due_a_land_at_z_siatki_klatki() {
+        for (speed, frame) in [
+            (1.0, 16.0),
+            (0.5, 8.0),
+            (2.0, 32.0),
+            (0.25, 4.0),
+            (1.0 / 16.0, 1.0),
+        ] {
+            let mut lp = rec_loop();
+            let mut clock = VirtualClock::new();
+            clock.speed_mul = speed;
+            clock.v_now = 1008.0;
+            lp.tower_shot_due.push((0, 1008.0));
+            lp.tower_shoot(&mut clock, 0);
+            let land_at = lp
+                .actions
+                .iter()
+                .find_map(|a| match a.action {
+                    BattleAction::TowerShot { land_at, .. } => Some(land_at),
+                    _ => None,
+                })
+                .expect("akcja TowerShot");
+            assert_eq!(land_at, 1008.0 + frame_sched(frame, TOWER_FLY_MS), "klatka {frame}");
+            assert_eq!(
+                lp.tower_in_flight,
+                vec![(0, 3, 1008.0 + TOWER_FLY_MS)],
+                "klatka {frame}: nominał, nie siatka"
+            );
+            assert_eq!(
+                lp.tower_in_flight[0].2 != land_at,
+                380.0 % frame != 0.0,
+                "klatka {frame}"
+            );
+            lp.tower_hit(0, land_at);
+            assert_eq!(
+                lp.env.body.blow_readers,
+                vec![1008.0 + TOWER_FLY_MS],
+                "klatka {frame}: trafienie czyta z nominałem"
+            );
+            assert!(lp.tower_in_flight.is_empty());
+        }
+        // Klatka 8 ms: trafienie `t0 = 1008`, nominał 1388, siatka 1392; krok marszu z `due = 1390` w tej samej klatce.
+        assert!(!timeline_done(1392.0, 1390.0, 1392.0, 1388.0), "nominał: krok po trafieniu");
+        assert!(timeline_done(1392.0, 1390.0, 1392.0, 1392.0), "siatka: krok przed trafieniem");
+        assert!(timeline_done(1392.0, 1386.0, 1392.0, 1388.0), "krok z mniejszym due: przed trafieniem");
+    }
+
     /// Obrona r1 FRAME-QUANT-Q1 (U3, mutant E2): w czasie rzeczywistym (`step_realtime`) skutek ciała odłożony do fazy
     /// kroków (`BodyDone`, D-PIN3-3) wykonuje się w TEJ klatce, PO `_drainTimers` (`_runFastForward` `:9427-9435`, w
     /// AUTO `_startLoop` `:9245-9291`: kroki `_raf` po zegarach). Zamiana faz (kolejka kroków przed `drain_timers`)

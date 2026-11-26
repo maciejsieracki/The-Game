@@ -431,7 +431,7 @@ function runScenario(sc) {
   // `WIRING_A_FRAME=2 WIRING_A_MODE=realtime`; wektory zawsze z klatka 16 ms i trybem scenariusza.
   const traced = !!process.env.WIRING_A_TRACE;
   const mode = traced && process.env.WIRING_A_MODE ? process.env.WIRING_A_MODE : sc.mode;
-  const frameMs = traced && process.env.WIRING_A_FRAME ? Number(process.env.WIRING_A_FRAME) : 16;
+  const frameMs = traced && process.env.WIRING_A_FRAME ? Number(process.env.WIRING_A_FRAME) : (sc.wallFrameMs ?? 16);
   // FQ-SPEED-Q1 (pomiar predkosci, tylko kandydaci `WIRING_A_EXTRA`/`WIRING_A_SWEEP_FRAME`): `speedMul` sceny ustawiany
   // METODA PINU `_setSpeedIdx` (`:9518-9527`; ta sama co przycisk `_cycleSpeed` `:9536` i panel ± `_adjustSpeedIdx`
   // `:9531-9533`) przed `play()`; przewijanie liczy wtedy `FF_STEP_MS = _scaledWallDelta(16) = 16 * speedMul` (`:9419`),
@@ -512,6 +512,104 @@ function runScenario(sc) {
       };
     }
   }
+  // R-RUSTPORT-P4-406 (LANDAT-TB-TOWER-DUE-ORDER, D-406-1): kolejnosc trafienia wiezy wobec innych zegarow TEJ SAMEJ klatki
+  // (`sc.recordTowerOrder`, tylko wektory `tower_due_order_vectors.json`). Obserwatory = opakowania metod instancji (bez
+  // zmiany tekstu pinu, strażnik SHA-256 nietkniety); pomijaja planowanie AUTO-batch (`_autoBatchPlanning`):
+  // * kazdy zegar `_schedule` dostaje rekord `{ due, ms, src, kind }` (`src` = najglebsza obserwowana metoda pinu w chwili
+  //   planowania albo `src` odpalanego wlasnie zegara; `kind` = `towerHit` dla `_schedule(RANGED_FLY_MS)` z `_fireOneTower`
+  //   `:4262`, `boulder` dla `_schedule(700)` z `_attackWallTile` `:7555`, inaczej `other`), a jego callback opakowanie
+  //   zapisujace odpalenie `[vNow klatki, rekord]` (kolejnosc `_drainTimers` `:9616-9634`: rosnaco po `due`, potem `id`);
+  // * zdarzenia (obok `C`/`R`/`K`/`D` z `recordEvents`): `[t0, 'S', 'wieza:'+row, cel]` = wystrzal wiezy (chwila
+  //   `_schedule(RANGED_FLY_MS)` `:4262`; cel = `pickTowerTarget` pinu z tymi samymi wejsciami co `:4229-4234`),
+  //   `[t0, 'B', jedn, wiersz]` = kamien katapulty (`_schedule(700)` `:7555`), `[vNow, 'T', roundNo]` = napis tury
+  //   `_beginTurn` (`hint.textContent` `:5675-5676`);
+  // * loty: `tower = [[t0, fire|null, row, cel]]`, `boulder = [[t0, fire|null, jedn, wiersz]]` (`fire` = `vNow` klatki,
+  //   w ktorej `_drainTimers` odpalil trafienie; `null` = koniec bitwy przed trafieniem, `:9620`).
+  const order = sc.recordTowerOrder ? { fired: [], tower: [], boulder: [] } : null;
+  if (order) {
+    if (!events) throw new Error('recordTowerOrder wymaga recordEvents: ' + sc.name);
+    const okey = (u) => (u.side === 'atk' ? 'atk:' : 'def:') + u.bu.id;
+    const towers = load('gra/src/game/city-towers.ts');
+    const ctx = [];
+    let firing = null;
+    let shot = null;
+    let wallShot = null;
+    const OBS = ['_fireSiegeTowers', '_fireOneTower', '_attackWallTile', '_doRangedAttack', '_doMeleeAttack', '_activateNext',
+      '_activateUnit', '_beginTurn', '_siegeWalkTo', '_advanceStep', '_rangedForwardStep', '_rangedBackStep', '_kiteStep',
+      '_fallBackStep', '_rangedApproachStep', '_fleeStep', '_finishAutoBatchPhase'];
+    for (const m of OBS) {
+      const o = bs[m];
+      if (typeof o !== 'function') throw new Error('brak metody pinu ' + m);
+      bs[m] = function (...a) { ctx.push(m); try { return o.apply(this, a); } finally { ctx.pop(); } };
+    }
+    const oFire = bs._fireOneTower;
+    bs._fireOneTower = function (t, ...rest) {
+      const prev = shot;
+      shot = null;
+      if (!this.finished && !t.destroyed) {
+        const enemies = this.atk.filter((u) => !u.dead && !u.fadingOut && !u.routed && !u.removed);
+        const idx = towers.pickTowerTarget({ q: this.siegeWallCol, r: t.row }, this.towerRange,
+          enemies.map((u) => ({ q: u.q, r: u.r, hp: u.bu.hp })));
+        if (idx >= 0) shot = { row: t.row, target: okey(enemies[idx]) };
+      }
+      try { return oFire.call(this, t, ...rest); } finally { shot = prev; }
+    };
+    const oWall = bs._attackWallTile;
+    bs._attackWallTile = function (ru, wallRow, ...rest) {
+      const prev = wallShot;
+      wallShot = { unit: okey(ru), row: wallRow };
+      try { return oWall.call(this, ru, wallRow, ...rest); } finally { wallShot = prev; }
+    };
+    const oSched = bs._schedule;
+    bs._schedule = function (ms, cb) {
+      const n = this.vTimers.length;
+      const t0 = this.vNow;
+      const src = ctx.length ? ctx[ctx.length - 1] : (firing ? firing.src : '-');
+      const live = !this._autoBatchPlanning && !this.finished;
+      let kind = 'other';
+      let flight = null;
+      if (ms === 380 && src === '_fireOneTower') {
+        kind = 'towerHit';
+        if (live) {
+          if (!shot) throw new Error('trafienie wiezy bez celu: ' + sc.name + ' t0 ' + t0);
+          flight = [t0, null, shot.row, shot.target];
+          order.tower.push(flight);
+          events.push([t0, 'S', 'wieza:' + shot.row, shot.target]);
+        }
+      } else if (ms === 700 && src === '_attackWallTile') {
+        kind = 'boulder';
+        if (live) {
+          flight = [t0, null, wallShot.unit, wallShot.row];
+          order.boulder.push(flight);
+          events.push([t0, 'B', wallShot.unit, wallShot.row]);
+        }
+      }
+      const out = oSched.call(this, ms, cb);
+      if (live && this.vTimers.length === n + 1) {
+        const e = this.vTimers[n];
+        const rec = { due: e.due, ms, src, kind };
+        const orig = e.cb;
+        e.cb = () => {
+          if (flight) flight[1] = bs.vNow;
+          order.fired.push([bs.vNow, rec]);
+          const prev = firing;
+          firing = rec;
+          try { return orig(); } finally { firing = prev; }
+        };
+      }
+      return out;
+    };
+    const h0 = bs.hint;
+    bs.hint = new Proxy(h0, {
+      set(t, p, v) {
+        if (p === 'textContent' && typeof v === 'string' && v.startsWith('Tura ' + bs.roundNo + ' — klik: ruch/atak od razu. Ctrl')) {
+          events.push([bs.vNow, 'T', bs.roundNo]);
+        }
+        t[p] = v;
+        return true;
+      },
+    });
+  }
   const PROJ_MS = new Set([380, 700]);
   const probe = (oldMul, newMul) => {
     const lo = 16 * Math.min(oldMul, newMul);
@@ -589,6 +687,7 @@ function runScenario(sc) {
     ...(sc.speedAt != null ? { speedAt: sc.speedAt, speedAtApplied: speedAtDone } : {}),
     ...(changes.length ? { speedChanges: applied, speedChangesWanted: changes.length, frames } : {}),
     ...(events ? { events } : {}),
+    ...(order ? { towerOrder: order } : {}),
     seed: sc.seed,
     battleIndex: sc.battleIndex ?? 0,
     input: {
@@ -731,6 +830,122 @@ if (process.env.WIRING_A_SPEED_CHANGE_VECTORS) {
   const outPath = process.env.WIRING_A_OUT ?? join(here, 'p6_k5loop_wiring_a_pin_vectors', 'speed_change_vectors.json');
   writeFileSync(outPath, txt);
   console.log(createHash('md5').update(txt).digest('hex') + '  ' + outPath);
+  process.exit(0);
+}
+
+// R-RUSTPORT-P4-406 (LANDAT-TB-TOWER-DUE-ORDER, D-406-1): wektory kolejnosci trafienia wiezy wobec innych zegarow tej samej
+// klatki (`WIRING_A_TOWER_ORDER_VECTORS=16,8` = dlugosci klatki sciany pinu w ms). Kazdy scenariusz `SCENARIOS` z klatka
+// produkcyjna (bez bliźniakow `ffStepMs`) w CZASIE RZECZYWISTYM (klatki rAF co `F` ms sciany, `speedMul = 1`, wiec
+// `vNow += F` na klatke `_advanceVClock` `:9500-9509`): przy 16 ms model produkcyjny; przy 8 ms bliźniak granicy klatki
+// (D-PIN2-2; Rust: `speedMul = 0.5` przy klatce 16 ms, ten sam krok `vNow`). Czas rzeczywisty zamiast przewijania: chwile
+// zdarzen sa porownywane bezwzglednie, a `skip()` po `play()` ma znany dlug czasu tury 1 (PRE-SKIP-RAF, #405). Zapis
+// WYLACZNIE `tower_due_order_vectors.json` (albo `WIRING_A_OUT`): nazwa, scenariusz bazowy (wejscie z `vectors.json`),
+// klatka `wallFrameMs`, liczba klatek, `expect`, strumien zdarzen `events` (`S`/`B`/`T`/`C`/`R`/`K`/`D`, patrz
+// `runScenario`), loty `tower`/`boulder` z chwila trafienia oraz `pairFrames` = klatki, w ktorych odpalil zegar trafienia
+// wiezy (`due = t0 + 380`) i po nim inny zegar z `due ∈ (t0 + 380, vNow klatki]` (lista zegarow klatki w kolejnosci
+// `_drainTimers`: `[due, ms, src, kind]`). Podzial na procesy jak #412: `WIRING_A_TOWER_ORDER_SHARD=k/n` (wynik do
+// `WIRING_A_OUT`), `WIRING_A_TOWER_ORDER_MERGE=plik1,plik2,...`. Pozostale pliki wektorow bez zmian.
+const TOWER_ORDER_CASES = (steps) => {
+  const out = [];
+  for (const F of steps) {
+    for (const sc of SCENARIOS) {
+      if (sc.ffStepMs != null) continue;
+      out.push({ F, sc, name: F === 16 ? `to_${sc.name}` : `to_${sc.name}_klatka${F}` });
+    }
+  }
+  return out;
+};
+if (process.env.WIRING_A_TOWER_ORDER_VECTORS) {
+  const tS = Date.now();
+  const steps = process.env.WIRING_A_TOWER_ORDER_VECTORS.split(',').map(Number);
+  const cases = TOWER_ORDER_CASES(steps);
+  const outPath = process.env.WIRING_A_OUT ?? join(here, 'p6_k5loop_wiring_a_pin_vectors', 'tower_due_order_vectors.json');
+  const summarize = (vecs) => {
+    const totals = { pairs: {}, pairFrames: {}, hits: {}, byOther: {} };
+    for (const v of vecs) {
+      const F = v.wallFrameMs ?? 16;
+      totals.pairs[F] = (totals.pairs[F] ?? 0) + v.pairs;
+      totals.pairFrames[F] = (totals.pairFrames[F] ?? 0) + v.pairFrames.length;
+      for (const [k, list] of [['tower', v.tower], ['boulder', v.boulder]]) {
+        for (const [t, fire] of list) {
+          if (fire == null) continue;
+          const key = `${k}@${F}:${fire - t}`;
+          totals.hits[key] = (totals.hits[key] ?? 0) + 1;
+        }
+      }
+      for (const [vn, list] of v.pairFrames) {
+        const i = list.findIndex((r) => r[3] === 'towerHit');
+        for (const o of list.slice(i + 1)) {
+          if (o[0] > list[i][0]) { const k = `${F}:${o[2]}:${o[1]}`; totals.byOther[k] = (totals.byOther[k] ?? 0) + 1; }
+        }
+      }
+    }
+    return totals;
+  };
+  const write = (vecs, sha) => {
+    const totals = summarize(vecs);
+    console.error('RAZEM ' + JSON.stringify(totals));
+    const txt = JSON.stringify({ pin: PIN, pinSha256: sha, steps, totals, vectors: vecs }) + '\n';
+    writeFileSync(outPath, txt);
+    console.log(createHash('md5').update(txt).digest('hex') + '  ' + outPath);
+  };
+  if (process.env.WIRING_A_TOWER_ORDER_MERGE) {
+    const parts = process.env.WIRING_A_TOWER_ORDER_MERGE.split(',').map((p) => JSON.parse(readFileSync(p, 'utf8')));
+    const byName = new Map();
+    for (const p of parts) {
+      if (p.pin !== PIN || p.pinSha256 !== EXPECTED_SHA256) throw new Error('czesc z innego pinu');
+      for (const v of p.vectors) {
+        if (byName.has(v.name)) throw new Error('powtorzony przypadek ' + v.name);
+        byName.set(v.name, v);
+      }
+    }
+    const missing = cases.filter((c) => !byName.has(c.name)).map((c) => c.name);
+    if (missing.length) throw new Error('brak przypadkow: ' + missing.join(', '));
+    if (byName.size !== cases.length) throw new Error('nadmiarowe przypadki w czesciach');
+    write(cases.map((c) => byName.get(c.name)), EXPECTED_SHA256);
+    process.exit(0);
+  }
+  const shard = process.env.WIRING_A_TOWER_ORDER_SHARD ? process.env.WIRING_A_TOWER_ORDER_SHARD.split('/').map(Number) : null;
+  if (shard && !process.env.WIRING_A_OUT) throw new Error('WIRING_A_TOWER_ORDER_SHARD wymaga WIRING_A_OUT');
+  const only = process.env.WIRING_A_TOWER_ORDER_ONLY ? new Set(process.env.WIRING_A_TOWER_ORDER_ONLY.split(',')) : null;
+  const vecs = [];
+  for (const [ci, { F, sc: sc0, name }] of cases.entries()) {
+    if (shard && ci % shard[1] !== shard[0]) continue;
+    if (only && !only.has(name)) continue;
+    const v = runScenario({ ...sc0, name, mode: 'realtime', wallFrameMs: F, recordEvents: true, recordTowerOrder: true });
+    const { fired, tower, boulder } = v.towerOrder;
+    const byFrame = new Map();
+    for (const [vn, rec] of fired) {
+      if (!byFrame.has(vn)) byFrame.set(vn, []);
+      byFrame.get(vn).push(rec);
+    }
+    const pairFrames = [];
+    let pairs = 0;
+    for (const [vn, list] of byFrame) {
+      let any = false;
+      list.forEach((r, i) => {
+        if (r.kind !== 'towerHit') return;
+        for (const [j, o] of list.entries()) {
+          if (o === r || !(o.due > r.due)) continue;
+          // `_drainTimers`: zegar z wiekszym `due` tej klatki odpala PO trafieniu wiezy (strażnik obserwatora).
+          if (j < i) throw new Error(`${name}: zegar due ${o.due} przed trafieniem wiezy due ${r.due} w klatce ${vn}`);
+          if (!(o.due <= vn)) throw new Error(`${name}: zegar due ${o.due} > klatka ${vn}`);
+          pairs += 1;
+          any = true;
+        }
+      });
+      if (any) pairFrames.push([vn, list.map((r) => [r.due, r.ms, r.src, r.kind])]);
+    }
+    vecs.push({
+      name, base: sc0.name, mode: 'realtime', ...(F === 16 ? {} : { wallFrameMs: F }), expect: v.expect,
+      tower, boulder, pairs, pairFrames, events: v.events,
+    });
+    console.error(`${name}: ${v.expect.winner} tura ${v.expect.roundNo} wiez ${tower.length} kamieni ${boulder.length} par ${pairs} w klatkach ${pairFrames.length} zdarzen ${v.events.length} (${Date.now() - tS} ms)`);
+  }
+  if (hashed.size === 0) throw new Error('czesc bez przypadkow (WIRING_A_TOWER_ORDER_SHARD / _ONLY nic nie wybraly)');
+  const shaT = hash.digest('hex');
+  if (shaT !== EXPECTED_SHA256) throw new Error('straznik SHA-256 pinu: ' + shaT + ' != ' + EXPECTED_SHA256);
+  write(vecs, shaT);
   process.exit(0);
 }
 
