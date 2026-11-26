@@ -446,6 +446,85 @@ function runScenario(sc) {
   // miedzy klatkami rAF (jak klik gracza), w pierwszej klatce z `roundNo >= round`.
   let speedAtDone = false;
   if (sc.speedAt != null && sc.mode !== 'realtime') throw new Error('speedAt tylko dla czasu rzeczywistego: ' + sc.name);
+  // FQ-SPEED-MIDCHANGE-VEC-Q1 (#412): lista zmian predkosci w trakcie bitwy (`speedChanges = [{ at, speedMul }]`, tylko
+  // czas rzeczywisty) i strumien zdarzen pinu (`events`). Zmiana = `_setSpeedIdx` (metoda pinu, jak klik gracza) MIEDZY
+  // klatkami rAF, przed klatka N (stan po klatce N-1). `at` rozwiazywany po kolei (kolejna zmiana dopiero po poprzedniej):
+  // `{ frame: N }` = przed klatka N; `{ round: N }` = pierwsza klatka z `roundNo >= N`; `{ when, afterRound }` = pierwsza
+  // klatka z `roundNo >= afterRound`, w ktorej w pinie trwa: `inflight` = pocisk w locie (`_schedule(RANGED_FLY_MS | 700)`
+  // jednostki, wiezy, katapulty), ktory bez zmiany NIE laduje w najblizszej klatce (przy predkosci sprzed zmiany); `prehit` = pocisk
+  // ladujacy w najblizszej klatce przy szybszej z predkosci i pozniej przy wolniejszej (zmiana przesuwa trafienie o
+  // klatke); `moving` = krok `_doMove` w trakcie animacji (`0 < vNow - t0 < MOVE_STEP_MS`); `lunge` = wypad
+  // `_doMeleeAttack` przed ciosem (`0 < vNow - t0 < BLOW_HIT_T`). Wektor zapisuje ROZWIAZANA klatke (Rust stosuje zmiane
+  // przed ta sama klatka) i stan pinu w chwili zmiany (`vNow`, `roundNo`, liczniki), ktory test porownuje z sesja.
+  // Obserwatory (opakowania metod instancji, bez zmiany tekstu pinu; pomijaja planowanie AUTO-batch na klonach
+  // `_autoBatchPlanning`): `_schedule` (znacznik `ms` na wpisie `vTimers`), `_doMove`, `_doMeleeAttack`, `_pushClash`,
+  // `_startRout`, `_startFade`, `_spawnDamageLabel`.
+  const changes = (sc.speedChanges ?? []).map((c) => ({ ...c }));
+  if (changes.length && sc.mode !== 'realtime') throw new Error('speedChanges tylko dla czasu rzeczywistego: ' + sc.name);
+  const applied = [];
+  const events = sc.recordEvents ? [] : null;
+  const moves = [];
+  const lunges = [];
+  if (changes.length || events) {
+    const key = (u) => (u.side === 'atk' ? 'atk:' : 'def:') + u.bu.id;
+    const origSched = bs._schedule;
+    bs._schedule = function (ms, cb) {
+      const n = this.vTimers.length;
+      const out = origSched.call(this, ms, cb);
+      if (this.vTimers.length === n + 1) this.vTimers[n].__ms = ms;
+      return out;
+    };
+    const origMove = bs._doMove;
+    bs._doMove = function (ru, ...rest) {
+      const planning = !!this._autoBatchPlanning;
+      const from = `${ru.q},${ru.r}`;
+      const t0 = this.vNow;
+      const out = origMove.call(this, ru, ...rest);
+      // Krok wykonany (pozycja zmieniona) = animacja od `t0 = vNow` (`:8746`); odmowa (`_siegeMoveRefused`) = brak.
+      if (!planning && `${ru.q},${ru.r}` !== from) moves.push({ t0 });
+      return out;
+    };
+    const origMelee = bs._doMeleeAttack;
+    bs._doMeleeAttack = function (a, d, done) {
+      if (!this._autoBatchPlanning) lunges.push({ t0: this.vNow });
+      return origMelee.call(this, a, d, done);
+    };
+    if (events) {
+      const origClash = bs._pushClash;
+      bs._pushClash = function (a, d, dmg, outcome) {
+        if (!this._autoBatchPlanning) events.push([this.vNow, 'C', String(a.bu.id).startsWith('wieza:') ? String(a.bu.id) : key(a), key(d), dmg, outcome || '']);
+        return origClash.call(this, a, d, dmg, outcome);
+      };
+      const origRout = bs._startRout;
+      bs._startRout = function (ru) {
+        if (!this._autoBatchPlanning && !(ru.routed || ru.dead || ru.fadingOut)) events.push([this.vNow, 'R', key(ru)]);
+        return origRout.call(this, ru);
+      };
+      const origFade = bs._startFade;
+      bs._startFade = function (ru) {
+        if (!this._autoBatchPlanning && !(ru.fadingOut || ru.dead || ru.removed)) events.push([this.vNow, 'K', key(ru)]);
+        return origFade.call(this, ru);
+      };
+      const origLabel = bs._spawnDamageLabel;
+      bs._spawnDamageLabel = function (ru, dmg) {
+        if (!this._autoBatchPlanning && !this._ffActive) events.push([this.vNow, 'D', key(ru), dmg]);
+        return origLabel.call(this, ru, dmg);
+      };
+    }
+  }
+  const PROJ_MS = new Set([380, 700]);
+  const probe = (oldMul, newMul) => {
+    const lo = 16 * Math.min(oldMul, newMul);
+    const hi = 16 * Math.max(oldMul, newMul);
+    const fly = bs.vTimers.filter((t) => PROJ_MS.has(t.__ms));
+    return {
+      pendingTimers: bs.vTimers.length,
+      inFlight: fly.filter((t) => t.due > bs.vNow + 16 * oldMul).length,
+      preHit: fly.filter((t) => t.due > bs.vNow + lo && t.due <= bs.vNow + hi).length,
+      moving: moves.filter((m) => bs.vNow - m.t0 > 0 && bs.vNow - m.t0 < 240).length,
+      lunging: lunges.filter((l) => bs.vNow - l.t0 > 0 && bs.vNow - l.t0 < 150).length,
+    };
+  };
   bs.play((r) => { res = r; });
   if (mode === 'skip') bs.skip();
   let t = 0;
@@ -467,6 +546,31 @@ function runScenario(sc) {
       if (idx < 0) throw new Error('speedAt.speedMul poza SPEED_STEPS: ' + sc.name);
       bs._setSpeedIdx(idx);
     }
+    if (changes.length > applied.length) {
+      const c = changes[applied.length];
+      const at = c.at;
+      const frameNo = frames + 1;
+      let hit = false;
+      let pr = null;
+      if (at.frame != null) hit = frameNo === at.frame;
+      else if (at.round != null) hit = bs.roundNo >= at.round;
+      else if (at.when != null) {
+        if (bs.roundNo >= (at.afterRound ?? 0)) {
+          pr = probe(bs.speedMul, c.speedMul);
+          const k = { inflight: 'inFlight', prehit: 'preHit', moving: 'moving', lunge: 'lunging' }[at.when];
+          if (!k) throw new Error('nieznany at.when: ' + at.when);
+          hit = pr[k] > 0;
+        }
+      } else throw new Error('zmiana bez at: ' + sc.name);
+      if (hit) {
+        const idx = BattleScene.SPEED_STEPS.indexOf(c.speedMul);
+        if (idx < 0) throw new Error('speedChanges.speedMul poza SPEED_STEPS: ' + sc.name);
+        const st = pr ?? probe(bs.speedMul, c.speedMul);
+        applied.push({ frame: frameNo, from: bs.speedMul, speedMul: c.speedMul, vNow: bs.vNow, roundNo: bs.roundNo, ...st });
+        bs._setSpeedIdx(idx);
+        if (bs.speedMul !== c.speedMul) throw new Error('_setSpeedIdx: ' + sc.name);
+      }
+    }
     t += frameMs;
     frames += 1;
     const q = rafQ;
@@ -483,6 +587,8 @@ function runScenario(sc) {
     ...(sc.ffStepMs != null ? { frameMs: sc.ffStepMs } : {}),
     ...(sc.speedMul != null ? { speedMul: sc.speedMul } : {}),
     ...(sc.speedAt != null ? { speedAt: sc.speedAt, speedAtApplied: speedAtDone } : {}),
+    ...(changes.length ? { speedChanges: applied, speedChangesWanted: changes.length, frames } : {}),
+    ...(events ? { events } : {}),
     seed: sc.seed,
     battleIndex: sc.battleIndex ?? 0,
     input: {
@@ -522,6 +628,97 @@ if (process.env.WIRING_A_SPEED_VECTORS) {
   const txt = JSON.stringify({ pin: PIN, pinSha256: shaS, frames, vectors: speedVectors }, null, 1) + '\n';
   writeFileSync(join(here, 'p6_k5loop_wiring_a_pin_vectors', 'speed_vectors.json'), txt);
   console.log(createHash('md5').update(txt).digest('hex') + '  speed_vectors.json');
+  process.exit(0);
+}
+
+// FQ-SPEED-MIDCHANGE-VEC-Q1 (#412, D-412-1): wektory zmiany predkosci W TRAKCIE bitwy (`WIRING_A_SPEED_CHANGE_VECTORS=1`).
+// Kazdy przypadek = scenariusz bazowy `SCENARIOS` z klatka produkcyjna (bez bliźniakow `ffStepMs`) w czasie rzeczywistym
+// (klatki 16 ms sciany), predkosc startowa `_setSpeedIdx` przed `play()` (opcjonalnie) i lista zmian `_setSpeedIdx` miedzy
+// klatkami (`speedChanges`, rozwiazane do numeru klatki, patrz `runScenario`). Zapis WYLACZNIE `speed_change_vectors.json`
+// (nazwa, scenariusz bazowy - wejscie test bierze z `vectors.json`, zmiany zadane i zastosowane, liczba klatek, `expect`,
+// strumien zdarzen pinu `events`: `[vNow, 'C', aktor, cel, dmg, wynik]` = `_pushClash`, `[vNow, 'R', jedn]` = `_startRout`,
+// `[vNow, 'K', jedn]` = `_startFade`, `[vNow, 'D', jedn, dmg]` = `_spawnDamageLabel`); pozostale pliki bez zmian.
+const SPEED_CHANGE_CASES = (() => {
+  const base = SCENARIOS.filter((s) => s.ffStepMs == null);
+  // Pary (start -> zmiana) jak pomiar obrony #407 (1->4, 1->64, 64->1, 4->512, 1->2, 8->32) plus 2->128 i 512->8.
+  const pairs = [[1, 4], [1, 64], [64, 1], [4, 512], [1, 2], [8, 32], [2, 128], [512, 8]];
+  // Rodzaje chwili zmiany: tura (jak obrona #407), pocisk w locie, pocisk tuz przed trafieniem (zmiana przesuwa trafienie
+  // o klatke), krok ruchu w trakcie animacji, wypad wrecz przed ciosem, numer klatki.
+  const kinds = ['round', 'inflight', 'prehit', 'moving', 'lunge', 'frame'];
+  const out = [];
+  let i = 0;
+  for (const sc of base) {
+    const [s0, s1] = pairs[i % pairs.length];
+    const kind = kinds[i % kinds.length];
+    const r = 2 + (i * 5) % 11;
+    const at = kind === 'round' ? { round: r } : kind === 'frame' ? { frame: 40 + 37 * i } : { when: kind, afterRound: r };
+    out.push({ name: `sc_${sc.name}_x${s0}to${s1}_${kind}`, base: sc.name, speedMul: s0 === 1 ? undefined : s0, speedChanges: [{ at, speedMul: s1 }] });
+    i += 1;
+  }
+  // Wielokrotne zmiany w jednej bitwie (w gore i w dol, w tym powrot do x1 i skok 1 -> 512).
+  const multi = [
+    ['mur_machiny_wylom', 1, [[{ when: 'inflight', afterRound: 2 }, 64], [{ when: 'prehit', afterRound: 5 }, 1], [{ when: 'moving', afterRound: 8 }, 8]]],
+    ['palisada_liczni_taran', 1, [[{ when: 'moving', afterRound: 1 }, 16], [{ when: 'lunge', afterRound: 4 }, 2], [{ round: 9 }, 512]]],
+    ['mury_cytadela_slaby_atak', 4, [[{ when: 'prehit', afterRound: 3 }, 1], [{ when: 'inflight', afterRound: 6 }, 256]]],
+    ['b03_las_lucznicy_mury_baszta', 1, [[{ when: 'prehit', afterRound: 2 }, 32], [{ when: 'prehit', afterRound: 6 }, 2], [{ when: 'inflight', afterRound: 10 }, 128]]],
+    ['mr_wzg_jazda3_d3l_mury_333', 2, [[{ when: 'moving', afterRound: 2 }, 1], [{ when: 'lunge', afterRound: 5 }, 64]]],
+    ['mi_las_mix_d3l_palisada_118', 1, [[{ frame: 25 }, 512], [{ round: 4 }, 1], [{ when: 'moving', afterRound: 6 }, 4]]],
+  ];
+  for (const [b, s0, ch] of multi) {
+    if (!base.some((s) => s.name === b)) throw new Error('brak scenariusza bazowego ' + b);
+    out.push({ name: `scm_${b}_${[s0, ...ch.map((c) => c[1])].join('_')}`, base: b, speedMul: s0 === 1 ? undefined : s0, speedChanges: ch.map(([at, k]) => ({ at, speedMul: k })) });
+  }
+  return out;
+})();
+if (process.env.WIRING_A_SPEED_CHANGE_VECTORS) {
+  const tS = Date.now();
+  const only = process.env.WIRING_A_SPEED_CHANGE_ONLY ? new Set(process.env.WIRING_A_SPEED_CHANGE_ONLY.split(',')) : null;
+  // Podzial na procesy (czas rzeczywisty pinu jest wolny, ~30-80 s na bitwe): `WIRING_A_SPEED_CHANGE_SHARD=k/n` liczy
+  // przypadki o indeksie `i % n == k` do `WIRING_A_OUT`; `WIRING_A_SPEED_CHANGE_MERGE=plik1,plik2,...` sklada czesci w
+  // kolejnosci `SPEED_CHANGE_CASES` (kazdy przypadek dokladnie raz, ten sam strażnik SHA-256) do pliku wektorow.
+  const shard = process.env.WIRING_A_SPEED_CHANGE_SHARD ? process.env.WIRING_A_SPEED_CHANGE_SHARD.split('/').map(Number) : null;
+  if (process.env.WIRING_A_SPEED_CHANGE_MERGE) {
+    const parts = process.env.WIRING_A_SPEED_CHANGE_MERGE.split(',').map((p) => JSON.parse(readFileSync(p, 'utf8')));
+    const byName = new Map();
+    for (const p of parts) {
+      if (p.pin !== PIN || p.pinSha256 !== EXPECTED_SHA256) throw new Error('czesc z innego pinu');
+      for (const v of p.vectors) {
+        if (byName.has(v.name)) throw new Error('powtorzony przypadek ' + v.name);
+        byName.set(v.name, v);
+      }
+    }
+    const merged = SPEED_CHANGE_CASES.map((c) => {
+      const v = byName.get(c.name);
+      if (!v) throw new Error('brak przypadku ' + c.name);
+      return v;
+    });
+    if (merged.length !== byName.size) throw new Error('nadmiarowe przypadki w czesciach');
+    const txtM = JSON.stringify({ pin: PIN, pinSha256: EXPECTED_SHA256, frameWallMs: 16, vectors: merged }) + '\n';
+    const outM = join(here, 'p6_k5loop_wiring_a_pin_vectors', 'speed_change_vectors.json');
+    writeFileSync(outM, txtM);
+    console.log(createHash('md5').update(txtM).digest('hex') + '  ' + outM);
+    process.exit(0);
+  }
+  if (shard && !process.env.WIRING_A_OUT) throw new Error('WIRING_A_SPEED_CHANGE_SHARD wymaga WIRING_A_OUT');
+  const vecs = [];
+  for (const [ci, c] of SPEED_CHANGE_CASES.entries()) {
+    if (only && !only.has(c.name)) continue;
+    if (shard && ci % shard[1] !== shard[0]) continue;
+    const sc0 = SCENARIOS.find((s) => s.name === c.base);
+    const v = runScenario({ ...sc0, name: c.name, mode: 'realtime', speedMul: c.speedMul, speedChanges: c.speedChanges, recordEvents: true });
+    if (v.speedChanges.length !== c.speedChanges.length) throw new Error(`${c.name}: zastosowano ${v.speedChanges.length}/${c.speedChanges.length} zmian`);
+    vecs.push({
+      name: c.name, base: c.base, mode: 'realtime', ...(c.speedMul != null ? { speedMul: c.speedMul } : {}),
+      wanted: c.speedChanges, changes: v.speedChanges, frames: v.frames, expect: v.expect, events: v.events,
+    });
+    console.error(`${c.name}: ${v.expect.winner} tura ${v.expect.roundNo} klatek ${v.frames} zdarzen ${v.events.length} zmiany ${JSON.stringify(v.speedChanges.map((a) => [a.frame, a.from, a.speedMul, a.inFlight, a.preHit, a.moving, a.lunging]))} (${Date.now() - tS} ms)`);
+  }
+  const shaC = hash.digest('hex');
+  if (shaC !== EXPECTED_SHA256) throw new Error('straznik SHA-256 pinu: ' + shaC + ' != ' + EXPECTED_SHA256);
+  const txt = JSON.stringify({ pin: PIN, pinSha256: shaC, frameWallMs: 16, vectors: vecs }) + '\n';
+  const outPath = process.env.WIRING_A_OUT ?? join(here, 'p6_k5loop_wiring_a_pin_vectors', 'speed_change_vectors.json');
+  writeFileSync(outPath, txt);
+  console.log(createHash('md5').update(txt).digest('hex') + '  ' + outPath);
   process.exit(0);
 }
 
