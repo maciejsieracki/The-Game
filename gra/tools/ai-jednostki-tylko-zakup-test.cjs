@@ -178,6 +178,16 @@ const majorCities = [
 const mpCities = [{ id: 'mp1', ownerId: 9, q: 3, r: 16, name: 'MP', population: 3, manpower: 30 }];
 const TURNS = 40;
 
+// R-WEB-TEST-DEBT-Q14-MUTATIONS-Q1: bramka zakupu musi odrzucic jednostke, gdy Skarbiec nie pokrywa ceny
+// (bez rezerwy utrzymania = dawne zachowanie: tylko cena + Manpower). Symulacja nie wykrywa zdjecia tego
+// czlonu (skarbiec nie schodzi ponizej ceny w scenariuszu), wiec asercja jest bezposrednia.
+{
+  eq(M.shouldAIPurchaseUnit({ treasury: 10, goldCost: 50, hasManpower: true }), false,
+    'A-PRICE: zakup odrzucony, gdy skarbiec (10) < cena (50)');
+  eq(M.shouldAIPurchaseUnit({ treasury: 50, goldCost: 50, hasManpower: true }), true,
+    'A-PRICE-EQ: zakup dozwolony, gdy skarbiec == cena (granica)');
+}
+
 console.log(`\n--- B. major AI (3 miasta, ${TURNS} tur, skarbiec zasilany) ---`);
 {
   const s = simulate({ majorAiOwnerIds: [7] }, majorCities, 7, TURNS, 300, 30);
