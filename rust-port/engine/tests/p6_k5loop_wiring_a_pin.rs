@@ -1420,3 +1420,521 @@ fn predkosc_bitwy_wektory_pinu_bajt_w_bajt() {
     }
     eprintln!("FQ-SPEED: {speeds:?} akcje {n_akcji:?}");
 }
+
+// ------------------------------------------------------------ FQ-SPEED-MIDCHANGE-VEC-Q1 (#412)
+
+const SPEED_CHANGE_VECTORS: &str =
+    include_str!("p6_k5loop_wiring_a_pin_vectors/speed_change_vectors.json");
+
+/// R-RUSTPORT-P4-412-FQ-SPEED-MIDCHANGE-VEC-Q1: wektory zmiany prędkości W TRAKCIE bitwy (`speed_change_vectors.json`,
+/// generator `WIRING_A_SPEED_CHANGE_VECTORS=1`). Nadpisanie ścieżką `WIRING_A_SPEED_CHANGE_FILE` (tylko diagnostyka:
+/// kandydaci generatora z `WIRING_A_OUT`).
+fn speed_change_vectors() -> Value {
+    let doc: Value = match std::env::var("WIRING_A_SPEED_CHANGE_FILE") {
+        Ok(p) => serde_json::from_str(&std::fs::read_to_string(p).unwrap()).unwrap(),
+        Err(_) => serde_json::from_str(SPEED_CHANGE_VECTORS).unwrap(),
+    };
+    assert_eq!(doc["pin"], PIN);
+    assert_eq!(
+        doc["pinSha256"], PIN_SHA256,
+        "wektory zmiany prędkości z innego tekstu pinu"
+    );
+    assert_eq!(f(&doc["frameWallMs"]), FRAME_MS);
+    doc
+}
+
+/// R-RUSTPORT-P4-412-FQ-SPEED-MIDCHANGE-VEC-Q1 (D-412-2): wektory zmiany prędkości w trakcie bitwy JAWNIE rozbieżne z
+/// pinem (zmierzone przez Operatora r1, 9/40; w każdym pierwsza różnica PO pierwszej zmianie, przed nią zgodne).
+/// Klasy (raport `dyspozycje/autobot/runs/R-RUSTPORT-P4-412-FQ-SPEED-MIDCHANGE-VEC-Q1/01-operator-r1.md`):
+/// L = zmiana w trakcie wypadu wręcz przed ciosem (`lunging`): ciało liczy chwilę ciosu i ogon wypadu w `start` siatką
+/// klatki sprzed zmiany (`siege_tactics_loop.rs` `frame_raf(self.frame_ms, …)`, D-FQ-1), pin sprawdza `localT >= BLOW_HIT_T`
+/// w każdej klatce `_raf` nową siatką (`battleScene.ts:9118-9124`) — cios o klatkę wcześniej/później; R = pozostałe
+/// (zmiana przy pocisku tuż przed trafieniem, zmiana tury / klatki przy innym odcinku ciała w toku). Bez poprawki kodu
+/// silnika w tym temacie (D-412-2: rozbieżność = osobny temat). Test pada, gdy pozycja z listy zacznie się zgadzać albo
+/// rozjedzie się wektor spoza listy.
+const ROZBIEZNE_FQ_SPEED_MIDCHANGE: [&str; 9] = [
+    // L
+    "sc_mur_jazda_rzeka_x1to2_lunge",
+    "sc_p3_rown_mix_d8l_palisada_218_x1to4_lunge",
+    "sc_fq_rown_mix_d8l_mury_217_x1to2_lunge",
+    // R
+    "sc_p3_las_mix_d5_mury_123_x2to128_prehit",
+    "sc_fq_las_mix_d8l_palisada_122_x64to1_round",
+    "sc_fq_gory_lucz2_d6l_mury_191_x64to1_prehit",
+    "scm_mr_wzg_jazda3_d3l_mury_333_2_1_64",
+    "scm_mi_las_mix_d3l_palisada_118_1_512_1_4",
+    "scm_rt_mur_machiny_wylom_1_4_64_2",
+];
+
+/// Mutant sterownika zmiany prędkości (kontrola czułości wektorów; `MidMut::None` = model pinu).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum MidMut {
+    /// Model pinu: `_setSpeedIdx` przed klatką `frame` (stan po klatce `frame - 1`).
+    None,
+    /// Zmiana prędkości w trakcie bitwy pominięta (wszystkie zmiany).
+    Skip,
+    /// Pominięta każda zmiana poza pierwszą (wektory z wieloma zmianami).
+    SkipLater,
+    /// Zmiana o klatkę za późno (po kroku klatki `frame`).
+    Late,
+    /// Zmiana o klatkę za wcześnie.
+    Early,
+    /// Zły krok `SPEED_STEPS` (sąsiedni indeks).
+    WrongSpeed,
+    /// Zegar przyspieszony, ale siatka klatki ciała (`frame_ms`, D-FQ-1) bez przeliczenia (stara klatka).
+    OldGrid,
+    /// Siatka klatki ciała nowa, zegar (`speedMul`, `_scaledWallDelta`) stary.
+    NewGridOldClock,
+    /// Siatka klatki ciała zawsze produkcyjna 16 ms po zmianie (zegar nowy).
+    Grid16,
+}
+
+const MID_MUTANTS: [MidMut; 8] = [
+    MidMut::Skip,
+    MidMut::SkipLater,
+    MidMut::Late,
+    MidMut::Early,
+    MidMut::WrongSpeed,
+    MidMut::OldGrid,
+    MidMut::NewGridOldClock,
+    MidMut::Grid16,
+];
+
+/// Stan sesji w chwili zastosowanej zmiany: (klatka, `vNow`, `roundNo`, `speedMul` przed, po).
+type ChangeAt = (u64, f64, i64, f64, f64);
+
+/// Wynik przebiegu wektora zmiany prędkości.
+struct MidRun {
+    at_change: Vec<ChangeAt>,
+    /// Strumień zdarzeń sesji (format porównania [`pin_event_key`]).
+    events: Vec<String>,
+    /// Czas `t0` (`vNow`) każdego zdarzenia z `events` (ta sama kolejność).
+    event_t: Vec<f64>,
+    /// Indeks pierwszego zdarzenia różnego od pinu (`None` = zgodny).
+    first_div: Option<usize>,
+    frames: u64,
+    out: Option<Result<SessionOutcome, SessionError>>,
+}
+
+/// Zdarzenie pinu `[vNow, 'C', aktor, cel, dmg, wynik]` / `[vNow, 'R'|'K', jedn]` / `[vNow, 'D', jedn, dmg]` jako klucz
+/// porównania (liczby jako bity `f64`, niezależnie od zapisu `1` / `1.0`).
+fn pin_event_key(e: &Value) -> String {
+    let a = e.as_array().unwrap();
+    let t = hex_bits(f(&a[0]));
+    let s = |i: usize| a[i].as_str().unwrap();
+    match s(1) {
+        "C" => format!("{t} C {} {} {} {}", s(2), s(3), hex_bits(f(&a[4])), s(5)),
+        "D" => format!("{t} D {} {}", s(2), hex_bits(f(&a[3]))),
+        k @ ("R" | "K") => format!("{t} {k} {}", s(2)),
+        k => panic!("rodzaj zdarzenia {k}"),
+    }
+}
+
+/// Zmiana prędkości w sesji wg modelu pinu albo mutanta.
+fn apply_mid_change(s: &mut SiegeBattleSession, k: f64, m: MidMut) {
+    let idx = speed_idx_of(k);
+    match m {
+        MidMut::WrongSpeed => {
+            let n = i64::try_from(SPEED_STEPS.len()).unwrap();
+            let wrong = if idx + 1 < n { idx + 1 } else { idx - 1 };
+            s.set_speed_idx(wrong, false);
+        }
+        MidMut::OldGrid => {
+            let old = s.battle_loop().env.body.frame_ms;
+            s.set_speed_idx(idx, false);
+            s.battle_loop_mut().env.body.frame_ms = old;
+        }
+        MidMut::NewGridOldClock => {
+            let old_idx = i64::try_from(s.speed_idx()).unwrap();
+            s.set_speed_idx(idx, false);
+            let grid = s.battle_loop().env.body.frame_ms;
+            s.set_speed_idx(old_idx, false);
+            s.battle_loop_mut().env.body.frame_ms = grid;
+        }
+        MidMut::Grid16 => {
+            s.set_speed_idx(idx, false);
+            s.battle_loop_mut().env.body.frame_ms = FRAME_MS;
+        }
+        _ => assert_eq!(s.set_speed_idx(idx, false), k),
+    }
+}
+
+/// Przebieg wektora zmiany prędkości: wejście z `vectors.json` (scenariusz bazowy), czas rzeczywisty (klatki 16 ms
+/// ściany), prędkość startowa i zmiany `set_speed_idx` przed klatką z wektora (model pinu albo mutant). Zdarzenia
+/// sesji `Clash`/`Rout`/`Kill`/`Damage` (= `_pushClash`/`_startRout`/`_startFade`/`_spawnDamageLabel` pinu) porównywane na
+/// bieżąco z `events` pinu; `stop_on_div` kończy przebieg na pierwszej różnicy (mutanty).
+fn run_midchange(
+    bv: &Value,
+    sv: &Value,
+    data: &SessionData,
+    m: MidMut,
+    stop_on_div: bool,
+) -> MidRun {
+    use civ_engine::domain::siege_tactics_actions::{Actor, BattleAction};
+    use civ_engine::domain::siege_tactics_blow::ClashTag;
+    use civ_engine::domain::siege_tactics_end::BattleSide;
+    use civ_engine::domain::siege_tactics_turnseq::UnitRef;
+    let mut s = SiegeBattleSession::prepare_scene(&scene_input(bv), data).unwrap();
+    if let Some(k) = sv["speedMul"].as_f64() {
+        assert_eq!(s.set_speed_idx(speed_idx_of(k), false), k);
+    }
+    let ids = s.roster_ids().clone();
+    let key = |u: UnitRef| {
+        let side = usize::from(u.side != BattleSide::Attacker);
+        format!("{}:{}", ["atk", "def"][side], ids[side][u.idx])
+    };
+    let pin: Vec<String> = sv["events"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(pin_event_key)
+        .collect();
+    let changes = sv["changes"].as_array().unwrap();
+    let mut run = MidRun {
+        at_change: Vec::new(),
+        events: Vec::new(),
+        event_t: Vec::new(),
+        first_div: None,
+        frames: 0,
+        out: None,
+    };
+    let mut ci = 0;
+    while s.phase() != SessionPhase::Finished {
+        let frame = run.frames + 1;
+        while let Some(c) = changes.get(ci) {
+            let want = c["frame"].as_u64().unwrap();
+            let at = match m {
+                MidMut::Late => want + 1,
+                MidMut::Early => want - 1,
+                _ => want,
+            };
+            if frame != at {
+                break;
+            }
+            ci += 1;
+            if m == MidMut::Skip || (m == MidMut::SkipLater && ci > 1) {
+                continue;
+            }
+            let k = f(&c["speedMul"]);
+            run.at_change.push((
+                frame,
+                s.clock().v_now,
+                s.battle_loop().st.round_no,
+                s.speed_mul(),
+                k,
+            ));
+            apply_mid_change(&mut s, k, m);
+        }
+        let rep = match s.step(FRAME_MS) {
+            Ok(r) => r,
+            Err(e) => {
+                run.out = Some(Err(e));
+                return run;
+            }
+        };
+        run.frames += 1;
+        assert!(run.frames < u64::from(MAX_FRAMES), "bitwa bez końca");
+        for a in rep.actions {
+            let t = hex_bits(a.t0);
+            let row = match a.action {
+                BattleAction::Clash {
+                    attacker,
+                    target,
+                    dmg,
+                    tag,
+                    ..
+                } => {
+                    let who = match attacker {
+                        Actor::Unit(u) => key(u),
+                        Actor::Tower(row) => format!("wieza:{row}"),
+                    };
+                    let tag = match tag {
+                        ClashTag::Plain => "",
+                        ClashTag::Padl => "padl",
+                        ClashTag::Rout => "rout",
+                    };
+                    format!("{t} C {who} {} {} {tag}", key(target), hex_bits(dmg))
+                }
+                BattleAction::Damage { target, dmg } => {
+                    format!("{t} D {} {}", key(target), hex_bits(dmg))
+                }
+                BattleAction::Rout { unit } => format!("{t} R {}", key(unit)),
+                BattleAction::Kill { unit } => format!("{t} K {}", key(unit)),
+                _ => continue,
+            };
+            if run.first_div.is_none() && pin.get(run.events.len()) != Some(&row) {
+                run.first_div = Some(run.events.len());
+            }
+            run.events.push(row);
+            run.event_t.push(a.t0);
+        }
+        if stop_on_div && run.first_div.is_some() {
+            return run;
+        }
+    }
+    if run.first_div.is_none() && run.events.len() != pin.len() {
+        run.first_div = Some(run.events.len());
+    }
+    run.out = Some(s.finish());
+    run
+}
+
+/// Różnice przebiegu z wektorem pinu (zdarzenia, liczba klatek, wynik); pusta lista = bajt w bajt.
+fn mid_diff(bv: &Value, sv: &Value, run: MidRun) -> Vec<String> {
+    let mut d = Vec::new();
+    if let Some(i) = run.first_div {
+        d.push(format!(
+            "zdarzenie {i}: {:?} != pin {:?}",
+            run.events.get(i),
+            sv["events"].get(i).map(pin_event_key)
+        ));
+    }
+    if Some(run.frames) != sv["frames"].as_u64() {
+        d.push(format!("klatek {} != {}", run.frames, sv["frames"]));
+    }
+    match run.out {
+        Some(Ok(out)) => {
+            let mut cmp = bv.clone();
+            cmp["expect"] = sv["expect"].clone();
+            d.extend(diff(&cmp, &out));
+        }
+        Some(Err(e)) => d.push(format!("błąd sesji {e:?}")),
+        None => d.push("przebieg przerwany".to_owned()),
+    }
+    d
+}
+
+/// R-RUSTPORT-P4-412 (obrona, Uwaga 1 Evaluatora): dla wektora z listy [`ROZBIEZNE_FQ_SPEED_MIDCHANGE`] przebieg do
+/// pierwszej zmiany prędkości musi być zgodny z pinem: chwila pierwszej zmiany (klatka, `vNow`, `roundNo`, prędkość przed
+/// i po) równa pinowi, a pierwsze rozbieżne zdarzenie (po stronie Rusta i pinu) ma `vNow` nie mniejsze niż `vNow` pierwszej
+/// zmiany. `None` = rozbieżność wyłącznie po zmianie (dopuszczona listą); `Some` = opis regresji przed zmianą.
+fn przed_pierwsza_zmiana(sv: &Value, run: &MidRun) -> Option<String> {
+    let c = &sv["changes"].as_array().unwrap()[0];
+    let want: ChangeAt = (
+        c["frame"].as_u64().unwrap(),
+        f(&c["vNow"]),
+        c["roundNo"].as_i64().unwrap(),
+        f(&c["from"]),
+        f(&c["speedMul"]),
+    );
+    match run.at_change.first() {
+        Some(got) if *got == want => {}
+        got => return Some(format!("chwila pierwszej zmiany {got:?} != pin {want:?}")),
+    }
+    let i = run.first_div?;
+    let t_change = want.1;
+    let pin_t = sv["events"].get(i).map(|e| f(&e[0]));
+    let rust_t = run.event_t.get(i).copied();
+    let before = |t: Option<f64>| t.is_some_and(|t| t < t_change);
+    (before(rust_t) || before(pin_t)).then(|| {
+        format!(
+            "zdarzenie {i} przed zmianą (vNow zmiany {t_change}): Rust {:?} t={rust_t:?}, pin {:?} t={pin_t:?}",
+            run.events.get(i),
+            sv["events"].get(i).map(pin_event_key)
+        )
+    })
+}
+
+fn base_by_name(base: &Value) -> BTreeMap<String, Value> {
+    base["vectors"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|v| (v["name"].as_str().unwrap().to_owned(), v.clone()))
+        .collect()
+}
+
+/// R-RUSTPORT-P4-412-FQ-SPEED-MIDCHANGE-VEC-Q1: zmiana prędkości bitwy W TRAKCIE walki (pin `_setSpeedIdx`
+/// `battleScene.ts:9518-9527`, „Safe to call mid-battle” `:9535`; `_scaledWallDelta` `:9512-9515` skaluje deltę ścienną od
+/// następnej klatki `_raf`) bajt w bajt z wykonaniem tekstu pinu: chwila zmiany (klatka, `vNow`, `roundNo`, prędkość
+/// przed i po), strumień zdarzeń (`_pushClash`/`_startRout`/`_startFade`/`_spawnDamageLabel` = `Clash`/`Rout`/`Kill`/
+/// `Damage` z czasem `vNow`), liczba klatek do końca i wynik (zwycięzca, tura, wyłom, rzuty, HP/śmierć/rozbicie/zejście
+/// każdej jednostki). Pokrycie: ≥ 24 przypadki, zmiany w górę i w dół, chwile zmiany z pociskiem w locie, tuż przed
+/// trafieniem (zmiana przesuwa trafienie o klatkę), w trakcie kroku ruchu i wypadu wręcz, bitwy z wieloma zmianami.
+#[test]
+fn zmiana_predkosci_w_trakcie_bitwy_wektory_pinu_bajt_w_bajt() {
+    let by_name = base_by_name(&vectors());
+    let doc = speed_change_vectors();
+    let data = pin_session_data();
+    let list = doc["vectors"].as_array().unwrap();
+    let mut rozbiezne = Vec::new();
+    let mut zgodne_z_listy = Vec::new();
+    let mut przed_zmiana = Vec::new();
+    let mut straz_sprawdzona = false;
+    let mut n_listed = 0;
+    let (mut n_changes, mut multi, mut up, mut down, mut n_events) = (0, 0, 0, 0, 0);
+    let mut cov = BTreeMap::<&str, usize>::new();
+    let mut pairs = std::collections::BTreeSet::<(u64, u64)>::new();
+    let mut rounds = std::collections::BTreeSet::<i64>::new();
+    for sv in list {
+        let name = sv["name"].as_str().unwrap();
+        let bv = &by_name[sv["base"].as_str().unwrap()];
+        assert!(bv["frameMs"].is_null(), "{name}: tylko klatka produkcyjna");
+        assert_eq!(sv["mode"], "realtime");
+        assert_eq!(sv["expect"]["otherRandom"], 0, "{name}");
+        let changes = sv["changes"].as_array().unwrap();
+        assert_eq!(
+            changes.len(),
+            sv["wanted"].as_array().unwrap().len(),
+            "{name}: wszystkie zadane zmiany zastosowane w pinie"
+        );
+        let run = run_midchange(bv, sv, &data, MidMut::None, false);
+        let mut d = Vec::new();
+        if run.at_change.len() != changes.len() {
+            d.push(format!(
+                "zmian {} != {}",
+                run.at_change.len(),
+                changes.len()
+            ));
+        }
+        for (c, got) in changes.iter().zip(&run.at_change) {
+            let want: ChangeAt = (
+                c["frame"].as_u64().unwrap(),
+                f(&c["vNow"]),
+                c["roundNo"].as_i64().unwrap(),
+                f(&c["from"]),
+                f(&c["speedMul"]),
+            );
+            if *got != want {
+                d.push(format!("chwila zmiany {got:?} != pin {want:?}"));
+            }
+        }
+        n_events += run.events.len();
+        let listed = ROZBIEZNE_FQ_SPEED_MIDCHANGE.contains(&name);
+        if listed {
+            // Uwaga 1 Evaluatora #412: pozycja listy rozbieżności nie może maskować regresji PRZED zmianą prędkości.
+            if let Some(e) = przed_pierwsza_zmiana(sv, &run) {
+                przed_zmiana.push(format!("{name}: {e}"));
+            }
+            // Czułość strażnika: pierwsze zdarzenie pinu przed zmianą podmienione w kopii wektora (symulowana regresja
+            // przy stałej prędkości) musi zostać wykryte. Raz na test (pierwsza pozycja listy ze zdarzeniem przed zmianą).
+            let t_change = f(&changes[0]["vNow"]);
+            let pre = sv["events"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .position(|e| f(&e[0]) < t_change);
+            if let (false, Some(j)) = (straz_sprawdzona, pre) {
+                let mut zle = sv.clone();
+                zle["events"][j][2] = Value::from("atk:regresja");
+                let r = run_midchange(bv, &zle, &data, MidMut::None, true);
+                assert!(
+                    przed_pierwsza_zmiana(&zle, &r).is_some(),
+                    "{name}: strażnik nie wykrył regresji przed zmianą (zdarzenie {j})"
+                );
+                straz_sprawdzona = true;
+            }
+        }
+        d.extend(mid_diff(bv, sv, run));
+        if listed && d.is_empty() {
+            zgodne_z_listy.push(name.to_owned());
+        }
+        if listed {
+            // Pokrycie liczone wyłącznie z wektorów zgodnych z pinem.
+            n_listed += 1;
+            continue;
+        }
+        if !d.is_empty() {
+            rozbiezne.push(format!("{name}: {}", d.join("; ")));
+        }
+        if changes.len() > 1 {
+            multi += 1;
+        }
+        for c in changes {
+            n_changes += 1;
+            let (a, b) = (f(&c["from"]), f(&c["speedMul"]));
+            pairs.insert((a as u64, b as u64));
+            if b > a {
+                up += 1;
+            } else {
+                down += 1;
+            }
+            rounds.insert(c["roundNo"].as_i64().unwrap());
+            for k in ["inFlight", "preHit", "moving", "lunging"] {
+                if c[k].as_u64().unwrap() > 0 {
+                    *cov.entry(k).or_default() += 1;
+                }
+            }
+        }
+    }
+    assert!(
+        rozbiezne.is_empty(),
+        "zmiana prędkości w trakcie: rozbieżne z pinem: {rozbiezne:#?}"
+    );
+    assert!(
+        straz_sprawdzona || std::env::var("WIRING_A_SPEED_CHANGE_FILE").is_ok(),
+        "kontrola czułości strażnika przed zmianą nie wykonana"
+    );
+    assert!(
+        przed_zmiana.is_empty(),
+        "pozycje listy ROZBIEZNE_FQ_SPEED_MIDCHANGE rozbieżne PRZED pierwszą zmianą prędkości (regresja przy stałej prędkości): {przed_zmiana:#?}"
+    );
+    assert!(
+        zgodne_z_listy.is_empty(),
+        "zgodne mimo listy ROZBIEZNE_FQ_SPEED_MIDCHANGE (skróć listę): {zgodne_z_listy:?}"
+    );
+    assert_eq!(
+        n_listed,
+        ROZBIEZNE_FQ_SPEED_MIDCHANGE.len(),
+        "pozycja listy rozbieżności bez wektora w pliku"
+    );
+    // Kryteria pokrycia (dispatch #412): ≥ 24 przypadki, różne pary i tury zmiany, pocisk w locie / tuż przed
+    // trafieniem, krok ruchu i wypad w trakcie animacji, zmiany w górę i w dół, bitwy z wieloma zmianami.
+    if std::env::var("WIRING_A_SPEED_CHANGE_FILE").is_err() {
+        assert!(
+            list.len() - n_listed >= 24,
+            "zgodnych przypadków {}",
+            list.len() - n_listed
+        );
+        assert!(pairs.len() >= 6, "par prędkości {pairs:?}");
+        assert!(rounds.len() >= 6, "tur zmiany {rounds:?}");
+        assert!(up > 0 && down > 0, "w górę {up}, w dół {down}");
+        assert!(multi >= 3, "bitew z wieloma zmianami {multi}");
+        for k in ["inFlight", "preHit", "moving", "lunging"] {
+            assert!(
+                cov.get(k).copied().unwrap_or(0) > 0,
+                "brak chwili {k}: {cov:?}"
+            );
+        }
+        assert!(n_events > 0, "brak zdarzeń");
+    }
+    eprintln!(
+        "FQ-SPEED-MIDCHANGE: przypadków {} (zgodnych {}, jawnie rozbieżnych {n_listed}), zmian {n_changes} (w górę {up}, w dół {down}, bitew wielokrotnych {multi}), par {pairs:?}, tur {rounds:?}, chwile {cov:?}, zdarzeń {n_events}",
+        list.len(),
+        list.len() - n_listed
+    );
+}
+
+/// R-RUSTPORT-P4-412-FQ-SPEED-MIDCHANGE-VEC-Q1 (kontrola czułości): każdy mutant sterownika zmiany prędkości
+/// ([`MID_MUTANTS`]: pominięta zmiana, pominięte zmiany poza pierwszą, klatka za późno / za wcześnie, zły krok
+/// `SPEED_STEPS`, siatka klatki ciała bez przeliczenia, siatka nowa przy starym zegarze, siatka 16 ms) rozjeżdża się z
+/// wektorami pinu na co najmniej jednym przypadku (zdarzenia, liczba klatek albo wynik). Test pada, gdy któryś mutant
+/// przechodzi wszystkie wektory (wektory nie pilnowałyby tej własności).
+#[test]
+fn zmiana_predkosci_w_trakcie_mutanty_sterownika_daja_fail() {
+    let by_name = base_by_name(&vectors());
+    let doc = speed_change_vectors();
+    let data = pin_session_data();
+    let list = doc["vectors"].as_array().unwrap();
+    let mut killed = BTreeMap::<String, usize>::new();
+    for m in MID_MUTANTS {
+        let mut n = 0;
+        // Tylko wektory zgodne z pinem (pozycje listy rozbieżności rozjeżdżają się także bez mutanta).
+        for sv in list
+            .iter()
+            .filter(|sv| !ROZBIEZNE_FQ_SPEED_MIDCHANGE.contains(&sv["name"].as_str().unwrap()))
+        {
+            let bv = &by_name[sv["base"].as_str().unwrap()];
+            if !mid_diff(bv, sv, run_midchange(bv, sv, &data, m, true)).is_empty() {
+                n += 1;
+            }
+        }
+        killed.insert(format!("{m:?}"), n);
+    }
+    eprintln!(
+        "FQ-SPEED-MIDCHANGE mutanty (rozbieżne przypadki z {} zgodnych z pinem): {killed:?}",
+        list.len() - ROZBIEZNE_FQ_SPEED_MIDCHANGE.len()
+    );
+    let survived: Vec<_> = killed.iter().filter(|(_, n)| **n == 0).collect();
+    assert!(survived.is_empty(), "mutanty niezabite: {survived:?}");
+}
