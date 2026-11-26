@@ -195,6 +195,26 @@ function expiringPair(w, a, b, initiator) {
     lib.truceEndTickPair(w.ports, 0, 7, 110);
     check('(d0) cena > 0: oferta w skrzynce nadal składana (kontrola, brak regresji)', w.inbox.length === 1 && w.warCalls.length === 0, w.inbox);
   }
+  // (d0b) cena 0 NIE dotyczy pary AI↔AI: bramka jest w gałęzi gracza; AI↔AI nadal kończy się pokojem, gdy płatność wchodzi.
+  {
+    const w = makeWorld();
+    w.humans.delete(0);
+    w.quoteValue = 0;
+    expiringPair(w, 7, 9, 7);
+    w.army[7] = 100; w.army[9] = 100;
+    lib.truceEndTickPair(w.ports, 7, 9, 110);
+    check('(d0b) cena 0 AI↔AI: nie wchodzi w gałąź gracza (brak oferty w skrzynce)', w.inbox.length === 0, w.inbox);
+    check('(d0b) cena 0 AI↔AI: zachowanie sprzed zmiany (pokój przez truceEndSettleCore, bez wojny)', w.finalize.length === 1 && w.warCalls.length === 0, { f: w.finalize, w: w.warCalls });
+  }
+  // (d0c) wycena NaN (brak liczby) traktowana jak brak ceny: wojna wraca, bez oferty (decyzja ZAŁOŻENIE, patrz raport).
+  {
+    const w = makeWorld();
+    w.quoteValue = NaN;
+    expiringPair(w, 0, 7, 0);
+    w.army[0] = 100; w.army[7] = 100;
+    lib.truceEndTickPair(w.ports, 0, 7, 110);
+    check('(d0c) wycena NaN gracz↔AI: brak oferty, wojna wraca', w.inbox.length === 0 && w.warCalls.length === 1, { i: w.inbox, w: w.warCalls });
+  }
   // (e) odmowa lub brak odpowiedzi = wojna (bez płatności).
   {
     const w = makeWorld();

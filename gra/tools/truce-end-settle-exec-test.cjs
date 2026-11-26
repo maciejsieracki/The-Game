@@ -178,6 +178,24 @@ function planWith(full, items) {
     check('(5) plan niepełny → stan nietknięty', JSON.stringify(L.snapshot()) === JSON.stringify(before));
   }
 
+  // (6) Gracz (owner 0 = ME()) jako PŁATNIK pokoju po rozejmie: surowce 0 → 9, jeden przelew, płatnik 0.
+  {
+    const L = makeLedger();
+    L.goods[0] = { zloto: 100, brąz: 50 };
+    const before = L.snapshot();
+    const pick = exec({
+      requiredPn: 50, currency: 'surowce',
+      planCity: () => planWith(false, []),
+      planTail: () => planWith(true, [{ kind: 'zloto', id: 'zloto', amount: 30 }, { kind: 'brąz', id: 'brąz', amount: 20 }]),
+      balanceOk: okBal,
+    }, 0, 9, L.transfer);
+    check('(6) gracz płatnik: plan zwrócony z walutą surowce', pick != null && pick.currency === 'surowce', pick);
+    check('(6) gracz płatnik: ME() traci złoto 30 i brąz 20', L.goods[0].zloto === before.goods[0].zloto - 30 && L.goods[0].brąz === before.goods[0].brąz - 20, L.goods[0]);
+    check('(6) gracz płatnik: AI 9 zyskuje złoto 30 i brąz 20', L.goods[9].zloto === 30 && L.goods[9].brąz === 20, L.goods[9]);
+    check('(6) gracz płatnik: przelew wołany raz z płatnikiem 0', L.transfers.length === 1 && L.transfers[0].payerId === 0 && L.transfers[0].payeeId === 9, L.transfers);
+    check('(6) gracz płatnik: stan gracza 7 nietknięty', L.goods[7].zloto === before.goods[7].zloto && L.goods[7].brąz === before.goods[7].brąz);
+  }
+
   // Mutanty (czerwone): każdy musi zostać wykryty przez powyższe asercje.
   const src = fs.readFileSync(PRICE, 'utf8');
   const callOld = 'if (pick.plan.items.length > 0) transfer(pick.plan, payerId, payeeId);';
