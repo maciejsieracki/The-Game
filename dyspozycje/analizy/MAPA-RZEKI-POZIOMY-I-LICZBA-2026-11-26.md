@@ -35,7 +35,7 @@ Siatka źródeł: `resolveRiverMapParams` (`gra/src/map/newGameMapDefaults.ts:33
 
 Metoda: bundle esbuild generatora (`generateMap`) w scratchpadzie, domyślna faza (brak `location`, więc `main+medium`), tier rzek `medium`, typ `kontynenty`, bez zmian w repo. Lista map: 5 ziaren (1, 7, 42, 99, 2026) × 3 rozmiary z `gra/tools/river-path-adjacency-test.cjs:25-29` = 15 map.
 
-**ZMIERZONO (13 z 15 map):**
+**ZMIERZONO (15 z 15 map):**
 
 | Rozmiar | Seed | main (liczba / hex) | medium | tributary | źródeł main | czas gen. (ms) |
 |---|---|---|---|---|---|---|
@@ -52,10 +52,14 @@ Metoda: bundle esbuild generatora (`generateMap`) w scratchpadzie, domyślna faz
 | 240×168 | 1 | 204 / 2518 | 87 / 1199 | 146 / 2159 | 204 | 219 828 |
 | 240×168 | 7 | 213 / 2790 | 94 / 1403 | 119 / 1848 | 213 | 119 238 |
 | 240×168 | 42 | 188 / 2574 | 97 / 1377 | 141 / 2119 | 188 | 150 350 |
+| 240×168 | 99 | 203 / 2684 | 103 / 1466 | 118 / 1879 | 203 | 207 031 |
+| 240×168 | 2026 | 234 / 2917 | 96 / 1338 | 103 / 1554 | 234 | 211 042 |
 
-Typu `short` = 0 we wszystkich 13 mapach (zgodnie z bramką).
+Typu `short` = 0 we wszystkich 15 mapach (zgodnie z bramką).
 
-**NIE ZMIERZONO (2 mapy):** 240×168 seed 99 i 2026. Powód: po seedzie 42 wolne miejsce na dysku spadło do 0 MB (błąd `Disk full` w `/tmp`), a próg operatora to ≥4 GB; po usunięciu `gra/node_modules` zostało 1,2 GB. Pomiar do dokończenia po zwolnieniu dysku (ok. 2 × 150–220 s).
+Widoczne domyślnie (`main`+`medium`, stage 2) na 240×168: seed 99 = 203+103 = 306; seed 2026 = 234+96 = 330. Ukryte (`tributary`): 118 i 103.
+
+Uwaga do pomiaru: seedy 99 i 2026 w 240×168 wykonano w rundzie 3 (ten sam tor, `scratchpad/rivers/measure.cjs`, `generateMap(240,168,seed,'kontynenty', opts)` z `worldDensity.rivers='medium'`); przebiegi pojedyncze, czasy wg `mapGen ms ... total`.
 
 **Czasy:** ZMIERZONO, ale pojedynczy przebieg bez powtórzeń, na współdzielonej maszynie (wariancja duża: 168×120 seed 1 = 142 s vs seed 7 = 58 s). Traktować jako rząd wielkości.
 
@@ -68,7 +72,8 @@ Typu `short` = 0 we wszystkich 13 mapach (zgodnie z bramką).
 - Źródła główne = komórki siatki `mainCell` × 1 start na komórkę (stride 1).
 - **Podwojenie źródeł = zmniejszenie boku komórki:** (5/4)² = 1,56× dla boku 4; ×2 wymaga boku ≈ 3,5, który przy całkowitym `Math.floor(q/cellSize)` nie jest osiągalny dokładnie. Alternatywa: zachować bok 5 i dać 2 starty na komórkę (zmiana pętli startów). NIE ZMIERZONO liczby po zmianie — wariant nie wykonany.
 - Parametr min. odstępu źródeł `~0,8·N` trzeba przeliczyć przy zmianie boku, inaczej źródła się zlepią (ryzyko „stad”, spec §2).
-- Ryzyka (NIE ZMIERZONO, testy nie uruchomione): reguła sąsiedztwa (`river-path-adjacency-test.cjs`), bufor od morza (`river-sea-buffer-test.cjs`), odstęp ujść, wydajność (+12% z RIVMOUTH-wip/fc3, bde050bcf — gałęzi nie odczytano w tym temacie).
+- Ryzyka (NIE ZMIERZONO, testy nie uruchomione): reguła sąsiedztwa (`river-path-adjacency-test.cjs`), bufor od morza (`river-sea-buffer-test.cjs`), odstęp ujść, wydajność (+12% z RIVMOUTH-wip/fc3, bde050bcf — wydajności nie zweryfikowano w tej rundzie).
+- **RIVMOUTH-wip/fc3 = bde050bcf (ODCZYTANO, runda 3):** commit NIE jest przodkiem `f341dd5` (baza). `git diff f341dd5 bde050bcf` pokazuje 11 plików / +214 −463, z czego większość to COFNIĘCIE zmian już wdrożonych w main (`diplo-war-limit`, `main.ts`, `war-limit-truce-count-test.cjs`, `diplo-human-peace-no-war-test.cjs`, `war-end-vassal-human-probe-test.cjs` itd.): gałąź jest oparta na starszym main. Właściwa zmiana generatora to tylko `gra/src/map/gen-helpers.ts` (+101): (1) `gen-helpers.ts:6386` `if (nd < 1) continue;` w `collectInlandDrainGrowCandidates` (ciało rzeki nie wchodzi na heksy wody przy `relaxSeaBuffer`); (2) pole `allowForkMouth?` w `GridSourcePlaceCtx` (~9381); (3) nowa funkcja `tryForkMouthAtGap` (~9721) wywoływana w ~9878 — dokłada odnogę ujściową 3 hex od istniejącego main; plus test `gra/tools/river-mouth-gap-enforce-test.cjs` (+106). WNIOSEK: nie scalać gałęzi całościowo (cofnęłoby wdrożone FALE); do integracji potrzebny cherry-pick tych zmian na aktualny main. Wpływ na liczbę rzek i czas: NIE ZMIERZONO (wariant wymagałby checkoutu gałęzi — poza zakresem tej rundy).
 - Dla 4 wariantów skutek dla wyglądu różny (gęstość vs. zlepianie) — decyzja właściciela.
 
 ## 5. Projekt trzeciego poziomu (warianty do wyboru, skutek dla gracza)
@@ -91,8 +96,9 @@ Lista nazw z `gra/tools/` (istnienie potwierdzone listingiem; zawartości NIE pr
 ## Binarne kryterium (stan po rundzie 2)
 - Pkt 1 (reguły): częściowo — słowa kluczowe przeszukane, `docs/archiwum/**` i `docs/decyzje/**` nie przeczytane w całości. Brak trzeciego poziomu wprost.
 - Pkt 2 (kod): TAK, po korekcie sekcji 0.
-- Pkt 3 (pomiar): CZĘŚCIOWO — 13 z 15 map ZMIERZONO, 2 NIE ZMIERZONO (dysk).
-- Pkt 4: CZĘŚCIOWO — parametry i miejsca wskazane; liczby po podwojeniu NIE ZMIERZONO.
+- Pkt 3 (pomiar 15 map): TAK — 15 z 15 ZMIERZONO (liczby i czasy w sekcji 3, pojedyncze przebiegi). Liczba źródeł po podwojeniu (symulacja N/√2): NIE ZMIERZONO.
+- Pkt 4: CZĘŚCIOWO — parametry i miejsca wskazane; odczyt bde050bcf wykonany (sekcja 4, wniosek: cherry-pick, nie merge); wpływ RIVMOUTH na liczbę rzek NIE ZMIERZONO.
 - Pkt 5: warianty z liczbami tylko dla generatora (sekcja 3), koszt NIE ZMIERZONO.
 - Pkt 6: nazwy testów TAK, piny NIE ZMIERZONO.
+- Pkt 7 (piny/progi testów rzek, uruchomienie lekkich testów na bazie): NIE ZMIERZONO — w tej rundzie nie uruchomiono testów `gra/tools/*river*`; lista kandydatów z sekcji 6 pozostaje hipotezą.
 - `gra/**` bez zmian: TAK (`git status` czysty po przywróceniu dwóch śledzonych plików `gra/tools/.river-count*`, usuniętych przypadkowo i przywróconych `git checkout --`).
