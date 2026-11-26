@@ -75,7 +75,10 @@ for (const { w, h, seed, typ, landFraction } of cases) {
     if (worstGap > worstAll) worstAll = worstGap;
     if (!gapOk) badMasses++;
   }
-  // Grupa A (runda 3, zielona po naprawie): ciało main NIE wędruje po wodzie. Na bazie (kontynenty 42)
+  // Grupa A (runda 3, zielona po naprawie). UWAGA (obrona r4): asercja dla pangea 7 NIE jest dowodem
+  // naprawy odnogi ujściowa (pangea na bazie też PASS dla grupy A; mutacja tego nie wykrywa). Dowodem
+  // wkładu odnogi (15 -> 10) jest tylko pomiar w raporcie, bez asercji. Dowód grupy A dotyczy kontynenty 42.
+  // Ciało main NIE wędruje po wodzie. Na bazie (kontynenty 42)
   // 3 mainy (polarne) miały ogon wodny 13/17/25 hex (>RIVER_MOUTH_TAIL_LEN) — ich ujście lądowało
   // daleko od wyspy i wyspa (19 hex) miała lukę 18. Mutacja: usuń `if (nd < 1) continue;` w
   // collectInlandDrainGrowCandidates (gen-helpers.ts) -> ta asercja czerwona.

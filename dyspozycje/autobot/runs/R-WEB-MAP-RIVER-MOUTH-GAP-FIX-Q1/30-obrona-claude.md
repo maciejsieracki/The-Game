@@ -1,32 +1,57 @@
-STATUS: BLOCK
+# R-WEB-MAP-RIVER-MOUTH-GAP-FIX-Q1 — OBRONA r3 (odpowiedź na zarzuty Evaluatora, commit d4725b030)
+
+STATUS: DECISION_REQUIRED
 DOMAIN: GAME
 TEMAT: R-WEB-MAP-RIVER-MOUTH-GAP-FIX-Q1
-GOAL: wymusić ujście głównej rzeki, gdy odstęp wzdłuż wybrzeża > limit (Standard 7, Mała 5); kontynenty 42 i pangea 7 do worstGap <= 7.
-ZMIANY/COMMIT: tylko ten raport i dowody w repro/ (diff eksperymentu 2b-lite, surowe wyjścia). Kod gry gra/src/map/gen-helpers.ts w tym commicie NIE zmieniony (eksperyment 2b-lite wycofany, patrz niżej). Baza kodu: e80d07efb (gen-helpers.ts identyczny z deceeeaf3 i z obroną).
-TESTY (surowe wyjścia w repro/raw-*.txt):
-- Baza, kontynenty seed 42, 168x120, Standard (surowe: repro/raw-baseline-kontynenty42-seed42.txt): worstGapAll=18, 8 z 20 mas łamie limit: 265:15, 145:11, 12:12, 12:9, 10:10, 590:10, 1011:8, 19:18. mapGen total=118124 ms (riversMain 76388, riversFill 36535). Czas rzeczywisty 1m59s.
-- Eksperyment 2b-lite (diff: repro/option-2b-lite-experiment.diff; surowe: repro/raw-2b-lite-kontynenty42-seed42.txt): w luce ponad limit (4 najdalsze heksy), jeśli w promieniu 2 od heksa są 1–3 rzeki NIE-główne, usuń je i ponów ujście. Wynik: worstGapAll=18, ta sama lista złych mas (265:15, 145:11, 12:12, 12:9, 10:10, 590:10, 1011:8, 19:18). Czas total=122925 ms (+4%, w szumie). Wniosek: w tej postaci wariant 2b NIE domyka luk. Wycofany.
-- Wariant sep 2->1 (diagnoza r2, eksperyment B): worstGapAll 18->16, masa 19: 18->9, ale ZŁAMUJE regułę sąsiedztwa rzek (zakaz z dispatchu). Nie wdrażany.
-- Testy: NIE ZMIERZONO w tej rundzie: test river-mouth-gap-enforce-test.cjs (nie zmieniany w tej rundzie, czerwony wg r1), mutacja, pangea 7, 3 dodatkowe mapy, mała mapa, Ziemia, bramki (tsc, logic, tech-tree, research, unit-replace, combat, ai-test, climate-band, river-sea-buffer, rodzina rzek), piny generatora, wydajność po naprawie. Powód: brak naprawy, której te pomiary dotyczą. (tsc na bazie: uruchomiony, bez błędów; jego wynik nie jest dowodem dla zmiany.)
+GOAL: ujścia głównych rzek co <= 7 hex wzdłuż wybrzeża (Standard), <= 5 (Mała); kontynenty 42 i pangea 7 oraz 3 dodatkowe mapy.
+ZMIANY/COMMIT: kod gry BEZ zmian w tej obronie (kandydat f78516bed). Zmiana: gra/tools/river-mouth-gap-enforce-test.cjs (tylko komentarz przy grupie A: asercja pangea nie dowodzi odnogi). Dowody w tym raporcie. SHA: patrz pole `sha` w odpowiedzi strukturalnej.
+BAZA: f78516bed (kandydat r3, zgodnie z dispatchem).
 
-ODPOWIEDZI NA ZARZUTY EVALUATORA:
-1. PRZYJMUJĘ. Naprawa kodu nie powstała. Zmierzone: brak działającej naprawy w granicach reguł.
-2. PRZYJMUJĘ. Rozbicie kandydatów ujścia per masa NIE ZROBIONE w tej rundzie (liczniki globalne z r2 nie są per masa). Liczby 75879/60215/62731/17750 są globalne i zachowane jako dane z r2.
-3. ODRZUCAM z dowodem: częściowa naprawa wymagałaby albo zmiany reguły sąsiedztwa (sep 2->1, daje masę 19: 18->9, łamie zakaz dispatchu), albo wariantu, który w pomiarze nie zmienił worstGap (2b-lite: 18->18). Brak dopuszczalnej częściowej naprawy = BLOCK zgodny z dispatchem ("BLOCK tylko przy realnej przeszkodzie technicznej z dowodem"). Opcja C (wyjątek dla małych mas 10–12) NIE przetestowana i nie usunie luk mas 19 i 265: przyjmuję brak testu.
-4. PRZYJMUJĘ i naprawiam: surowe wyjścia dołączone (repro/raw-baseline-kontynenty42-seed42.txt, repro/raw-2b-lite-kontynenty42-seed42.txt). Skrypt odtwarzający: repro/r3-river-mouth-gap.cjs (wymaga bundle.cjs i gra/node_modules).
-5. PRZYJMUJĘ: pangea 7, 3 dodatkowe mapy, mała i Ziemia NIE ZMIERZONO. Powód: brak naprawy do pomiaru.
-6. PRZYJMUJĘ: raport r1 i r2 są rozdzielone w pliku 10-operator-claude.md (oba w historii). Tutaj podaję tylko liczby zmierzone w tej rundzie. Numer linii: zweryfikowany grepem: topUpMainRiverCoastMouthGaps = gen-helpers.ts:9787 (w bazie).
-7. PRZYJMUJĘ i testuję częściowo: wariant 2b (usunięcie rzek nie-głównych blokujących pierwszy krok) przetestowany w postaci 2b-lite (promień 2, do 3 rzek, 4 heksy w luce). Nie domyka luk. Pełny wariant 2b (przesunięcie rzek, nie tylko usunięcie; większy promień) NIE przetestowany.
+## Odpowiedzi na zarzuty
 
-DIAGNOZA (z r2 i pomiaru bazy tej rundy):
-- Ścieżka: topUpMainRiverCoastMouthGaps (gen-helpers.ts:9787) -> topUpMainRiverCoastMouthGapsOnce (:9708) -> tryPlaceMainRiverAtMouth (:9931) -> traceRiverFromCoast (:6453) -> growRiverFromCoastInland (:6401) -> collectCoastInlandGrowCandidates (:6318).
-- Dominujący bloker (r2, liczniki globalne): pierwszy krok w głąb lądu odrzucony przez riverGrowStepPassesSep (sep 2 od rzek głównych) i canRiverFlowThrough (sąsiad ma już rzekę). Usunięcie nie-głównych rzek w promieniu 2 nie zmieniło wyniku (2b-lite), bo blokuje też bliskość rzek głównych, których nie wolno usuwać.
-- Per masa: NIE ZMIERZONO w tej rundzie.
+1. PRZYJMUJĘ. Grupa B testu `river-mouth-gap-enforce-test.cjs` nadal czerwona: moje uruchomienie na kandydacie: `2 pass, 2 fail`; kontynenty seed 42: złe masy 3, worst 15; pangea seed 7: złe masy 1, worst 10. Cel <= 7 NIE jest osiągnięty. Naprawa tego wymaga zmiany reguły (wariant A/B/C z 10-operator §4), więc nie jest poprawką w tej rundzie. Patrz zarzut 8.
 
-RUNDY: 2/5 (runda 2 obrony; kolejna runda wymaga decyzji o wyborze: A przebudowa kolejności rzek / C zmiana reguły; po decyzji Operator Sonnet z uzasadnieniem).
-NASTĘPNY KROK: orkiestrator: pytanie ABC do właściciela (wariant A: przebudowa rzek przed top-up vs wariant B: zmiana reguły 7/5 lub progu mas). Bez tej decyzji kolejna runda nie ma dopuszczalnej naprawy.
+2. PRZYJMUJĘ. Dodatkowe mapy poza limitem (dane z 10-operator §5, raw-extra-after-1.txt; mój pomiar kandydata wyspy 99 zgodny): wyspy 42 108x74 worst 20 (bez zmiany); wyspy 42 84x60 worst 21, złe masy 5 -> 6; wyspy 99 168x120 worst 9 (4 złe masy). Binarne kryterium „3 dodatkowe mapy <= limit” NIE spełnione.
+
+3. PRZYJMUJĘ. `river-sea-buffer-test.cjs`: kandydat 6 pass / 3 fail, baza 4ec8fe4b4 6 pass / 3 fail (dane Evaluatora i raw-river-sea-buffer-after.txt; nie powtarzałem). Bramka „zielony na mapach nie-Ziemia” NIE spełniona. Poprawa liczby złych buforów (10 -> 5 na kontynenty 42), ale bez zielonego.
+
+4. PRZYJMUJĘ. Piny generatora NIE przepięte. Próba w tej rundzie: `map-gen-regression-test.cjs` przerwany limitem 580 s w sekcji „Rzeki bez ujścia” (tuż po pomiarze czasów: mała 17,84 s; standardowa 42,34 s; duża 138,95 s). Pozostałe piny (determinism*, cluster-plan-name, river-density, river-loop, river-yield-both-sides, earth-template) NIE ZMIERZONO. Nic nie przepięto, żeby nie „dopasować” testu do wyniku.
+
+5. PRZYJMUJĘ i UZUPEŁNIAM dowodem. `river-path-adjacency-test.cjs` w jednym przebiegu nie mieści się w 580 s (sam test, rc=124, 7 z 15 map). Przebieg rozbity wg rozmiaru i ziarna — ta sama logika asercji (`assertRiverPathAdjacent` na każdej trasie), jedynie filtr map przez zmienne środowiskowe w kopii tymczasowej (usuniętej po pomiarze); plik testu NIE zmieniony:
+   - 84x60, ziarna 1,7,42,99,2026: 784 pass, 0 fail
+   - 168x120, ziarna 42,7,1: 1394 pass, 0 fail
+   - 168x120, ziarna 99,2026: 968 pass, 0 fail
+   - 240x168, ziarna 1,7: 1636 pass, 0 fail
+   - 240x168, ziarna 42,99: 1628 pass, 0 fail
+   - 240x168, ziarno 2026: 846 pass, 0 fail
+   - SUMA: 7256 pass, 0 fail. Trasy z odnogi ujściowej (3 hex) spełniają regułę sąsiedztwa.
+
+6. PRZYJMUJĘ. Grupa A nie dowodzi naprawy pangea (na bazie też PASS dla pangea; mutacja tego nie wykrywa). Nie dodaję asercji bez dowodu. Zmieniono komentarz w `river-mouth-gap-enforce-test.cjs` (grupa A dowodzi tylko kontynenty 42; wkład odnogi 15 -> 10 jest tylko pomiarem). Mutacja `if (nd < 1) continue;` czerwona na kontynenty 42 — wynik Evaluatora (raw-enforce-test-mutation.txt), nie powtarzałem.
+
+7. PRZYJMUJĘ — REGRESJA POTWIERDZONA (nie szum). Wydajność Standard, wyspy seed 99, 168x120, `r3-permass.cjs` (ten sam skrypt, ten sam generator, różny tylko `gen-helpers.ts`):
+   - baza 4ec8fe4b4: 156 289 ms; 157 616 ms (poprzedni pomiar) -> średnio 156,9 s
+   - kandydat f78516bed: 173 006 ms; 179 013 ms (poprzedni pomiar) -> średnio 176,0 s = +12,1%
+   - kandydat z `allowForkMouth: false` (czyli bez odnogi, nd<1 zostaje): 180 095 ms
+   Próg „nie gorzej o >10%” przekroczony. Przyczyna nie jest w odnodze (bez niej jest tak samo wolno), więc źródłem jest zmiana `if (nd < 1) continue;` w collectInlandDrainGrowCandidates (zmienia kolejność/liczbę kroków drenażu). Nie naprawiono w tej rundzie (wymaga profilowania; kandydat do osobnego tematu lub do decyzji, patrz zarzut 8).
+
+8. PRZYJMUJĘ. Zgadzam się z oceną Evaluatora: kandydat to częściowa naprawa (kontynenty 42: worst 18 -> 15, złe masy 8 -> 3; pangea 7: 15 -> 10; wyspy 99: 12 -> 9). Pozostałe luki (masy 265, 590, 1011 na kontynenty 42; pangea 7; małe wyspy bez wnętrza) wymagają zmiany reguły lub kolejności etapów. Operator NIE zwraca PASS.
+
+## Co wiem na pewno (dowód)
+- `tsc --noEmit` (gra/): exit 0.
+- `npm ci --ignore-scripts` w gra/: exit 0 (node_modules usunięte po bramkach).
+- Kod kandydata nie został zmieniony w tej obronie (git diff tylko na komentarzu testu; `git diff --check` czysty).
+
+## Dla orkiestratora (DECISION_REQUIRED, bez mojej rekomendacji)
+Pytanie do właściciela (skutek dla gry, bez mechanizmu) — warianty z 10-operator-claude.md §4:
+- A: rzeki trochę gęstsze/bliższe sobie przy ujściach (dopuszczenie bliższego sąsiedztwa tylko przy ujściu w luce);
+- B: odcinki wybrzeża bez ujścia rzeki do 15 pól na części map polarnych i wąskich pasów (obecny stan po r3);
+- C: ujścia rezerwowane z góry zmieniają układ rzek na wszystkich mapach.
+Dodatkowo: wydajność (+12% na wyspy 99 Standard) wymaga decyzji „akceptować” albo osobnego tematu optymalizacji.
+Piny generatora i pełne bramki (logic 213, tech-tree 20, research 33, unit-replace, combat 6, ai-test 297/0, climate-band, river-density/loop/yield-both-sides, earth-template) — NIE ZMIERZONO w tej rundzie. Kolejna runda po decyzji: przepięcie pinów jawnie + pełne bramki.
+
+## Mapa NIE ZMIERZONO
+Piny generatora, logic/tech-tree/research/unit-replace/combat/ai-test/climate-band, river-density, river-loop, river-yield-both-sides, earth-template, river-sea-buffer (poza danymi Evaluatora), mutacja grupy A (poza danymi Evaluatora).
+
+RUNDY: 3/5 (obrona rundy 3; bez nowej poprawki kodu)
+NASTĘPNY KROK: orkiestrator: pytanie ABC do właściciela (A/B/C + ewentualnie wydajność); po decyzji nowa runda Operatora (przepięcie pinów, bramki, wydajność).
 DEPLOY/PUSH: NIE WYKONANO
-
-UWAGI-DLA-ORKIESTRATORA:
-- Eksperyment 2b-lite pokazał spadek liczby rzek nie-głównych bez poprawy: może to pogorszyć gęstość rzek w grze, więc nie został wdrożony.
-- gra/node_modules usunięte po bramkach (zgodnie z dispatchem). Pliki generowane bundlera (.bundle-r3.cjs, .entry-r3.ts) usunięte, nie są w commicie.
