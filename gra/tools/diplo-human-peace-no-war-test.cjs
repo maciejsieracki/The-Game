@@ -61,7 +61,9 @@ const DIPLOMACY_MSG_PREFIX = 'Dyplomacja:';
 const getDiploRelation = () => ({ status: statusRelacji });
 const showHintMessage = (msg) => hints.push(msg);
 
-const humanPeaceRejectReason = buildFn('humanPeaceRejectReason', { getDiploRelation });
+// R-WEB-HOTSEAT-PEACE-PROTECTION-Q1: strażnik ma teraz bramkę 10 tur wojny (osobny test hotseat-peace-protection-test.cjs);
+// tu testujemy wyłącznie strażnik „brak wojny”, więc bramka czasu jest atrapą „wojna dojrzała” (false).
+const humanPeaceRejectReason = buildFn('humanPeaceRejectReason', { getDiploRelation, peaceProposalIsTooEarly: () => false, PEACE_PROPOSAL_MIN_WAR_TURNS: 10 });
 const proposeToHuman = buildFn('proposeToHuman', {
   humanPeaceRejectReason, showHintMessage, DIPLOMACY_MSG_PREFIX, turn,
   interHumanDiplomacyInbox: inbox,
