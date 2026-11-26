@@ -59,12 +59,16 @@ function extractBody(src, name) {
  */
 function runHumanPeaceReject(src, state) {
   const { params, body } = extractBody(src, 'humanPeaceRejectReason');
+  // Predykat bramki czasu = PRODUKCYJNE ciało `peaceProposalBlocked` z modułu timingu (nie reimplementacja).
+  // Wrapper `peaceProposalIsTooEarly` z main.ts jest tu atrapą tylko dla odczytu stanu (status, tury wojny).
+  const pb = extractBody(timingSrc, 'peaceProposalBlocked');
+  const peaceProposalBlockedProd = new Function('PEACE_PROPOSAL_MIN_WAR_TURNS', ...pb.params, pb.body);
   const deps = {
     getDiploRelation: () => ({ status: state.status }),
     peaceProposalIsTooEarly: (a, b, actionId) => {
       const atWar = state.status === 'wojna';
       const turns = atWar ? state.turnsAtWar : 0;
-      return atWar && actionId === 'pokoj' && turns < MIN_WAR_TURNS;
+      return peaceProposalBlockedProd(MIN_WAR_TURNS, actionId, atWar, turns);
     },
     PEACE_PROPOSAL_MIN_WAR_TURNS: MIN_WAR_TURNS,
   };
