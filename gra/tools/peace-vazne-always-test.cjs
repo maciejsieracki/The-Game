@@ -147,8 +147,8 @@ console.log('[3] mutacje (kopia zrodla) -> test musi wykryc');
 const mutants = [
   {
     name: 'M1 usuniety wpis P2 (oferta AI przyjeta przez gracza)',
-    from: "          logPeaceVazne(\n            ME(), p.ownerId, 'Pokój zawarty: ',",
-    to: "          void(\n            ME(), p.ownerId, 'Pokój zawarty: ',",
+    from: "            logPeaceVazne(\n              ME(), p.ownerId, 'Pokój zawarty: ',",
+    to: "            void(\n              ME(), p.ownerId, 'Pokój zawarty: ',",
   },
   {
     name: 'M2 usuniety wpis P5 (rozmowa gracz<->gracz)',
