@@ -30,3 +30,17 @@ FC r1: PASS-WITH-NOTES; blokada: brak zrzutu z żywego Chromium (panel miasta z 
 5. Bramki ogólne uruchom po zmianie (tsc, logic, tech-tree, research, unit-replace, combat, ai-test, building-demolish-test, mint-*).
 ## Decyzja właściciela o wyjątkach (Pałac/cuda/mury w oblężeniu) — JESZCZE NIE PODJĘTA; NIE blokuj niczego w kodzie, NIE rozstrzygaj.
 ## Allowlista/zakazy jak r1 + katalog zrzuty/. Operator Haiku; nie pytaj właściciela.
+
+---
+# DODATEK RUNDA 3 (Operator HAIKU 5.5) — ZAKAZ WYBURZANIA PODCZAS OBLĘŻENIA (odp. 28a właściciela)
+BAZA: args.cand = b837c8ac393666f17b1dbc74b6adde1f39ef3589 (FC tip r2; refs/keep/WYBURZ-fc2; kod gra/ = 3a00fd6ca). r2: FC PASS-WITH-NOTES, live w Chromium wykonany (zrzuty w runs/…/zrzuty/).
+## Decyzja właściciela (28a)
+Wyburzanie bez wyjątków dla Pałacu, cudów i murów (nic nie jest niewyburzalne), ALE wyburzeń nie można prowadzić podczas oblężenia miasta.
+## Zadanie
+1. Ustal istniejące w grze pojęcie „oblężenia/oblężone miasto” (m.in. gra/src/game/ai-siege-relief.ts — odsiecz obleganego miasta AI; szukaj też stanu oblężenia w main.ts/cityPanel.ts). Zapisz definicję użytą w grze (np. armia wroga w zasięgu miasta). Jeśli gra NIE ma jednoznacznej definicji oblężenia po stronie gracza — NIE wymyślaj; zwróć DECISION_REQUIRED z jedną propozycją definicji per wariant (A wróg przy sąsiednich polach miasta; B bitwa o miasto w tej turze; C obie) i jednym zdaniem skutku dla gracza.
+2. Zaimplementuj blokadę: demolishBuilding odmawia z powodem 'siege' gdy miasto jest oblężone; przycisk „Wyburz” w cityPanel.ts jest nieaktywny/ukryty z komunikatem „Nie można wyburzać podczas oblężenia”; dotyczy też Mennicy i Pałacu (żadnych wyjątków poza oblężeniem). Hotseat: sprawdzanie oblężenia dla właściciela miasta.
+3. Testy: logika (oblężone → odmowa, nieoblężone → wyburzenie 50%), okablowanie UI, mutacja czerwona (brak sprawdzenia oblężenia; sprawdzenie odwrócone), regresja 36/0 istniejącego testu building-demolish.
+4. Live w Chromium (jeśli stabilny): stan oblężenia (hak civTest lub ustawienie wroga przy mieście) → przycisk zablokowany + komunikat; zrzut. W razie niestabilności: NIE ZMIERZONO z opisem.
+## Zasada podpisu commitów (dotyczy WSZYSTKICH ról)
+NIGDY nie używaj --no-gpg-sign ani nie zmieniaj konfiguracji podpisu. Jeśli /tmp/code-sign nie istnieje lub podpis nie działa — status INFRA z opisem, bez obejścia. (W r2 operator użył --no-gpg-sign podczas awarii środowiska; tego nie powtarzać.)
+## Allowlista/zakazy/bramki jak r1; Operator Haiku; nie pytaj właściciela.
