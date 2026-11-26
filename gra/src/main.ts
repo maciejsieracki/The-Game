@@ -34776,7 +34776,7 @@ async function boot(): Promise<void> {
       (window as any).__nnsMeasureDebug = {
         // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1: epochId (opcjonalnie; brak = 'braz' jak dotąd) -- pomiar
         // wojen epoki startuje z Kamienia ('kamien'), bo przejście Kamień→Brąz jest jedynym wyzwalaczem puli Brązu.
-        startGame: (o: { seed: number; mapSize?: string; civTypes?: number; cityStates?: number; typSwiata?: string; epochId?: string }): void => {
+        startGame: (o: { seed: number; mapSize?: string; civTypes?: number; cityStates?: number; typSwiata?: string; epochId?: string; kulturaReligiaLevel?: 'latwy' | 'normalny' | 'trudny' }): void => {
           const startEpochId = o.epochId ?? 'braz';
           const mqTier = mapQualityTierFromQuery('high');
           const mqBundle = bundledMapQualityPreset(mqTier);
@@ -34784,6 +34784,8 @@ async function boot(): Promise<void> {
             barbariansLevel: 'normalny', battleAlwaysManual: false, victoryMode: 'moc_i_dominacja',
             buildingCostPace: 'niski', kosztJednostekPace: 'niski', wzrostLudnosciPace: 'wysoki', ruchSwiataPace: 'krotki',
             landFractionPercent: 30, landFractionCustom: false, cityStateDifficultyOverride: 'normal', cityLimitBase: 10,
+            // R-WEB-CULT-REL-IMPL-Q1 (obrona r2): pomiar na poziomie „Kultura i religia”; brak = zgodność (jak dotąd).
+            kulturaReligiaLevel: o.kulturaReligiaLevel,
           };
           void doStartGame({
             civId: 'rzymianie', civName: 'Rzymianie',
