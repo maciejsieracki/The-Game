@@ -1,3 +1,9 @@
+## ROBOCZA 706478e6 -- 2026-11-26 -- FALA 914: Mennica tylko w stolicy, raz na cywilizację (testowa)
+
+- Bonus Mennicy działa na całą cywilizację, liczony raz i tylko z Mennicy stojącej w aktualnej stolicy (setOwnerCapitalCityResolver w turn-economy.ts, capitalCityIdForOwner z main.ts); Mennica poza stolicą nie działa (etykieta w panelu miasta: Mennica poza stolicą — nieaktywna) i nie blokuje budowy nowej w nowej stolicy
+- Weryfikacja: tsc 0; logic 213/213; mint-capital-only 8/0 (mutacja resolvera 6/2); waluta-mennica 61/0; trade-routes-income 135/0; ai-unit-replace-same-rules 45/0; alliance-label-clean 26/0; main-guard 21/0; ai-test 297/0 (FC); vite build OK (merge z ALLYCLEAN bez konfliktu)
+- Limity: NIE ZMIERZONO: zachowanie w przeglądarce (etykieta panelu, budowa w nowej stolicy przy osieroconej Mennicy); dług: pozostałe efekty stolicy w advanceCityEconomy i pre-pass D2 używają heurystyki pierwszego miasta
+
 ## ROBOCZA c07b5722 -- 2026-11-26 -- FALA 913: Relacja „sojusz” znika razem z umową (testowa)
 
 - Gdy umowa sojuszu pary znika (wygaśnięcie, odmowa wezwania do wojny, odmowa obrony sojusznika, zerwanie trybutu, wasalizacja), relacja pary wraca do pokoju (zaufanie i respekt zostają); wyjątek: pary major AI ↔ miasto-państwo tej samej cywilizacji zachowują status sojusz (nowe: isStaleAllianceStatus i alliancePairsToReset w diplomacy-treaties.ts, reconcileAllianceStatusAfterDeals w main.ts)
