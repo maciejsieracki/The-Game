@@ -5705,8 +5705,10 @@ export const RIVER_MOUTH_TAIL_LEN = 5;
  * Decyzja właściciela 2026-11-26 (14C): odstęp 1 pole (2× rzek głównych); zastępuje wartość 3 z 2026-08-01. */
 export const MAIN_RIVER_MIN_PATH_SEP = 1;
 
-/** Odstęp (hex) średnich dopływów od wszystkich nurtów — zachowany na 3 (przed 2026-11-26),
- * by odstęp rzek głównych 1 nie wypychał średnich (kryterium: medium ≥ baza). */
+/** Odstęp (hex) średnich dopływów od wszystkich nurtów — zachowany na 3 (przed 2026-11-26).
+ * Pomiar 2026-11-26 (R-WEB-MAP-RIVER-GEN-SEP1-Q1): przy MAIN sep 1 średnie spadają do 67–81% bazy
+ * i NIE wracają po obniżeniu tej wartości do 1 (zajęcie heksów przez gęstsze główne nurty) —
+ * kryterium „medium ≥ baza” niespełnione, decyzja właściciela (DECISION_REQUIRED). */
 export const MEDIUM_RIVER_MIN_PATH_SEP = 3;
 
 /** FALA 181: odstęp wzdłuż main (w hexach / bokach) między spawnami średnich dopływów. */

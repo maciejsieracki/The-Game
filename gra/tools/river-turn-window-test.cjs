@@ -55,10 +55,12 @@ ok(M.riverPathViolatesTurnWindow(spiral), 'spirala +60° łamie okno');
 const uturn = [{ q: 0, r: 0 }, { q: 1, r: 0 }, { q: 0, r: 0 }];
 ok(M.riverPathHasSharpUTurn(uturn), 'wykrywa U-turn 180°');
 
-// FALA 173 soft sep: sep=3 OK, sep=2 odrzuć
+// FALA 173 soft sep: sep=3 OK, sep=2 odrzuć (jawna wartość 3 — kontrakt mechanizmu, niezależny od stałej)
 const sepKeys = new Set(['10,0', '12,0']);
-ok(M.riverGrowStepPassesSep(7, 0, sepKeys, M.MAIN_RIVER_MIN_PATH_SEP), 'soft sep: krok przy dist=3 OK');
-ok(!M.riverGrowStepPassesSep(8, 0, sepKeys, M.MAIN_RIVER_MIN_PATH_SEP), 'soft sep: krok przy dist=2 FAIL');
+ok(M.riverGrowStepPassesSep(7, 0, sepKeys, 3), 'soft sep: krok przy dist=3 OK (sep 3)');
+ok(!M.riverGrowStepPassesSep(8, 0, sepKeys, 3), 'soft sep: krok przy dist=2 FAIL (sep 3)');
+// R-WEB-MAP-RIVER-GEN-SEP1-Q1 (decyzja 14C): MAIN_RIVER_MIN_PATH_SEP = 1 — krok przy dist=2 dozwolony
+ok(M.riverGrowStepPassesSep(8, 0, sepKeys, M.MAIN_RIVER_MIN_PATH_SEP), 'soft sep: krok przy dist=2 OK (MAIN sep 1)');
 
 const cases = [
   { w: 80, h: 60, seed: 42, typ: 'pangea', label: 'Pangea mini' },

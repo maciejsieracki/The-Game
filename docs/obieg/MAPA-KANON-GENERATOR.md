@@ -33,6 +33,7 @@ Skrót:
 - **Meander:** łagodne **S** w stronę morza — bez serpentyn i pętli
 - **Struktura:** `main` (gruby) + `tributary` (2× cieńszy dopływ do nurtu)
 - **Fair play:** bez stad rzek przy górach; dopływy nie liczą się do siatki
+- **Odstęp głównych nurtów:** 1 pole (decyzja 14C, 2026-11-26; wcześniej 3) — szczegóły, pomiary i otwarte decyzje (średnie/dopływy, limit ujść 7) w [`MAPA-RZEKI-SPEC.md`](MAPA-RZEKI-SPEC.md) §2
 
 | Tier „Rzeki” | N siatki | Uwagi |
 |--------------|----------|--------|

@@ -34,6 +34,9 @@ Mapa lądu dzielona jest na **kwadraty N×N heksów** (oś q×r). W każdej kom�
 ### Anty‑klaster
 
 - **Min. odstęp między źródłami głównych nurtów:** ~`0,8 × N` hex (dla N=14 → ok. 11 hex).
+- **Odstęp między głównymi nurtami (ścieżka, nie tylko źródła):** `MAIN_RIVER_MIN_PATH_SEP = 1` pole — decyzja właściciela 14C, 2026-11-26 (zastępuje wartość 3 z 2026-08-01). Pomiar kandydata R-WEB-MAP-RIVER-GEN-SEP1-Q1 (kontynenty 84×60, seed 7/42/1; metodyka wspólna z Evaluatorem): rzeki główne ×2,0–2,4 względem bazy (s7: 40→106, s42: 45→102, s1: 47→96). Skutek uboczny ZMIERZONY i NIEROZSTRZYGNIĘTY: średnie (`medium`) 67–81% bazy (s7 29→12, s42 16→13), dopływy (`tributary`) 0–11% bazy (s7 18→2, s42 12→0). Obniżenie odstępu średnich do 1 NIE przywraca liczby (s7 → 17, s42 → 11): przyczyną jest zajęcie heksów przez gęstsze główne nurty, nie sam odstęp średnich. Wymagana decyzja właściciela (warianty w raporcie Operatora obrony).
+- **Ujścia (RIVMOUTH):** obietnica „ujścia main co ≤ 7 hex wzdłuż brzegu” (`MAIN_RIVER_COAST_MOUTH_MAX_GAP`) NIE jest spełniona na kontynenty seed 42 (luka 11 hex); test `river-mouth-gap-enforce-test` 3/1. Złagodzenie do 15/20 albo dalsza praca generatora — decyzja właściciela, do tego czasu wartość 7 obowiązuje w kodzie.
+- **Bufor od morza główne nurty:** test `river-sea-buffer-test` (czerwony już w bazie, 3 fail) po zmianie: kontynenty s42 złe heksy bufora 10→19, Ziemia s99 1 zły (nowy). Do rozstrzygnięcia w RIVSEATEST (#167).
 - **Zakaz** dodatkowego „dosypywania” rzek tylko przy górach/wzgórzach (dawało stada).
 - **Dopływy nie liczą się** do pokrycia siatki — nie psują równomierności źródeł.
 
