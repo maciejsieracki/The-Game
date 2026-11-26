@@ -1758,6 +1758,28 @@ function collectAvailableBuildingCandidates(
 /** AICULT (#189): bonus do score budynkow Prawa/Szczescia w miescie z deficytem Porzadku (normalny/trudny). */
 export const AI_ORDER_DEFICIT_BUILDING_BONUS = 40;
 
+/**
+ * AICULT (#189): przy deficycie Porzadku miasta (potrzeba garnizonu >= 1, tylko gdy silnik podal
+ * `cityGarrisonNeed`) dolicza AI_ORDER_DEFICIT_BUILDING_BONUS do budynkow grupy „Prawo i administracja”
+ * oraz budynkow dajacych Szczescie (`dajeSzczescie`). Bez potrzeby, bez pola lub w kopii defensywnej -- bez zmian.
+ */
+export function applyOrderDeficitBuildingBonus(
+  candidates: { id: string; score: number }[],
+  buildings: readonly { id: string; grupa?: string; dajeSzczescie?: unknown }[],
+  need: number | undefined,
+  defensiveCopy: boolean,
+): void {
+  if (defensiveCopy || (need ?? 0) < 1) return;
+  const orderBuildingIds = new Set(
+    buildings
+      .filter(b => b.grupa === 'Prawo i administracja' || b.dajeSzczescie === true)
+      .map(b => b.id),
+  );
+  for (const c of candidates) {
+    if (orderBuildingIds.has(c.id)) c.score += AI_ORDER_DEFICIT_BUILDING_BONUS;
+  }
+}
+
 /** Budynki fortyfikacyjne, których score jest podbijany pod zagrożeniem/na granicy. */
 const MAJOR_FORTIFICATION_IDS = new Set(['mury', 'mury_kamienne', 'fort', 'baszta']);
 
@@ -2266,16 +2288,9 @@ export function chooseCityProduction(
   // miasto z deficytem Porzadku (potrzeba garnizonu >= 1) preferuje budynki Prawa (grupa „Prawo i
   // administracja”: Garnizon, Pretorium, Dom Starszyzny...) i Szczescia (`dajeSzczescie`: Swiatynia...).
   // Minimalna waga dodawana do score z katalogu; bez pola = zero zmian.
-  if (!opts.defensiveCopy && (opts.cityGarrisonNeed?.[cityId] ?? 0) >= 1) {
-    const orderBuildingIds = new Set(
-      data.buildings
-        .filter(b => b.grupa === 'Prawo i administracja' || (b as { dajeSzczescie?: unknown }).dajeSzczescie === true)
-        .map(b => b.id),
-    );
-    for (const c of buildingCandidates) {
-      if (orderBuildingIds.has(c.id)) c.score += AI_ORDER_DEFICIT_BUILDING_BONUS;
-    }
-  }
+  applyOrderDeficitBuildingBonus(
+    buildingCandidates, data.buildings, opts.cityGarrisonNeed?.[cityId], opts.defensiveCopy === true,
+  );
   // R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1 (GOAL 2, zachowane): miasto-państwo bez
   // dopełnionego garnizonu skupia się na obronie/wojsku, NIE na ekonomii/administracji
   // (dawniej: infraOrder dodawany tylko gdy garrisonMet -- generyczny odpowiednik: budynki

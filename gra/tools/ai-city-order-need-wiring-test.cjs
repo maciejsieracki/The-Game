@@ -26,7 +26,7 @@ const WORK = fs.mkdtempSync(path.join(process.env.GARRISON_TMP || os.tmpdir(), '
 const SOCIETY = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'data', 'society-params.json'), 'utf8'));
 const ENTRY = path.join(WORK, 'entry.ts');
 fs.writeFileSync(ENTRY, `
-export { emptyCityGarrisonRecruitIds, cityGarrisonPoolIds, aiCityGarrisonTarget, chooseCityProduction, AI_ORDER_DEFICIT_BUILDING_BONUS } from ${JSON.stringify(path.join(SRC, 'game', 'ai.ts'))};
+export { emptyCityGarrisonRecruitIds, cityGarrisonPoolIds, aiCityGarrisonTarget, applyOrderDeficitBuildingBonus, AI_ORDER_DEFICIT_BUILDING_BONUS } from ${JSON.stringify(path.join(SRC, 'game', 'ai.ts'))};
 export { aiCityGarrisonNeedFromOrder, aiGarrisonNeedApplies } from ${JSON.stringify(path.join(SRC, 'game', 'ai-city-order-need.ts'))};
 export { evaluateOrderFromBreakdown } from ${JSON.stringify(path.join(SRC, 'game', 'society-breakdown.ts'))};
 export { setCulturaReligiaLevel } from ${JSON.stringify(path.join(SRC, 'game', 'culture-religion-level.ts'))};
@@ -125,6 +125,31 @@ function runAll(M) {
   eq('T4 gate trudny', M.aiGarrisonNeedApplies('trudny'), true);
   eq('T4 gate latwy', M.aiGarrisonNeedApplies('latwy'), false);
   eq('T4 gate zgodnosc (null)', M.aiGarrisonNeedApplies(null), false);
+
+  // T5 -- preferencja budynkow Prawa/Szczescia (applyOrderDeficitBuildingBonus, wywolywana z chooseCityProduction).
+  const BLD = [
+    { id: 'garnizon', grupa: 'Prawo i administracja' },
+    { id: 'swiatynia', grupa: 'Religia', dajeSzczescie: true },
+    { id: 'koszary', grupa: 'Wojsko i obrona' },
+  ];
+  const cands = () => [
+    { id: 'garnizon', score: 100 }, { id: 'swiatynia', score: 100 }, { id: 'koszary', score: 100 },
+  ];
+  const scoreOf = (list, id) => list.find(c => c.id === id).score;
+  const bonus5 = cands();
+  M.applyOrderDeficitBuildingBonus(bonus5, BLD, 1, false);
+  eq('T5 need=1: garnizon +40 (Prawo)', scoreOf(bonus5, 'garnizon'), 140);
+  eq('T5 need=1: swiatynia +40 (Szczescie)', scoreOf(bonus5, 'swiatynia'), 140);
+  eq('T5 need=1: koszary bez zmian (nie Prawo/Szczescie)', scoreOf(bonus5, 'koszary'), 100);
+  const noNeed = cands();
+  M.applyOrderDeficitBuildingBonus(noNeed, BLD, 0, false);
+  eq('T5 need=0: bez zmian', scoreOf(noNeed, 'garnizon'), 100);
+  const noField = cands();
+  M.applyOrderDeficitBuildingBonus(noField, BLD, undefined, false);
+  eq('T5 brak pola: bez zmian', scoreOf(noField, 'swiatynia'), 100);
+  const copy = cands();
+  M.applyOrderDeficitBuildingBonus(copy, BLD, 2, true);
+  eq('T5 kopia defensywna: bez zmian', scoreOf(copy, 'garnizon'), 100);
 }
 
 const MUTANTS = [
@@ -139,7 +164,12 @@ const MUTANTS = [
   ['MW4 brak odjecia linii garnizonu od netto Prawa',
     [['ai-city-order-need.ts', 'order.prawo.netto - (garrLine ? garrLine.value : 0)', 'order.prawo.netto']]],
   ['MW5 pole cityGarrisonNeed ignorowane w rekrutacji (stary tor)',
-    [['ai.ts', 'if (opts.cityGarrisonNeed !== undefined) {\n      // AICULT r3', 'if (false) {\n      // AICULT r3']]],
+    [['ai.ts', 'if (opts.cityGarrisonNeed !== undefined) {\n      // AICULT r3', 'if (false) {\n      // AICULT r3']]],  ['MW6 bonus budynkow Prawa/Szczescia 40->0',
+    [['ai.ts', 'export const AI_ORDER_DEFICIT_BUILDING_BONUS = 40;', 'export const AI_ORDER_DEFICIT_BUILDING_BONUS = 0;']]],
+  ['MW7 bonus budynkow ignoruje kopie defensywna',
+    [['ai.ts', 'if (defensiveCopy || (need ?? 0) < 1) return;', 'if ((need ?? 0) < 1) return;']]],
+  ['MW8 bonus budynkow przy zerowej potrzebie (gate >= 0)',
+    [['ai.ts', 'if (defensiveCopy || (need ?? 0) < 1) return;', 'if (defensiveCopy || (need ?? 0) < 0) return;']]],
 ];
 
 (async () => {

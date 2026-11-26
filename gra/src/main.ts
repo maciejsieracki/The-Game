@@ -18928,7 +18928,6 @@ async function boot(): Promise<void> {
       ).length;
     }
 
-    /** Wojsko na heksie miasta — bonus Prawo w Porządku. */
     /**
      * AICULT (#189): potrzeba garnizonu per miasto (cityId -> liczba jednostek) wyliczona w petli
      * Porzadku miast (runWorldEndTurn) z pelnego rozbicia silnika; wypelniana TYLKO gdy poziom
@@ -18936,6 +18935,7 @@ async function boot(): Promise<void> {
      */
     const aiCityGarrisonNeedByCityId = new Map<string, number>();
 
+    /** Wojsko na heksie miasta — bonus Prawo w Porządku. */
     function lawGarrisonCountForCity(city: City): number {
       return countLawGarrisonOnCityHex(units, city.q, city.r, city.ownerId);
     }
@@ -45002,13 +45002,6 @@ async function boot(): Promise<void> {
                 data.societyParams,
                 difficulty,
               );
-              if (aiGarrisonNeedApplies(getCulturaReligiaLevel())) {
-                aiCityGarrisonNeedByCityId.set(
-                  city.id, aiCityGarrisonNeedFromOrder(ordPctEvaluated, data.societyParams, difficulty),
-                );
-              } else {
-                aiCityGarrisonNeedByCityId.delete(city.id);
-              }
               const happinessCivKey = ownerCivMap.get(city.ownerId);
               const ordPctRaw = happinessCivKey
                 ? applyCivMatrixHappinessModifier(
@@ -45034,6 +45027,15 @@ async function boot(): Promise<void> {
               const ordPct = postCaptureLawActive
                 ? applyPostCaptureLawOverride(ordPctRaw, city, data.societyParams, difficulty)
                 : ordPctRaw;
+              // AICULT (#189): potrzeba garnizonu z TEGO Porzadku, ktory faktycznie wchodzi w bunt
+              // (po macierzy cywilizacji i ewentualnym nadpisaniu po podboju).
+              if (aiGarrisonNeedApplies(getCulturaReligiaLevel())) {
+                aiCityGarrisonNeedByCityId.set(
+                  city.id, aiCityGarrisonNeedFromOrder(ordPct, data.societyParams, difficulty),
+                );
+              } else {
+                aiCityGarrisonNeedByCityId.delete(city.id);
+              }
 
               const orderCivKey = ownerCivMap.get(city.ownerId);
               const orderEff = orderEffectsWithCivMatrix(ordPct.effects, orderCivKey ? {
