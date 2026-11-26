@@ -1267,6 +1267,11 @@ import { setKosztJednostekPaceResolver, applyUnitCostPace, type KosztJednostekPa
 // R-WEB-VERIFY-LIVE-B2-CIVTEST-HOOK-AND-WIZARD-Q1: importy wyłącznie dla haka __settingsLive (?civTest=1).
 import { getDiplomacyWarLevel, scalePenaltyForWarLevel, scaleBonusForWarLevel } from './game/diplomacy-war-level';
 import { unitRecruitBaseMoneyCost } from './game/production';
+import {
+  MENNICA_BUILDING_ID,
+  builtWithoutMennica,
+  mennicaCityIdsReplacedByCapital,
+} from './game/mennica-orphan';
 import { unitFoodCardValue as unitFoodCardValueLive } from './game/economy-upkeep';
 import { scaleTerrainImprovementWorkCostForOwner, baseKosztPracaUlepszenia } from './game/terrain-improvements';
 import { convertFoodReserveToTax } from './game/empire-food';
@@ -4764,6 +4769,21 @@ async function boot(): Promise<void> {
         const unlockFlag = buildingUnlockFlagFor(completed.id, data.buildings);
         if (unlockFlag) (city as unknown as Record<string, boolean>)[unlockFlag] = true;
         if (completed.id === 'spichlerz' && city.ownerId === ME()) updateHud();
+        // R-WEB-MINT-ORPHAN-Q1 (odp. 17): po ukończeniu Mennicy w STOLICY stare Mennice tego
+        // właściciela poza stolicą znikają (bez zwrotu). Stolica = capitalCityIdForOwner (ta sama
+        // źródło prawdy co bonus w turn-economy.ts). Wąski hook: tylko id `mennica`.
+        if (completed.id === MENNICA_BUILDING_ID && capitalCityIdForOwner(city.ownerId) === cityId) {
+          const replacedIds = mennicaCityIdsReplacedByCapital(cities, cityBuilt, city.ownerId, cityId);
+          for (const oid of replacedIds) {
+            const oldCity = cities.find(c => c.id === oid);
+            cityBuilt.set(oid, builtWithoutMennica(cityBuilt.get(oid) ?? []));
+            console.log(`[Mennica] Tura ${turn} ${oldCity?.name ?? oid}: zastąpiona nową w stolicy ${city.name}`);
+            if (isMe(city.ownerId) && oldCity) {
+              showHintMessage(`Mennica w ${oldCity.name} została zastąpiona nową w stolicy.`, 4500);
+            }
+          }
+          if (replacedIds.length > 0) updateHud();
+        }
         console.log(`[Produkcja] Tura ${turn} ${city.name}: budynek ${completed.id}`);
         return { prod: prodAfterAdvance };
       }
