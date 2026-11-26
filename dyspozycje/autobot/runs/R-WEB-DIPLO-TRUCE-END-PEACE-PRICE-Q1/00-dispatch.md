@@ -4,3 +4,6 @@ STATUS: DISPATCH (start po FC+integracji R-WEB-WAR-LIMIT-TRUCE-COUNT-Q1) | DOMAI
 GOAL: po wygaśnięciu rozejmu AI zawsze składa propozycję pokoju z CENĄ zależną od układu sił; gracz może ją przyjąć lub odrzucić (odrzucenie = wojna trwa); pokój zaproponowany przez gracza AI przyjmuje przy zrównoważonej cenie. Zasady gracza i AI↔AI rozdzielone.
 Decyzja właściciela 2026-11-26 (ECHO w rejestrze): różnica siły wojskowej ≤20% w którąkolwiek stronę → strona przegrywająca płaci SUROWCAMI, miasto niewymagane; >20% → proponowane MIASTO wg wcześniejszych reguł (słabsza szuka pokoju z miastem). AI zawsze proponuje, tylko wycenia (żąda dopłaty od gracza albo sama dopłaca).
 BAZA: cand = SHA origin/main PO integracji WARTRUCECOUNT.
+
+## START (2026-11-26 ~07:30 UTC)
+WARTRUCECOUNT wdrożony (FALA 911). BAZA rundy 1 = origin/main e70abe7185 (pełny SHA e70abe718fc962b4d87f3c154dd58e2c2f7f49de). Operator HAIKU 5.5, runda 1/5.
