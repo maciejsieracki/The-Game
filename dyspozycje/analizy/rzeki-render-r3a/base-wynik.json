@@ -1,0 +1,23 @@
+{
+  "label": "base",
+  "errors": [],
+  "fps": [
+    {
+      "n": 9,
+      "avgFrameMs": 1187,
+      "fps": 0.84
+    },
+    {
+      "n": 8,
+      "avgFrameMs": 1333.29,
+      "fps": 0.75
+    },
+    {
+      "n": 8,
+      "avgFrameMs": 1277.04,
+      "fps": 0.78
+    }
+  ],
+  "zoomOutPct": "85%",
+  "zoomInPct": "95%"
+}

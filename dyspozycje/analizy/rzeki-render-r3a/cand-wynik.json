@@ -1,0 +1,23 @@
+{
+  "label": "cand",
+  "errors": [],
+  "fps": [
+    {
+      "n": 9,
+      "avgFrameMs": 1142.54,
+      "fps": 0.88
+    },
+    {
+      "n": 9,
+      "avgFrameMs": 1151.81,
+      "fps": 0.87
+    },
+    {
+      "n": 7,
+      "avgFrameMs": 1457.07,
+      "fps": 0.69
+    }
+  ],
+  "zoomOutPct": "85%",
+  "zoomInPct": "95%"
+}
