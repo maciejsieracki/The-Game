@@ -1,0 +1,43 @@
+{
+  "label": "PRZED",
+  "query": "",
+  "errors": [],
+  "fps": [
+    {
+      "n": 14,
+      "avgFrameMs": 1459.46,
+      "fps": 0.685
+    },
+    {
+      "n": 14,
+      "avgFrameMs": 1447.56,
+      "fps": 0.691
+    },
+    {
+      "n": 16,
+      "avgFrameMs": 1278.08,
+      "fps": 0.782
+    },
+    {
+      "n": 15,
+      "avgFrameMs": 1366.61,
+      "fps": 0.732
+    },
+    {
+      "n": 15,
+      "avgFrameMs": 1334.39,
+      "fps": 0.749
+    }
+  ],
+  "steps": {
+    "outSteps": 40,
+    "inStepsFromOut": 6,
+    "inStepsTotal4x": 12,
+    "inStepsTotal8x": 18
+  },
+  "worldGenMs": 457,
+  "exitedFoundingBanner": true,
+  "overlayZalozMiasto": true,
+  "uiZoomPct": "100%",
+  "totalMs": 394178
+}
