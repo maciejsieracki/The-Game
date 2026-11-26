@@ -1935,6 +1935,136 @@ fn zmiana_predkosci_w_trakcie_mutanty_sterownika_daja_fail() {
     assert!(survived.is_empty(), "mutanty niezabite: {survived:?}");
 }
 
+// ------------------------------------------ R-RUSTPORT-P4-414 (FQ-SPEED-MIDCHANGE-VEC-2, klasy odcinków `_raf`)
+
+const SPEED_CHANGE_VECTORS_2: &str =
+    include_str!("p6_k5loop_wiring_a_pin_vectors/speed_change_vectors_2.json");
+
+/// Klasy odcinków `_raf` w toku w chwili zmiany prędkości (liczniki `probe2` generatora, `changes[*]`): krok falangi
+/// (`_phalanxStep` `:6635`), krok `_advanceToward` (`:7915`), wypad przed ciosem z przesunięciem ciosu o klatkę
+/// (`BLOW_HIT_T`, `:9122`) i wypad po ciosie przed końcem (`BLOW_LUNGE_MS`, `:9149`).
+const RAF_KLASY: [&str; 4] = ["movingPh", "movingAdv", "lungeShift", "lungeTail"];
+
+/// R-RUSTPORT-P4-414 (D-414-1): wektory `speed_change_vectors_2.json` (generator `WIRING_A_SPEED_CHANGE2_VECTORS=1`);
+/// nadpisanie ścieżką `WIRING_A_SPEED_CHANGE2_FILE` (tylko diagnostyka kandydatów).
+fn speed_change_vectors_2() -> Value {
+    let doc: Value = match std::env::var("WIRING_A_SPEED_CHANGE2_FILE") {
+        Ok(p) => serde_json::from_str(&std::fs::read_to_string(p).unwrap()).unwrap(),
+        Err(_) => serde_json::from_str(SPEED_CHANGE_VECTORS_2).unwrap(),
+    };
+    assert_eq!(doc["pin"], PIN);
+    assert_eq!(
+        doc["pinSha256"], PIN_SHA256,
+        "wektory zmiany prędkości (klasy `_raf`) z innego tekstu pinu"
+    );
+    assert_eq!(f(&doc["frameWallMs"]), FRAME_MS);
+    doc
+}
+
+/// R-RUSTPORT-P4-414-FQ-SPEED-MIDCHANGE-VEC-2-Q1: zmiana prędkości w trakcie bitwy trafiająca w odcinek `_raf` w toku,
+/// którego koniec przesuwa się na nowej siatce klatki (pin: `localT >= ms` sprawdzane w każdej klatce, `_setSpeedIdx`
+/// `:9518-9527` zmienia deltę od następnej klatki): krok falangi, krok `_advanceToward`, cios wypadu wręcz o klatkę
+/// wcześniej/później i koniec wypadu po ciosie. Sesja (`SiegeLoop::respeed`) bajt w bajt z wykonaniem tekstu pinu:
+/// chwila każdej zmiany (klatka, `vNow`, `roundNo`, prędkość przed/po), strumień zdarzeń z czasem, liczba klatek, wynik.
+/// Pokrycie: każda klasa odcinka trafiona przez zastosowaną zmianę w co najmniej jednej bitwie, ≥ 8 bitew.
+#[test]
+fn zmiana_predkosci_w_trakcie_klasy_raf_wektory_pinu_bajt_w_bajt() {
+    let by_name = base_by_name(&vectors());
+    let doc = speed_change_vectors_2();
+    let data = pin_session_data();
+    let list = doc["vectors"].as_array().unwrap();
+    let mut rozbiezne = Vec::new();
+    let mut cov = BTreeMap::<&str, std::collections::BTreeSet<String>>::new();
+    let mut n_events = 0;
+    for sv in list {
+        let name = sv["name"].as_str().unwrap();
+        let bv = &by_name[sv["base"].as_str().unwrap()];
+        assert!(bv["frameMs"].is_null(), "{name}: tylko klatka produkcyjna");
+        assert_eq!(sv["mode"], "realtime");
+        assert_eq!(sv["expect"]["otherRandom"], 0, "{name}");
+        let changes = sv["changes"].as_array().unwrap();
+        assert_eq!(
+            changes.len(),
+            sv["wanted"].as_array().unwrap().len(),
+            "{name}: wszystkie zadane zmiany zastosowane w pinie"
+        );
+        let run = run_midchange(bv, sv, &data, MidMut::None, false);
+        let mut d = Vec::new();
+        if run.at_change.len() != changes.len() {
+            d.push(format!("zmian {} != {}", run.at_change.len(), changes.len()));
+        }
+        for (c, got) in changes.iter().zip(&run.at_change) {
+            let want: ChangeAt = (
+                c["frame"].as_u64().unwrap(),
+                f(&c["vNow"]),
+                c["roundNo"].as_i64().unwrap(),
+                f(&c["from"]),
+                f(&c["speedMul"]),
+            );
+            if *got != want {
+                d.push(format!("chwila zmiany {got:?} != pin {want:?}"));
+            }
+            for k in RAF_KLASY {
+                if c[k].as_u64().unwrap() > 0 {
+                    cov.entry(k).or_default().insert(name.to_owned());
+                }
+            }
+        }
+        n_events += run.events.len();
+        d.extend(mid_diff(bv, sv, run));
+        if !d.is_empty() {
+            rozbiezne.push(format!("{name}: {}", d.join("; ")));
+        }
+    }
+    assert!(
+        rozbiezne.is_empty(),
+        "zmiana prędkości w odcinku `_raf`: rozbieżne z pinem: {rozbiezne:#?}"
+    );
+    if std::env::var("WIRING_A_SPEED_CHANGE2_FILE").is_err() {
+        assert!(list.len() >= 8, "bitew {}", list.len());
+        for k in RAF_KLASY {
+            assert!(
+                cov.get(k).map_or(0, std::collections::BTreeSet::len) >= 2,
+                "klasa {k}: bitew z zastosowaną zmianą {:?}",
+                cov.get(k)
+            );
+        }
+        assert!(n_events > 0, "brak zdarzeń");
+    }
+    eprintln!(
+        "FQ-SPEED-MIDCHANGE-2: przypadków {}, zdarzeń {n_events}, klasy (bitwy): {:?}",
+        list.len(),
+        cov.iter().map(|(k, s)| (*k, s.len())).collect::<Vec<_>>()
+    );
+}
+
+/// R-RUSTPORT-P4-414 (kontrola czułości): mutanty sterownika zmiany prędkości ([`MID_MUTANTS`]) rozjeżdżają się z
+/// wektorami klas `_raf` na co najmniej jednym przypadku.
+#[test]
+fn zmiana_predkosci_w_trakcie_klasy_raf_mutanty_sterownika_daja_fail() {
+    let by_name = base_by_name(&vectors());
+    let doc = speed_change_vectors_2();
+    let data = pin_session_data();
+    let list = doc["vectors"].as_array().unwrap();
+    let mut killed = BTreeMap::<String, usize>::new();
+    for m in MID_MUTANTS {
+        let n = list
+            .iter()
+            .filter(|sv| {
+                let bv = &by_name[sv["base"].as_str().unwrap()];
+                !mid_diff(bv, sv, run_midchange(bv, sv, &data, m, true)).is_empty()
+            })
+            .count();
+        killed.insert(format!("{m:?}"), n);
+    }
+    eprintln!(
+        "FQ-SPEED-MIDCHANGE-2 mutanty (rozbieżne przypadki z {}): {killed:?}",
+        list.len()
+    );
+    let survived: Vec<_> = killed.iter().filter(|(_, n)| **n == 0).collect();
+    assert!(survived.is_empty(), "mutanty niezabite: {survived:?}");
+}
+
 // ------------------------------------------------- R-RUSTPORT-P4-406 (LANDAT-TB-TOWER-DUE-ORDER)
 
 const TOWER_ORDER_VECTORS: &str =

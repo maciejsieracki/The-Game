@@ -537,7 +537,23 @@ function runScenario(sc) {
   const events = sc.recordEvents ? [] : null;
   const moves = [];
   const lunges = [];
-  if (changes.length || events) {
+  // R-RUSTPORT-P4-414 (FQ-SPEED-MIDCHANGE-VEC-2, `sc.probe2`): klasa kroku `_doMove` wg metody pinu, ktora go wywolala
+  // bezposrednio: `ph` = krok falangi `_phalanxStep` (`:6635`, z `_phalanxAction` `:6577`), `adv` = `_advanceToward`
+  // (`:7915`, wolane z `:6215`, `:8035`, `:8049`), `''` = inne. Obserwatory = opakowania metod instancji (tekst pinu bez
+  // zmian, strażnik SHA-256 nietkniety); stan zwracany w `probe2Log` (sonda).
+  let moveCls = '';
+  if (sc.probe2) {
+    for (const [m, cls] of [['_phalanxStep', 'ph'], ['_advanceToward', 'adv']]) {
+      const o = bs[m];
+      if (typeof o !== 'function') throw new Error('brak metody pinu ' + m);
+      bs[m] = function (...a) {
+        const prev = moveCls;
+        moveCls = cls;
+        try { return o.apply(this, a); } finally { moveCls = prev; }
+      };
+    }
+  }
+  if (changes.length || events || sc.probe2) {
     const key = (u) => (u.side === 'atk' ? 'atk:' : 'def:') + u.bu.id;
     const origSched = bs._schedule;
     bs._schedule = function (ms, cb) {
@@ -551,14 +567,19 @@ function runScenario(sc) {
       const planning = !!this._autoBatchPlanning;
       const from = `${ru.q},${ru.r}`;
       const t0 = this.vNow;
-      const out = origMove.call(this, ru, ...rest);
+      // R-RUSTPORT-P4-414: klasa kroku liczona tylko dla wywolania bezposrednio z obserwowanej metody (zagniezdzone
+      // wywolania z callbacku `done` kroku nie dziedzicza klasy, bo `_doMove` wola `done` dopiero w klatce konca kroku).
+      const cls = moveCls;
+      moveCls = '';
+      let out;
+      try { out = origMove.call(this, ru, ...rest); } finally { moveCls = cls; }
       // Krok wykonany (pozycja zmieniona) = animacja od `t0 = vNow` (`:8746`); odmowa (`_siegeMoveRefused`) = brak.
-      if (!planning && `${ru.q},${ru.r}` !== from) moves.push({ t0 });
+      if (!planning && `${ru.q},${ru.r}` !== from) moves.push(sc.probe2 ? { t0, cls, round: this.roundNo } : { t0 });
       return out;
     };
     const origMelee = bs._doMeleeAttack;
     bs._doMeleeAttack = function (a, d, done) {
-      if (!this._autoBatchPlanning) lunges.push({ t0: this.vNow });
+      if (!this._autoBatchPlanning) lunges.push(sc.probe2 ? { t0: this.vNow, round: this.roundNo } : { t0: this.vNow });
       return origMelee.call(this, a, d, done);
     };
     if (events) {
@@ -693,8 +714,30 @@ function runScenario(sc) {
       preHit: fly.filter((t) => t.due > bs.vNow + lo && t.due <= bs.vNow + hi).length,
       moving: moves.filter((m) => bs.vNow - m.t0 > 0 && bs.vNow - m.t0 < 240).length,
       lunging: lunges.filter((l) => bs.vNow - l.t0 > 0 && bs.vNow - l.t0 < 150).length,
+      ...(sc.probe2 ? probe2(oldMul, newMul) : {}),
     };
   };
+  // R-RUSTPORT-P4-414 (D-414-2): chwile, w ktorych zmiana predkosci PRZESUWA koniec odcinka `_raf` w toku. Odcinek od `t0`
+  // o dlugosci `ms` konczy sie w pierwszej klatce `vNow + k * F >= t0 + ms` (pin sprawdza `localT >= ms` w kazdej klatce:
+  // `_doMove` `:8748-8768`, `_doMeleeAttack` `:9118-9124` cios, `:9149` koniec wypadu); `F = 16 * speedMul`. Licznik =
+  // odcinki w toku, dla ktorych koniec przy starej predkosci (`F0`) != koniec przy nowej (`F1`):
+  // `movingPh` = krok falangi (`MOVE_STEP_MS` 240), `movingAdv` = krok `_advanceToward` (240), `lungeShift` = wypad przed
+  // ciosem (`BLOW_HIT_T` 150; zmiana przesuwa cios o klatke), `lungeTail` = wypad po ciosie przed koncem (`BLOW_LUNGE_MS`
+  // 260; zmiana przesuwa koniec wypadu i `_schedule(BLOW_SETTLE_MS)`).
+  function probe2(oldMul, newMul) {
+    const now = bs.vNow;
+    const F0 = 16 * oldMul;
+    const F1 = 16 * newMul;
+    const shift = (target) => target > now && Math.ceil((target - now) / F0) * F0 !== Math.ceil((target - now) / F1) * F1;
+    const live = (t0, ms) => now - t0 >= 0 && now - t0 < ms && shift(t0 + ms);
+    return {
+      movingPh: moves.filter((m) => m.cls === 'ph' && live(m.t0, 240)).length,
+      movingAdv: moves.filter((m) => m.cls === 'adv' && live(m.t0, 240)).length,
+      lungeShift: lunges.filter((l) => live(l.t0, 150)).length,
+      lungeTail: lunges.filter((l) => now - l.t0 >= 150 && live(l.t0, 260)).length,
+    };
+  }
+  if (sc.probe2) globalThis.__probe2Log = { moves, lunges };
   bs.play((r) => { res = r; });
   if (mode === 'skip') bs.skip();
   let t = 0;
@@ -727,7 +770,8 @@ function runScenario(sc) {
       else if (at.when != null) {
         if (bs.roundNo >= (at.afterRound ?? 0)) {
           pr = probe(bs.speedMul, c.speedMul);
-          const k = { inflight: 'inFlight', prehit: 'preHit', moving: 'moving', lunge: 'lunging' }[at.when];
+          const k = { inflight: 'inFlight', prehit: 'preHit', moving: 'moving', lunge: 'lunging',
+            ...(sc.probe2 ? { movingPh: 'movingPh', movingAdv: 'movingAdv', lungeShift: 'lungeShift', lungeTail: 'lungeTail' } : {}) }[at.when];
           if (!k) throw new Error('nieznany at.when: ' + at.when);
           hit = pr[k] > 0;
         }
@@ -902,6 +946,97 @@ if (process.env.WIRING_A_SPEED_CHANGE_VECTORS) {
   if (shaC !== EXPECTED_SHA256) throw new Error('straznik SHA-256 pinu: ' + shaC + ' != ' + EXPECTED_SHA256);
   const txt = JSON.stringify({ pin: PIN, pinSha256: shaC, frameWallMs: 16, vectors: vecs }) + '\n';
   const outPath = process.env.WIRING_A_OUT ?? join(here, 'p6_k5loop_wiring_a_pin_vectors', 'speed_change_vectors.json');
+  writeFileSync(outPath, txt);
+  console.log(createHash('md5').update(txt).digest('hex') + '  ' + outPath);
+  process.exit(0);
+}
+
+// R-RUSTPORT-P4-414 (FQ-SPEED-MIDCHANGE-VEC-2, D-414-2): SONDA (`WIRING_A_SPEED_CHANGE2_SONDA=1`, podzial
+// `WIRING_A_SPEED_CHANGE2_SHARD=k/n`, wynik JSON do `WIRING_A_OUT`): kazdy scenariusz bazowy `SCENARIOS` z klatka
+// produkcyjna w czasie rzeczywistym x1 z obserwatorami `probe2` (bez zmian predkosci): kroki falangi / `_advanceToward`
+// (tura, `t0`) i wypady wrecz (tura, `t0`). Sluzy do doboru przypadkow `SPEED_CHANGE2_CASES`; nie zapisuje wektorow.
+if (process.env.WIRING_A_SPEED_CHANGE2_SONDA) {
+  const shard = process.env.WIRING_A_SPEED_CHANGE2_SHARD ? process.env.WIRING_A_SPEED_CHANGE2_SHARD.split('/').map(Number) : null;
+  const out = [];
+  const tS = Date.now();
+  for (const [i, sc0] of SCENARIOS.filter((s) => s.ffStepMs == null).entries()) {
+    if (shard && i % shard[1] !== shard[0]) continue;
+    const v = runScenario({ ...sc0, mode: 'realtime', probe2: true });
+    const { moves, lunges } = globalThis.__probe2Log;
+    const rounds = (cls) => moves.filter((m) => m.cls === cls).map((m) => m.round);
+    const row = { name: sc0.name, winner: v.expect.winner, roundNo: v.expect.roundNo, ph: rounds('ph'), adv: rounds('adv'), lunges: lunges.length, lungeRounds: [...new Set(lunges.map((l) => l.round))] };
+    out.push(row);
+    console.error(`${sc0.name}: ${row.winner} tura ${row.roundNo} ph ${JSON.stringify(row.ph)} adv ${JSON.stringify(row.adv)} wypadow ${row.lunges} (${Date.now() - tS} ms)`);
+  }
+  if (process.env.WIRING_A_OUT) writeFileSync(process.env.WIRING_A_OUT, JSON.stringify(out) + '\n');
+  process.exit(0);
+}
+
+// R-RUSTPORT-P4-414 (FQ-SPEED-MIDCHANGE-VEC-2, D-414-1/2): wektory zmiany predkosci w trakcie bitwy pod klasy odcinkow
+// `_raf`, ktorych nie trafia `speed_change_vectors.json` (sonda Evaluatora #413): krok falangi (`movingPh`), krok
+// `_advanceToward` (`movingAdv`), wypad przed ciosem z przesunieciem ciosu o klatke (`lungeShift`) i wypad po ciosie
+// przed koncem (`lungeTail`); klasy i warunek przesuniecia = `probe2` w `runScenario`. Format wektora jak
+// `speed_change_vectors.json` (te same pola, w `changes` dodatkowo liczniki `movingPh`/`movingAdv`/`lungeShift`/
+// `lungeTail`). Zapis WYLACZNIE `speed_change_vectors_2.json` (`WIRING_A_SPEED_CHANGE2_VECTORS=1`, podzial
+// `WIRING_A_SPEED_CHANGE2_SHARD=k/n` do `WIRING_A_OUT`, scalanie `WIRING_A_SPEED_CHANGE2_MERGE=plik1,...`); pozostale
+// pliki wektorow bez zmian. Przypadki dobrane sonda (`WIRING_A_SPEED_CHANGE2_SONDA`), raport
+// `dyspozycje/autobot/runs/R-RUSTPORT-P4-414-FQ-SPEED-MIDCHANGE-VEC-2-Q1/01-operator-r1.md`.
+const SPEED_CHANGE2_CASES = (() => {
+  const base = SCENARIOS.filter((s) => s.ffStepMs == null);
+  const list = JSON.parse(process.env.WIRING_A_SPEED_CHANGE2_CASES_JSON ?? 'null') ?? [
+    // [scenariusz bazowy, predkosc startowa, [[at, speedMul], ...]]
+  ];
+  return list.map(([b, s0, ch]) => {
+    if (!base.some((s) => s.name === b)) throw new Error('brak scenariusza bazowego ' + b);
+    const tag = ch.map(([at, k]) => `${at.when ?? (at.round != null ? 'r' + at.round : 'f' + at.frame)}${k}`).join('_');
+    return { name: `sc2_${b}_x${s0}_${tag}`, base: b, speedMul: s0 === 1 ? undefined : s0, speedChanges: ch.map(([at, k]) => ({ at, speedMul: k })) };
+  });
+})();
+if (process.env.WIRING_A_SPEED_CHANGE2_VECTORS) {
+  const tS = Date.now();
+  const outDefault = join(here, 'p6_k5loop_wiring_a_pin_vectors', 'speed_change_vectors_2.json');
+  const only = process.env.WIRING_A_SPEED_CHANGE2_ONLY ? new Set(process.env.WIRING_A_SPEED_CHANGE2_ONLY.split(',')) : null;
+  const shard = process.env.WIRING_A_SPEED_CHANGE2_SHARD ? process.env.WIRING_A_SPEED_CHANGE2_SHARD.split('/').map(Number) : null;
+  if (process.env.WIRING_A_SPEED_CHANGE2_MERGE) {
+    const parts = process.env.WIRING_A_SPEED_CHANGE2_MERGE.split(',').map((p) => JSON.parse(readFileSync(p, 'utf8')));
+    const byName = new Map();
+    for (const p of parts) {
+      if (p.pin !== PIN || p.pinSha256 !== EXPECTED_SHA256) throw new Error('czesc z innego pinu');
+      for (const v of p.vectors) {
+        if (byName.has(v.name)) throw new Error('powtorzony przypadek ' + v.name);
+        byName.set(v.name, v);
+      }
+    }
+    const merged = SPEED_CHANGE2_CASES.filter((c) => byName.has(c.name)).map((c) => byName.get(c.name));
+    if (merged.length !== byName.size) throw new Error('nadmiarowe przypadki w czesciach');
+    console.error(`przypadkow ${merged.length}/${SPEED_CHANGE2_CASES.length} (pominiete: ${SPEED_CHANGE2_CASES.filter((c) => !byName.has(c.name)).map((c) => c.name).join(', ') || 'brak'})`);
+    const txtM = JSON.stringify({ pin: PIN, pinSha256: EXPECTED_SHA256, frameWallMs: 16, vectors: merged }) + '\n';
+    writeFileSync(outDefault, txtM);
+    console.log(createHash('md5').update(txtM).digest('hex') + '  ' + outDefault);
+    process.exit(0);
+  }
+  if (shard && !process.env.WIRING_A_OUT) throw new Error('WIRING_A_SPEED_CHANGE2_SHARD wymaga WIRING_A_OUT');
+  const vecs = [];
+  for (const [ci, c] of SPEED_CHANGE2_CASES.entries()) {
+    if (only && !only.has(c.name)) continue;
+    if (shard && ci % shard[1] !== shard[0]) continue;
+    const sc0 = SCENARIOS.find((s) => s.name === c.base);
+    const v = runScenario({ ...sc0, name: c.name, mode: 'realtime', speedMul: c.speedMul, speedChanges: c.speedChanges, recordEvents: true, probe2: true });
+    if (v.speedChanges.length !== c.speedChanges.length) {
+      console.error(`POMINIETY ${c.name}: zastosowano ${v.speedChanges.length}/${c.speedChanges.length} zmian`);
+      continue;
+    }
+    vecs.push({
+      name: c.name, base: c.base, mode: 'realtime', ...(c.speedMul != null ? { speedMul: c.speedMul } : {}),
+      wanted: c.speedChanges, changes: v.speedChanges, frames: v.frames, expect: v.expect, events: v.events,
+    });
+    console.error(`${c.name}: ${v.expect.winner} tura ${v.expect.roundNo} klatek ${v.frames} zdarzen ${v.events.length} zmiany ${JSON.stringify(v.speedChanges.map((a) => [a.frame, a.from, a.speedMul, a.roundNo, a.movingPh, a.movingAdv, a.lungeShift, a.lungeTail]))} (${Date.now() - tS} ms)`);
+  }
+  if (hashed.size === 0) throw new Error('czesc bez przypadkow (WIRING_A_SPEED_CHANGE2_SHARD / _ONLY nic nie wybraly)');
+  const sha2 = hash.digest('hex');
+  if (sha2 !== EXPECTED_SHA256) throw new Error('straznik SHA-256 pinu: ' + sha2 + ' != ' + EXPECTED_SHA256);
+  const txt = JSON.stringify({ pin: PIN, pinSha256: sha2, frameWallMs: 16, vectors: vecs }) + '\n';
+  const outPath = process.env.WIRING_A_OUT ?? outDefault;
   writeFileSync(outPath, txt);
   console.log(createHash('md5').update(txt).digest('hex') + '  ' + outPath);
   process.exit(0);
