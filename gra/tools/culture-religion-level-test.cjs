@@ -226,13 +226,49 @@ eq('dane: latwy D', jsonLevels.latwy.D, -10);
 eq('dane: latwy G', jsonLevels.latwy.G, 10);
 
 // ---------------------------------------------------------------------------
-// 6. Mutacje czerwone: każda z nich ma być WYKRYTA przez powyższe asercje.
+// 6. Prawo: skala epok 2/3, poziom łatwy i normalny, źródło udziału religii (haRel).
+//    (Mutacje czerwone na źródle: uruchamiane osobno w raporcie obrony; asercje poniżej
+//    są ich wykrywaczami — każda zmiana D/G, skali, linii Prawa lub źródła udziału łamie je.)
 // ---------------------------------------------------------------------------
-const swapped = { latwy: { D: 10, G: -10 }, normalny: { D: 5, G: -15 }, trudny: { D: 0, G: -20 } };
-check('mutacja D/G: zamiana daje inny wynik (wykrywalne)',
-  M.cultureReligionLineValue('trudny', 1, 0, swapped) !== -20);
-check('mutacja skala: bez skali epok epoka 3 ≠ −46',
-  M.cultureReligionLineValue('trudny', 1, 0) !== -46);
+const lawLine = (res, id) => {
+  const l = res.prawo.lines.find((x) => x.id === id);
+  return l ? l.value : undefined;
+};
+const lawInp = (over) => Object.assign({ difficulty: 'hard', era: 1, population: 3, garnizonCount: 0 }, over);
+const happyBase = { difficulty: 'hard', era: 1, population: 3, buildingZadowolenie: 0, haRel: 0 };
+
+M.setCulturaReligiaLevel('trudny');
+let r2 = M.evaluateOrderFromBreakdown({ ...happyBase, era: 2, ownCultureShare: 0 }, lawInp({ era: 2 }), SOCIETY, 'hard');
+eq('trudny Prawo: kultura 0% epoka2 = −32', lawLine(r2, 'kultura_prawo'), -32);
+let r3 = M.evaluateOrderFromBreakdown({ ...happyBase, era: 3, ownCultureShare: 0 }, lawInp({ era: 3 }), SOCIETY, 'hard');
+eq('trudny Prawo: kultura 0% epoka3 = −46', lawLine(r3, 'kultura_prawo'), -46);
+eq('trudny Prawo: religia epoka3 (haRel 0 → 50%) = −23', lawLine(r3, 'religia_prawo'), -23);
+
+// Źródło udziału religii w Prawie = to samo co w Szczęściu (haRel, bez ownReligionShare).
+const rHa = M.evaluateOrderFromBreakdown({ ...happyBase, haRel: -1, ownCultureShare: 1 }, lawInp({}), SOCIETY, 'hard');
+eq('trudny Prawo: haRel −1 → religia 0% = −20', lawLine(rHa, 'religia_prawo'), -20);
+const szHa = M.computeHappinessBreakdown({ ...happyBase, haRel: -1, ownCultureShare: 1 }, SOCIETY);
+eq('trudny Szczescie: haRel −1 → religia 0% = −20 (zgodnie z Prawem)', lineOf(szHa, 'religia'), -20);
+const rHaComputeLaw = M.computeLawBreakdown(lawInp({ haRel: -1, ownCultureShare: 1 }), SOCIETY);
+eq('computeLawBreakdown bezpośrednio: haRel −1 → religia −20', lawLine({ prawo: rHaComputeLaw }, 'religia_prawo'), -20);
+
+// Poziom łatwy: Prawo dostaje linie (kultura 100% = +10), Szczęście = dziś.
+M.setCulturaReligiaLevel('latwy');
+const rEasy = M.evaluateOrderFromBreakdown({ ...happyBase, ownCultureShare: 1, ownReligionShare: 1 }, lawInp({}), SOCIETY, 'hard');
+eq('łatwy Prawo: kultura 100% = +10', lawLine(rEasy, 'kultura_prawo'), 10);
+eq('łatwy Prawo: religia 100% = +10', lawLine(rEasy, 'religia_prawo'), 10);
+
+// Poziom normalny: Szczęście i Prawo (kultura 0% = −15, 100% = +5; epoka 2 ×1,6 → +8).
+M.setCulturaReligiaLevel('normalny');
+const nSz = M.computeHappinessBreakdown({ ...happyBase, ownCultureShare: 0, ownReligionShare: 1 }, SOCIETY);
+eq('normalny Szczescie: kultura 0% = −15', lineOf(nSz, 'kultura'), -15);
+const nSz2 = M.computeHappinessBreakdown({ ...happyBase, era: 2, ownCultureShare: 1, ownReligionShare: 1 }, SOCIETY);
+eq('normalny Szczescie: kultura 100% epoka2 = +8', lineOf(nSz2, 'kultura'), 8);
+const nPr = M.evaluateOrderFromBreakdown({ ...happyBase, era: 2, ownCultureShare: 1, ownReligionShare: 1 }, lawInp({ era: 2 }), SOCIETY, 'hard');
+eq('normalny Prawo: kultura 100% epoka2 = +8', lawLine(nPr, 'kultura_prawo'), 8);
+
+// Mutacje czerwone uruchomione na źródle: patrz raport obrony (30-obrona-claude.md).
+M.setCulturaReligiaLevel('trudny');
 
 M.setCulturaReligiaLevel(undefined);
 

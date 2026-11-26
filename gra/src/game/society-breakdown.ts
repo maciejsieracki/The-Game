@@ -201,6 +201,8 @@ export interface LawBreakdownInput {
   ownCultureShare?: number;
   /** R-WEB-CULT-REL-IMPL-Q1: udział własnej religii [0,1]; brak = odtworzony z `haRel` (0,5 gdy brak). */
   ownReligionShare?: number;
+  /** R-WEB-CULT-REL-IMPL-Q1: sygnał religii (jak w HappinessInput); źródło prawdy udziału religii, gdy brak `ownReligionShare`. */
+  haRel?: number;
 }
 
 export const REVOLT_CRITICAL_POR_PCT = 12;
@@ -965,7 +967,7 @@ export function computeLawBreakdown(
       : 1;
     const relShare = Number.isFinite(input.ownReligionShare)
       ? Math.min(1, Math.max(0, input.ownReligionShare as number))
-      : 0.5;
+      : ownShareFromSignal(input.haRel);
     const kv = kultReligLinePoints(cLevel, x, kultShare, base, bounds);
     if (kv) lines.push({ id: 'kultura_prawo', label: udzialLineLabel('Kultura', kultShare), value: kv });
     const rv = kultReligLinePoints(cLevel, x, relShare, base, bounds);
@@ -1148,9 +1150,8 @@ export function evaluateOrderFromBreakdown(
   const prawo = computeLawBreakdown({
     ...lawInput,
     ownCultureShare: lawInput.ownCultureShare ?? happinessInput.ownCultureShare,
-    ownReligionShare: lawInput.ownReligionShare
-      ?? happinessInput.ownReligionShare
-      ?? ownShareFromSignal(happinessInput.haRel),
+    ownReligionShare: lawInput.ownReligionShare ?? happinessInput.ownReligionShare,
+    haRel: lawInput.haRel ?? happinessInput.haRel,
   }, society);
   return computeOrderPctBreakdown(sz, prawo, params, revolt);
 }
