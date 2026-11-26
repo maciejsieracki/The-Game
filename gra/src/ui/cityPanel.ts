@@ -290,7 +290,7 @@ import {
   type RawConverterParamsJson,
 } from '../game/converters';
 import { isProductionBuildingEnabled, operationalBuiltIds } from '../game/building-toggle';
-import { demolishRefundFor } from '../game/building-demolish';
+import { demolishRefundFor, isDemolishBlockedBySiege, DEMOLISH_SIEGE_BLOCK_PL } from '../game/building-demolish';
 import { UI_PARAMS } from './uiParams';
 import type { EmpireFoodState, EmpireFoodTick } from '../game/empire-food';
 // Formatowanie liczb do wyświetlenia (obcięcie śmieci zmiennoprzecinkowych) — Maciej 2026-07-26.
@@ -9874,8 +9874,16 @@ function appendOwnedBuildingRow(
       demoBtn.className = 'hbtn bld-demolish-btn';
       demoBtn.textContent = 'Wyburz';
       demoBtn.setAttribute('aria-label', `Wyburz budynek ${def.nazwa}`);
+      // Oblężenie miasta blokuje wyburzanie (bez wyjątków, także Mennica/Pałac/mury): przycisk
+      // nieaktywny z powodem (PL) w podpowiedzi. Silnik i tak odrzuca (demolishBuilding blocked).
+      const demoSiegeBlocked = isDemolishBlockedBySiege([city], city.id);
+      if (demoSiegeBlocked) {
+        demoBtn.disabled = true;
+        demoBtn.title = DEMOLISH_SIEGE_BLOCK_PL;
+      }
       demoBtn.addEventListener('click', (e) => {
         e.stopPropagation();
+        if (isDemolishBlockedBySiege([city], city.id)) return;
         const refund = demolishRefundFor(def.id);
         const refundTxt = Object.entries(refund).map(([k, v]) => `${k}: +${v}`).join(', ');
         const msg = `Wyburzyć „${def.nazwa}”?\nZwrot surowców: ${refundTxt || 'brak'} (połowa kosztu, w dół).\nPieniądz i Praca nie wracają. Efekty budynku znikną od następnej tury.`;

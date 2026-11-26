@@ -23,6 +23,10 @@
 import buildingsJson from '../../data/buildings.json';
 import { buildingStockCost, refundBuildingStockCostAcrossCities } from './building-stock-cost';
 import { demolishBuildingIds } from './mennica-orphan';
+import { isCityUnderSiege, type SiegeStateCity } from './city-siege-state';
+
+/** Komunikat UI (PL) przy zablokowanym wyburzaniu: miasto oblężone. */
+export const DEMOLISH_SIEGE_BLOCK_PL = 'Nie można wyburzać podczas oblężenia';
 
 export interface DemolishBuildingDef {
   id: string;
@@ -37,6 +41,8 @@ export interface DemolishCityRef {
   id: string;
   ownerId: number;
   surowce?: Record<string, number>;
+  /** Flaga oblężenia (jedyne źródło prawdy: city-siege-state.ts). Gdy true -- brak wyburzeń. */
+  oblegane?: boolean;
 }
 
 export interface DemolishState {
@@ -51,6 +57,8 @@ export interface DemolishResult {
   removed: boolean;
   /** Zwrot surowców (już dopisany do puli ownera); pusty, gdy nic nie wrócono. */
   refund: Record<string, number>;
+  /** Powód odmowy: 'siege' = miasto oblężone (wyburzanie zablokowane, bez zmian stanu). */
+  blocked?: 'siege';
 }
 
 const DEFAULT_BUILDINGS = buildingsJson as unknown as ReadonlyArray<DemolishBuildingDef>;
@@ -107,9 +115,21 @@ export function demolishRefundFor(
 }
 
 /**
+ * Czy wyburzanie w mieście jest zablokowane przez oblężenie (dowolny budynek, w tym Mennica,
+ * Pałac i mury: bez wyjątków poza oblężeniem, odp. 28a właściciela).
+ */
+export function isDemolishBlockedBySiege(
+  cities: ReadonlyArray<DemolishCityRef>,
+  cityId: string,
+): boolean {
+  return isCityUnderSiege(cities as ReadonlyArray<SiegeStateCity>, cityId);
+}
+
+/**
  * Wyburza budynek `buildingId` w mieście `cityId`. Usuwa wszystkie wpisy tego ID z listy
  * zbudowanych budynków miasta i dopisuje zwrot do puli surowców ownera miasta.
  * Gdy budynku nie ma (lub miasta nie ma), nic nie zmienia i zwraca `removed: false`.
+ * Gdy miasto jest oblężone, nic nie zmienia i zwraca `removed: false, blocked: 'siege'`.
  * Mutuje `state.builtByCity` i surowce miast; nie rusza kolejki produkcji.
  */
 export function demolishBuilding(
@@ -119,6 +139,7 @@ export function demolishBuilding(
 ): DemolishResult {
   const city = state.cities.find(c => c.id === cityId);
   if (!city) return { removed: false, refund: {} };
+  if (isDemolishBlockedBySiege(state.cities, cityId)) return { removed: false, refund: {}, blocked: 'siege' };
   const built = state.builtByCity.get(cityId) ?? [];
   const next = demolishBuildingIds(built, buildingId);
   if (next === null) return { removed: false, refund: {} };

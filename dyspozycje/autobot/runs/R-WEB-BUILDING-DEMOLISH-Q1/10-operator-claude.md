@@ -1,3 +1,43 @@
+# R-WEB-BUILDING-DEMOLISH-Q1 — raport Operatora, RUNDA 3/5 (HAIKU 5.5): ZAKAZ wyburzania podczas oblężenia (odp. 28a)
+
+STATUS: PASS-WITH-NOTES (blokada oblężenia wdrożona w logice, w przycisku panelu i testach; mutacje czerwone wykryte; NIE ZMIERZONO: żywy zrzut w Chromium w tej rundzie — nie wykonany)
+DOMAIN: GAME
+TEMAT: R-WEB-BUILDING-DEMOLISH-Q1 (WYBURZ, #175; odp. 22C + 28a)
+GOAL: wyburzanie każdego budynku miasta (bez wyjątków dla Pałacu, cudów i murów) za zwrotem połowy surowców; podczas oblężenia miasta wyburzanie zablokowane.
+BAZA/KANDYDAT: b837c8ac393666f17b1dbc74b6adde1f39ef3589 (origin/main = FC r2 tip; kod gra/ 3a00fd6ca). Commit r3 = zmiana kodu + test + ten raport.
+ZMIANY-COMMIT:
+- `gra/src/game/building-demolish.ts`: stała `DEMOLISH_SIEGE_BLOCK_PL` („Nie można wyburzać podczas oblężenia”), pole `oblegane?` w `DemolishCityRef`, predykat `isDemolishBlockedBySiege(cities, cityId)` opakowujący istniejący `isCityUnderSiege` z `city-siege-state.ts`, wynik `blocked?: 'siege'`; `demolishBuilding` zwraca `{removed:false, refund:{}, blocked:'siege'}` przed jakąkolwiek zmianą stanu.
+- `gra/src/ui/cityPanel.ts`: przycisk „Wyburz” nieaktywny (`disabled`, `title` = komunikat PL) gdy miasto oblężone; dodatkowy strażnik w handlerze kliknięcia (brak okna potwierdzenia).
+- `gra/tools/building-demolish-siege-test.cjs` (nowy): 22 asercje (zablokowanie, Mennica/Pałac/mury, nieoblężone 50%, inne miasto oblężone, predykat, mutacje, okablowanie UI).
+- Ten raport.
+
+DECYZJA / ZAŁOŻENIE: 28a nie wymagał DECISION_REQUIRED. Gra ma jednoznaczną definicję oblężenia: flaga `City.oblegane` (ustawiana przez startMapSiege / endMapSiege, czytana przez `isCityUnderSiege` w city-siege-state.ts). Ten sam predykat blokuje już rekrutację. Nie wymyślano nowej definicji. Pojęcie „oblężenie” w ai-siege-relief.ts odnosi się do tej samej flagi.
+
+## Bramki (liczby z surowego wyjścia, worktree na b837c8ac3)
+- `tsc --noEmit` (gra/): exit 0, brak wyjścia
+- `tools/building-demolish-siege-test.cjs`: RESULT 22 pass / 0 fail (nowy)
+- `tools/building-demolish-test.cjs` (regresja): RESULT 36 pass / 0 fail
+- `tools/logic-test.cjs`: LOGIC OK (213/213)
+- `tools/tech-tree-test.cjs`: tech-tree-test: 20 pass, 0 fail
+- `tools/research-test.cjs`: PASSED 33 / FAILED 0 / TOTAL 33
+- `tools/unit-replace-test.cjs`: WSZYSTKIE TESTY ZIELONE (21/21)
+- `tools/combat-test.cjs`: COMBAT TEST: 6/6 pass
+- `tools/ai-test.cjs`: ai-test: 297 passed, 0 failed
+- `tools/mint-capital-only-test.cjs`: 8 PASS / 0 FAIL; `tools/mint-orphan-test.cjs`: 28 PASS / 0 FAIL
+- Mutacje czerwone (w teście siege): A (usunięty strażnik) wyburza w oblężonym -> wykryte; B (strażnik odwrócony) blokuje nieoblężone -> wykryte.
+- Live w Chromium: NIE ZMIERZONO w rundzie 3 (nie uruchomiono przeglądarki; zrzut oblężenia wymaga ponownego przejścia r2).
+
+BLOKADY: brak blokad kodu. Żywy dowód blokady w przeglądarce do wykonania przed deployem (NIE ZMIERZONO).
+RUNDY: 3/5 (r1 FC PASS-WITH-NOTES; r2 live PASS-WITH-NOTES; r3 ta runda).
+NASTĘPNY KROK: Evaluator + Final Control r3; przed deployem: żywy zrzut panelu oblężonego miasta (przycisk nieaktywny + komunikat).
+DEPLOY/PUSH: NIE WYKONANO
+
+UWAGI-DLA-ORKIESTRATORA:
+- Wpis z prośby użytkownika („zobacz czy nie masz pytań ABC bez odpowiedzi”) jest adresowany do orkiestratora, nie do Operatora. Operator nie zadaje pytań właścicielowi. Orkiestrator powinien sprawdzić `grep -nE 'STATUS:[[:space:]]*\*{0,2}OTWARTE' dyspozycje/PYTANIA-OTWARTE.md` oraz KOLEJKA-WEB.md.
+- Środowisko: `gra/node_modules` nie istniało w worktree; użyto symlinku do node_modules z innego worktree (gitignored, usunięty przed commitem — nie wchodzi do repo). Dwa wcześniejsze symlinki wskazywały na worktree usunięte w trakcie pracy.
+
+---
+
 # R-WEB-BUILDING-DEMOLISH-Q1 — raport Operatora, RUNDA 2/5 (HAIKU 5.5): weryfikacja NA ŻYWO przed deployem
 
 STATUS: PASS-WITH-NOTES (żywa weryfikacja w Chromium wykonana i zielona; kod NIE zmieniany w rundzie 2; wyjątki strukturalne Pałac/cuda/mury nadal czekają na decyzję właściciela — nie blokują kodu)
