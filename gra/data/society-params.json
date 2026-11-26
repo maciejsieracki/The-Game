@@ -912,5 +912,11 @@
       "jednostka": "pkt Prawa",
       "opis": "D18-4 A+C: pierwsze miasto gracza na easy, T1–10."
     }
+  },
+  "kultura_religia_poziomy": {
+    "_opis": "R-WEB-CULT-REL-IMPL-Q1 (decyzja właściciela 2026-11-26): granice linii Kultury i linii Religii (każda liczona do Szczęścia i Prawa) na epokę 1. Wartość = (D + (G − D) · udział własnej) · skala epoki (x/10: 1,0 / 1,6 / 2,3 z szczescie_skala_kultura_religia). latwy = dziś (2·x·udział − x).",
+    "latwy": { "D": -10, "G": 10, "opis": "Mały wpływ (łatwy): −10 do +10 na linię." },
+    "normalny": { "D": -15, "G": 5, "opis": "Neutralny (normalny): −15 do +5 na linię." },
+    "trudny": { "D": -20, "G": 0, "opis": "Duży wpływ (trudny): −20 do 0 na linię (bez plusów)." }
   }
 }
