@@ -401,13 +401,31 @@ fn odczyt_zachowuje_tryb_budowy_i_bramki() {
     let mut map_ui = c.ui().map_ui;
     map_ui.territory_border_visible = !map_ui.territory_border_visible;
     c.set_map_ui(map_ui).expect("gate");
+    // Obrona r1 (U1, E8): the siege map panel and the hover are part of the UI the load must handle as the pin does
+    // (panel untouched, `hoverKey = null`).
+    c.set_siege_map_panel_open(true).expect("siege panel");
+    let mut frame_ui = c.ui().frame_ui.clone();
+    frame_ui.hover = Some(PositionDto::new(1, 1));
+    c.set_frame_ui(frame_ui).expect("hover");
+    let before: ClientUiState = c.ui().clone();
+    assert!(before.siege_map_panel_open);
+    assert!(before.frame_ui.hover.is_some());
+    assert_ne!(before.highlight_last_writer, HighlightPriority::Cleared);
 
     c.load_game(&save).expect("load");
     let ui: &ClientUiState = c.ui();
     assert!(ui.frame_ui.build_mode_open, "build mode kept");
     assert_eq!(ui.map_ui, map_ui, "renderer gates kept");
+    assert!(ui.siege_map_panel_open, "siege map panel kept");
     assert_eq!(ui.frame_ui.selected_unit_id, None);
     assert!(!ui.frame_ui.unit_selected_after_build_open);
+    // The WHOLE UI after the load = the UI before it with exactly the 4 fields of `restoreGameFromSave` zeroed.
+    let mut expected = before;
+    expected.frame_ui.selected_unit_id = None;
+    expected.frame_ui.unit_selected_after_build_open = false;
+    expected.frame_ui.hover = None;
+    expected.highlight_last_writer = HighlightPriority::Cleared;
+    assert_eq!(ui, &expected, "only the 4 fields of :47328-47332 change");
     let (_, ref_frame) = reference(&save, &ui.frame_ui);
     assert_eq!(json(frame(&c)), json(&ref_frame));
 }

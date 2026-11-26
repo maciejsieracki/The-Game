@@ -740,6 +740,8 @@ struct Scripted {
     abort: Option<SiegeBattleErrorDto>,
     /// `AbortSiegeBattle` calls.
     aborts: usize,
+    /// Obrona r1 (U2): `state_changed` of a successful `AbortSiegeBattle` answer (the real bridge never sets it).
+    abort_state_changed: bool,
     frame: RenderFramePayload,
     map: RenderMapPayload,
     frame_calls: usize,
@@ -773,7 +775,7 @@ impl SiegeBattleSource for Scripted {
                 Some(e) => Err(SiegeSourceError::Battle(e)),
                 None => Ok(SiegeBattleAnswer {
                     battle: SiegeBattlePayload::aborted(CITY),
-                    state_changed: false,
+                    state_changed: self.abort_state_changed,
                 }),
             };
         }
@@ -867,6 +869,7 @@ fn scripted(
             finish,
             abort: None,
             aborts: 0,
+            abort_state_changed: false,
             frame,
             map,
             frame_calls: 0,
@@ -2070,4 +2073,102 @@ fn odczyt_w_trakcie_bitwy() {
         c.last_siege_battle_end(),
         Some(SiegeBattleEnd::Applied { .. })
     ));
+}
+
+/// Obrona r1 (U2, mutant E13): the real bridge never answers `AbortSiegeBattle` with `StateChanged`
+/// (`bridge.rs:438-455`), so the D-371-4 branch of `abort_siege_battle` is covered with a scripted source that does:
+/// the withdrawal still closes the battle and reports `Aborted`, and the client asks the engine for exactly ONE frame
+/// (no map). Without `StateChanged` (same script) no frame is asked.
+#[test]
+fn wycofanie_ze_state_changed_odswieza_ramke() {
+    for state_changed in [false, true] {
+        let (answers, _, _) = recorded();
+        let mut c = scripted(answers, None);
+        c.source_mut().abort_state_changed = state_changed;
+        c.start_siege_storm(CITY, ANCHOR, true).expect("start");
+        c.step_siege_battle(16.0).expect("step");
+        let frames = c.source().frame_calls;
+        let end = c.abort_siege_battle().expect("withdrawal").clone();
+        assert_eq!(
+            end,
+            SiegeBattleEnd::Aborted {
+                city_id: CITY,
+                reason: SIEGE_WITHDRAW_REASON.to_owned()
+            }
+        );
+        assert_eq!(c.source().aborts, 1);
+        assert!(c.siege_battle().is_none(), "battle screen closed");
+        assert!(c.last_siege_battle_view().is_none(), "scene disposed");
+        assert_eq!(c.last_siege_battle_end(), Some(&end));
+        assert_eq!(
+            c.source().frame_calls,
+            frames + usize::from(state_changed),
+            "StateChanged -> ONE GetRenderFrame (D-371-4); none without it"
+        );
+    }
+}
+
+/// Obrona r1 (U3, mutants E17/E18): a rejected load after a finished battle, with a hover and a selection on the map,
+/// changes NOTHING in the client: whole UI (hover included), last battle end and its closed view, map, frame; no
+/// map / frame query and no siege command.
+#[test]
+fn odrzucony_odczyt_po_bitwie_nie_zmienia_sesji() {
+    let mut c = client_for(siege_state(11));
+    c.start_siege_storm(CITY, ANCHOR, true).expect("start");
+    c.skip_siege_battle().expect("skip");
+    c.finish_siege_battle().expect("finish");
+    assert!(matches!(
+        c.last_siege_battle_end(),
+        Some(SiegeBattleEnd::Applied { .. })
+    ));
+    assert!(c.last_siege_battle_view().is_some(), "closed view kept");
+    let mut ui = c.ui().frame_ui.clone();
+    ui.hover = Some(PositionDto::new(1, 1));
+    ui.selected_unit_id = Some(ANCHOR);
+    c.set_frame_ui(ui).expect("hover + selection");
+    c.set_siege_map_panel_open(true).expect("siege panel");
+
+    let ui_before = c.ui().clone();
+    assert!(ui_before.frame_ui.hover.is_some());
+    let end_before = c.last_siege_battle_end().cloned();
+    let view_answers = c.last_siege_battle_view().map(|v| v.answers());
+    let frame_before = frame(&c).clone();
+    let map_before = c.map().cloned();
+    let state_before = c.source_mut().state();
+    let (maps, frames) = (c.source().seen.map_calls, c.source().seen.frame_calls);
+    let siege = c.source().seen.siege.clone();
+
+    for bad in ["", "{", "[]"] {
+        let err = c.load_game(bad).expect_err("rejected save");
+        assert!(
+            matches!(err, LoadGameError::Rejected(_)),
+            "{bad:?}: {err:?}"
+        );
+    }
+    assert_eq!(c.source().seen.loads, 3);
+    assert_eq!(c.ui(), &ui_before, "whole UI unchanged (hover included)");
+    assert_eq!(
+        c.last_siege_battle_end().cloned(),
+        end_before,
+        "last end kept"
+    );
+    assert_eq!(
+        c.last_siege_battle_view().map(|v| v.answers()),
+        view_answers,
+        "closed battle view kept"
+    );
+    assert!(c.siege_battle().is_none());
+    assert_eq!(frame(&c), &frame_before, "frame unchanged");
+    assert_eq!(c.map().cloned(), map_before, "map unchanged");
+    assert_eq!(
+        (c.source().seen.map_calls, c.source().seen.frame_calls),
+        (maps, frames),
+        "no GetRenderMap / GetRenderFrame"
+    );
+    assert_eq!(c.source().seen.siege, siege, "no siege command");
+    assert_eq!(
+        c.source_mut().state(),
+        state_before,
+        "engine session unchanged"
+    );
 }
