@@ -13296,7 +13296,9 @@ async function boot(): Promise<void> {
       // R-WEB-DIPLO-TRUCE-END-PRICE-3-Q1 (10B): cena 0 = symboliczna opłata. cityAvailable (11A): gracz ma
       // cedowalne miasto (płatnik miasta); bez niego okno przyjmuje pakiet surowców ≥ ceny (wariant zastępczy).
       const requiredPn = truceEndDuePn(aiAiPeacePriceFor(rule.payeeId, rule.payerId, 'pokoj').requiredPn);
-      const cityAvailable = aiPeacePaymentAssets(rule.payerId, rule.payeeId, new Set<string>()).some(a => a.kind === 'miasto');
+      // Miasto cedowalne = nie `forbidden` (stolica, ostatnie miasto, cesja niemożliwa) i pn > 0 (jak planCityPeacePayment).
+      const cityAvailable = aiPeacePaymentAssets(rule.payerId, rule.payeeId, new Set<string>())
+        .some(a => a.kind === 'miasto' && !a.forbidden && a.pn > 0);
       return requiredPn > 0 ? { open: true, requiredPn, currency: rule.currency, cityAvailable } : closed;
     }
 
