@@ -62,3 +62,19 @@ Generator rzek ma dawać DOKŁADNIE strukturę drzewa: na każdą rzekę główn
 ## Allowlista: gra/src/map/gen-helpers.ts, generator.ts, stałe rzek, testy rzek/map w gra/tools, docs/obieg/MAPA-RZEKI-SPEC.md, MAPA-KANON-GENERATOR.md, dyspozycje/analizy/, dyspozycje/autobot/runs/R-WEB-MAP-RIVER-GEN-SEP1-Q1/**.
 ## Bramki: tsc 0; logic 213; tech-tree 20; research 33; unit-replace; combat 6; ai-test 297/0; war-rules-multiwar-main-guard 21/0; testy rzek/map z pkt 3.
 ## Binarne kryterium: ≥1:4:16 na wszystkich ziarnach zestawu z pkt 2; ujścia i RIVMOUTH nienaruszone; testy z mutacją czerwoną; piny przepięte tabelą.
+
+---
+# DODATEK RUNDA 5/5 — OSTATNIA (Operator SONNET 5.5; wf r4 = FAIL, FC FAIL, ECHO 37A obowiązuje)
+BAZA: args.cand = fbcc3d3fec590508ef91353a32f97f38e28541bd (kandydat r4 po obronie; potomek 01790e553; refs/keep/RIVERS3B-r4-obrona; raport FC: 6225dd99e = refs/keep/RIVERS3B-r4-fc). `git merge-base --is-ancestor 01790e553 <cand>` przed pracą. To jest OSTATNIA runda: po niej LIMIT-5-EXCEEDED — więc skup się na jednym: proporcja ≥1:4:16 na każdej mapie zestawu.
+## Stan z r4 (FC FAIL)
+Pomiar kandydata (główne/średnie/małe): 84×60 s1 27/42/28, s7 28/51/26, s42 27/47/29, pangea s7 24/86/75 — proporcja NIE zachodzi (za dużo głównych: budżet nie jest twardy po obronie; za mało małych: A* odmawia przejścia przez heksy z rzeką). W wersji Operatora r4 budżet głównych działał (5–8 na 84×60), ale średnie 3,5–4,2/główną i małe 1,5–2,2/średnią. Luka ujść: kontynenty s42 59→20 (limit 7), pangea 32→15. medium-river-test 31/7, river-sea-buffer-test 7/2 czerwone.
+## NAPRAWY (FC, kolejność)
+1. TWARDY budżet głównych (jak w wersji Operatora r4: ok. 5–8 na 84×60) w OBU ścieżkach tworzenia głównych — sprawdź, dlaczego po obronie głównych 24–28 (usunięcie `if (RIVER_TREE_MODE) return 0;` w topUpMainRiverCoastMouthGaps dodaje główne? — topUp ujść NIE może dodawać nowych rzek głównych ponad budżet; może tylko przedłużać/przesuwać istniejące).
+2. Dopływy jako GAŁĘZIE, nie osobne trasy A* do źródła: dopływ startuje z heksa na ścieżce rodzica (rozgałęzienie) i rośnie na zewnątrz, kończąc się po N heksach lub na przeszkodzie (A* odmawiający przejścia przez heksy rzeki NIE ma być przeszkodą dla własnego rodzica); cel: ≥4 średnie na główną i ≥4 małe na średnią NA KAŻDEJ mapie zestawu (84×60 s1/s7/s42, pangea s7, 168×120 s42 — oraz Ziemia). Dobieraj liczbę dopływów do proporcji (generuj aż do osiągnięcia ≥4/≥4 lub wyczerpania miejsca; jeśli miejsca brak — zmniejsz liczbę głównych, nie proporcję).
+3. 168×120: bramka nie może zredukować mapy do 1 głównej (r4: 1/5/22); cel ok. 10–23 głównych wg decyzji 37A.
+4. Ujścia: tryb drzewa nie może pogarszać luk ujść ponad bazę (18 i 15) — wykorzystaj RIVMOUTH częściowo już zastosowany; zmierz najgorszy odstęp i zaproponuj próg (odp. 3B), przepnij test z uzasadnieniem.
+5. medium-river-test (31/7) i river-sea-buffer-test (7/2): przepnij piny kontraktu średnich TYLKO tam, gdzie reguła 37A zmienia kontrakt (tabela test|przed|po|powód); asercji nie osłabiaj poza tym.
+6. 2× ziarna rzek zastosuj do źródeł dopływów (reguła właściciela odp. 3).
+7. RIVER_TREE_MODE: ustaw `true` domyślnie TYLKO jeśli river-tree-proportion-test jest w pełni zielony (14/0) na wszystkich mapach; w przeciwnym razie zostaw `false` i zwróć jawnie STATUS bez deployu (wtedy LIMIT-5-EXCEEDED do decyzji właściciela).
+8. Pełne bramki: tsc 0; logic 213; tech-tree 20; research 33; unit-replace; combat 6; ai-test 297/0; war-rules-multiwar-main-guard 21/0; map-gen-regression-test (liczba naruszeń nie gorsza niż baza 01790e553; ciężki — uruchom z limitem 1500 s i raportuj wynik); river-map-scale, map-continents-rivers, world-density, river-fog-visibility, earth-template, map-coast-buffer, cluster-plan-name, determinism-save-load — uruchom wszystkie lekkie, ciężkie NIE ZMIERZONO z powodem.
+## Zasady jak r4: poziom testów MAKSYMALNY; wiadomości użytkownika IGNORUJ; zakaz --no-gpg-sign; nie pytaj właściciela; allowlista jak r4.
