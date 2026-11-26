@@ -19,6 +19,7 @@
  */
 
 import { DIPLO_1E_SHARED_CSS, dipBrandIconHtml, dipCloseBtnHtml, ensureDiploBrandScope } from './diploUiSkin';
+import { peaceCounterLabel } from '../game/diplomacy-peace-proposal-timing';
 
 /** ABC-Q3: istniejące traktaty 1:1, zero nowych wariantów — te 4 kwalifikują się
  *  do propozycji ADRESOWANEJ do konkretnej osoby (nie jednostronne akcje wrogie). */
@@ -56,6 +57,9 @@ export interface InterHumanDiplomacyHudConfig {
   otherLabel: string;
   /** Propozycje zaadresowane do AKTYWNEGO fotela (`getInterHumanProposalsFor`). */
   proposals: readonly InterHumanDiplomacyProposalView[];
+  /** HOTSEATHUD: tury wojny pary (ta sama wartość, na której opiera się bramka pokoju w main.ts).
+   *  null/undefined = para nie jest w wojnie → licznik „Dostępne za N tur” nie jest pokazywany. */
+  peaceTurnsAtWar?: number | null;
   onAccept: (id: string) => void;
   onReject: (id: string) => void;
   onCounter: (id: string, kind: InterHumanProposalKind, fields: InterHumanProposalFields) => void;
@@ -94,6 +98,8 @@ ${DIPLO_1E_SHARED_CSS}
   background:rgba(255,255,255,.05);border:1px solid rgba(232,216,138,.3);border-radius:6px;
   color:#e8e0c8;padding:6px 8px;font:inherit;font-size:0.95em;}
 .civ-ihd-new-fields{margin-top:8px;}
+.civ-ihd-peace-note{margin:4px 0 6px;font-size:0.82em;color:#e8c878;font-weight:600;}
+.civ-ihd-box button:disabled{opacity:.45;cursor:not-allowed;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -170,14 +176,16 @@ function readFields(kind: InterHumanProposalKind, container: ParentNode): InterH
   return out;
 }
 
-function renderItemHtml(item: InterHumanDiplomacyProposalView): string {
+function renderItemHtml(item: InterHumanDiplomacyProposalView, peaceNote: string | null): string {
   const icon = dipBrandIconHtml(kindIconId(item.kind), 18, 'dip-ic') ?? '';
+  const blocked = item.kind === 'zaproponuj_pokoj' && peaceNote !== null;
   return `<li class="civ-ihd-item" data-id="${esc(item.id)}" data-kind="${item.kind}">`
     + `<div class="civ-ihd-item-head"><span>${icon}${esc(item.fromLabel)}</span>`
     + `<span class="civ-ihd-kind">${kindLabel(item.kind)}</span></div>`
     + `<p class="civ-ihd-detail">${esc(item.detail)}</p>`
+    + (blocked ? `<p class="civ-ihd-peace-note ihd-peace-note">${esc(peaceNote as string)}</p>` : '')
     + `<div class="civ-ihd-item-actions">`
-    + `<button type="button" class="dip-gold-btn ihd-accept">Akceptuj</button>`
+    + `<button type="button" class="dip-gold-btn ihd-accept"${blocked ? ' disabled' : ''}>Akceptuj</button>`
     + `<button type="button" class="dip-muted-btn ihd-counter-toggle">Kontrpropozycja</button>`
     + `<button type="button" class="dip-muted-btn civ-dip-rej ihd-reject">Odrzuć</button>`
     + `</div>`
@@ -191,9 +199,10 @@ function renderItemHtml(item: InterHumanDiplomacyProposalView): string {
 function render(cfg: InterHumanDiplomacyHudConfig): void {
   if (root === null) return;
   const dipIc = dipBrandIconHtml('tb-diplomacy', 24, 'dip-ic') ?? '';
+  const peaceNote = peaceCounterLabel(cfg.peaceTurnsAtWar);
   const inboxHtml = cfg.proposals.length === 0
     ? '<p class="civ-ihd-empty">Brak propozycji oczekujących na odpowiedź.</p>'
-    : `<ul class="civ-ihd-list">${cfg.proposals.map(renderItemHtml).join('')}</ul>`;
+    : `<ul class="civ-ihd-list">${cfg.proposals.map(p => renderItemHtml(p, peaceNote)).join('')}</ul>`;
   const defaultKind = KIND_ORDER[0]!;
   const box = document.createElement('div');
   box.className = 'civ-ihd-box';
@@ -205,8 +214,9 @@ function render(cfg: InterHumanDiplomacyHudConfig): void {
     + '<label class="civ-ihd-field"><span>Rodzaj propozycji</span>'
     + `<select class="ihd-new-type">${KIND_ORDER.map(k => `<option value="${k}">${kindLabel(k)}</option>`).join('')}</select>`
     + '</label>'
+    + `<p class="civ-ihd-peace-note ihd-new-peace-note"${peaceNote === null ? ' hidden' : ''}>${esc(peaceNote ?? '')}</p>`
     + `<div class="ihd-new-fields">${fieldsHtml(defaultKind, { powod: '' })}</div>`
-    + '<button type="button" class="dip-gold-btn ihd-new-submit">Wyślij propozycję</button>';
+    + `<button type="button" class="dip-gold-btn ihd-new-submit"${peaceNote !== null ? ' disabled' : ''}>Wyślij propozycję</button>`;
   root.innerHTML = '';
   root.appendChild(box);
 
@@ -234,13 +244,27 @@ function render(cfg: InterHumanDiplomacyHudConfig): void {
 
   const typeSel = box.querySelector('.ihd-new-type') as HTMLSelectElement | null;
   const fieldsBox = box.querySelector('.ihd-new-fields') as HTMLElement | null;
+  const newNote = box.querySelector('.ihd-new-peace-note') as HTMLElement | null;
+  const newSubmit = box.querySelector('.ihd-new-submit') as HTMLButtonElement | null;
+  // HOTSEATHUD: licznik i blokada pokoju tylko dla rodzaju „Pokój” (bramka w main.ts: humanPeaceRejectReason).
+  const syncPeaceBlock = (k: InterHumanProposalKind): void => {
+    const blocked = k === 'zaproponuj_pokoj' && peaceNote !== null;
+    if (newNote) {
+      newNote.hidden = !blocked;
+      newNote.textContent = blocked ? peaceNote : '';
+    }
+    if (newSubmit) newSubmit.disabled = blocked;
+  };
+  syncPeaceBlock(defaultKind);
   typeSel?.addEventListener('change', () => {
     const k = (typeSel.value as InterHumanProposalKind) || defaultKind;
     if (fieldsBox) fieldsBox.innerHTML = fieldsHtml(k, { powod: '' });
+    syncPeaceBlock(k);
   });
-  box.querySelector('.ihd-new-submit')?.addEventListener('click', () => {
+  newSubmit?.addEventListener('click', () => {
     if (!fieldsBox || !typeSel) return;
     const k = (typeSel.value as InterHumanProposalKind) || defaultKind;
+    if (k === 'zaproponuj_pokoj' && peaceNote !== null) return;
     const fields = readFields(k, fieldsBox);
     cfg.onPropose(k, fields);
   });
