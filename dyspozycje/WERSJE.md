@@ -1,3 +1,9 @@
+## ROBOCZA 1953d354 -- 2026-11-26 -- FALA 911: Rozejm liczy się w limicie wojen (testowa)
+
+- Para cywilizacji w rozejmie (status pokój z truceUntilTurn albo truceEndOffer) liczy się w limicie wojen (1 naturalna + 1 epoki) jako wojna swojego typu; pokój zwalnia limit; wznowienie wojny po rozejmie nie jest blokowane limitem (nowa funkcja isWarForLimit w warTypesForOwner)
+- Weryfikacja: tsc 0; logic 213/213; war-limit-truce-count 19/0 (mutacja 13/6); diplomacy-war-limit-unit 57/0; war-limit-ai-natural 15/0; war-rules-multiwar-main-guard 21/0; truce-end-war-notice PASS; ai-test 297/0 (FC); vite build OK
+- Limity: zachowanie w żywej grze i testy (d)/(e) tekstowe NIE ZMIERZONO; pendingPrincipalCounts i countActiveWarsForOwner nadal liczą tylko status wojna; typ wojny przy wypowiedzeniu w rozejmie nadpisywany na naturalna (poza zakresem)
+
 ## ROBOCZA b51dba5d -- 2026-11-26 -- FALA 910: Dyplomacja hotseat: pokój tylko w wojnie; trybut w wojnie jednorazowy (testowa)
 
 - Pokój lub rozejm między dwoma graczami w hotseat można zaproponować i przyjąć tylko w trwającej wojnie (komunikat „brak trwającej wojny”); „Zaproponuj trybut” w wojnie z okna dyplomacji jest jednorazowy jak w koszyku (nie tworzy stałej wasalizacji)
