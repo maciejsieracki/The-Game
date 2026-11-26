@@ -45,6 +45,8 @@ function ok(cond, msg) {
 }
 const K = (q, r) => `${q},${r}`;
 const ERA = 2, PID = 0, POP = 16, NC = 8, TURNS = 40;
+// AUTOIMPPCT: suwak pracaAutoPercent = MAKSIMUM (100) domyslnie; PRACA_PCT=33 tylko do porownania PRZED.
+const PCT = Number(process.env.PRACA_PCT || 100);
 const TECHS = new Set([
   'Łowiectwo', 'Rolnictwo', 'Oswojenie zwierząt', 'Obróbka drewna', 'Garncarstwo', 'Murarstwo', 'Brązownictwo',
   'Hutnictwo żelaza', 'Jeździectwo', 'Koło', 'Waluta', 'Wojskowość', 'Żegluga', 'Gospodarka wodna', 'Irygacja',
@@ -81,8 +83,8 @@ function sim({ seed, zeroCityId, turns = TURNS, pool0 = 30000, refill = 60 }) {
     const picks = pickAutoImprovements({
       cities, ownerId: PID, map, territoryNodes: tn, placedImprovements: new Map(placed), pracaAvailable: pool, unlockedTechs: TECHS,
       pracaSurplusThreshold: 30, demandDriven: true, resourceDeficitKeys: [], civArchetype: 'grecy', playerEra: ERA, cityLimitExhausted: false,
-      getFocus: () => 'zrownowazone', pracaBudgetPercent: 33,
-      getPracaBudgetPercent: c => (zeroCityId && c.id === zeroCityId ? 0 : 33),
+      getFocus: () => 'zrownowazone', pracaBudgetPercent: PCT,
+      getPracaBudgetPercent: c => (zeroCityId && c.id === zeroCityId ? 0 : PCT),
       getWorkedHexKeys: c => wbc.get(c.id) ?? new Set(),
       foodImprovementStages: () => true, clearingHexKeys: new Set(),
     });
@@ -164,13 +166,14 @@ console.log('(e) ROZWIJAJACA SIE cywilizacja, liczone OD TURY ODKRYCIA (AUTOIMPM
   ok(g.starved === 0, `(e) od tury odkrycia ${D} (wzrost, 24 tury): 0 tur z glodzona trzoda/irygacja przy duzej puli (starved=${g.starved})`);
   ok(g.firstPast != null && g.firstPast - D <= 3, `(e) pierwsza trzoda: ${g.firstPast == null ? 'brak' : 'tura ' + g.firstPast + ' = ' + (g.firstPast - D) + ' tur po odkryciu'} (<=3)`);
   console.log(`  [info] pierwsza irygacja: ${g.firstIrr == null ? 'brak w ' + 44 + ' turach' : 'tura ' + g.firstIrr + ' (' + g.afterDiscIrr + ' tur po odkryciu)'} — bez progu, zob. raport`);
-  // Horyzont 90 tur od odkrycia (TURNS = D+90). PROG N=55 tur po odkryciu (AUTOIMPTESTS, odp. 25A wlasciciela 2026-11-26: „irygacja czasem powstaje pozno, takie sa priorytety” — poznosc jest zamierzona;
-  // prog 55 pilnuje wylacznie tego, by irygacja w ogole powstala w horyzoncie. Zmierzone (ziarno 1, pomiar deterministyczny:
-  // baza 46; ziarna 2-4 w tym samym pomiarze: 37/45/36; margines progu wzgledem maksimum 46 = +9 tur; prog 55 zachowuje wykrycie mutacji E4 ponizej: 56 tur > 55).
-  // Mutacja E4 keys:[] (ta sama sciezka zapasowa) daje irygacje w 56 turze po odkryciu => FAIL przy N=55 (zmierzyc mutacje w raporcie).
-  const PROG_IRR_N = 55;
+  // Horyzont 90 tur od odkrycia (TURNS = D+90). PROG N=53 tur po odkryciu (AUTOIMPPCT, R-WEB-AUTOIMPROVE-IRRIGATION-MAX-PCT-Q1, suwak 100% = maksimum).
+  // Zmierzone przy suwaku 100% (PRACA_PCT domyslnie 100), ziarna 1-14, D=10, 100 tur: 46/36/46/36 (ziarna 1-4), 50/38/50/42/36/31/33/34/37/38 (ziarna 5-14);
+  // MAKSIMUM 50 (ziarna 5 i 7) + margines 3 = 53. Ziarno 1 (scenariusz tego testu): 46 tur. Przy suwaku 33% (PRZED) ziarna 1-4: 46/37/45/36.
+  // Mutacja E4 keys:[] (ta sama sciezka zapasowa) przy 100%: 56 / 59 / 58 tur po odkryciu (ziarna 1 / 5 / 7) => FAIL przy N=53 (wykrywa mutacje).
+  // Asercja zasady 25A: irygacja w horyzoncie, nie „szybko”; prog wylacznie pilnuje, by irygacja powstala i nie zwlekala ponad zmierzone maksimum.
+  const PROG_IRR_N = 53;
   const h = runBisect({ TURNS: String(D + 90) });
-  ok(h.firstIrr != null && h.afterDiscIrr <= PROG_IRR_N, `(e) irygacja po odkryciu w horyzoncie 90 tur: ${h.firstIrr == null ? 'brak' : h.afterDiscIrr + ' tur po odkryciu'} (prog <=${PROG_IRR_N} tur po odkryciu, zasada 25A)`);
+  ok(h.firstIrr != null && h.afterDiscIrr <= PROG_IRR_N, `(e) irygacja po odkryciu w horyzoncie 90 tur: ${h.firstIrr == null ? 'brak' : h.afterDiscIrr + ' tur po odkryciu'} (prog <=${PROG_IRR_N} tur po odkryciu, zasada 25A; suwak ${PCT}%)`);
   ok(g.orderViol === 0, `(e) kolejnosc wycinka -> farmy -> trzoda -> irygacja od tury odkrycia (naruszen: ${g.orderViol})`);
   const z = runBisect({ ZERO_CITY: 'c01', LOW_PCT: '0' });
   ok(z.starved === 0 && z.orderViol === 0, `(e) j.w. przy jednym miescie z 0% (starved=${z.starved}, naruszen kolejnosci=${z.orderViol})`);

@@ -50,7 +50,7 @@ function ok(cond, msg) {
   if (cond) { passed++; console.log('  [OK] ' + msg); } else { failed++; console.error('  [FAIL] ' + msg); }
 }
 const K = (q, r) => `${q},${r}`;
-const ERA = 2, PID = 0, POP = 16, NC = 8, TURNS = 12, POOL_REFILL = 400, PCT = 50;
+const ERA = 2, PID = 0, POP = 16, NC = 8, TURNS = 12, POOL_REFILL = 400, PCT = Number(process.env.OWNER_RULES_PCT || 50); // AUTOIMPPCT: OWNER_RULES_PCT=100 = suwak maksymalny (sprawdzenie na maksimum)
 const TECHS = new Set([
   'Łowiectwo', 'Rolnictwo', 'Oswojenie zwierząt', 'Obróbka drewna', 'Garncarstwo', 'Murarstwo', 'Brązownictwo',
   'Hutnictwo żelaza', 'Jeździectwo', 'Koło', 'Waluta', 'Wojskowość', 'Żegluga', 'Gospodarka wodna', 'Irygacja',
@@ -98,10 +98,10 @@ function runFoodProfile({ seed, turns = TURNS }) {
       map.hexes[hk].ulepszenia = [...layers];
     }
   }
-  return { turnsLog, placed };
+  return { turnsLog, placed, map };
 }
 
-const { turnsLog, placed } = runFoodProfile({ seed: 3 });
+const { turnsLog, placed, map } = runFoodProfile({ seed: 3 });
 const allPicks = turnsLog.flatMap(t => t.picks);
 console.log(`profil „jedzenie” (ulepszeniaFocus=zywnosc), pula ${PCT}%, ${TURNS} tur, ${allPicks.length} wyborow`);
 
@@ -127,8 +127,13 @@ const firstTurn = key => {
 const tFarm = firstTurn('farma'), tBydlo = firstTurn('bydlo'), tIrr = firstTurn('irygacja');
 ok(tFarm >= 0 && tBydlo >= 0 && tFarm <= tBydlo, `pierwsza farma (tura ${tFarm}) nie pozniej niz pierwsza trzoda (tura ${tBydlo})`);
 ok(tIrr < 0 || (tBydlo >= 0 && tBydlo <= tIrr), `pierwsza trzoda (tura ${tBydlo}) nie pozniej niz pierwsza irygacja (tura ${tIrr})`);
-const hexIrrWithoutFarm = [...placed.entries()].filter(([, L]) => L.includes('irygacja') && !L.includes('farma')).length;
-ok(hexIrrWithoutFarm === 0, `zadna irygacja bez farmy na tym samym heksie (${hexIrrWithoutFarm})`);
+// AUTOIMPPCT: przy suwaku 100% automat siega pustyni na rzece. Dane (data/terrain-improvements.json): irygacja „teren: Łąka, Równina, Pustynia”,
+// a farma nie stawia sie na pustyni (farma tylko Łąka/Równina) — wiec „irygacja bez farmy” na pustyni jest zgodne z danymi, a regula kolejnosci dotyczy pol,
+// na ktorych farma w ogole moze stanąć. Asercja liczy wiec wylacznie heksy Łąka/Równina (pomiar: 2 heksy pustyni na rzece przy 100%, 0 przy 50%).
+const hexIrrWithoutFarm = [...placed.entries()].filter(([hk, L]) => L.includes('irygacja') && !L.includes('farma') && ['laka', 'rownina'].includes(map.hexes[hk].terenBazowy)).length;
+const hexIrrDesertNoFarm = [...placed.entries()].filter(([hk, L]) => L.includes('irygacja') && !L.includes('farma') && !['laka', 'rownina'].includes(map.hexes[hk].terenBazowy)).length;
+ok(hexIrrWithoutFarm === 0, `zadna irygacja bez farmy na tym samym heksie Łąka/Równina (${hexIrrWithoutFarm})`);
+console.log(`  [info] irygacja na heksach bez mozliwej farmy (pustynia, zgodnie z danymi): ${hexIrrDesertNoFarm}`);
 
 // Uwaga: sama wartosc getImprovementMeta uzyta w tescie jest tylko informacyjna (koszty wg epoki wlasciciela).
 void getImprovementMeta;
