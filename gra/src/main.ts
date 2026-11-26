@@ -1751,7 +1751,7 @@ import {
   registerAiPeaceRequest, isAiAiPeaceBalanceAllowed, aiAiPeaceRequiredPn, isForcedPeaceEligiblePair, runAiAiPeaceTick, requesterShare, isClearlyLosing,
   type AiPeaceRequest, type AiPeaceKind, type PeaceAsset,
 } from './game/diplomacy-ai-forced-peace';
-import { WAR_WEARINESS_PARAMS, runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, lostCitiesForWeariness, wearinessPeaceCashPn, peacePowerSidesForPair, peaceAiAiPaymentPn, aiTreatyParityDuePn, treatyParityBasePnFromData, type WarWearinessStore, type WarWearinessPairState, type WearinessTickOutcome } from './game/war-weariness';
+import { WAR_WEARINESS_PARAMS, runWarWearinessTick, militaryWearinessWiring, warWearinessLevel, lostCitiesForWeariness, wearinessPeaceCashPn, peacePowerSidesForPair, peaceAiAiPaymentPn, aiTreatyParityDuePn, treatyParityBasePnFromData, pruneWarWearinessPairs, type WarWearinessStore, type WarWearinessPairState, type WearinessTickOutcome } from './game/war-weariness';
 import { warWearinessPairView, peakForCurrentWar, warWearinessSideView, type WarWearinessPairView, type WarWearinessReference } from './game/war-weariness-view';
 import {
   isPeaceTreatyLocked,
@@ -40453,6 +40453,9 @@ async function boot(): Promise<void> {
       for (const key of Array.from(diplomacyFactorLog.keys())) {
         if (diploPairKeyHasOwner(key, ownerId)) diplomacyFactorLog.delete(key);
       }
+      // R-WEB-WAR-END-CLEANUP-Q1 (L6): licznik zmęczenia wojną pary z wyeliminowanym właścicielem
+      // nie może zostać jako duch (wyciek do zapisu i do następnej wojny tej pary).
+      pruneWarWearinessPairs(warWearinessByPairKey, key => diploPairKeyHasOwner(key, ownerId));
       // WIARYGODNOSC — rejestry per-owner tej cywilizacji + wpisy STRUMIENIA innych
       // ownerów, w których figurowała jako partner (klucz wewnętrzny `${partnerId}_${typ}`).
       wiarygodnoscZdarzeniaByOwner.delete(ownerId);
