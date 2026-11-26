@@ -117,3 +117,21 @@ export function truceEndOfferReason(rule: TruceEndPriceRule, payerIsHuman: boole
   const wartosc = Number.isFinite(requiredPn) ? Math.max(0, Math.round(requiredPn)) : 0;
   return `Rozejm wygasł — pokój stały za cenę: ${kto} ${czym}, wartość ok. ${wartosc} (odmowa = wojna)`;
 }
+
+/**
+ * R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-2-Q1 (pkt 2): wykonanie płatności ceny pokoju po rozejmie.
+ * Wybór planu = pickTruceEndSettlementPlan; gdy plan ma pozycje, `transfer` (port żywego stanu: przelew
+ * surowców i cesja miasta, np. transferBasketItems w main.ts) wołany DOKŁADNIE RAZ z płatnikiem i odbiorcą.
+ * Zwraca wybrany plan (płatność pokrywa cenę) albo null (brak pokoju, bez żadnego przelewu).
+ */
+export function executeTruceEndSettlement<P extends TruceEndPlanLike>(
+  input: TruceEndPlanInput<P>,
+  payerId: number,
+  payeeId: number,
+  transfer: (plan: P, payerId: number, payeeId: number) => void,
+): { plan: P; currency: TruceEndPayCurrency } | null {
+  const pick = pickTruceEndSettlementPlan(input);
+  if (pick == null) return null;
+  if (pick.plan.items.length > 0) transfer(pick.plan, payerId, payeeId);
+  return pick;
+}

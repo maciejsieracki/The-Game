@@ -1768,7 +1768,7 @@ import {
   truceEndAcceptCore,
   type TruceEndPorts,
 } from './game/diplomacy-peace-lock';
-import { pickTruceEndSettlementPlan, type TruceEndPayCurrency } from './game/diplomacy-truce-end-price';
+import { executeTruceEndSettlement, type TruceEndPayCurrency } from './game/diplomacy-truce-end-price';
 import {
   computeIncomingPlayerAcceptNetPw,
   computePlayerAcceptanceSides,
@@ -40840,7 +40840,9 @@ async function boot(): Promise<void> {
       const cityAssets = aiPeacePaymentAssets(payerId, payeeId, new Set<string>()).filter(a => a.kind === 'miasto');
       // Wybór planu (cena > 0, plan pełny, bilans PW, wariant zastępczy surowcami przy braku cedowalnego miasta)
       // — czysta funkcja pickTruceEndSettlementPlan (testowana w truce-end-peace-price-test.cjs).
-      const pick = pickTruceEndSettlementPlan({
+      // R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-2-Q1 (pkt 2): wybór + przelew przez executeTruceEndSettlement
+      // (przelew wołany dokładnie raz, tylko gdy plan ma pozycje; test: truce-end-settle-exec-test.cjs).
+      const pick = executeTruceEndSettlement({
         requiredPn: price.requiredPn,
         currency,
         planCity: () => peacePlanWithTail({
@@ -40855,19 +40857,16 @@ async function boot(): Promise<void> {
         // PW którejkolwiek strony po zapłacie. Wyjątek gracza (pokój zawsze do przyjęcia) — tylko gdy para jest AI↔AI.
         balanceOk: plan => isHuman(payerId) || isHuman(payeeId)
           || isAiAiPeaceBalanceAllowed(price.balanceFor(plan.coveredPn), price.loserBalanceFor?.(plan.coveredPn)),
-      });
-      if (pick == null) return false;
-      const plan = pick.plan;
-      if (plan.items.length > 0) {
+      }, payerId, payeeId, (plan, payer, payee) => {
         const basket: BasketItem[] = plan.items.map(i => ({
           typ: i.kind,
           id: i.id,
           ilosc: i.kind === 'miasto' ? 1 : i.amount,
           ...(i.kind === 'miasto' ? { cityPn: i.pn } : {}),
         }));
-        transferBasketItems(payerId, payeeId, basket);
-      }
-      return true;
+        transferBasketItems(payer, payee, basket);
+      });
+      return pick != null;
     }
 
     /**
