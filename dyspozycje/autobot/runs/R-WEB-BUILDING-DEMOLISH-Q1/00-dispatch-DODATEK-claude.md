@@ -1,0 +1,18 @@
+# DODATEK (runda 1/5, Operator HAIKU 5.5)
+## Fakty
+W grze NIE ma dziś żadnej akcji wyburzania budynków (grep „wyburz|demolish” w gra/src trafia tylko mur w bitwie). Budynki: gra/data/buildings.json (poziomy do maksPoziom; koszt per poziom w danych), panel miasta: gra/src/ui/cityPanel.ts; logika budowy i stan budynków miasta w gra/src/main.ts i gra/src/game/ (MINTORPHAN: gra/src/game/mennica-orphan.ts, hook applyProductionCompleted). Odpowiedź 22C: „zwrot połowy surowców”.
+## Zadanie
+1. Znajdź, jak stan budynków miasta i ich koszty są trzymane (poziomy!) oraz jak zwraca się/odejmuje surowce. Zdefiniuj regułę zwrotu: połowa (zaokrąglenie w dół) SUROWCÓW z kosztu budynku — dla budynku na poziomie N suma kosztów poziomów 1..N faktycznie poniesionych (jeśli dane nie pozwalają — połowa kosztu bieżącego poziomu; opisz wybór w raporcie). Pieniądz i Praca NIE są zwracane (22C mówi o surowcach); zapisz to jawnie.
+2. Czysta funkcja logiki (nowy gra/src/game/building-demolish.ts): demolishBuilding(state, cityId, buildingId) → {removed, refund}; zwrot trafia do skarbca/zapasu tam, skąd pobierany jest koszt budowy. Wyburzenie usuwa budynek (wszystkie poziomy) i jego efekty od następnej tury; nie rusza budynków w kolejce produkcji (kolejka zostaje). Mennica: zawsze wolno; po wyburzeniu Mennicy w stolicy bonus znika (resolver stolicy bez zmian).
+3. Wyjątki: jeśli sensowne jest wyłączenie wyburzania dla budynków strukturalnych (centrum miasta/Ratusz, cuda, mury w trakcie oblężenia/bitwy) — NIE rozstrzygaj sam: zwróć DECISION_REQUIRED z listą takich budynków i jednym zdaniem skutku dla gry per wariant; do czasu decyzji zablokuj wyburzanie TYLKO tych budynków, które na pewno nie są zwykłymi budynkami miasta.
+4. UI: przycisk „Wyburz” przy budynku w cityPanel.ts + potwierdzenie z podglądem zwrotu (ile surowców wróci); po potwierdzeniu odświeżenie panelu i HUD; hotseat — działa dla aktywnego gracza. AI NIE wyburza (zero zmian zachowania AI).
+5. Zapis/wczytanie: brak nowego stanu (budynek po prostu nie istnieje); zapis przed zmianą bit-w-bit bez zmian.
+6. Testy: logika (czysta funkcja: zwrot 50%, poziomy, Mennica, budynek nieistniejący, zapas surowców zwiększony), źródłowy test okablowania UI→logika, mutacja czerwona (zwrot 100%/0, brak usunięcia budynku); Mennica: wyburz → bonus znika → odtwórz stolicę.
+## Allowlista
+gra/src/game/building-demolish.ts (nowy), gra/src/main.ts (tylko okablowanie akcji), gra/src/ui/cityPanel.ts (+ ewentualnie pliki UI wskazane przez grep), nowe testy gra/tools/building-demolish-*-test.cjs, dyspozycje/autobot/runs/R-WEB-BUILDING-DEMOLISH-Q1/**, docs/obieg/ (jedna sekcja opisu akcji jeśli istnieje dokument budynków).
+## Zakazy
+gra-robocza/, gra-kanon/, dyspozycje/WERSJE.md, manifest, rust-port/, npm run build/dev w gra/ (build do testów live: node ./node_modules/vite/bin/vite.js build --outDir /tmp/<unikalny> --emptyOutDir), zmiana balansu kosztów budynków, osłabianie asercji, git add -A, push, spawn_task/create_session/create_trigger/send_later (ZAKAZANE), run_in_background w Bash. Dysk >= 6 GB; usuń node_modules/tmp po pracy. Nie pytaj właściciela (DECISION_REQUIRED).
+## Bramki ogólne
+tsc 0; logic 213; tech-tree 20; research 33; unit-replace; combat 6; ai-test 297/0; mint-capital-only-test; mint-orphan-test; testy tematu z mutacją czerwoną. Zacommituj i zwróć SHA. Live w przeglądarce (zrzut panelu z przyciskiem i potwierdzeniem) jeśli Chromium stabilny; w przeciwnym razie NIE ZMIERZONO z wypisaniem.
+## Binarne kryterium
+Wyburzenie działa na wszystkich zwykłych budynkach, zwraca 50% surowców, Mennica wg reguł właściciela, AI bez zmian, testy z mutacją czerwoną, bramki zielone.
