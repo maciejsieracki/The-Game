@@ -85,5 +85,5 @@ Od północy (r=0) do południa — **% wysokości mapy**:
 
 - Bufor oceanu N/S: **5% wysokości** (mapy proceduralne) · **~30 hex** (Ziemia)
 - Ziemia: **Antarktyda usunięta** z maski, ląd redystrybuowany (`build-earth-mask.cjs`)
-- Gwarancje (R-WEB-MAP-OFFMASK-STRANDED-FIX-Q1): po generowaniu **0 heksów lądu poza maską** Ziemi (przebieg 3e-final w `generator.ts`) i **0 samotnych suchych heksów** bez sąsiada-lądu na otwartym oceanie (wszystkie typy); izolowany heks szablonu nie jest lądem maski (`earthTemplateLandAt`).
+- Gwarancje (R-WEB-MAP-OFFMASK-STRANDED-FIX-Q1): po generowaniu **0 heksów suchego lądu poza maską** Ziemi (`cutBackEarthLandOutsideMask` w przebiegu 3e-final `generator.ts` cofa go do **płytkiego morza**; płytkie morze poza maską zostaje) oraz **0 samotnych suchych heksów** bez sąsiada-lądu na otwartym oceanie (`purgeOpenOceanLandSpecks`, wszystkie typy). Maska Ziemi (`earthTemplateLandAt`): izolowany heks szablonu bez lądowego sąsiada w szablonie nie jest lądem maski (wykluczony z maski).
 - Implementacja: `climateBandAt`, `applyClimateBandsToHexes` w `gen-helpers.ts`

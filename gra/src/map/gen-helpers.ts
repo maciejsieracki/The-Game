@@ -5221,6 +5221,30 @@ export function purgeOpenOceanLandSpecks(hexes: Record<string, Hex>): number {
   return removed;
 }
 
+/**
+ * R-WEB-MAP-OFFMASK-STRANDED-FIX-Q1 (P3): dla Ziemi cofa suchy ląd poza maską szablonu do
+ * PŁYTKIEGO morza (nie głębokiego — ląd nie styka się z otwartym oceanem bez pierścienia
+ * wybrzeża). Płytkie morze i morze poza maską są zostawione bez zmian.
+ */
+export function cutBackEarthLandOutsideMask(
+  hexes: Record<string, Hex>,
+  width: number,
+  height: number,
+): number {
+  let n = 0;
+  for (const [key, hex] of Object.entries(hexes)) {
+    const { q, r } = parseHexKey(key);
+    if (earthTemplateLandAt(q, r, width, height) > 0) continue;
+    if (!isDryLandTerrain(hex.terenBazowy)) continue;
+    hex.terenBazowy = TerenBazowy.PlytkieMorze;
+    hex.nakladka = Nakladka.Brak;
+    hex.rzeka = { obecna: false, krawedzie: [] };
+    delete (hex as HexWithZloze).zloze;
+    n++;
+  }
+  return n;
+}
+
 /** removeTiny + purgeOpenOcean (w pętli) + finalize wybrzeża. */
 export function finalizeLandMassAfterCoast(
   hexes: Record<string, Hex>,

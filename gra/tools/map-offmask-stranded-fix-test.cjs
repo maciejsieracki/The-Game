@@ -75,6 +75,11 @@ for (const seed of [777, 42]) {
   });
   const n = offMaskLandCount(map, map.szerokoscQ, map.wysokoscR);
   ok(n === 0, `Ziemia 168×120 seed=${seed}: 0 heksów lądu poza maską (found ${n})`);
+  // Regresja (zarzut Evaluatora 1): cofnięcie lądu nie może zamienić płytkiego morza
+  // na głębokie — na Ziemi płytkie morze (wybrzeże) musi istnieć.
+  let shallow = 0;
+  for (const hex of Object.values(map.hexes)) if (hex.terenBazowy === 'plytkie_morze') shallow++;
+  ok(shallow > 0, `Ziemia 168×120 seed=${seed}: płytkie morze zachowane (found ${shallow})`);
 }
 
 // P4 — wyspy 108×74 seed 42: brak samotnego lądu na otwartym oceanie.

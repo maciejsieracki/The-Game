@@ -90,6 +90,7 @@ import {
   applyCoastRing,
   enforceTargetDryLandFraction,
   purgeOpenOceanLandSpecks,
+  cutBackEarthLandOutsideMask,
   pangeaLandLayoutParams,
   type StartPosition,
   type TypSwiata,
@@ -731,12 +732,13 @@ export function generateMap(
 
   // ── Przebieg 3e-final (R-WEB-MAP-OFFMASK-STRANDED-FIX-Q1, P3+P4): ostatnie domknięcie
   // geografii lądu. finalizeCoastAndInlandWater zamienia odcięte pule morza (także poza
-  // maską Ziemi) w łąkę — dla Ziemi cofamy ląd poza maską do morza (0 heksów poza maską);
-  // wszystkie typy: usuwamy suchy ląd bez sąsiada-lądu (samotny heks na otwartym oceanie).
+  // maską Ziemi) w łąkę — dla Ziemi cofamy suchy ląd poza maską do PŁYTKIEGO morza (0 heksów
+  // lądu poza maską, wybrzeże zostaje płytkie); wszystkie typy: usuwamy suchy ląd bez
+  // sąsiada-lądu (samotny heks na otwartym oceanie).
   // Wołane PO ostatnim finalize/ensureRiverOutlets, PRZED przebiegami reliefu/złóż (które
   // działają już tylko na lądzie).
   if (typ === 'ziemia') {
-    enforceEarthTemplateOnHexes(hexes, width, height);
+    cutBackEarthLandOutsideMask(hexes, width, height);
   }
   purgeOpenOceanLandSpecks(hexes);
 
