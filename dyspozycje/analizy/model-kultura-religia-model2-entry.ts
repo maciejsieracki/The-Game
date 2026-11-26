@@ -270,4 +270,43 @@ for (const diff of DIFFS) for (let era = 1; era <= 3; era++) for (const s of [SC
 }
 p('');
 
+// ---------------------------------------------------------------------------
+// Korekta R-WEB-CULT-REL-MODEL2-Q1 r2 (obrona): mutacja D=-12 na trudnym, Świątynia bez Garnizonu,
+// liczba tur po zdobyciu (5 tur Prawa 100%, potem zwykłe Prawo) — wszystko przez te same funkcje.
+p('');
+p('## 9. Mutacja m1: trudny D=−12 (G=0), pop 5, epoka 1, neutral / wyjście — porównanie z propozycją (D=−20)');
+p('scen. | budynki | PROP (D−20) | m1 (D−12)');
+p('---|---|---|---');
+for (const s of SCEN) for (const b of bldSets(1)) {
+  const pr: Opt = { mode: 'PROP' };
+  const m1: Opt = { mode: 'PROP', bounds: { D: -12, G: 0 } };
+  p(`${s.nazwa} | ${b.nazwa} | ${minU('hard', 1, 5, s.c, s.r, b, NEUTRAL, pr)}/${minU('hard', 1, 5, s.c, s.r, b, crit('hard'), pr)} | ${minU('hard', 1, 5, s.c, s.r, b, NEUTRAL, m1)}/${minU('hard', 1, 5, s.c, s.r, b, crit('hard'), m1)}`);
+}
+p('');
+p('## 10. Świątynia BEZ Garnizonu (pakiet „Swi” = sama Świątynia, bez budynku Garnizon), pop 5, neutral / wyjście');
+p('Świątynia: epokaWejscia 2, wymaga Kamiennych kręgów w mieście (gra/data/buildings.json); model: zadowolenie 2 (poziom 1), jak w silniku.');
+p('poziom | epoka | a | b | c | d');
+p('---|---|---|---|---|---');
+const B_TEMPLE: Bld = { nazwa: 'Swi', temple: true, garn: false, pret: false };
+for (const diff of DIFFS) for (let era = 2; era <= 3; era++) {
+  const pr: Opt = { mode: 'PROP' };
+  const cells = SCEN.map((s) => `${minU(diff, era, 5, s.c, s.r, B_TEMPLE, NEUTRAL, pr)}/${minU(diff, era, 5, s.c, s.r, B_TEMPLE, crit(diff), pr)}`);
+  p(`${diff} | ${era} | ${cells.join(' | ')}`);
+}
+p('');
+p('## 11. Tury do buntu skrajnego po zdobyciu: 5 tur Prawa 100% (postCapture), potem zwykłe Prawo; hard, epoka 1, pop 5, bez garnizonu');
+for (const s of [SCEN[0], SCEN[3]]) {
+  const pPost = ev('hard', 1, 5, s.c, s.r, B_NONE, 0, { mode: 'PROP', postCapture: true });
+  const pNorm = ev('hard', 1, 5, s.c, s.r, B_NONE, 0, { mode: 'PROP' });
+  let g: RevoltGraceState | null = null;
+  let rev: number | null = null;
+  for (let t = 1; t <= 15; t++) {
+    const por = t <= 5 ? pPost.por : pNorm.por;
+    g = updateRevoltGrace(g?.revoltGraceRemaining ?? null, por, loadRevoltParams(SOC0, 'hard'));
+    if (g.shouldTriggerRebellion && rev === null) rev = t;
+  }
+  p(`${s.nazwa}: Porządek przy postCapture ${pPost.por}%, bez ${pNorm.por}%; rebelia w turze ${rev ?? 'brak do 15'} (bez postCapture: ${ev('hard', 1, 5, s.c, s.r, B_NONE, 0, { mode: 'PROP' }).revolt ?? 'brak'})`);
+}
+p('');
+
 console.log(out.join('\n'));

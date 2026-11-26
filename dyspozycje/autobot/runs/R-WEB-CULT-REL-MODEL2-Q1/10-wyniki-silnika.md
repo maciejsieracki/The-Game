@@ -554,3 +554,31 @@ hard | 3 | a | 0 | 0 / 0 / unrest / 4 | 11.2 / 5 / unrest / 4
 hard | 3 | a | 1 | 0 / 7.4 / unrest / 4 | 11.2 / 12.4 / unrest / 4
 hard | 3 | d | 0 | 0 / 0 / unrest / 4 | 0 / 0 / unrest / 4
 hard | 3 | d | 1 | 0 / 0 / unrest / 4 | 0 / 0 / unrest / 4
+
+
+## 9. Mutacja m1: trudny D=−12 (G=0), pop 5, epoka 1, neutral / wyjście — porównanie z propozycją (D=−20)
+scen. | budynki | PROP (D−20) | m1 (D−12)
+---|---|---|---
+a | bez | 2/1 | 2/1
+a | Garn | 1/0 | 1/0
+b | bez | 4/3 | 3/2
+b | Garn | 2/1 | 1/0
+c | bez | 4/3 | 3/2
+c | Garn | 2/1 | 1/0
+d | bez | brak/4 | 4/3
+d | Garn | 3/2 | 2/1
+
+## 10. Świątynia BEZ Garnizonu (pakiet „Swi” = sama Świątynia, bez budynku Garnizon), pop 5, neutral / wyjście
+Świątynia: epokaWejscia 2, wymaga Kamiennych kręgów w mieście (gra/data/buildings.json); model: zadowolenie 2 (poziom 1), jak w silniku.
+poziom | epoka | a | b | c | d
+---|---|---|---|---|---
+easy | 2 | 0/0 | 2/1 | 2/1 | 3/2
+easy | 3 | 0/0 | 3/1 | 3/1 | 5/3
+normal | 2 | 1/0 | 3/2 | 3/2 | 5/4
+normal | 3 | 1/0 | 4/3 | 4/3 | brak/5
+hard | 2 | 4/2 | brak/4 | brak/4 | brak/brak
+hard | 3 | brak/2 | brak/brak | brak/brak | brak/brak
+
+## 11. Tury do buntu skrajnego po zdobyciu: 5 tur Prawa 100% (postCapture), potem zwykłe Prawo; hard, epoka 1, pop 5, bez garnizonu
+a: Porządek przy postCapture 55%, bez 0%; rebelia w turze 9 (bez postCapture: 4)
+d: Porządek przy postCapture 55%, bez 0%; rebelia w turze 9 (bez postCapture: 4)
