@@ -17,24 +17,29 @@ export const CONTRACT_VERSION = 1 as const;
 export const TAURI_ENGINE_COMMAND = 'engine_command' as const;
 export const EVENT_STATE_CHANGED = 'engine_state_changed' as const;
 
-/** `PositionDto` z bridge.rs (`MoveUnit.destination`). Mapowanie HexCoord ↔ PositionDto: NIE_ZMIERZONO (P5-0 §10 pkt 5). */
-export interface PositionDto {
-  x: number;
-  y: number;
-}
-
-/** `StartGameParams` — kształt w Rust nie rozpisany w tym temacie (NIE_ZMIERZONO). */
-export type StartGameParams = Readonly<Record<string, unknown>>;
-
-// ─── 1. Warianty istniejące (bridge.rs:26-45) ────────────────────────────────
-
-export type EngineCommand =
-  | { kind: 'create_session'; params?: StartGameParams }
-  | { kind: 'add_player'; id: number; name: string }
-  | { kind: 'select_unit'; unit_id: number }
-  | { kind: 'move_unit'; unit_id: number; destination: PositionDto }
-  | { kind: 'advance_turn' }
-  | { kind: 'get_state' };
+// ─── 1. Warianty istniejące w silniku ────────────────────────────────────────
+// R-RUSTPORT-P4-411-TS-TYPES-Q1 (#411): pełny `EngineCommand` (19 wariantów `bridge.rs`, w tym
+// komendy renderera, bitwy oblężniczej i zapisu), `PositionDto`, `StartGameParams`, `RenderUiParams`,
+// odpowiedzi `siegeBattle`/`saveGame` i budowniczowie komend żyją w `bridgeTypes.ts`.
+// Mapowanie HexCoord ↔ PositionDto: NIE_ZMIERZONO (P5-0 §10 pkt 5).
+import type { EngineCommand } from './bridgeTypes';
+import type { SiegeBattleErrorDto, SiegeBattlePayload } from './bridgeTypes';
+export type {
+  EngineBridgeResponse,
+  EngineBridgeResult,
+  EngineCommand,
+  EngineCommandKind,
+  PositionDto,
+  RenderUiParams,
+  SiegeBattleCommand,
+  SiegeBattleErrorCode,
+  SiegeBattleErrorDto,
+  SiegeBattlePayload,
+  SiegeBattlePhaseDto,
+  SiegeBattleResultDto,
+  StartGameParams,
+} from './bridgeTypes';
+export { getRenderFrame, loadGame, setSiegeBattleSpeed, startSiegeStorm, stepSiegeBattle } from './bridgeTypes';
 
 // ─── 2. Komendy proponowane (P5-0 §7, P2-5 §2.x, §9 pkt 14) — brak w silniku ──
 
@@ -51,6 +56,11 @@ export type ProposedCommand =
   | { kind: 'set_labor_split'; owner: PlayerId; city: CityId | null; raw_percent: number }
   | { kind: 'set_ration_level'; owner: PlayerId; city: CityId | null; level: number }
   | { kind: 'list_saves' }
+  /**
+   * UWAGA (#411): `save_game`/`load_game` poniżej to proponowane komendy SLOTÓW (P5-0 §7), kolidujące
+   * nazwą `kind` z istniejącymi w silniku `EngineCommand` `{ kind: 'save_game' }` i
+   * `{ kind: 'load_game'; save: string }` (tekst JSON zapisu). Rozstrzygnięcie warstwy slotów = #410.
+   */
   | { kind: 'save_game'; slot: SlotId; label: string }
   | { kind: 'load_game'; slot: SlotId }
   | { kind: 'delete_save'; slot: SlotId }
@@ -69,11 +79,18 @@ export interface BridgeRequest<C = EngineCommand> {
   command: C;
 }
 
-/** Koperta `BridgeResponse` (bridge.rs:91-96); `result` z tagiem `kind` (bridge.rs:84-87). */
+/**
+ * Koperta `BridgeResponse` zawężona do `result.kind = 'state'` (ścieżka `getView`/atrapy MOCK).
+ * Pełny `BridgeResult` (także `render_layers`/`render_map`/`render_frame`) = `EngineBridgeResponse`
+ * w `bridgeTypes.ts`. Pola rodzeństwa `siegeBattle?` (komendy bitwy) i `saveGame?` (`SaveGame`)
+ * towarzyszą wyłącznie `result.kind = 'state'` (`bridge.rs` D-WIRB-5), więc są i tutaj.
+ */
 export interface BridgeResponse<S = unknown> {
   contractVersion: number;
   requestId: string;
   result: { kind: 'state'; state: S };
+  siegeBattle?: SiegeBattlePayload;
+  saveGame?: string;
 }
 
 /** `BridgeErrorCode` (bridge.rs:122-129). */
@@ -82,6 +99,8 @@ export type BridgeErrorCode = 'invalid_request' | 'unsupported_version' | 'engin
 export interface BridgeError {
   code: BridgeErrorCode;
   message: string;
+  /** D-1I6-ERR: typowany błąd komendy bitwy (tylko `code = engine_rejected`); klucz pomijany poza nim. */
+  siegeBattle?: SiegeBattleErrorDto;
 }
 
 /** Zdarzenie `BridgeEvent::StateChanged` (bridge.rs:100-110). */

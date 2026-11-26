@@ -1916,3 +1916,101 @@ export interface HoverChanged {
   lastBHex: HexCoord | null;
   hex: HexCoord | null;
 }
+
+// ─── Ramka i mapa renderera (R-RUSTPORT-P4-411-TS-TYPES-Q1, #411 = 403-D) ─────
+//
+// Lustro JSON crate `rust-port/view-model` (serde `camelCase`, `deny_unknown_fields`) dla odpowiedzi
+// mostu `GetRenderMap` / `GetRenderFrame` / `GetRenderLayers` (`rust-port/engine/src/bridge.rs`).
+// Rozpisane są pola najwyższego poziomu i DTO mgły; zagnieżdżone DTO heksów, miast, jednostek,
+// nakładek i bitwy mają typ nieprzezroczysty `RenderNestedDto` (kształt w view-model, konsument =
+// renderer Rust / #410). Pole wymagane = pole bez `skip_serializing_if` po stronie Rust;
+// `Option<T>` bez `skip_serializing_if` serializuje się jako `null`, więc ma typ `T | null`.
+
+/** Zagnieżdżone DTO view-model, którego kształtu ten temat nie rozpisuje (konsument = renderer). */
+export type RenderNestedDto = Readonly<Record<string, unknown>>;
+
+/** `view_model::HexCoord` (`ids.rs:184`, `deny_unknown_fields`): osiowe `q`, `r` (`i32`). */
+export interface RenderHexCoordDto {
+  q: number;
+  r: number;
+}
+
+/** `view_model::FogState` (`map.rs:164`): kod JSON `0` nieodkryty, `1` odkryty, `2` widoczny. */
+export type FogStateCode = 0 | 1 | 2;
+
+/** `view_model::FogViewDto` (`map.rs:210`): stan mgły równoległy do `map.hexes`. */
+export interface FogViewDto {
+  state: FogStateCode[];
+}
+
+/**
+ * `view_model::FogRevealDto` (`map.rs:244`): opcje `setFog` (`revealAllLand`, `riverRevealKeys`).
+ * `riverRevealKeys` NIE ma `skip_serializing_if`: zawsze obecne, `null` = web `undefined`,
+ * pusta tablica to osobna wartość (pusty `Set` w JS jest prawdziwy).
+ */
+export interface FogRevealDto {
+  revealAllLand: boolean;
+  riverRevealKeys: RenderHexCoordDto[] | null;
+}
+
+/**
+ * `view_model::ViewerDto` (`owners.rs:71`). `ownerId` = `OwnerRef` w JSON jako liczba
+ * (`-99` rebelianci, `-1` barbarzyńcy, inaczej id gracza; `ids.rs:162-176`).
+ */
+export interface ViewerDto {
+  ownerId: number;
+  fogActive: boolean;
+}
+
+/** `view_model::MapViewDto` (`map.rs:116`): statyczna mapa (odpowiedź `GetRenderMap`, `transparent`). */
+export interface MapViewDto {
+  width: number;
+  height: number;
+  seed: number;
+  hexes: RenderNestedDto[];
+  rivers: RenderNestedDto[];
+  riverRenderPaths: RenderHexCoordDto[][];
+}
+
+/**
+ * `view_model::RenderLayersDto` (`root.rs:62`): dynamiczna ramka (odpowiedź `GetRenderFrame`,
+ * `RenderFramePayload` jest `transparent`). `reveal` jest OPCJONALNE (`skip_serializing_if =
+ * Option::is_none`, `default`): brak klucza = gałąź bez mgły (`setFog(ALL_KEYS, ALL_KEYS)` bez opcji).
+ * Silnik nigdy nie wysyła `reveal: null` (pole pomijane), więc typ TS dopuszcza tylko brak klucza
+ * albo obiekt. Nieznane klucze ramki odrzuca `deny_unknown_fields`, stąd typ zamknięty.
+ * `battle` nie ma `skip_serializing_if`: zawsze obecne, `null` poza bitwą.
+ */
+export interface RenderLayersDto {
+  contractVersion: number;
+  viewer: ViewerDto;
+  turn: number;
+  hexState: RenderNestedDto[];
+  fog: FogViewDto;
+  owners: RenderNestedDto[];
+  cities: RenderNestedDto[];
+  units: RenderNestedDto[];
+  stacks: RenderNestedDto;
+  sieges: RenderNestedDto[];
+  wonders: RenderNestedDto[];
+  territory: RenderNestedDto;
+  overlays: RenderNestedDto;
+  battle: RenderNestedDto | null;
+  reveal?: FogRevealDto;
+}
+
+/** `view_model::TerritoryRangesDto` (`territory_ranges_view.rs:118`). */
+export interface TerritoryRangesDto {
+  byOwner: RenderNestedDto[];
+  borders: RenderNestedDto[];
+}
+
+/**
+ * `civ_engine::domain::dto_bridge::RenderLayersPayload` (`dto_bridge.rs:349`, camelCase): odpowiedź
+ * `GetRenderLayers`. Tu `reveal` jest WYMAGANE (pole bez `Option`).
+ */
+export interface RenderLayersPayloadDto {
+  fog: FogViewDto;
+  fogActive: boolean;
+  reveal: FogRevealDto;
+  territory: TerritoryRangesDto;
+}
