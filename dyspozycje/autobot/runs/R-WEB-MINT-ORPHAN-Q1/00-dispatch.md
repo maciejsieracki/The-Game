@@ -1,0 +1,4 @@
+# R-WEB-MINT-ORPHAN-Q1 — MINTORPHAN (#162): osierocona Mennica wg reguły właściciela
+STATUS: DISPATCH | DOMAIN: GAME | tag MINTORPHAN | decyzja właściciela 2026-11-26 (odp. 17, własna reguła; ECHO w rejestrze)
+GOAL: (1) Mennica poza stolicą jest NIEAKTYWNA (bez bonusów) i NIE znika; (2) zawsze można ją wyburzyć; (3) w nowej stolicy można zbudować nową Mennicę; (4) PO WYBUDOWANIU nowej Mennicy w stolicy stara (stojąca poza stolicą) ZNIKA automatycznie; (5) jeśli gracz przeniesie stolicę z powrotem do miasta z nie wyburzoną/nie usuniętą Mennicą — jest znów AKTYWNA; (6) Mennica działa wyłącznie w stolicy.
+Różnica względem FALI 914: (1),(3),(5),(6) już są (resolver stolicy w turn-economy.ts, etykieta w cityPanel.ts); NOWE: (4) automatyczne usunięcie starej po ukończeniu nowej, oraz weryfikacja (2) i (5) testem.
