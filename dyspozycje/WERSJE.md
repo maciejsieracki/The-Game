@@ -1,3 +1,9 @@
+## ROBOCZA 7398bd08 -- 2026-11-26 -- FALA 925: Generator map: 0 łąk poza maską Ziemi i 0 samotnych lądów; grubsze i wyraźniej różne trzy poziomy rzek (testowa)
+
+- Generator map: po generowaniu Ziemi 0 heksów lądu poza maską szablonu (było 72 łąki) i 0 samotnych heksów lądu na oceanie (było 1 na wyspach 108x74); 5 izolowanych heksów szablonu Ziemi znika z mapy (zmiana maski); render rzek: średnie rzeki 0,7x szerokości głównej, dopływy i krótkie 0,45 (było 0,30), główne bez zmian — trzy poziomy wyraźniej różne
+- Weryfikacja: FC PASS-WITH-NOTES MAPFIX (f781bbd0a) + RIVTHICKIMPL (2c8a8fd29); tsc 0; logic 213/213; map-offmask-stranded-fix; stranded-land 18/0; climate-band PASS; river-density 2/0; river-render-levels 19/0; river-fog-visibility 31/0; zrzuty 8x: rzeki +16% pikseli; vite build OK; MD5 z GitHub Raw
+- Limity: RYZYKO: pełny map-gen-regression na MAPFIX dał 11 twardych naruszeń (szczegóły niezapisane; diagnoza MAPREGDIAG w toku, nie wiadomo czy istniejące w bazie); earth-template 9/1 (stary pin Antarktydy); generator.ts poza allowlistą zaakceptowane; relief-grid-coverage nieukończony; FPS rzek na prawdziwym GPU NIE ZMIERZONO
+
 ## ROBOCZA c106582c -- 2026-11-26 -- FALA 924: Kultura i religia: wpływ na Szczęście i Prawo, ustawienie nowej gry (testowa)
 
 - Kultura i religia liczą się teraz do Szczęścia i do Prawa miasta (każda z dwóch linii osobno): łatwy −10/+10, normalny −15/+5, trudny −20/0 (miasto w całości obce / w całości nasze), skala epok ×1,0/×1,6/×2,3, jednostka garnizonu nadal 20 pkt Prawa; nowe ustawienie zaawansowane nowej gry Kultura i religia: Mały wpływ (łatwy, domyślnie) / Neutralny (normalny) / Duży wpływ (trudny); zapisy bez ustawienia grają jak dotąd; na łatwym własne miasta dostają do +20 Prawa

@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "c106582c7dec2f7a3201f38689b1a326",
-  "bundleSha256": "8b003b7c40e32b348768bd285b1251b2d488dd436e1ec1d368f1f1d300a2ddd1",
-  "bundleBytes": 15034118,
+  "bundleMd5": "7398bd0871448e75b42884de24219224",
+  "bundleSha256": "eeab5d7e911d05f05f4ead2fafc6093e3fd9f4c3a483735ae00c26e4fa711aec",
+  "bundleBytes": 15035044,
   "sourceSnapshot": {
-    "source": "FC 3686694cb / f2567c024 (CULTIMPL-wip/fc; baza main 690947a2a)",
+    "source": "FC f781bbd0a (MAPFIX-wip/fc) + 2c8a8fd29 (RIVTHICKIMPL-wip/fc2); baza main 9bfb104fb",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 924: Kultura i religia liczą się teraz do Szczęścia i do Prawa miasta (każda z dwóch linii osobno): łatwy −10/+10, normalny −15/+5, trudny −20/0 (miasto w całości obce / w całości nasze), skala epok ×1,0/×1,6/×2,3, jednostka garnizonu nadal 20 pkt Prawa; nowe ustawienie zaawansowane nowej gry Kultura i religia: Mały wpływ (łatwy, domyślnie) / Neutralny (normalny) / Duży wpływ (trudny); zapisy bez ustawienia grają jak dotąd; na łatwym własne miasta dostają do +20 Prawa"
+    "FALA 925: Generator map: po generowaniu Ziemi 0 heksów lądu poza maską szablonu (było 72 łąki) i 0 samotnych heksów lądu na oceanie (było 1 na wyspach 108x74); 5 izolowanych heksów szablonu Ziemi znika z mapy (zmiana maski); render rzek: średnie rzeki 0,7x szerokości głównej, dopływy i krótkie 0,45 (było 0,30), główne bez zmian — trzy poziomy wyraźniej różne"
   ],
   "verification": [
-    "FC PASS-WITH-NOTES (CULTIMPL r1+obrona); tsc 0; logic 213/213; culture-religion-level 59/0 (4 mutacje na źródle czerwone); porównanie PRZED/PO bit-w-bit 64800 przypadków 0 rozjazdów; round-trip zapisu OK; pomiar AI 60 tur seed 4242 na trudnym; ai-test 297/0; vite build OK; MD5 z GitHub Raw"
+    "FC PASS-WITH-NOTES MAPFIX (f781bbd0a) + RIVTHICKIMPL (2c8a8fd29); tsc 0; logic 213/213; map-offmask-stranded-fix; stranded-land 18/0; climate-band PASS; river-density 2/0; river-render-levels 19/0; river-fog-visibility 31/0; zrzuty 8x: rzeki +16% pikseli; vite build OK; MD5 z GitHub Raw"
   ],
   "limits": [
-    "NIE ZMIERZONO: wybór opcji w kreatorze w przeglądarce; bunty AI jako przyczyna; AI na trudnym ma −30% jednostek i 36% pustych miast (16% dziś) — pytanie 36 do właściciela; cel garnizonu 2/3/4 niewdrożony (model: łatwy 2/2, normalny 3/3)"
+    "RYZYKO: pełny map-gen-regression na MAPFIX dał 11 twardych naruszeń (szczegóły niezapisane; diagnoza MAPREGDIAG w toku, nie wiadomo czy istniejące w bazie); earth-template 9/1 (stary pin Antarktydy); generator.ts poza allowlistą zaakceptowane; relief-grid-coverage nieukończony; FPS rzek na prawdziwym GPU NIE ZMIERZONO"
   ],
-  "finalControl": "FC PASS-WITH-NOTES f2567c024",
+  "finalControl": "FC PASS-WITH-NOTES",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-26T19:38:36",
+  "hubGeneratedAt": "2026-11-26T19:47:12",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "c106582c7dec2f7a3201f38689b1a326",
-      "sizeBytes": 15034118
+      "md5": "7398bd0871448e75b42884de24219224",
+      "sizeBytes": 15035044
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "c106582c7dec2f7a3201f38689b1a326",
-      "sizeBytes": 15034118
+      "md5": "7398bd0871448e75b42884de24219224",
+      "sizeBytes": 15035044
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "c106582c7dec2f7a3201f38689b1a326",
-      "sizeBytes": 15034118
+      "md5": "7398bd0871448e75b42884de24219224",
+      "sizeBytes": 15035044
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "c106582c7dec2f7a3201f38689b1a326",
-      "sizeBytes": 15034118
+      "md5": "7398bd0871448e75b42884de24219224",
+      "sizeBytes": 15035044
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "c106582c7dec2f7a3201f38689b1a326",
-      "sizeBytes": 15034118
+      "md5": "7398bd0871448e75b42884de24219224",
+      "sizeBytes": 15035044
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "c106582c7dec2f7a3201f38689b1a326",
-      "sizeBytes": 15034118
+      "md5": "7398bd0871448e75b42884de24219224",
+      "sizeBytes": 15035044
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "c106582c7dec2f7a3201f38689b1a326",
-      "sizeBytes": 15034118
+      "md5": "7398bd0871448e75b42884de24219224",
+      "sizeBytes": 15035044
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "c106582c7dec2f7a3201f38689b1a326",
-      "sizeBytes": 15034118
+      "md5": "7398bd0871448e75b42884de24219224",
+      "sizeBytes": 15035044
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "c106582c7dec2f7a3201f38689b1a326",
-      "sizeBytes": 15034118
+      "md5": "7398bd0871448e75b42884de24219224",
+      "sizeBytes": 15035044
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "c106582c7dec2f7a3201f38689b1a326",
-      "sizeBytes": 15034118
+      "md5": "7398bd0871448e75b42884de24219224",
+      "sizeBytes": 15035044
     }
   ],
-  "md5": "c106582c7dec2f7a3201f38689b1a326",
+  "md5": "7398bd0871448e75b42884de24219224",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
