@@ -23,4 +23,26 @@ async function closeCivWelcome(page, maxRounds = 6) {
   return closed;
 }
 
-module.exports = { closeCivWelcome, WELCOME_ROOT };
+// R-WEB-HARNESS-NNS-GATE-ENDTURN-Q1 (NNSQ12, odp. 12A): bramka „Zakończ turę” (NNS: prognoza skarbca/spichlerza < 0)
+// zostaje w grze; harness przygotowuje STAN przed każdą turą przez istniejący hak civTest (__nnsMeasureDebug, tylko
+// ?civTest=1): gdy gra sama zgłasza canEnd=false, podnosi skarbiec i spichlerz do progów pomiarowych (surowe ustawienie
+// stanu, bez zmiany reguły — prognozę i decyzję dalej liczy gra). Zero zmian gra/src.
+const GATE_TREASURY_FLOOR = 5000;
+const GATE_GRANARY_FLOOR = 999;
+
+async function prepareEndTurnGate(page, opts = {}) {
+  const treasuryFloor = opts.treasuryFloor ?? GATE_TREASURY_FLOOR;
+  const granaryFloor = opts.granaryFloor ?? GATE_GRANARY_FLOOR;
+  return page.evaluate(({ tf, gf }) => {
+    const d = window.__nnsMeasureDebug;
+    if (!d || typeof d.gateInfo !== 'function') throw new Error('brak haka __nnsMeasureDebug (wymagane ?civTest=1)');
+    const before = d.gateInfo();
+    if (before.canEnd) return { changed: false, canEnd: true, turn: before.turn };
+    d.setPlayerTreasury(Math.max(before.treasury, tf));
+    d.setPlayerGranary(Math.max(before.granary, gf));
+    const after = d.gateInfo();
+    return { changed: true, canEnd: !!after.canEnd, turn: after.turn, gateBefore: before.gate, gateAfter: after.gate };
+  }, { tf: treasuryFloor, gf: granaryFloor });
+}
+
+module.exports = { closeCivWelcome, WELCOME_ROOT, prepareEndTurnGate, GATE_TREASURY_FLOOR, GATE_GRANARY_FLOOR };
