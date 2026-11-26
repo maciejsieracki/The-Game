@@ -2468,12 +2468,24 @@ fn rozkaz_ruchu_doktryny_bitwy_wektory_pinu_bajt_w_bajt() {
         // `R-RUSTPORT-P6-K5LOOP-FRAME-QUANT-Q1/01-operator-r1.md` §5), więc chwile porównuje się tylko w czasie
         // rzeczywistym; w przewijaniu: decyzje rozkazów i zdarzenia bez chwili, wynik bitwy bajt w bajt.
         let strip = |x: &[String]| -> Vec<String> {
-            x.iter().map(|r| r.split_once(' ').map_or(r.clone(), |(_, t)| t.to_owned())).collect()
+            x.iter()
+                .map(|r| r.split_once(' ').map_or(r.clone(), |(_, t)| t.to_owned()))
+                .collect()
         };
         let (run_orders, pin_orders, run_events, pin_events) = if v["mode"] == "skip" {
-            (strip(&run.orders), strip(&pin_orders), strip(&run.events), strip(&pin_events))
+            (
+                strip(&run.orders),
+                strip(&pin_orders),
+                strip(&run.events),
+                strip(&pin_events),
+            )
         } else {
-            (run.orders.clone(), pin_orders, run.events.clone(), pin_events)
+            (
+                run.orders.clone(),
+                pin_orders,
+                run.events.clone(),
+                pin_events,
+            )
         };
         if let Some(i) = first_div(&run_orders, &pin_orders) {
             d.push(format!(

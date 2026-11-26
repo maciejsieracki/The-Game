@@ -36,7 +36,8 @@ fn vectors() -> Value {
 }
 
 fn int(v: &Value) -> i64 {
-    v.as_i64().unwrap_or_else(|| panic!("liczba całkowita: {v}"))
+    v.as_i64()
+        .unwrap_or_else(|| panic!("liczba całkowita: {v}"))
 }
 
 fn pair(v: &Value) -> (i64, i64) {
@@ -104,7 +105,11 @@ struct VecGates {
 impl VecGates {
     fn ix(&self, col: i64) -> usize {
         let d = col - (self.q - 1);
-        assert!((0..3).contains(&d), "bramka dla kolumny {col} poza oknem q={}", self.q);
+        assert!(
+            (0..3).contains(&d),
+            "bramka dla kolumny {col} poza oknem q={}",
+            self.q
+        );
         usize::try_from(d).expect("indeks")
     }
 }
@@ -134,7 +139,12 @@ fn order_doctrine(c: &Value) -> OrderDoctrine {
             .expect("groupMeta")
             .iter()
             .find(|m| m[0] == g)
-            .map(|m| (doctrine(m[1].as_str().expect("d")), m[2].as_bool().expect("auto")))
+            .map(|m| {
+                (
+                    doctrine(m[1].as_str().expect("d")),
+                    m[2].as_bool().expect("auto"),
+                )
+            })
     });
     OrderDoctrine {
         unit_doctrine: unit,
@@ -215,7 +225,11 @@ impl Boards {
         let key = format!(
             "{}|{}",
             c["base"].as_str().expect("base"),
-            if c["mounted"].as_bool().expect("mounted") { 1 } else { 0 }
+            if c["mounted"].as_bool().expect("mounted") {
+                1
+            } else {
+                0
+            }
         );
         VecGrid {
             impassable: self.impassable.get(&key).expect("plansza sceny"),
@@ -226,7 +240,10 @@ impl Boards {
 
 /// Klucz wroga z indeksu listy strony przeciwnej (`this.def` / `this.atk` sceny, kolejność pinu).
 fn enemy_key(c: &Value, idx: usize) -> String {
-    c["enemies"][idx]["id"].as_str().expect("id wroga").to_owned()
+    c["enemies"][idx]["id"]
+        .as_str()
+        .expect("id wroga")
+        .to_owned()
 }
 
 /// Klasa decyzji (pokrycie).
@@ -304,7 +321,10 @@ fn check_move(c: &Value, step: &MoveOrderStep, inp: &MoveOrderInput) -> Vec<Stri
         d.push(format!("rozkaz po {order_after} != {}", e["orderAfter"]));
     }
     if opt_pair(&e["lastAutoMoveFrom"]) != lamf {
-        d.push(format!("lastAutoMoveFrom {lamf:?} != {}", e["lastAutoMoveFrom"]));
+        d.push(format!(
+            "lastAutoMoveFrom {lamf:?} != {}",
+            e["lastAutoMoveFrom"]
+        ));
     }
     let want_route = e.get("route").map(opt_pair);
     if want_route != step.bfs_result() {
@@ -327,7 +347,9 @@ fn move_input(c: &Value) -> MoveOrderInput {
     MoveOrderInput {
         pos: pair(&c["pos"]),
         target: pair(&c["target"]),
-        adjacent_enemy: c["adjacent"].as_u64().map(|i| usize::try_from(i).expect("idx")),
+        adjacent_enemy: c["adjacent"]
+            .as_u64()
+            .map(|i| usize::try_from(i).expect("idx")),
         avoid_auto_backtrack: avoid,
         last_auto_move_from: opt_pair(&c["lastAutoMoveFrom"]),
         bfs_steady: steady,
@@ -347,19 +369,39 @@ fn gates_of(c: &Value) -> VecGates {
 fn check_inputs(c: &Value, inp: &MoveOrderInput) -> Vec<String> {
     let mut d = Vec::new();
     if c["avoidBacktrack"].as_bool() != Some(inp.avoid_auto_backtrack) {
-        d.push(format!("_shouldAvoidAutoBacktrack {} != {}", inp.avoid_auto_backtrack, c["avoidBacktrack"]));
+        d.push(format!(
+            "_shouldAvoidAutoBacktrack {} != {}",
+            inp.avoid_auto_backtrack, c["avoidBacktrack"]
+        ));
     }
     if c["bfsSteady"].as_bool() != Some(inp.bfs_steady) {
-        d.push(format!("bramka steady BFS {} != {}", inp.bfs_steady, c["bfsSteady"]));
+        d.push(format!(
+            "bramka steady BFS {} != {}",
+            inp.bfs_steady, c["bfsSteady"]
+        ));
     }
     let od = order_doctrine(c);
     let auto = is_unit_doctrine_auto(od.unit_doctrine, od.has_group, od.group);
     if c["doctrineAuto"].as_bool() != Some(auto) {
-        d.push(format!("_isUnitDoctrineAuto {auto} != {}", c["doctrineAuto"]));
+        d.push(format!(
+            "_isUnitDoctrineAuto {auto} != {}",
+            c["doctrineAuto"]
+        ));
     }
-    let meta = effective_doctrine(od.unit_doctrine, if od.has_group { od.group.map(|g| g.0) } else { None });
+    let meta = effective_doctrine(
+        od.unit_doctrine,
+        if od.has_group {
+            od.group.map(|g| g.0)
+        } else {
+            None
+        },
+    );
     if c["metaDoctrine"].as_str() != Some(doctrine_name(meta)) {
-        d.push(format!("meta.doctrine {} != {}", doctrine_name(meta), c["metaDoctrine"]));
+        d.push(format!(
+            "meta.doctrine {} != {}",
+            doctrine_name(meta),
+            c["metaDoctrine"]
+        ));
     }
     d
 }
@@ -397,7 +439,10 @@ fn rozkaz_ruchu_move_zgodny_z_pinem() {
         let gates = gates_of(c);
         let step = move_order_step(&inp, &grid, &gates);
         for x in check_move(c, &step, &inp) {
-            fails.push(format!("#{i} {} {:?}->{:?}: {x}", c["unit"], inp.pos, inp.target));
+            fails.push(format!(
+                "#{i} {} {:?}->{:?}: {x}",
+                c["unit"], inp.pos, inp.target
+            ));
         }
         // Ta sama decyzja przez wejście `_performPlayerOrder` (gałąź `move` nie czyta `_performSiegeManualOrder`).
         let via = perform_player_order(
@@ -412,7 +457,9 @@ fn rozkaz_ruchu_move_zgodny_z_pinem() {
             &gates,
         );
         if via != PerformOrder::Move(step) {
-            fails.push(format!("#{i}: perform_player_order {via:?} != Move({step:?})"));
+            fails.push(format!(
+                "#{i}: perform_player_order {via:?} != Move({step:?})"
+            ));
         }
         if !inp.firing.is_empty() {
             *cov.entry("pola-ostrzalu-niepuste".into()).or_default() += 1;
@@ -466,12 +513,14 @@ fn pierwszy_krok_bfs_zgodny_z_pinem() {
         let od = order_doctrine(c);
         let (_, steady) = backtrack_inputs(od);
         if c["bfsSteady"].as_bool() != Some(steady) {
-            fails.push(format!("#{i}: bramka steady {steady} != {}", c["bfsSteady"]));
+            fails.push(format!(
+                "#{i}: bramka steady {steady} != {}",
+                c["bfsSteady"]
+            ));
         }
         let grid = boards.grid(c);
-        let banned: Option<HashSet<(i64, i64)>> = c["banned"]
-            .as_array()
-            .map(|a| a.iter().map(pair).collect());
+        let banned: Option<HashSet<(i64, i64)>> =
+            c["banned"].as_array().map(|a| a.iter().map(pair).collect());
         let allow = |col: i64, row: i64| banned.as_ref().is_none_or(|b| !b.contains(&(col, row)));
         let allow_dyn: &dyn Fn(i64, i64) -> bool = &allow;
         let firing = firing_of(c);
@@ -496,7 +545,11 @@ fn pierwszy_krok_bfs_zgodny_z_pinem() {
             ));
         }
         let lim = c["maxVisited"].as_f64().expect("max") < MOVE_ORDER_MAX_VISITED;
-        bump(if want.is_some() { "droga" } else { "brak-drogi" });
+        bump(if want.is_some() {
+            "droga"
+        } else {
+            "brak-drogi"
+        });
         if lim {
             bump("limit<1024");
         }
@@ -561,10 +614,15 @@ fn rozkaz_hold_none_zgodny_z_pinem() {
             PerformOrder::Doctrine(d) => ("doctrine", Some(doctrine_name(d))),
             other => panic!("#{i}: nieoczekiwane {other:?}"),
         };
-        if e["kind"] != kind || e["meta"].as_str() != meta || e["ret"] != true || e["doneCalls"] != 1 {
+        if e["kind"] != kind
+            || e["meta"].as_str() != meta
+            || e["ret"] != true
+            || e["doneCalls"] != 1
+        {
             fails.push(format!("#{i} {}: {got:?} != {e}", c["order"]));
         }
-        *cov.entry(format!("{}/{kind}", c["order"].as_str().expect("o"))).or_default() += 1;
+        *cov.entry(format!("{}/{kind}", c["order"].as_str().expect("o")))
+            .or_default() += 1;
     }
     report("hold/none", &fails);
     eprintln!("pokrycie hold/none: {cov:?}");
@@ -591,7 +649,9 @@ fn pola_ostrzalu_brzegi() {
     };
     // Zasięg 2 wokół (0, 0): romb 13 pól bez środka, przycięty do planszy (ćwiartka: 5 pól).
     let t = firing_tiles(&sh(2.0), &[e(0, 0)]);
-    let want: HashSet<(i64, i64)> = [(0, 1), (0, 2), (1, 0), (2, 0), (1, 1)].into_iter().collect();
+    let want: HashSet<(i64, i64)> = [(0, 1), (0, 2), (1, 0), (2, 0), (1, 1)]
+        .into_iter()
+        .collect();
     assert_eq!(t, want);
     // Zasięg niecałkowity: klucze `q + 2.5` nie trafiają w pola całkowite; ujemny i NaN: pętla pusta.
     for r in [2.5, -1.0, f64::NAN] {

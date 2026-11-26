@@ -29,14 +29,14 @@ use crate::domain::army_leadership::{army_morale_ratio_without_commander, ArmyLe
 use crate::domain::city_towers::{strongest_ranged_unit_for_era, tower_range_for, UnitRow};
 use crate::domain::formation_rules::CompactSide;
 use crate::domain::js_math::js_max0;
+use crate::domain::player_order_move::{
+    firing_tiles, move_order_step, perform_player_order_returns, FiringEnemy, FiringShooter,
+    MoveGrid, MoveOrderGates, MoveOrderInput, MoveOrderStep, PlayerOrder,
+};
 use crate::domain::player_order_move_gate::{
     compact_attack_allows_step, dest_allowed_by_blockade, should_avoid_auto_backtrack,
     BacktrackUnit, BlockadeSettings, CompactStepUnit, GroupDoctrine as GateDoctrine, GroupMeta,
     LineMember,
-};
-use crate::domain::player_order_move::{
-    firing_tiles, move_order_step, perform_player_order_returns, FiringEnemy, FiringShooter,
-    MoveGrid, MoveOrderGates, MoveOrderInput, MoveOrderStep, PlayerOrder,
 };
 use crate::domain::siege_battle_adapter_body::{apply_terrain_range, TerrainRangeUnit};
 use crate::domain::siege_city_fortification::{melee_blocked_by_wall, MeleeWallContext};
@@ -3635,7 +3635,10 @@ impl<R: RollSource> ProdBody<R> {
             .filter(|g| !g.is_empty())
             .and_then(|g| self.group_meta.get(g).copied())
             .map(|m| (doctrine_of_gate(m.doctrine), m.auto_play));
-        let doctrine = effective_doctrine(ds.unit_doctrine, if has_group { group.map(|g| g.0) } else { None });
+        let doctrine = effective_doctrine(
+            ds.unit_doctrine,
+            if has_group { group.map(|g| g.0) } else { None },
+        );
         let bfs_steady = is_unit_doctrine_auto(ds.unit_doctrine, has_group, group)
             && doctrine == GroupDoctrine::Steady;
         let enemies: Vec<FiringEnemy> = self
@@ -6208,14 +6211,24 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                             };
                             if self.march_incremental {
                                 self.pending[ix][unit.idx] = Some(pend);
-                                let next =
-                                    self.march_move(&mut c, tile, &enemies, "rozkaz-ruchu-brak-terenu");
+                                let next = self.march_move(
+                                    &mut c,
+                                    tile,
+                                    &enemies,
+                                    "rozkaz-ruchu-brak-terenu",
+                                );
                                 self.march_advance(c, next);
                                 return self.march_start_dur();
                             }
                             // Marsz atomowy (bez [`Self::march_incremental`]): krok i callback od razu.
                             let res = self.move_step_core(
-                                unit, tile.0, tile.1, false, c.move_left, None, &enemies,
+                                unit,
+                                tile.0,
+                                tile.1,
+                                false,
+                                c.move_left,
+                                None,
+                                &enemies,
                             );
                             let Ok(res) = res else {
                                 self.unported.push((unit, "rozkaz-ruchu-brak-terenu"));

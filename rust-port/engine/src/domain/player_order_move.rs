@@ -15,8 +15,8 @@
 
 use std::collections::{HashSet, VecDeque};
 
-use crate::domain::siege_tactics_doctrine_step::{effective_doctrine, is_unit_doctrine_auto};
 use crate::domain::siege_tactics_doctrine_state::GroupDoctrine as StateDoctrine;
+use crate::domain::siege_tactics_doctrine_step::{effective_doctrine, is_unit_doctrine_auto};
 
 /// Web `BF_COLS` (`battleScene.ts:661`).
 pub const BF_COLS: i64 = 68;
@@ -239,7 +239,11 @@ pub enum MoveOrderStep {
     /// Brak drogi z BFS (`:18338`): `done()`, rozkaz bez zmian.
     NoRoute,
     /// `_compactAttackAllowsStep(ru, nc)` odmawia (`:18343`): `done()`, rozkaz bez zmian (test PRZED `nc === tc`).
-    CompactBlocked { col: i64, row: i64, route: MoveRoute },
+    CompactBlocked {
+        col: i64,
+        row: i64,
+        route: MoveRoute,
+    },
     /// `_destAllowedByBlockade(ru, nc)` odmawia (`:18345-18348`): `done()`; `order_done` = `playerOrder` już `none`
     /// (`:18344`).
     BlockadeBlocked {
@@ -398,7 +402,8 @@ pub fn perform_player_order<G: MoveGrid + ?Sized, B: MoveOrderGates + ?Sized>(
         PlayerOrder::Other => PerformOrder::Other,
         PlayerOrder::None if siege_manual => PerformOrder::SiegeManual,
         PlayerOrder::None => {
-            let auto = is_unit_doctrine_auto(doctrine.unit_doctrine, doctrine.has_group, doctrine.group);
+            let auto =
+                is_unit_doctrine_auto(doctrine.unit_doctrine, doctrine.has_group, doctrine.group);
             if auto {
                 let meta = effective_doctrine(
                     doctrine.unit_doctrine,
