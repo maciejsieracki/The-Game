@@ -1,3 +1,9 @@
+## ROBOCZA 06b7ded2 -- 2026-11-26 -- FALA 918: Pokój po rozejmie: cena 0 = symboliczna opłata, surowce w oknie gracza (testowa)
+
+- Gdy wyliczona cena pokoju po rozejmie wynosi 0, pokój nadal jest oferowany za symboliczną opłatą 1 Pn (klucz pokojPoRozejmie.minimalnaOplataSymbolicznaPn w diplomacy-war-peace-params.json), zamiast wojny; para AI↔AI z warunkiem nieujemnego bilansu; w oknie propozycji gracza przy różnicy sił >20% i braku cedowalnego miasta (stolica, ostatnie miasto) pokój przyjmowany za pokrycie ceny surowcami (filtr forbidden w truceEndWindowFor)
+- Weryfikacja: tsc 0; logic 213/213; truce-end-peace-price 72/0 (mutacje M-SYM, M-SUB, M-FORB czerwone); truce-end-window 43/0; truce-end-settle-exec 30/0; diplo-truce-impl 93/0; truce-end-war-notice PASS; war-limit-truce-count 19/0; diplo-human-peace-no-war 13/0; diplo-war-tribute-once 8/0; hotseat-peace-counter-ui 25/0; main-guard 21/0; ai-test 297/0, tech-tree 20, research 33, unit-replace 21, combat 6 (FC); vite build OK
+- Limity: NIE ZMIERZONO: live w przeglądarce; wartość 1 Pn wobec przelicznika surowiec→Pn i żywego koszyka; reguła wariantu surowcowego zduplikowana (plan AI i okno gracza, 12 przypadków zgodnych); plik poza allowlistą diplomacy-war-peace-profile.ts (jedno pole typu); pliki .truce-end-*.cjs mutantów w gra/tools
+
 ## ROBOCZA 74da3a41 -- 2026-11-26 -- FALA 917: Hotseat: licznik tur do pokoju w oknie dyplomacji (testowa)
 
 - W oknie dyplomacji między dwoma graczami (hotseat) przy akcji Pokój widoczna etykieta Dostępne za N tur (to samo źródło co bramka 10 tur wojny z FALI 916), a przyciski Akceptuj/Wyślij dla pokoju są zablokowane do końca licznika; pozostałe akcje i rozejm bez zmian (nowy helper peaceCounterLabel, pole peaceTurnsAtWar w interHumanDiplomacyHud)

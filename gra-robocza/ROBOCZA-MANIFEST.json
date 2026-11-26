@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "74da3a41cbfd00397342d323455eb3d4",
-  "bundleSha256": "ed3d706fac0c5f967b547d4a13c7c4f44bb639406768082e627f36743deb903e",
-  "bundleBytes": 15026798,
+  "bundleMd5": "06b7ded2bd86c5c2adef3b0f208fe6eb",
+  "bundleSha256": "140fb60a42eb934745af603e716b1ce184ece94450db282e33d824c04652d4fc",
+  "bundleBytes": 15027509,
   "sourceSnapshot": {
-    "source": "FC 2c726f7b1 (HOTSEATHUD-wip/fc e5a5f87ae, baza main 7148b2f4e)",
+    "source": "FC 3b9e2a118 (TRUCEPRICE3-wip/fc 8ed51779f, baza main 7148b2f4e)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 917: W oknie dyplomacji między dwoma graczami (hotseat) przy akcji Pokój widoczna etykieta Dostępne za N tur (to samo źródło co bramka 10 tur wojny z FALI 916), a przyciski Akceptuj/Wyślij dla pokoju są zablokowane do końca licznika; pozostałe akcje i rozejm bez zmian (nowy helper peaceCounterLabel, pole peaceTurnsAtWar w interHumanDiplomacyHud)"
+    "FALA 918: Gdy wyliczona cena pokoju po rozejmie wynosi 0, pokój nadal jest oferowany za symboliczną opłatą 1 Pn (klucz pokojPoRozejmie.minimalnaOplataSymbolicznaPn w diplomacy-war-peace-params.json), zamiast wojny; para AI↔AI z warunkiem nieujemnego bilansu; w oknie propozycji gracza przy różnicy sił >20% i braku cedowalnego miasta (stolica, ostatnie miasto) pokój przyjmowany za pokrycie ceny surowcami (filtr forbidden w truceEndWindowFor)"
   ],
   "verification": [
-    "tsc 0; logic 213/213; hotseat-peace-counter-ui 25/0 (mutacje czerwone); hotseat-peace-protection 4/0; diplo-human-peace-no-war 13/0; hotseat-etap6d B 48/0 D 46/0 E 24/0; main-guard 21/0; ai-test 297/0, tech-tree 20, research 33, unit-replace 21, combat 6 (FC); vite build OK"
+    "tsc 0; logic 213/213; truce-end-peace-price 72/0 (mutacje M-SYM, M-SUB, M-FORB czerwone); truce-end-window 43/0; truce-end-settle-exec 30/0; diplo-truce-impl 93/0; truce-end-war-notice PASS; war-limit-truce-count 19/0; diplo-human-peace-no-war 13/0; diplo-war-tribute-once 8/0; hotseat-peace-counter-ui 25/0; main-guard 21/0; ai-test 297/0, tech-tree 20, research 33, unit-replace 21, combat 6 (FC); vite build OK"
   ],
   "limits": [
-    "NIE ZMIERZONO: render w żywym Chromium (test sprawdza źródło i czysty rdzeń, brak jsdom); rozejm w hotseat bez licznika"
+    "NIE ZMIERZONO: live w przeglądarce; wartość 1 Pn wobec przelicznika surowiec→Pn i żywego koszyka; reguła wariantu surowcowego zduplikowana (plan AI i okno gracza, 12 przypadków zgodnych); plik poza allowlistą diplomacy-war-peace-profile.ts (jedno pole typu); pliki .truce-end-*.cjs mutantów w gra/tools"
   ],
-  "finalControl": "FC PASS-WITH-NOTES (Sonnet): 4 własne mutacje HUD czerwone, zarzut 1 naprawiony",
+  "finalControl": "FC PASS-WITH-NOTES (Sonnet): zarzuty 1–3 naprawione, mutacja M-FORB czerwona, bramki zielone",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-26T13:00:50",
+  "hubGeneratedAt": "2026-11-26T13:07:18",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "74da3a41cbfd00397342d323455eb3d4",
-      "sizeBytes": 15026798
+      "md5": "06b7ded2bd86c5c2adef3b0f208fe6eb",
+      "sizeBytes": 15027509
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "74da3a41cbfd00397342d323455eb3d4",
-      "sizeBytes": 15026798
+      "md5": "06b7ded2bd86c5c2adef3b0f208fe6eb",
+      "sizeBytes": 15027509
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "74da3a41cbfd00397342d323455eb3d4",
-      "sizeBytes": 15026798
+      "md5": "06b7ded2bd86c5c2adef3b0f208fe6eb",
+      "sizeBytes": 15027509
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "74da3a41cbfd00397342d323455eb3d4",
-      "sizeBytes": 15026798
+      "md5": "06b7ded2bd86c5c2adef3b0f208fe6eb",
+      "sizeBytes": 15027509
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "74da3a41cbfd00397342d323455eb3d4",
-      "sizeBytes": 15026798
+      "md5": "06b7ded2bd86c5c2adef3b0f208fe6eb",
+      "sizeBytes": 15027509
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "74da3a41cbfd00397342d323455eb3d4",
-      "sizeBytes": 15026798
+      "md5": "06b7ded2bd86c5c2adef3b0f208fe6eb",
+      "sizeBytes": 15027509
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "74da3a41cbfd00397342d323455eb3d4",
-      "sizeBytes": 15026798
+      "md5": "06b7ded2bd86c5c2adef3b0f208fe6eb",
+      "sizeBytes": 15027509
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "74da3a41cbfd00397342d323455eb3d4",
-      "sizeBytes": 15026798
+      "md5": "06b7ded2bd86c5c2adef3b0f208fe6eb",
+      "sizeBytes": 15027509
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "74da3a41cbfd00397342d323455eb3d4",
-      "sizeBytes": 15026798
+      "md5": "06b7ded2bd86c5c2adef3b0f208fe6eb",
+      "sizeBytes": 15027509
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "74da3a41cbfd00397342d323455eb3d4",
-      "sizeBytes": 15026798
+      "md5": "06b7ded2bd86c5c2adef3b0f208fe6eb",
+      "sizeBytes": 15027509
     }
   ],
-  "md5": "74da3a41cbfd00397342d323455eb3d4",
+  "md5": "06b7ded2bd86c5c2adef3b0f208fe6eb",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
