@@ -34594,6 +34594,26 @@ async function boot(): Promise<void> {
           unitLossCauseById.clear();
           return { baseline, owners };
         },
+        /** AICULT-DIAG (tylko odczyt, ?civTest=1): stan miast per właściciel na bieżący moment: liczba miast, miasta w buncie
+         *  skrajnym (`st.bunt`), w rebelii (`st.rebelState`), z ostrzeżeniem o rebelii (`st.revoltWarning`), Porządek (porPct)
+         *  poniżej progu `prog` (%), suma porPct i rozkład pasm (bandLabel). Rebelianci = owner -99, barbarzyńcy = -1. */
+        cityStateTurn: (prog: number): Array<{ owner: number; miasta: number; bunt: number; rebelia: number; ostrzezenie: number; ponizejProgu: number; porPctSuma: number; pasma: Record<string, number> }> => {
+          const by = new Map<number, { owner: number; miasta: number; bunt: number; rebelia: number; ostrzezenie: number; ponizejProgu: number; porPctSuma: number; pasma: Record<string, number> }>();
+          for (const c of cities) {
+            const o = c.ownerId;
+            let row = by.get(o);
+            if (!row) { row = { owner: o, miasta: 0, bunt: 0, rebelia: 0, ostrzezenie: 0, ponizejProgu: 0, porPctSuma: 0, pasma: {} }; by.set(o, row); }
+            const st = cityOrderState.get(c.id);
+            row.miasta++;
+            if (st?.bunt) row.bunt++;
+            if (st?.rebelState) row.rebelia++;
+            if (st?.revoltWarning) row.ostrzezenie++;
+            if (typeof st?.porPct === 'number') { row.porPctSuma += st.porPct; if (st.porPct < prog) row.ponizejProgu++; }
+            const band = st?.bandLabel ?? 'brak';
+            row.pasma[band] = (row.pasma[band] ?? 0) + 1;
+          }
+          return [...by.values()].sort((a, b) => a.owner - b.owner);
+        },
         /** R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1 (r2): właściciele przetworzeni przez ownerLoop w ostatniej fazie AI. */
         lastAiPhaseOwnersForTest: (): number[] => aiPhaseOwnersForTest.slice(),
         /** R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1 (tylko odczyt, ?civTest=1): rozmiar dziennika w pamieci (wszyscy wlasciciele). */

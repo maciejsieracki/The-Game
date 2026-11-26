@@ -93,6 +93,10 @@ const PACE = arg('pace', 'normalny');
 /** R-WEB-VERIFY-LIVE-A2-UNIT-COST-DISBAND-COUNTER-SEED7-Q1: --unit-flow 1 = w kazdym wierszu tury pole `unitFlow`
  * (hak __aiEconomyMeasure.unitFlowTurn: przyrost id jednostek + przyczyny zejscia per wlasciciel). Domyslnie 0 (zachowanie bez zmian). */
 const UNIT_FLOW = arg('unit-flow', '0') === '1';
+/** AICULT-DIAG: --city-state 1 = w kazdym wierszu tury pole `cityState` (hak __aiEconomyMeasure.cityStateTurn, tylko odczyt).
+ * Prog porzadku = porzadek_prog_bunt_skrajny_pct dla poziomu --society (domyslnie hard = poziom maksymalny). */
+const CITY_STATE = arg('city-state', '0') === '1';
+const CITY_STATE_PROG = (() => { const d = JSON.parse(fs.readFileSync(path.join(GRA_DIR, 'data', 'society-params.json'), 'utf8')); return d.porzadek.porzadek_prog_bunt_skrajny_pct[arg('society', 'hard')]; })();
 if (!['niski', 'normalny', 'wysoki'].includes(PACE)) throw new Error('--pace: dozwolone niski|normalny|wysoki (podano ' + PACE + ')');
 let REBALANCE_FLAG_STATE = null;
 const SLOT = 'ai-econ-s' + SEED;
@@ -442,6 +446,7 @@ async function playOneTurn(page, ctxState) {
       owners: mH.owners, diag: mH.diag, niezmierzone: mH.niezmierzone, sec: Math.round((Date.now() - t0) / 100) / 10,
       aiOffersRejected: offersRec.confirmed, aiOffersRejectAttempts: offersRec.attempts };
     if (UNIT_FLOW) recH.unitFlow = await page.evaluate(() => window.__aiEconomyMeasure.unitFlowTurn());
+    if (CITY_STATE) recH.cityState = await page.evaluate(p => window.__aiEconomyMeasure.cityStateTurn(p), CITY_STATE_PROG);
     recH.wars = await collectWars(page, mH.owners);
     recH.upkeepGate = gateDelta(gateBefore, await readGateStats(page));
     if (HASH) recH.stateHash = await stateHash(page, null);
@@ -483,6 +488,7 @@ async function playOneTurn(page, ctxState) {
     forcedPeaceAccepted: ctxState.forcedPeaceAccepted || 0,
   };
   if (UNIT_FLOW) rec.unitFlow = await page.evaluate(() => window.__aiEconomyMeasure.unitFlowTurn());
+  if (CITY_STATE) rec.cityState = await page.evaluate(p => window.__aiEconomyMeasure.cityStateTurn(p), CITY_STATE_PROG);
   rec.wars = await collectWars(page, m.owners);
   rec.upkeepGate = gateDelta(gateBefore, await readGateStats(page));
   // R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1: rozmiar dziennika w pamieci (co 10 tur, tura koncowa i pierwsza tura po starcie segmentu; poza pomiarem tury).
