@@ -1,3 +1,9 @@
+## ROBOCZA 9e1fddb1 -- 2026-11-26 -- FALA 920: Efekty stolicy w ekonomii tury wg prawdziwej stolicy (testowa)
+
+- Efekty zależne od stolicy w ekonomii tury (korupcja: dystans od stolicy, Mennica; pre-pass D2) liczone z jednego helpera opartego na autorytatywnej stolicy (capitalCityIdForOwnerForTick, resolver z main.ts) zamiast heurystyki pierwsze miasto w tablicy; bez resolvera zachowanie dotychczasowe; wartości balansu bez zmian, różnica tylko w imperiach z przeniesioną stolicą
+- Weryfikacja: tsc 0; logic 213/213; capital-resolver-economy 10/0 (mutacja resolvera 3/7); mint-capital-only 8/0; mint-orphan 28/0; waluta-mennica 61/0; trade-routes-income 135/0; citizen-resource-upkeep 124/0; main-guard 21/0; ai-test 297/0, tech-tree 20, research 33, unit-replace 21, combat 6 (FC); vite build OK
+- Limity: NIE ZMIERZONO: partia w przeglądarce z przeniesioną stolicą; duplikacja isCapital/capitalCoords w previewCityEconomy i advanceCityEconomy (kandydat na refaktor)
+
 ## ROBOCZA d868d786 -- 2026-11-26 -- FALA 919: Mennica osierocona: nieaktywna, stara znika po nowej w stolicy (testowa)
 
 - Po ukończeniu Mennicy w stolicy wszystkie inne Mennice tej cywilizacji stojące poza stolicą znikają automatycznie (komunikat dla gracza); Mennica poza stolicą pozostaje nieaktywna i nie znika, dopóki nie powstanie nowa w stolicy; powrót stolicy do miasta z istniejącą Mennicą reaktywuje bonus (nowy moduł mennica-orphan.ts, hook w applyProductionCompleted)
