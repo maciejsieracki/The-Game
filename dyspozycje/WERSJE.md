@@ -1,3 +1,9 @@
+## ROBOCZA 9f9f3a0d -- 2026-11-26 -- FALA 912: Koniec rozejmu = propozycja pokoju z ceną (testowa)
+
+- Po wygaśnięciu rozejmu AI zawsze składa ofertę pokoju z ceną (różnica sił ≤20%: przegrywająca płaci surowcami, remis: inicjator rozejmu; >20%: słabsza płaci miastem, przy braku cedowalnego miasta wariant surowcowy); pokój po rozejmie nie jest za darmo, odmowa = wojna; AI↔AI z nieujemnym bilansem; oferta w skrzynce niesie kierunek, walutę i wartość (nowy moduł diplomacy-truce-end-price.ts)
+- Weryfikacja: tsc 0; logic 213/213; truce-end-peace-price 54/0 (mutanty czerwone); diplo-truce-impl 93/0; truce-end-war-notice PASS; war-limit-truce-count 19/0; diplo-human-peace-no-war 13/0; diplo-war-tribute-once 8/0; main-guard 21/0; diplomacy-war-limit-unit 57/0; ai-test 297/0 (FC); vite build OK
+- Limity: NIE ZMIERZONO: testy live, wykonawczy test przelewu, UI oferty; pkt 6 (pokój gracza po rozejmie wg zrównoważonej ceny) niezrobiony; cena 0 = wojna i wariant surowcowy przy braku miasta to założenia do potwierdzenia
+
 ## ROBOCZA 1953d354 -- 2026-11-26 -- FALA 911: Rozejm liczy się w limicie wojen (testowa)
 
 - Para cywilizacji w rozejmie (status pokój z truceUntilTurn albo truceEndOffer) liczy się w limicie wojen (1 naturalna + 1 epoki) jako wojna swojego typu; pokój zwalnia limit; wznowienie wojny po rozejmie nie jest blokowane limitem (nowa funkcja isWarForLimit w warTypesForOwner)
