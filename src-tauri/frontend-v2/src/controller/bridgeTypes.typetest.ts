@@ -2,28 +2,64 @@
  * controller/bridgeTypes.typetest.ts — test TYPÓW kontraktu mostu (R-RUSTPORT-P4-411-TS-TYPES-Q1).
  *
  * Plik nie jest importowany przez aplikację (brak wpływu na bundel i atrapę MOCK); sprawdza go
- * `tsc --noEmit` (`tsconfig.json` `include: ["src"]`). Każda fikstura poniżej to JSON, który
- * silnik ZSERIALIZOWAŁ albo PRZYJĄŁ w istniejącym teście Rust (źródło przy fiksturze), przepisany
- * 1:1 jako literał. `satisfies` na literale obiektu włącza kontrolę nadmiarowych kluczy, więc:
+ * `tsc --noEmit` (`tsconfig.json` `include: ["src"]`).
+ *
+ * Pochodzenie fikstur (korekta po zarzucie Z4 Evaluatora r1):
+ *  - KOMENDY (§1) i koperta żądania: JSON przepisany 1:1 z asercji `json!` / `from_value` testów Rust
+ *    (`bridge_contract.rs:158-216`, `:391-395`, `p4_364_render_frame.rs:349-398`,
+ *    `p4_save_load_bridge.rs:278-283`). WYJĄTEK: `create_session` z `params: {civId, seed}` NIE pochodzi
+ *    z testu komendy — to ręczny literał z dwoma kluczami DTO `StartGameParams` wziętymi z
+ *    `bridge_contract.rs:405,415` (test deserializacji samego DTO); w Rust most dostaje tam
+ *    `StartGameParams::default()` (`:345`).
+ *  - ODPOWIEDZI z zagnieżdżonymi DTO (§2, §4, §5): RĘCZNE minimalne literały zgodne z atrybutami serde
+ *    (wartości skalarne i obecność kluczy wzięte z asercji testów wskazanych przy fiksturze), nie zrzut
+ *    pełnego JSON silnika — zagnieżdżone DTO (`BattleNestedDto`, `RenderNestedDto`) są nieprzezroczyste.
+ *  - Kody błędów bitwy (§3): 1:1 z `p4_1i6_dlugi.rs:573-664` (kody i nazwy pól; wartości liczbowe ręczne).
+ *
+ * `satisfies` na literale obiektu włącza kontrolę nadmiarowych kluczy, więc:
  *  - usunięcie pola z typu → fikstura z tym polem nie przechodzi (nadmiarowy klucz);
  *  - pole opcjonalne zmienione na wymagane → fikstura bez klucza nie przechodzi;
  *  - usunięty wariant → próbka wariantu / lista `kind` nie przechodzi.
+ * Zmiany wymagane → opcjonalne, `| null`, zawężenia/poszerzenia typu pola łapie §6: asercja DOKŁADNEJ
+ * równości (`Equal`) każdego rozpisanego typu i każdego wariantu `EngineCommand`.
  * Bloki `@ts-expect-error` to przypadki NEGATYWNE (JSON, który silnik odrzuca albo którego nie
  * produkuje): jeśli typ stanie się zbyt luźny, dyrektywa bez błędu sama wywali `tsc` (TS2578).
  */
 import type {
+  BattleNestedDto,
   BattleWinnerDto,
+  CityCaptureRequestedDto,
   EngineBridgeResponse,
+  EngineBridgeResult,
   EngineCommand,
   EngineCommandKind,
+  PositionDto,
   RenderUiParams,
   SiegeBattleCommand,
   SiegeBattleErrorCode,
   SiegeBattleErrorDto,
+  SiegeBattleMachineKindDto,
   SiegeBattlePayload,
+  SiegeBattlePhaseDto,
+  SiegeBattleResultDto,
+  SiegeBattleUnitRefDto,
+  SiegeTowerShooterDto,
+  SiegeUnitHpDto,
+  StartGameParams,
 } from './bridgeTypes';
-import type { BridgeError, BridgeRequest, BridgeResponse } from './commands';
-import type { FogRevealDto, RenderLayersDto, RenderLayersPayloadDto } from '../viewmodel/types';
+import type { BridgeError, BridgeErrorCode, BridgeRequest, BridgeResponse } from './commands';
+import type {
+  FogRevealDto,
+  FogStateCode,
+  FogViewDto,
+  MapViewDto,
+  RenderHexCoordDto,
+  RenderLayersDto,
+  RenderLayersPayloadDto,
+  RenderNestedDto,
+  TerritoryRangesDto,
+  ViewerDto,
+} from '../viewmodel/types';
 
 // ─── Narzędzia równości typów ────────────────────────────────────────────────
 
@@ -75,6 +111,7 @@ type CommandSamples = { [K in EngineCommandKind]: Extract<EngineCommand, { kind:
 /** Fikstury komend: JSON z testów Rust (serializacja `to_value` albo przyjęty `from_value`). */
 export const COMMAND_FIXTURES = {
   // bridge_contract.rs (`every_command`) — wariant bez params; `params` ma `#[serde(default)]`.
+  // Drugi literał RĘCZNY (Z4): klucze `civId`/`seed` z testu DTO bridge_contract.rs:405,415, nie z testu komendy.
   create_session: [{ kind: 'create_session' }, { kind: 'create_session', params: { civId: 'grecy', seed: 99 } }],
   // bridge_contract.rs:394
   add_player: [{ kind: 'add_player', id: 7, name: 'Ada' }],
@@ -155,7 +192,11 @@ export const SPEED_RESPONSE = {
   siegeBattle: { cityId: 19, phase: 'running', actions: [], speedIdx: 3, speedMul: 8.0 },
 } satisfies EngineBridgeResponse;
 
-/** Ta sama odpowiedź przez zawężoną kopertę `BridgeResponse` (ścieżka kontrolera). */
+/**
+ * Ta sama odpowiedź przez zawężoną kopertę `BridgeResponse` (ścieżka kontrolera): przypisywalność
+ * identyfikatora. UWAGA (Z2): `satisfies` na identyfikatorze NIE sprawdza nadmiarowych kluczy — to nie
+ * jest dowód obecności `siegeBattle?`/`saveGame?` w kopercie; dowodem są literały i `Equal` w §6d.
+ */
 export const SPEED_RESPONSE_NARROW = SPEED_RESPONSE satisfies BridgeResponse;
 
 /** Odpowiedź `AbortSiegeBattle` (p4_1i6_dlugi.rs:690-705, `SiegeBattlePayload::aborted`). */
@@ -344,3 +385,264 @@ export const BAD_LAYERS: RenderLayersPayloadDto = { fog: { state: [] }, fogActiv
 const { battle: _droppedBattle, ...FRAME_WITHOUT_BATTLE } = FRAME_BASE;
 // @ts-expect-error — `battle` zawsze obecne (`null` poza bitwą).
 export const BAD_NO_BATTLE = { ...FRAME_WITHOUT_BATTLE } satisfies RenderLayersDto;
+
+// ─── 6. Pełne kształty (obrona r1, zarzuty Z1/Z2/Z3) ─────────────────────────
+//
+// Fikstury `satisfies` wyżej łapią usunięcie pola i zmianę opcjonalne → wymagane tylko tam, gdzie
+// istnieje fikstura bez klucza; NIE łapią zmiany wymagane → opcjonalne (literał z kluczem pasuje też
+// do `?:`). Dlatego każdy rozpisany typ ma tu asercję DOKŁADNEJ równości (`Equal`, relacja
+// identyczności TS) z niezależnie zapisanym kształtem odczytanym z Rust @ `3f98dd284`. `Equal`
+// rozróżnia `a: T` od `a?: T`, `T` od `T | null`, zawężoną/poszerzoną unię oraz każdy dodany lub
+// usunięty klucz — więc każda mutacja opcjonalności, nullowalności i typu pola wywala `tsc`.
+// Reguła źródłowa jak w `bridgeTypes.ts`: brak `Option`/`default` = wymagane; `Option` +
+// `skip_serializing_if` = `?:`; `Option` bez `skip_serializing_if` = `| null`; `#[serde(default)]`
+// na polu komendy = `?:`.
+
+type Cmd<K extends EngineCommandKind> = Extract<EngineCommand, { kind: K }>;
+
+// 6a. Każdy z 19 wariantów `EngineCommand` (bridge.rs:30-130; pola snake_case).
+export type _CmdCreateSession = Expect<Equal<Cmd<'create_session'>, { kind: 'create_session'; params?: StartGameParams }>>;
+export type _CmdAddPlayer = Expect<Equal<Cmd<'add_player'>, { kind: 'add_player'; id: number; name: string }>>;
+export type _CmdSelectUnit = Expect<Equal<Cmd<'select_unit'>, { kind: 'select_unit'; unit_id: number }>>;
+export type _CmdMoveUnit = Expect<
+  Equal<Cmd<'move_unit'>, { kind: 'move_unit'; unit_id: number; destination: PositionDto; attack_unit_id?: number }>
+>;
+export type _CmdCancelMarch = Expect<
+  Equal<Cmd<'cancel_planned_march'>, { kind: 'cancel_planned_march'; unit_id: number; force: boolean }>
+>;
+export type _CmdAdvanceTurn = Expect<Equal<Cmd<'advance_turn'>, { kind: 'advance_turn' }>>;
+export type _CmdGetState = Expect<Equal<Cmd<'get_state'>, { kind: 'get_state' }>>;
+export type _CmdDeclareWar = Expect<Equal<Cmd<'declare_war'>, { kind: 'declare_war'; declarer: number; target: number }>>;
+export type _CmdRenderLayers = Expect<Equal<Cmd<'get_render_layers'>, { kind: 'get_render_layers'; seat?: number }>>;
+export type _CmdRenderMap = Expect<Equal<Cmd<'get_render_map'>, { kind: 'get_render_map' }>>;
+export type _CmdRenderFrame = Expect<
+  Equal<Cmd<'get_render_frame'>, { kind: 'get_render_frame'; seat?: number; ui?: RenderUiParams }>
+>;
+export type _CmdStartStorm = Expect<
+  Equal<Cmd<'start_siege_storm'>, { kind: 'start_siege_storm'; city_id: number; unit_id: number }>
+>;
+export type _CmdStep = Expect<Equal<Cmd<'step_siege_battle'>, { kind: 'step_siege_battle'; wall_ms: number }>>;
+export type _CmdSkip = Expect<Equal<Cmd<'skip_siege_battle'>, { kind: 'skip_siege_battle' }>>;
+export type _CmdFinish = Expect<Equal<Cmd<'finish_siege_battle'>, { kind: 'finish_siege_battle' }>>;
+export type _CmdAbort = Expect<Equal<Cmd<'abort_siege_battle'>, { kind: 'abort_siege_battle' }>>;
+export type _CmdSpeed = Expect<
+  Equal<Cmd<'set_siege_battle_speed'>, { kind: 'set_siege_battle_speed'; idx: number; clamp?: boolean }>
+>;
+export type _CmdSave = Expect<Equal<Cmd<'save_game'>, { kind: 'save_game' }>>;
+export type _CmdLoad = Expect<Equal<Cmd<'load_game'>, { kind: 'load_game'; save: string }>>;
+
+// 6b. Wejścia komend.
+/** `PositionDto` (`types.rs:119`): `x`, `y` wymagane. */
+export type _Position = Expect<Equal<PositionDto, { x: number; y: number }>>;
+/**
+ * `RenderUiParams` (`render_frame.rs:131`, `#[serde(default)]` na strukturze): wszystko `?:`;
+ * `Option<T>` przyjmuje `null`, `bool` NIE przyjmuje `null` (Z3, mutant E4).
+ */
+export type _RenderUi = Expect<
+  Equal<
+    RenderUiParams,
+    {
+      selectedUnitId?: number | null;
+      hover?: PositionDto | null;
+      foundCityMode?: boolean;
+      wonderActive?: boolean;
+      buildModeOpen?: boolean;
+      activeImprovementKey?: string | null;
+      unitSelectedAfterBuildOpen?: boolean;
+    }
+  >
+>;
+
+// 6c. Odpowiedzi bitwy (siege_battle_apply.rs).
+export type _UnitRef = Expect<Equal<SiegeBattleUnitRefDto, { battleId: number; unitId: string; side: string }>>;
+export type _UnitHp = Expect<Equal<SiegeUnitHpDto, { unitId: number; hp: number }>>;
+export type _CaptureRequested = Expect<
+  Equal<CityCaptureRequestedDto, { cityId: number; attackerOwnerId: number; anchorUnitId: number }>
+>;
+/** `consumedMachines`: `Vec<PlayableSiegeMachineKind>` = dokładnie `('taran' | 'wieza')[]` (Z3, mutant E19). */
+export type _MachineKind = Expect<Equal<SiegeBattleMachineKindDto, 'taran' | 'wieza'>>;
+export type _Result = Expect<
+  Equal<
+    SiegeBattleResultDto,
+    {
+      winner: BattleWinnerDto;
+      roundNo: number;
+      wallBreached: boolean;
+      captureBlocked: boolean;
+      captureRequested?: CityCaptureRequestedDto;
+      capture?: BattleNestedDto;
+      removedUnitIds: number[];
+      hp: SiegeUnitHpDto[];
+      consumedMachines: ('taran' | 'wieza')[];
+      siegeEnded: boolean;
+    }
+  >
+>;
+export type _TowerShooter = Expect<Equal<SiegeTowerShooterDto, { typ?: string; jednostka?: string }>>;
+export type _Phase = Expect<Equal<SiegeBattlePhaseDto, 'running' | 'finished' | 'applied' | 'aborted'>>;
+export type _Payload = Expect<
+  Equal<
+    SiegeBattlePayload,
+    {
+      cityId: number;
+      phase: SiegeBattlePhaseDto;
+      units?: SiegeBattleUnitRefDto[];
+      actions: BattleNestedDto[];
+      frame?: BattleNestedDto;
+      result?: SiegeBattleResultDto;
+      setup?: BattleNestedDto;
+      towerShooter?: SiegeTowerShooterDto;
+      speedIdx?: number;
+      speedMul?: number;
+    }
+  >
+>;
+/** Wszystkie 20 wariantów błędu z polami (siege_battle_apply.rs:253, `rename_all_fields = camelCase`). */
+export type _SiegeError = Expect<
+  Equal<
+    SiegeBattleErrorDto,
+    | { code: 'no_active_battle' }
+    | { code: 'battle_in_progress'; cityId: number }
+    | { code: 'not_human_besieger'; unitId: number }
+    | { code: 'city_not_found'; cityId: number }
+    | { code: 'unit_not_found'; unitId: number }
+    | { code: 'city_tile_missing'; cityId: number }
+    | { code: 'no_defenders_wall_intact'; cityId: number }
+    | { code: 'no_defenders_capture_requested'; cityId: number }
+    | { code: 'not_finished' }
+    | { code: 'session'; detail: string }
+    | { code: 'adapter'; detail: string }
+    | { code: 'producer'; detail: string }
+    | { code: 'not_enemy_city'; cityId: number }
+    | { code: 'not_adjacent'; unitId: number; cityId: number }
+    | { code: 'not_siege_anchor'; unitId: number; besiegerId: number }
+    | { code: 'anchor_cannot_attack'; unitId: number; reason: string }
+    | { code: 'not_at_war'; cityId: number }
+    | { code: 'aborted'; cityId: number; reason: string }
+    | { code: 'abort_requested' }
+    | { code: 'abort_not_allowed'; cityId: number }
+  >
+>;
+
+// 6d. Koperty mostu (bridge.rs:190-225). Z2: zawężona `BridgeResponse` ma dokładny kształt.
+export type _EngineResult = Expect<
+  Equal<
+    EngineBridgeResult,
+    | { kind: 'state'; state: unknown }
+    | { kind: 'render_layers'; layers: RenderLayersPayloadDto }
+    | { kind: 'render_map'; map: MapViewDto }
+    | { kind: 'render_frame'; frame: RenderLayersDto }
+  >
+>;
+export type _EngineResponse = Expect<
+  Equal<
+    EngineBridgeResponse,
+    {
+      contractVersion: number;
+      requestId: string;
+      result: EngineBridgeResult;
+      siegeBattle?: SiegeBattlePayload;
+      saveGame?: string;
+    }
+  >
+>;
+export type _NarrowResponse = Expect<
+  Equal<
+    BridgeResponse,
+    {
+      contractVersion: number;
+      requestId: string;
+      result: { kind: 'state'; state: unknown };
+      siegeBattle?: SiegeBattlePayload;
+      saveGame?: string;
+    }
+  >
+>;
+export type _NarrowSiege = Expect<Equal<BridgeResponse['siegeBattle'], SiegeBattlePayload | undefined>>;
+export type _NarrowSave = Expect<Equal<BridgeResponse['saveGame'], string | undefined>>;
+export type _BridgeError = Expect<
+  Equal<BridgeError, { code: BridgeErrorCode; message: string; siegeBattle?: SiegeBattleErrorDto }>
+>;
+
+/** Z2: literał (nie identyfikator) — `satisfies` sprawdza nadmiarowe klucze zawężonej koperty. */
+export const SPEED_RESPONSE_NARROW_LITERAL = {
+  contractVersion: 1,
+  requestId: 'r',
+  result: { kind: 'state', state: {} },
+  siegeBattle: { cityId: 19, phase: 'running', actions: [], speedIdx: 3, speedMul: 8.0 },
+} satisfies BridgeResponse;
+export const SAVE_RESPONSE_NARROW_LITERAL = {
+  contractVersion: 1,
+  requestId: 'save',
+  result: { kind: 'state', state: {} },
+  saveGame: '{"version":2}',
+} satisfies BridgeResponse;
+// @ts-expect-error — zawężona koperta niesie tylko `result.kind = 'state'`.
+export const BAD_NARROW_MAP = { contractVersion: 1, requestId: 'm', result: { kind: 'render_map', map: {} } } satisfies BridgeResponse;
+
+// 6e. View-model ramki i mapy.
+export type _HexCoord = Expect<Equal<RenderHexCoordDto, { q: number; r: number }>>;
+export type _FogCode = Expect<Equal<FogStateCode, 0 | 1 | 2>>;
+export type _FogView = Expect<Equal<FogViewDto, { state: FogStateCode[] }>>;
+export type _FogReveal = Expect<
+  Equal<FogRevealDto, { revealAllLand: boolean; riverRevealKeys: RenderHexCoordDto[] | null }>
+>;
+export type _Viewer = Expect<Equal<ViewerDto, { ownerId: number; fogActive: boolean }>>;
+export type _MapView = Expect<
+  Equal<
+    MapViewDto,
+    {
+      width: number;
+      height: number;
+      seed: number;
+      hexes: RenderNestedDto[];
+      rivers: RenderNestedDto[];
+      riverRenderPaths: RenderHexCoordDto[][];
+    }
+  >
+>;
+export type _Frame = Expect<
+  Equal<
+    RenderLayersDto,
+    {
+      contractVersion: number;
+      viewer: ViewerDto;
+      turn: number;
+      hexState: RenderNestedDto[];
+      fog: FogViewDto;
+      owners: RenderNestedDto[];
+      cities: RenderNestedDto[];
+      units: RenderNestedDto[];
+      stacks: RenderNestedDto;
+      sieges: RenderNestedDto[];
+      wonders: RenderNestedDto[];
+      territory: RenderNestedDto;
+      overlays: RenderNestedDto;
+      battle: RenderNestedDto | null;
+      reveal?: FogRevealDto;
+    }
+  >
+>;
+export type _TerritoryRanges = Expect<
+  Equal<TerritoryRangesDto, { byOwner: RenderNestedDto[]; borders: RenderNestedDto[] }>
+>;
+export type _LayersPayload = Expect<
+  Equal<
+    RenderLayersPayloadDto,
+    { fog: FogViewDto; fogActive: boolean; reveal: FogRevealDto; territory: TerritoryRangesDto }
+  >
+>;
+
+// 6f. Negatywne dla Z3: `bool` w Rust nie przyjmuje `null` (serde odrzuca), `Option` przyjmuje.
+// @ts-expect-error — `foundCityMode: null` odrzucane (`bool`, nie `Option<bool>`).
+export const BAD_UI_FOUND_NULL: RenderUiParams = { foundCityMode: null };
+// @ts-expect-error — `buildModeOpen: null` odrzucane (`bool`).
+export const BAD_UI_BUILD_NULL: RenderUiParams = { buildModeOpen: null };
+// @ts-expect-error — `wonderActive: null` odrzucane (`bool`).
+export const BAD_UI_WONDER_NULL: RenderUiParams = { wonderActive: null };
+// @ts-expect-error — `unitSelectedAfterBuildOpen: null` odrzucane (`bool`).
+export const BAD_UI_AFTER_NULL: RenderUiParams = { unitSelectedAfterBuildOpen: null };
+/** `Option<T>` przyjmuje `null` (pola `selectedUnitId`, `hover`, `activeImprovementKey`). */
+export const OK_UI_OPTION_NULL = { selectedUnitId: null, hover: null, activeImprovementKey: null } satisfies RenderUiParams;
+// @ts-expect-error — maszyna spoza `PlayableSiegeMachineKind` (Z3, mutant E19).
+export const BAD_MACHINE: SiegeBattleResultDto['consumedMachines'] = ['katapulta'];
