@@ -1,0 +1,36 @@
+R-WEB-AI-CULT-REL-GARRISON-BUILD-Q1 r4 -- pomiar surowy (obrona). Poziom MAKSYMALNY: gra = Trudny (hak startGame difficulty=trudny, commit c6e6c1526), Kultura i religia = trudny (poza serią ZG = zgodnosc).
+Bazy: PRZED = 54af88a0e (+ ten sam hak difficulty), PO = ada7614d3 (kod obrony r4).
+Runner: gra/tools/ai-cult-rel-measure-run.cjs --turns 60 --every 10 --unit-flow 1 --build 0; 60 tur, Chromium headless, file:// bundle vite.
+Podsumowanie: gra/tools/ai-cult-rel-measure-summarize.cjs (AI = owner != 0; puste = miasta AI bez wojska).
+
+--- Stan (AI) ---
+PRZED seed4242 t20: miasta 48, jednostki 79, puste 16/48 (33.3%), wojsko w miastach 48 (1.00/miasto), bud.Prawa 0, bud.Szczescia 1
+PRZED seed4242 t40: miasta 116, jednostki 186, puste 26/116 (22.4%), wojsko w miastach 144 (1.24/miasto), bud.Prawa 8, bud.Szczescia 33
+PRZED seed4242 t60: miasta 159, jednostki 182, puste 51/159 (32.1%), wojsko w miastach 115 (0.72/miasto), bud.Prawa 35, bud.Szczescia 82
+PO seed4242 t20: miasta 48, jednostki 79, puste 17/48 (35.4%), wojsko w miastach 48 (1.00/miasto), bud.Prawa 0, bud.Szczescia 1
+PO seed4242 t40: miasta 116, jednostki 182, puste 28/116 (24.1%), wojsko w miastach 144 (1.24/miasto), bud.Prawa 10, bud.Szczescia 37
+PO seed4242 t60: miasta 159, jednostki 187, puste 50/159 (31.4%), wojsko w miastach 117 (0.74/miasto), bud.Prawa 40, bud.Szczescia 91
+ZG seed4242 t20: miasta 60, jednostki 91, puste 20/60 (33.3%), wojsko w miastach 58 (0.97/miasto), bud.Prawa 0, bud.Szczescia 4
+ZG seed4242 t40: miasta 163, jednostki 283, puste 24/163 (14.7%), wojsko w miastach 215 (1.32/miasto), bud.Prawa 19, bud.Szczescia 52
+ZG seed4242 t60: miasta 190, jednostki 273, puste 56/190 (29.5%), wojsko w miastach 148 (0.78/miasto), bud.Prawa 68, bud.Szczescia 155
+
+PRZED seed7 t20: miasta 51, jednostki 86, puste 10/51 (19.6%), wojsko w miastach 69 (1.35/miasto), bud.Prawa 0, bud.Szczescia 3
+PRZED seed7 t40: miasta 112, jednostki 197, puste 25/112 (22.3%), wojsko w miastach 170 (1.52/miasto), bud.Prawa 10, bud.Szczescia 42
+PRZED seed7 t60: miasta 167, jednostki 205, puste 58/167 (34.7%), wojsko w miastach 127 (0.76/miasto), bud.Prawa 30, bud.Szczescia 90
+PO seed7 t20: miasta 51, jednostki 86, puste 11/51 (21.6%), wojsko w miastach 69 (1.35/miasto), bud.Prawa 0, bud.Szczescia 3
+PO seed7 t40: miasta 113, jednostki 204, puste 33/113 (29.2%), wojsko w miastach 167 (1.48/miasto), bud.Prawa 10, bud.Szczescia 45
+PO seed7 t60: miasta 165, jednostki 205, puste 57/165 (34.5%), wojsko w miastach 136 (0.82/miasto), bud.Prawa 26, bud.Szczescia 80
+ZG seed7 t20: miasta 64, jednostki 102, puste 21/64 (32.8%), wojsko w miastach 77 (1.20/miasto), bud.Prawa 0, bud.Szczescia 6
+ZG seed7 t40: miasta 165, jednostki 306, puste 20/165 (12.1%), wojsko w miastach 261 (1.58/miasto), bud.Prawa 26, bud.Szczescia 56
+ZG seed7 t60: miasta 194, jednostki 337, puste 38/194 (19.6%), wojsko w miastach 193 (0.99/miasto), bud.Prawa 47, bud.Szczescia 170
+
+--- Liczniki przyczyn (unitFlow, suma po turach 1-60, tylko AI) ---
+PRZED seed4242: przyczyny {rozwiazanie-ai: 54, eliminacja-wlasciciela: 1}; bez przyczyny 10; NOWE jednostki AI 252; spadek liczby miast AI (suma) 0; glod/deficyt zlota: 0
+PO seed4242:    przyczyny {rozwiazanie-ai: 37, eliminacja-wlasciciela: 1}; bez przyczyny 13; NOWE jednostki AI 242; spadek miast AI 1; glod/deficyt zlota: 0
+ZG seed4242:    przyczyny {rozwiazanie-ai: 58, eliminacja-wlasciciela: 1}; bez przyczyny 21; NOWE jednostki AI 365; glod/deficyt zlota: 0
+PRZED seed7:    przyczyny {rozwiazanie-ai: 36, eliminacja-wlasciciela: 1}; bez przyczyny 11; NOWE jednostki AI 258; spadek miast AI 0; glod/deficyt zlota: 0
+PO seed7:       przyczyny {rozwiazanie-ai: 47, eliminacja-wlasciciela: 1}; bez przyczyny 11; NOWE jednostki AI 269; spadek miast AI 0; glod/deficyt zlota: 0
+ZG seed7:       przyczyny {rozwiazanie-ai: 12, eliminacja-wlasciciela: 1}; bez przyczyny 16; NOWE jednostki AI 368; spadek miast AI 1; glod/deficyt zlota: 0
+
+Uwaga: licznik przyczyn nie zawiera buntow (brak pola w rekordzie tury) -- bunty NIE ZMIERZONO; spadek miast AI = suma spadkow miedzy kolejnymi turami (bez atrybucji przyczyny).
+Surowe pliki: scratchpad/aicult/out-*/seed*.jsonl (poza repo).
