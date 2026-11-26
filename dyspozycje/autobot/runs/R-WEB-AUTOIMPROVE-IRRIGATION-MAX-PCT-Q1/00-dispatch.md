@@ -1,0 +1,4 @@
+# R-WEB-AUTOIMPROVE-IRRIGATION-MAX-PCT-Q1 — AUTOIMPPCT (#186): pomiar i test irygacji przy suwaku 100% (poziom maksymalny; reguła właściciela „testuj zawsze na maksymalnym poziomie”)
+STATUS: DISPATCH | DOMAIN: GAME (testy/pomiar; zero zmian gra/src) | tag AUTOIMPPCT | priorytet 2
+GOAL: dotychczasowy pomiar „irygacja startuje 36–46 tur po odkryciu” i próg testu (e) 55 tur były liczone przy domyślnym udziale puli automatu 33%; gracz zwykle ustawia suwak (pracaAutoPercent) na 100% (maks. dozwolony; pula całej pracy na ulepszenia ≤50% bez zmian). Zmierzyć czas od odkrycia do pierwszej i pełnej irygacji WYŁĄCZNIE przy suwaku 100% (zgodnie z regułą właściciela — bez scenariusza 33%), potwierdzić kolejność farmy → trzody → irygacja na końcu i przemierzyć próg testu (e) do rzeczywistej wartości z małym marginesem.
+BAZA: args.cand = refs/keep/AUTOIMPTESTS-fc = 8eccf5f0835e7409e5adab3b9e8bd2e0d1edde7d (zawiera przepięte testy autoulepszeń; potomek 1bb77a7a0)
