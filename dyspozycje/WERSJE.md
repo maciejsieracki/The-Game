@@ -1,3 +1,9 @@
+## ROBOCZA 9930ea1a -- 2026-11-26 -- FALA 916: Pokój między graczami w hotseat: 10 tur wojny przed pokojem (testowa)
+
+- Między dwoma graczami (hotseat) pokój można zawrzeć dopiero po 10 turach wojny, tak jak z AI (ta sama bramka peaceProposalIsTooEarly w humanPeaceRejectReason; ochrona 10 tur PO pokoju działała już wcześniej); komunikat odmowy jak dla AI
+- Weryfikacja: tsc 0; logic 213/213; hotseat-peace-protection 4/0 (mutacje czerwone); diplo-human-peace-no-war 13/0; diplo-war-tribute-once 8/0; hotseat-etap6d B 48/0, D 46/0, E exec 24/0, E source 77/0; main-guard 21/0; ai-test 297/0 (FC); vite build OK
+- Limity: NIE ZMIERZONO: live w przeglądarce, hotseat-etap8 (Chromium), licznik tur w oknie dyplomacji (zadanie #152); test używa produkcyjnego peaceProposalBlocked, ale main.ts sprawdzony tylko źródłowo; peace-vazne-always M1 czerwony już w bazie (#151)
+
 ## ROBOCZA a2425f61 -- 2026-11-26 -- FALA 915: Pokój po rozejmie: propozycja gracza wg ceny, cena 0 (testowa)
 
 - Propozycja pokoju gracza do AI w oknie po końcu rozejmu (tura końca + 1 tura; pole truceEndTurn) jest przyjmowana, gdy pakiet gracza pokrywa cenę (≤20% różnicy sił: surowce, >20%: miasto); poza oknem bez zmian; przy cenie 0 AI nie składa oferty i wojna trwa (wpis Rozejm wygasł, wojna wraca); płatność wykonywana przez executeTruceEndSettlement; oferta AI czyszczona przy pokoju z propozycji gracza
