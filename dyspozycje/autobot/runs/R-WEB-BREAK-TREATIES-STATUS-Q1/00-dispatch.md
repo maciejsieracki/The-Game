@@ -1,0 +1,4 @@
+# R-WEB-BREAK-TREATIES-STATUS-Q1 — BREAKTREATIES (#169): czy wypowiedzenie wojny zawsze zostawia relację w statusie „wojna” bez resztek „sojusz”/umów
+STATUS: DISPATCH | DOMAIN: GAME | tag BREAKTREATIES | priorytet 2 (pomiar/diagnoza pod ewentualną naprawę błędu gry)
+GOAL: ustalić na dowodzie (test na silniku, nie lektura), czy po wypowiedzeniu wojny (breakTreatiesOnWar i jego wszystkie wywołania w main.ts) relacja pary nigdy nie zostaje w statusie „sojusz”/z żywą umową sojuszu, także gdy zdarzenie kary jest pominięte (opts.bezKary) lub kolejność odczytu relacji jest zła. Jeśli błąd potwierdzony i poprawka zgodna z regułą właściciela „relacja sojusz znika razem z umową” (FALA 913) — poprawić minimalnie z testem i mutacją czerwoną; jeśli poprawka wymaga decyzji o grze → zwrócić DECISION_REQUIRED (bez własnych rozstrzygnięć).
+BAZA: args.cand = origin/main
