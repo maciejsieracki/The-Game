@@ -1982,7 +1982,10 @@ fn base2(by_name: &BTreeMap<String, Value>, sv: &Value) -> Value {
         None => {
             let mut bv = Value::Object(serde_json::Map::new());
             for k in ["input", "seed", "battleIndex"] {
-                assert!(!sv[k].is_null(), "{name}: brak {k} w wektorze spoza vectors.json");
+                assert!(
+                    !sv[k].is_null(),
+                    "{name}: brak {k} w wektorze spoza vectors.json"
+                );
                 bv[k] = sv[k].clone();
             }
             bv
@@ -2020,7 +2023,11 @@ fn zmiana_predkosci_w_trakcie_klasy_raf_wektory_pinu_bajt_w_bajt() {
         let run = run_midchange(bv, sv, &data, MidMut::None, false);
         let mut d = Vec::new();
         if run.at_change.len() != changes.len() {
-            d.push(format!("zmian {} != {}", run.at_change.len(), changes.len()));
+            d.push(format!(
+                "zmian {} != {}",
+                run.at_change.len(),
+                changes.len()
+            ));
         }
         for (c, got) in changes.iter().zip(&run.at_change) {
             let want: ChangeAt = (
