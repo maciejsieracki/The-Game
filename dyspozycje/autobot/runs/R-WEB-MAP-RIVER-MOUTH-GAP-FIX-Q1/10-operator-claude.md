@@ -1,3 +1,90 @@
+# RUNDA 3/5 (Operator SONNET 5.5; baza 4ec8fe4b4) — CZĘŚCIOWA NAPRAWA + DECYZJA
+
+STATUS: DECISION_REQUIRED
+DOMAIN: GAME
+TEMAT: R-WEB-MAP-RIVER-MOUTH-GAP-FIX-Q1
+GOAL: odstęp ujść głównych rzek wzdłuż wybrzeża <= limit (Standard 7, Mała 5); kontynenty 42 i pangea 7.
+ZMIERZONE: kontynenty 42: złe masy 8 -> 3 (worst 18 -> 15); pangea 7: worst 15 -> 10; cel (<=7) NIE osiągnięty bez zmiany reguły.
+
+## 1. PRZYCZYNA GŁÓWNA (znaleziona w r3; nie była widoczna w r1-r2)
+Rzeki 'main' z fazy dopełniania suchych płatów (tryDrainDryPatchFromRelief, pushMain, relaxSeaBuffer=true)
+miały CIAŁO przechodzące po wodzie: collectInlandDrainGrowCandidates (gra/src/map/gen-helpers.ts, ok. :6383)
+przy relaxSeaBuffer nie odrzucał heksów wody (Płytkie Morze, seaDist 0; canRiverFlowThrough wpuszcza Płytkie).
+Na szerokim szelfie polarnym (wiersze r<=11 i r>=108) main szedł 6-25 heksów po wodzie; jego ujście (ogon,
+ostatnie 5 hex) lądowało daleko od wyspy, więc wyspa nie miała ujścia (coveredCoastalKeysFromMainRivers).
+Dowód (kontynenty 42, baza): maski ogonów wodnych main: 13 (źródło 61,109), 25 (64,110), 17 (55,11), 6 (67,8);
+masa 19 hex = 2 takie rzeki, żadna nie wchodzi do morza na tej wyspie -> luka 18. Mniejsze masy 10-12 (r 8-11) tak samo.
+NAPRAWA: `if (nd < 1) continue;` w collectInlandDrainGrowCandidates (ciało nie wchodzi na wodę; ujście dokłada
+faza drenażu). Wynik kontynenty 42: ogon wodny main: histogram {0:103, 1:2, 3:6, ..., 13,17,25} -> {0:103, 1:20}.
+
+## 2. DRUGA ZMIANA (częściowa): odnoga ujściowa (wariant (b) z dispatchu)
+tryForkMouthAtGap (gen-helpers.ts, tylko etap refill, flaga allowForkMouth): gdy brak legalnego pierwszego
+kroku, main dostaje 3-hexowe ramię [hex istniejącego main -> wolny heks brzegowy -> Płytkie Morze] jako trasa
+'main' (<=5 hex, bufor morski nie dotyczy; wymaga sep 2 od INNYCH main, finalizeMainRiverPath/trim krawędzi).
+Efekt: pangea 7: 15 -> 10 (3 odnogi z 51 prób; 48 odrzuconych przez limit krawędzi trimRiverPathRings na gęstych
+heksach). Kontynenty 42: 0 odnóg (6 prób, wszystkie odrzucone przez limit krawędzi).
+
+## 3. TABELA PER MASA (kontynenty 42, standard 168x120; surowe: repro/raw-r3-diag-kontynenty42.txt)
+| masa (hex) | luka baza | luka po r3 | przyczyna / powód odrzucenia kandydatów ujścia |
+|---|---|---|---|
+| 19 | 18 | OK | 2 main z ogonem wodnym 13/25 hex (polarna wyspa); naprawione przez zakaz wody w ciele |
+| 12, 12, 10 (r 8-11) | 12/9/10 | OK | jak wyżej (ogony 17/6/5) |
+| 265 (pas r6-11, polar, ~5 wierszy) | 15 | 15 | wąski pas: kandydaci odrzuceni: seaLt2 (45), river:main sąsiad (44), river:medium (34), river:? (52), sepMain1 (13); main 83 (40 hex) biegnie równolegle do brzegu, ujście na końcu; mouth_hasStep 0 |
+| 145 (r 9-11) | 11 | OK po r3 | ogon wodny (214/216) |
+| 590 | 10 | 10 | 12 kandydatów mainD1, 8 na heksie main; pierwszy krok: river:main 39, river:medium 22, river:? 56, seaLt2 30 |
+| 1011 | 8 | 8 | 1 daleki heks; 5 kandydatów: wszyscy sąsiedzi = river:main/medium/? lub seaLt2 |
+| pangea 7 (7056) | 15 | 10 | równoległy main przy brzegu (seaDist 2) przy (38-39, 55-60); 36 dalekich heksów; kandydaci: river:main 101, river:medium 61, river:? 106, seaLt2 185 |
+Wspólny wzorzec pozostałych luk: pas za brzegiem (seaDist 2) zajęty przez równoległy main/inne rzeki, brzeg
+(seaDist 1) bez legalnego pierwszego kroku; ujście tego main leży daleko. Limity krawędzi (trim) blokują też odnogi.
+
+## 4. WARIANTY (pomiary)
+- (a) rezerwacja ujść PRZED rzekami nie-głównymi: NIE przetestowana w kodzie (wymaga przebudowy kolejności etapów generatora);
+  pomiar r2: usuwanie rzek nie-głównych w promieniu 2-3 nie poprawia (0 poprawy) — dominuje sep wobec main.
+- (b) odnoga/mini-rzeka: zaimplementowana (pkt 2); pangea 15->10, kontynenty 0.
+- (c) sep 1 przy pierwszym kroku: pomiar r2 (diagnostyka): 18->16, naprawia 265/145/1011; łamie regułę sąsiedztwa -> NIE wdrożone.
+DECISION_REQUIRED (jedno zdanie skutku dla gracza per wariant, bez rekomendacji):
+ A: rzeki trochę gęstsze/bliższe sobie przy ujściach (dopuszczenie bliższego sąsiedztwa tylko przy ujściu w luce);
+ B: odcinki wybrzeża bez ujścia rzeki do 15 pól na części map polarnych/wąskich pasów (obecny stan po r3: kontynenty 42 max 15, pangea 7 max 10, wyspy 42/108x74 max 20);
+ C: ujścia rezerwowane z góry zmieniają układ rzek na wszystkich mapach.
+
+## 5. DODATKOWE MAPY (przed -> po; surowe: repro/raw-extra-base-1.txt, raw-extra-after-1.txt)
+| mapa | worst baza | worst po | złe masy baza -> po | czas gen baza -> po |
+|---|---|---|---|---|
+| kontynenty 42 168x120 | 18 | 15 | 8 -> 3 | 115,9 s -> 101,5 s (-12%) |
+| pangea 7 168x120 | 15 | 10 | 1 -> 1 | 20,4 s -> 20,9 s |
+| wyspy 42 108x74 | 20 | 20 | 12 -> 10 | 38,3 s -> 41,7 s |
+| wyspy 42 84x60 (limit w kodzie 7) | 21 | 21 | 5 -> 6 | 11,5 s -> 13,3 s |
+| wyspy 99 168x120 | 12 | 9 | 10 -> 4 | 157,6 s -> 179,0 s (+14%, szum/inne rzeki; NIE zmierzono powtórzenia) |
+Uwaga: wyspy 42 (masy 20, 15, 18 hex: luka = cała obwódka) i 84x60 (21:21) nadal poza limitem — małe wyspy bez
+wnętrza (seaDist>=2), tu potrzebna decyzja progu (wariant 2c) — NIE zmieniano reguły.
+Liczba rzek main: k42 120 -> 123; riversFill k42 36,3 s -> 22,3 s.
+
+## 6. TESTY / BRAMKI (surowe wyjścia w repro/)
+- tsc --noEmit (gra/): 0 błędów.
+- gra/tools/river-mouth-gap-enforce-test.cjs: dodana grupa A (0 main z ogonem wodnym > RIVER_MOUTH_TAIL_LEN): kontynenty 42 PASS, pangea 7 PASS;
+  grupa B (limit ujść) nadal FAIL (kontynenty 3 masy worst 15; pangea worst 10) — raw-enforce-test-after.txt: 2 pass / 2 fail.
+  Baza: grupa A czerwona (4 main z ogonem > 5: 13/17/25/6 — z dump bazy); MUTACJA (zakomentowane `if (nd < 1) continue;`):
+  raw-enforce-test-mutation.txt: kontynenty 42 grupa A FAIL (4), złe masy 7/worst 18 -> mutacja czerwona.
+- gra/tools/river-sea-buffer-test.cjs po zmianie (raw-river-sea-buffer-after.txt): 6 pass / 3 fail: kontynenty 42 bufor 5 złych (baza: 10 złych, z buffer-check.cjs na dumpie bazy) + luka; pangea bufor OK; ziemia 99 PASS (worst 13 <= 42).
+  Bufor 5 pozostałych złych main = polarne wyspy bez wnętrza (relaxSeaBuffer, ciało seaDist 1): to NIE nowy błąd (baza 10).
+- NIE ZMIERZONO (brak czasu/budżetu rundy): logic 213, tech-tree 20, research 33, unit-replace, combat 6, ai-test 297/0, climate-band, river-density/loop/path-adjacency/yield-both-sides (zmiana deterministycznej generacji: piny hash/seed — cluster-plan, map-gen-regression, determinism — NIE przepięte, NIE zmierzone), earth-template r1.
+  Lista wymagająca przepięcia pinów po akceptacji kierunku: każdy test przypięty do konkretnego ziarna generatora (grep po `generateMap(` z seedem w gra/tools) — do rundy 4.
+
+## 7. ZMIANY / COMMIT
+gra/src/map/gen-helpers.ts (+101: poprawka ciała rzeki + tryForkMouthAtGap), gra/tools/river-mouth-gap-enforce-test.cjs (grupa A),
+runs/.../repro/*: diag-patch-r3.diff (instrumentacja per masa: __gapDiag, licznik ogonów wodnych, liczniki odnóg — NIE w kodzie gry),
+r3-permass.cjs, dump-map.cjs, inspect-mass.cjs, buffer-check.cjs, surowe wyjścia.
+BLOKADY: cel <=7 dla k42 (masa 265: wąski pas polarny; 590, 1011) i pangea 7 wymaga zmiany reguły sąsiedztwa/kolejności etapów (DECISION_REQUIRED powyżej).
+RUNDY: 3/5. NASTĘPNY KROK: orkiestrator redaguje pytanie ABC (A/B/C); po wyborze runda 4; równolegle przepięcie pinów generatora i pełne bramki.
+DEPLOY/PUSH: NIE WYKONANO
+
+UWAGI-DLA-ORKIESTRATORA:
+- Wyspa/małe masy bez wnętrza (>=8 hex; luka = cała obwódka, np. wyspy 42: 20/15/18) wymagają osobnej decyzji progu (wariant 2c).
+- Poprawka ciała rzeki sama w sobie to realna naprawa błędu (rzeka płynąca po wodzie) i przyspiesza fazę riversFill k42 o ~38%.
+- Czas wyspy 99 168x120 +14% (jeden pomiar) — wymaga powtórzenia przy ciszy maszyny; k42 -12%.
+
+---
+
 # RUNDA 2/5 — diagnoza przyczyny ujść (kandydat 7b75309011bdd91b01426d2bc953bd55f78d062f)
 
 STATUS: BLOCK

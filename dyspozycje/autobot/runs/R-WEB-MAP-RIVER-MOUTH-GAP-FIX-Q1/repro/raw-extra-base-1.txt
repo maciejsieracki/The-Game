@@ -1,0 +1,4 @@
+{"typ":"wyspy","seed":42,"w":108,"h":74,"maxGap":7,"ms":38328,"masses":42,"bad":["133:8","40:9","20:20","8:8","108:8","15:15","140:9","18:18","8:8","117:8","10:9","8:8"],"worstGapAll":20,"mainRivers":82,"rivers":145}
+{"typ":"wyspy","seed":42,"w":84,"h":60,"maxGap":7,"ms":11486,"masses":33,"bad":["21:21","9:8","8:8","95:8","8:8"],"worstGapAll":21,"mainRivers":53,"rivers":89}
+{"typ":"wyspy","seed":99,"w":168,"h":120,"maxGap":7,"ms":157616,"masses":45,"bad":["216:8","277:8","25:9","127:11","373:9","394:12","283:11","111:8","200:8","12:12"],"worstGapAll":12,"mainRivers":171,"rivers":285}
+{"typ":"pangea","seed":7,"w":168,"h":120,"maxGap":7,"ms":20393,"masses":1,"bad":["7056:15"],"worstGapAll":15,"mainRivers":25,"rivers":34}

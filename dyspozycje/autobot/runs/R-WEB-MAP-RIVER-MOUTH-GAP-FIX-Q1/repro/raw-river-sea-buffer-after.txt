@@ -1,0 +1,17 @@
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=15 terrain=115 landSea=1423 relief=1819 coast=331 riversMain=75502 riversFill=23028 forest=67 deposits=154 starts=932 total=103384
+PASS: kontynenty seed 42: 0 krawędzi rzeki na czystym morzu (0)
+FAIL: kontynenty seed 42: główne nurty respektują bufor 2 hex (5 złych)
+FAIL: kontynenty seed 42: ujścia main co ≤7 hex wzdłuż brzegu (złe masy 3, worst 15)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=113 landSea=2307 relief=2421 coast=1475 riversMain=5685 riversFill=1797 forest=112 deposits=126 starts=868 total=14905
+PASS: pangea seed 7: 0 krawędzi rzeki na czystym morzu (0)
+PASS: pangea seed 7: główne nurty respektują bufor 2 hex (0 złych)
+FAIL: pangea seed 7: ujścia main co ≤7 hex wzdłuż brzegu (złe masy 1, worst 10)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=91 landSea=1296 relief=2125 coast=198 riversMain=5946 riversFill=11190 forest=80 deposits=128 starts=1154 total=22208
+PASS: ziemia seed 99: 0 krawędzi rzeki na czystym morzu (0)
+PASS: ziemia seed 99: główne nurty respektują bufor 2 hex (0 złych)
+PASS: ziemia seed 99: ujścia main co ≤42 hex wzdłuż brzegu (złe masy 0, worst 13)
+
+river-sea-buffer-test: 6 pass, 3 fail

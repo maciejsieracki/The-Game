@@ -21,7 +21,9 @@ export {
   mainRiverCoastMouthMaxGapForDims,
   groupLandMassKeys,
   oceanConnectedWaterKeys,
-} from '../src/map/gen-helpers';`,
+  RIVER_MOUTH_TAIL_LEN,
+} from '../src/map/gen-helpers';
+export { TerenBazowy } from '../src/types/hex';`,
   'utf8',
 );
 
@@ -73,6 +75,24 @@ for (const { w, h, seed, typ, landFraction } of cases) {
     if (worstGap > worstAll) worstAll = worstGap;
     if (!gapOk) badMasses++;
   }
+  // Grupa A (runda 3, zielona po naprawie): ciało main NIE wędruje po wodzie. Na bazie (kontynenty 42)
+  // 3 mainy (polarne) miały ogon wodny 13/17/25 hex (>RIVER_MOUTH_TAIL_LEN) — ich ujście lądowało
+  // daleko od wyspy i wyspa (19 hex) miała lukę 18. Mutacja: usuń `if (nd < 1) continue;` w
+  // collectInlandDrainGrowCandidates (gen-helpers.ts) -> ta asercja czerwona.
+  let longWaterTail = 0;
+  (map.riverPathKinds ?? []).forEach((kind, i) => {
+    if (kind !== 'main') return;
+    const pth = map.riverPaths[i] ?? [];
+    let c = 0;
+    for (let j = pth.length - 1; j >= 0; j--) {
+      const h = map.hexes[`${pth[j].q},${pth[j].r}`];
+      if (!h || (h.terenBazowy !== M.TerenBazowy.Morze && h.terenBazowy !== M.TerenBazowy.PlytkieMorze)) break;
+      c++;
+    }
+    if (c > M.RIVER_MOUTH_TAIL_LEN) longWaterTail++;
+  });
+  ok(longWaterTail === 0, `${typ} seed ${seed}: 0 main-ów z ogonem wodnym > ${M.RIVER_MOUTH_TAIL_LEN} hex (${longWaterTail})`);
+  // Grupa B (NADAL CZERWONA — decyzja właściciela, zob. 10-operator-claude.md r3): limit ujść.
   ok(
     badMasses === 0,
     `${typ} seed ${seed}: ujścia main co ≤${maxGap} hex wzdłuż brzegu (złe masy ${badMasses}, worst ${worstAll})`,

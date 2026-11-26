@@ -1,0 +1,10 @@
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=35 terrain=192 landSea=1699 relief=1964 coast=337 riversMain=76565 riversFill=22929 forest=64 deposits=127 starts=914 total=104826
+PASS: kontynenty seed 42: 0 main-ów z ogonem wodnym > 5 hex (0)
+FAIL: kontynenty seed 42: ujścia main co ≤7 hex wzdłuż brzegu (złe masy 3, worst 15)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=119 landSea=1869 relief=2274 coast=1552 riversMain=5664 riversFill=1854 forest=74 deposits=144 starts=823 total=14373
+PASS: pangea seed 7: 0 main-ów z ogonem wodnym > 5 hex (0)
+FAIL: pangea seed 7: ujścia main co ≤7 hex wzdłuż brzegu (złe masy 1, worst 10)
+
+river-mouth-gap-enforce-test: 2 pass, 2 fail

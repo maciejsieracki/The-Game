@@ -1,0 +1,218 @@
+diff --git a/gra/src/map/gen-helpers.ts b/gra/src/map/gen-helpers.ts
+index ac24feffc..959739af9 100644
+--- a/gra/src/map/gen-helpers.ts
++++ b/gra/src/map/gen-helpers.ts
+@@ -6379,6 +6379,11 @@ function collectInlandDrainGrowCandidates(o: InlandDrainGrowOpts): Array<{ q: nu
+     if (!riverGrowStepPassesSep(nq, nr, o.blockRiverKeys, o.minPathSep, o.sepIndex)) continue;
+     const nd = o.seaDist.get(nk) ?? 0;
+     if (!o.relaxSeaBuffer && nd < RIVER_MIN_INLAND_FROM_SEA) continue;
++    // R-WEB-MAP-RIVER-MOUTH-GAP-FIX-Q1: relaxSeaBuffer znosi bufor 2 hex od morza, ale NIE wolno
++    // wchodzić CIAŁEM rzeki na heksy wody (Płytkie Morze, seaDist 0) — na szerokim szelfie polarnym
++    // ciało "meandrowało" kilkanaście heksów po wodzie, a ujście (ogon) lądowało daleko od wyspy
++    // i nie liczyło się jako ujście na jej wybrzeżu (luki 18 pól). Ujście dokłada faza drenażu.
++    if (nd < 1) continue;
+     const od = o.openOceanDist.get(nk) ?? Infinity;
+     if (o.hardMeander && !o.relaxHardMeander && od < curOd) continue;
+     let score = 1200 - od * 30;
+@@ -7524,6 +7529,8 @@ export function syncRiverEdgeBonusHexes(hexes: Record<string, Hex>, maxPasses =
+ 
+ /** Rzeka biegnie WYŁĄCZNIE po krawędziach — nie przez środek heksa (Roblox). */
+ function markRiverPath(hexes: Record<string, Hex>, path: Array<{ q: number; r: number }>): void {
++  { let __c = 0; for (let j = path.length - 1; j >= 0; j--) { const h = hexes[hexKey(path[j]!.q, path[j]!.r)]; if (h && isWaterTerrainLocal(h.terenBazowy)) __c++; else break; }
++    if (__c >= 7) { const g = ((globalThis as any).__longTail ??= []) as string[]; g.push(`len=${path.length} water=${__c} src=${path[0]!.q},${path[0]!.r} stack=${(new Error().stack ?? '').split('\n').slice(2, 6).map((x) => x.trim().replace(/\(.*[\\/]/, '(')).join(' < ')}`); } }
+   for (let i = 0; i < path.length - 1; i++) {
+     const a = path[i]!;
+     const b = path[i + 1]!;
+@@ -9374,6 +9381,8 @@ export function pathHasValidRiverOutlet(
+ }
+ 
+ interface GridSourcePlaceCtx {
++  /** R-WEB-MAP-RIVER-MOUTH-GAP-FIX-Q1: tylko etap refill — dopuszcza odnogę ujściową main od istniejącego main. */
++  allowForkMouth?: boolean;
+   hexes: Record<string, Hex>;
+   width: number;
+   height: number;
+@@ -9704,6 +9713,104 @@ export function worstMainRiverCoastMouthGapOnMass(
+   return { ok: worst <= maxAllowedGap, worstGap: worst };
+ }
+ 
++/**
++ * R-WEB-MAP-RIVER-MOUTH-GAP-FIX-Q1: odnoga ujściowa (3 hex: heks istniejącego main -> brzeg -> pierwsza
++ * woda). Gdy nowa rzeka od brzegu nie ma legalnego pierwszego kroku (pas za brzegiem zajęty przez
++ * równoległy main/inne rzeki), główny nurt dostaje dodatkowe ramię do morza w luce. Ramię liczy się
++ * jako trasa 'main' (ostatnie 5 hex = korytarz ujścia, bufor morski nie dotyczy tras <= 5 hex);
++ * zaczyna na heksie macierzystego main (jak dopływy średnie) — poza tym nie dotyka innych rzek.
++ */
++function tryForkMouthAtGap(
++  ctx: GridSourcePlaceCtx,
++  coastal: Set<string>,
++  mouthDist: Map<string, number>,
++  maxGap: number,
++  seaDist: Map<string, number>,
++  mainKeys: Set<string>,
++): boolean {
++  const mainOwner = new Map<string, number>();
++  for (let i = 0; i < ctx.riverPaths.length; i++) {
++    if (ctx.riverKinds[i] !== 'main') continue;
++    for (const p of ctx.riverPaths[i]!) {
++      const k = hexKey(p.q, p.r);
++      if (!mainOwner.has(k)) mainOwner.set(k, i);
++    }
++  }
++  const far = [...coastal]
++    .map((k) => ({ k, d: mouthDist.get(k) ?? coastal.size }))
++    .filter((x) => x.d > maxGap)
++    .sort((a, b) => b.d - a.d || parseHexKey(a.k).q - parseHexKey(b.k).q);
++  const seen = new Set<string>();
++  for (const { k } of far) {
++    const { q, r } = parseHexKey(k);
++    const mouths: Array<[number, number]> = [[q, r]];
++    for (const [dq, dr] of HEX_DIRECTIONS) mouths.push([q + dq, r + dr]);
++    for (const [mq, mr] of mouths) {
++      const mk = hexKey(mq, mr);
++      if (seen.has(mk)) continue;
++      seen.add(mk);
++      const mh = ctx.hexes[mk];
++      const __F = ((globalThis as any).__forkDiag ??= {}) as Record<string, number>; const __b = (x: string) => { __F[x] = (__F[x] ?? 0) + 1; };
++      if (!mh || !isRiverLandTerrain(mh.terenBazowy) || mh.rzeka?.obecna) { __b('notFree'); continue; }
++      if ((seaDist.get(mk) ?? 999) !== 1) { __b('sd!=1'); continue; }
++      // M ma sasiadować z DOKŁADNIE jednym heksem rzeki (rodzic H) — bez trójkątów/zawinięć.
++      const riverNbs: Array<[number, number]> = [];
++      for (const [dq, dr] of HEX_DIRECTIONS) {
++        const nh = ctx.hexes[hexKey(mq + dq, mr + dr)];
++        if (nh?.rzeka?.obecna) riverNbs.push([mq + dq, mr + dr]);
++      }
++      if (riverNbs.length < 1 || riverNbs.length > 3) { __b('nbRivers' + riverNbs.length); continue; }
++      const owner = mainOwner.get(hexKey(riverNbs[0]![0], riverNbs[0]![1]));
++      if (owner == null) { __b('parentNotMain'); continue; }
++      const parentKeys = new Set(ctx.riverPaths[owner]!.map((p) => hexKey(p.q, p.r)));
++      // Wszyscy sąsiedzi-rzeki M muszą należeć do TEGO SAMEGO main (rodzic); H = najgłębszy z nich.
++      if (!riverNbs.every(([nq, nr]) => parentKeys.has(hexKey(nq, nr)))) { __b('nbForeignRiver'); continue; }
++      riverNbs.sort((x, y) => (seaDist.get(hexKey(y[0], y[1])) ?? 0) - (seaDist.get(hexKey(x[0], x[1])) ?? 0));
++      const [hq, hr] = riverNbs[0]!;
++      const hk = hexKey(hq, hr);
++      if ((seaDist.get(hk) ?? 0) < RIVER_MIN_INLAND_FROM_SEA) { __b('parentSea<2'); continue; }
++      __b('reachedW');
++      if (!isRiverWindowTurnAllowed([{ q: hq, r: hr }], mq, mr)) continue;
++      for (const [dq, dr] of HEX_DIRECTIONS) {
++        const wq = mq + dq;
++        const wr = mr + dr;
++        const wk = hexKey(wq, wr);
++        const wh = ctx.hexes[wk];
++        if (!wh || wh.terenBazowy !== TerenBazowy.PlytkieMorze || wh.rzeka?.obecna) continue;
++        if (!ctx.oceanConnected.has(wk)) continue;
++        const path: RiverCoord[] = [{ q: hq, r: hr }, { q: mq, r: mr }, { q: wq, r: wr }];
++        if (!isRiverWindowTurnAllowed(path.slice(0, 2), wq, wr)) continue;
++        // Sep 2 od INNYCH main (rodzic wyłączony) dla heksów M i W.
++        let tooClose = false;
++        for (const mkey of mainKeys) {
++          if (parentKeys.has(mkey)) continue;
++          const c = parseHexKey(mkey);
++          if (hexAxialDistance(mq, mr, c.q, c.r) < 2 || hexAxialDistance(wq, wr, c.q, c.r) < 2) {
++            tooClose = true;
++            break;
++          }
++        }
++        if (tooClose) { __b('tooClose'); continue; }
++        __b('preFinal');
++        { const cl = sanitizeRiverPath(path); __b('san' + cl.length);
++          if (cl.length >= 3) { const tr = trimRiverPathRings(ctx.hexes, cl); __b('trim' + tr.length + (pathEndsAtSea(ctx.hexes, tr, ctx.width, ctx.height, ctx.oceanConnected) ? 'sea' : 'nosea'));
++            const sk = riverPathViolatesTurnWindow(cl); if (sk) __b('turnViol'); } }
++        const finalized = finalizeMainRiverPath(ctx.hexes, path, ctx.width, ctx.height, ctx.oceanConnected);
++        if (!finalized) { __b('finNull'); continue; }
++        if (finalized.length !== 3) { __b('finLen' + finalized.length); continue; }
++        __b('FORKED');
++        ctx.riverPaths.push(finalized);
++        ctx.riverKinds.push('main');
++        markRiverPath(ctx.hexes, finalized);
++        addPathKeysToSet(finalized, mainKeys);
++        if (ctx.mainKeysCache && ctx.mainKeysCache !== mainKeys) addPathKeysToSet(finalized, ctx.mainKeysCache);
++        return true;
++      }
++    }
++  }
++  return false;
++}
++
+ /** Jedna runda top-up: zwraca liczbę nowych main od wybrzeża. */
+ function topUpMainRiverCoastMouthGapsOnce(
+   massSet: Set<string>,
+@@ -9777,12 +9884,65 @@ function topUpMainRiverCoastMouthGapsOnce(
+         if (tryAtKey(k)) { okPlace = true; break; }
+       }
+     }
+-    if (!okPlace) break;
++    if (!okPlace && gapCtx.allowForkMouth) {
++      okPlace = tryForkMouthAtGap(gapCtx, coastal, mouthDistNow, maxGap, seaDist, mainKeys);
++    }
++    if (!okPlace) {
++      __gapDiag(massSet, coastal, mouthDistNow, maxGap, seaDist, gapCtx, mainKeys, gapPathSep);
++      break;
++    }
+     placed++;
+   }
+   return placed;
+ }
+ 
++function __gapDiag(
++  massSet: Set<string>, coastal: Set<string>, mouthDist: Map<string, number>, maxGap: number,
++  seaDist: Map<string, number>, ctx: GridSourcePlaceCtx, mainKeys: Set<string>, sep: number,
++): void {
++  const G = ((globalThis as any).__gapDiagOut ??= []) as any[];
++  const pathOf = new Map<string, number>();
++  for (let i = 0; i < ctx.riverPaths.length; i++) for (const p of ctx.riverPaths[i]!) pathOf.set(hexKey(p.q, p.r), i);
++  const far = [...coastal].filter((k) => (mouthDist.get(k) ?? 999) > maxGap);
++  const rec: any = { stage: (globalThis as any).__stage ?? '?', massSize: massSet.size, coastal: coastal.size, farCount: far.length, worst: Math.max(0, ...[...coastal].map((k) => mouthDist.get(k) ?? 999)), cands: {} as Record<string, number> , samples: [] as any[] };
++  const bump = (k: string) => { rec.cands[k] = (rec.cands[k] ?? 0) + 1; };
++  const seen = new Set<string>();
++  for (const fk of far) {
++    const { q, r } = parseHexKey(fk);
++    const mouths: Array<[number, number]> = [[q, r]];
++    for (const [dq, dr] of HEX_DIRECTIONS) mouths.push([q + dq, r + dr]);
++    for (const [mq, mr] of mouths) {
++      const mk = hexKey(mq, mr);
++      if (seen.has(mk)) continue; seen.add(mk);
++      const d = seaDist.get(mk) ?? 999;
++      if (d < 1 || d > 2) { bump('mouth_seaDist' + (d > 2 ? '>2' : d)); continue; }
++      const mh = ctx.hexes[mk];
++      if (!mh || !isRiverLandTerrain(mh.terenBazowy)) { bump('mouth_notLand'); continue; }
++      if (mh.rzeka?.obecna) { bump('mouth_hasRiver:' + (ctx.riverKinds[pathOf.get(mk) ?? -1] ?? '?')); }
++      const mainD = nearestRiverHexDistance(mq, mr, mainKeys);
++      if (mainD < sep) bump('mouth_mainDist' + mainD);
++      let anyStep = false; const reasons: string[] = [];
++      for (const [dq, dr] of HEX_DIRECTIONS) {
++        const nq = mq + dq, nr = mr + dr; const nk = hexKey(nq, nr);
++        const nh = ctx.hexes[nk];
++        let why = '';
++        if (!nh || nh.terenBazowy === TerenBazowy.Morze) why = 'water';
++        else if (!canRiverFlowThrough(nh, nk, mk, true, undefined, true)) {
++          const pi = pathOf.get(nk);
++          why = nh.rzeka?.obecna ? ('river:' + (ctx.riverKinds[pi ?? -1] ?? '?')) : 'flowOther';
++        } else if ((seaDist.get(nk) ?? 0) < RIVER_MIN_INLAND_FROM_SEA) why = 'seaLt2';
++        else if (nearestRiverHexDistance(nq, nr, mainKeys) < sep) why = 'sepMain' + nearestRiverHexDistance(nq, nr, mainKeys);
++        else anyStep = true;
++        reasons.push(why || 'OK');
++      }
++      bump(anyStep ? 'mouth_hasStep' : 'mouth_noStep');
++      for (const w of reasons) bump('step:' + w.replace(/\d+$/, (m) => m));
++      if (rec.samples.length < 12) rec.samples.push({ m: [mq, mr], d, mainD, reasons });
++    }
++  }
++  G.push(rec);
++}
++
+ /** Etap 1 — domknięcie luk wzdłuż wybrzeża: max gap między ujściami main (FALA 170). */
+ function topUpMainRiverCoastMouthGaps(
+   massSet: Set<string>,
+@@ -9882,9 +10042,11 @@ export function refillMainRiverCoastMouthGapsOnMap(
+     mainKeysCache,
+     allowReliefTraversal: true,
+     placeMode: 'main-only',
++    allowForkMouth: true,
+   };
+ 
+   const maxGap = mainRiverCoastMouthMaxGapForDims(width, height);
++  (globalThis as any).__stage = 'refill';
+   let placed = 0;
+   for (const mass of masses) {
+     const massSet = new Set(mass);

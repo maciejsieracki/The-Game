@@ -6379,6 +6379,11 @@ function collectInlandDrainGrowCandidates(o: InlandDrainGrowOpts): Array<{ q: nu
     if (!riverGrowStepPassesSep(nq, nr, o.blockRiverKeys, o.minPathSep, o.sepIndex)) continue;
     const nd = o.seaDist.get(nk) ?? 0;
     if (!o.relaxSeaBuffer && nd < RIVER_MIN_INLAND_FROM_SEA) continue;
+    // R-WEB-MAP-RIVER-MOUTH-GAP-FIX-Q1: relaxSeaBuffer znosi bufor 2 hex od morza, ale NIE wolno
+    // wchodzić CIAŁEM rzeki na heksy wody (Płytkie Morze, seaDist 0) — na szerokim szelfie polarnym
+    // ciało "meandrowało" kilkanaście heksów po wodzie, a ujście (ogon) lądowało daleko od wyspy
+    // i nie liczyło się jako ujście na jej wybrzeżu (luki 18 pól). Ujście dokłada faza drenażu.
+    if (nd < 1) continue;
     const od = o.openOceanDist.get(nk) ?? Infinity;
     if (o.hardMeander && !o.relaxHardMeander && od < curOd) continue;
     let score = 1200 - od * 30;
@@ -9374,6 +9379,8 @@ export function pathHasValidRiverOutlet(
 }
 
 interface GridSourcePlaceCtx {
+  /** R-WEB-MAP-RIVER-MOUTH-GAP-FIX-Q1: tylko etap refill — dopuszcza odnogę ujściową main od istniejącego main. */
+  allowForkMouth?: boolean;
   hexes: Record<string, Hex>;
   width: number;
   height: number;
@@ -9704,6 +9711,96 @@ export function worstMainRiverCoastMouthGapOnMass(
   return { ok: worst <= maxAllowedGap, worstGap: worst };
 }
 
+/**
+ * R-WEB-MAP-RIVER-MOUTH-GAP-FIX-Q1: odnoga ujściowa (3 hex: heks istniejącego main -> brzeg -> pierwsza
+ * woda). Gdy nowa rzeka od brzegu nie ma legalnego pierwszego kroku (pas za brzegiem zajęty przez
+ * równoległy main/inne rzeki), główny nurt dostaje dodatkowe ramię do morza w luce. Ramię liczy się
+ * jako trasa 'main' (ostatnie 5 hex = korytarz ujścia, bufor morski nie dotyczy tras <= 5 hex);
+ * zaczyna na heksie macierzystego main (jak dopływy średnie) — poza tym nie dotyka innych rzek.
+ */
+function tryForkMouthAtGap(
+  ctx: GridSourcePlaceCtx,
+  coastal: Set<string>,
+  mouthDist: Map<string, number>,
+  maxGap: number,
+  seaDist: Map<string, number>,
+  mainKeys: Set<string>,
+): boolean {
+  const mainOwner = new Map<string, number>();
+  for (let i = 0; i < ctx.riverPaths.length; i++) {
+    if (ctx.riverKinds[i] !== 'main') continue;
+    for (const p of ctx.riverPaths[i]!) {
+      const k = hexKey(p.q, p.r);
+      if (!mainOwner.has(k)) mainOwner.set(k, i);
+    }
+  }
+  const far = [...coastal]
+    .map((k) => ({ k, d: mouthDist.get(k) ?? coastal.size }))
+    .filter((x) => x.d > maxGap)
+    .sort((a, b) => b.d - a.d || parseHexKey(a.k).q - parseHexKey(b.k).q);
+  const seen = new Set<string>();
+  for (const { k } of far) {
+    const { q, r } = parseHexKey(k);
+    const mouths: Array<[number, number]> = [[q, r]];
+    for (const [dq, dr] of HEX_DIRECTIONS) mouths.push([q + dq, r + dr]);
+    for (const [mq, mr] of mouths) {
+      const mk = hexKey(mq, mr);
+      if (seen.has(mk)) continue;
+      seen.add(mk);
+      const mh = ctx.hexes[mk];
+      if (!mh || !isRiverLandTerrain(mh.terenBazowy) || mh.rzeka?.obecna) continue;
+      if ((seaDist.get(mk) ?? 999) !== 1) continue;
+      // M (wolny heks brzegowy) może sąsiadować z 1–3 heksami rzek (zob. niżej: wszystkie z jednego main).
+      const riverNbs: Array<[number, number]> = [];
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nh = ctx.hexes[hexKey(mq + dq, mr + dr)];
+        if (nh?.rzeka?.obecna) riverNbs.push([mq + dq, mr + dr]);
+      }
+      if (riverNbs.length < 1 || riverNbs.length > 3) continue;
+      const owner = mainOwner.get(hexKey(riverNbs[0]![0], riverNbs[0]![1]));
+      if (owner == null) continue;
+      const parentKeys = new Set(ctx.riverPaths[owner]!.map((p) => hexKey(p.q, p.r)));
+      // Wszyscy sąsiedzi-rzeki M muszą należeć do TEGO SAMEGO main (rodzic); H = najgłębszy z nich.
+      if (!riverNbs.every(([nq, nr]) => parentKeys.has(hexKey(nq, nr)))) continue;
+      riverNbs.sort((x, y) => (seaDist.get(hexKey(y[0], y[1])) ?? 0) - (seaDist.get(hexKey(x[0], x[1])) ?? 0));
+      const [hq, hr] = riverNbs[0]!;
+      const hk = hexKey(hq, hr);
+      if ((seaDist.get(hk) ?? 0) < RIVER_MIN_INLAND_FROM_SEA) continue;
+      if (!isRiverWindowTurnAllowed([{ q: hq, r: hr }], mq, mr)) continue;
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const wq = mq + dq;
+        const wr = mr + dr;
+        const wk = hexKey(wq, wr);
+        const wh = ctx.hexes[wk];
+        if (!wh || wh.terenBazowy !== TerenBazowy.PlytkieMorze || wh.rzeka?.obecna) continue;
+        if (!ctx.oceanConnected.has(wk)) continue;
+        const path: RiverCoord[] = [{ q: hq, r: hr }, { q: mq, r: mr }, { q: wq, r: wr }];
+        if (!isRiverWindowTurnAllowed(path.slice(0, 2), wq, wr)) continue;
+        // Sep 2 od INNYCH main (rodzic wyłączony) dla heksów M i W.
+        let tooClose = false;
+        for (const mkey of mainKeys) {
+          if (parentKeys.has(mkey)) continue;
+          const c = parseHexKey(mkey);
+          if (hexAxialDistance(mq, mr, c.q, c.r) < 2 || hexAxialDistance(wq, wr, c.q, c.r) < 2) {
+            tooClose = true;
+            break;
+          }
+        }
+        if (tooClose) continue;
+        const finalized = finalizeMainRiverPath(ctx.hexes, path, ctx.width, ctx.height, ctx.oceanConnected);
+        if (!finalized || finalized.length !== 3) continue;
+        ctx.riverPaths.push(finalized);
+        ctx.riverKinds.push('main');
+        markRiverPath(ctx.hexes, finalized);
+        addPathKeysToSet(finalized, mainKeys);
+        if (ctx.mainKeysCache && ctx.mainKeysCache !== mainKeys) addPathKeysToSet(finalized, ctx.mainKeysCache);
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 /** Jedna runda top-up: zwraca liczbę nowych main od wybrzeża. */
 function topUpMainRiverCoastMouthGapsOnce(
   massSet: Set<string>,
@@ -9776,6 +9873,9 @@ function topUpMainRiverCoastMouthGapsOnce(
       for (const { k } of allFar) {
         if (tryAtKey(k)) { okPlace = true; break; }
       }
+    }
+    if (!okPlace && gapCtx.allowForkMouth) {
+      okPlace = tryForkMouthAtGap(gapCtx, coastal, mouthDistNow, maxGap, seaDist, mainKeys);
     }
     if (!okPlace) break;
     placed++;
@@ -9882,6 +9982,7 @@ export function refillMainRiverCoastMouthGapsOnMap(
     mainKeysCache,
     allowReliefTraversal: true,
     placeMode: 'main-only',
+    allowForkMouth: true,
   };
 
   const maxGap = mainRiverCoastMouthMaxGapForDims(width, height);
