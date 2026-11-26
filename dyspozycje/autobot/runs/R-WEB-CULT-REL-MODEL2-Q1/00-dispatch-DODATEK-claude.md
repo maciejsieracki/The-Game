@@ -23,3 +23,17 @@ gra/src/**, gra/data/**, gra-robocza/, gra-kanon/, dyspozycje/WERSJE.md, manifes
 Model uruchamia się (esbuild + node), wyniki z prawdziwych funkcji silnika; tsc nie dotyczy (bez zmian src). Zacommituj i zwróć SHA.
 ## Binarne kryterium
 Tabele potrzebnych jednostek (3 poziomy × 3 epoki × scenariusze a–d × budynki) z silnika; porównanie z 2/3/4; analiza efektu na własne miasta i AI; ryzyka/pytania; dokument zapisany.
+
+---
+# NADRZĘDNA KOREKTA WŁAŚCICIELA (po starcie pierwszego biegu; ten bieg zatrzymano i uruchomiono od nowa)
+Właściciel: „To mocno by zaburzyło samą grę. Na plusach zmieniamy: na łatwym zostaje +10 dla religii i kultury maksymalnie; dla normalnego +5; dla trudnego 0, czyli żadnych plusów. Dotyczy religii i kultury. Minusy bez zmian względem mojej propozycji.”
+OBOWIĄZUJĄCE GRANICE na KAŻDĄ linię (kultura, religia osobno), epoka 1; D = miasto w całości obce, G = w całości nasze:
+- łatwy: D=−10, G=+10 (dla Szczęścia dokładnie dzisiejsze zachowanie ±10; NOWOŚĆ: ta sama para dla PRAWA)
+- normalny: D=−15, G=+5
+- trudny (najwyższy wpływ): D=−20, G=0
+Wartość linii = D + (G−D)·udział_własnej (liniowo). Skala epok ×1,0/×1,6/×2,3 mnoży D i G (epoka 2: łatwy −16/+16, normalny −24/+8, trudny −32/0; epoka 3: −23/+23, −34,5/+11,5, −46/0). Linie dodają się do netto Szczęścia (z dzisiejszym obcięciem od 0%) i do netto Prawa (punkty Prawa). Jednostka 20 pkt Prawa bez zmian.
+Poprzednie granice (łatwy −10/+20, normalny −15/+15, trudny −20/+10) UNIEWAŻNIONE.
+## Dodatkowe pytania do modelu (z szacunku orkiestratora do zweryfikowania silnikiem)
+- Szacunek (epoka 1, pop 5, obca kultura+obca religia, bez budynków): do tieru neutralnego 3 / 3 / 4 jednostek (łatwy/normalny/trudny); do wyjścia z buntu skrajnego 2 / 3 / 3. Cel właściciela 2/3/4 — zweryfikuj i wypisz, jakie D lub inny parametr dałyby dokładnie 2/3/4.
+- Na poziomie trudnym G=0: własne miasto bez garnizonu ma Szczęście 0% (podatki −5,6 obcinane do 0) i Prawo 0 → Porządek 0 (bunt skrajny, rebelia po 3 turach łaski) — SPRAWDŹ silnikiem i opisz skutek dla wszystkich własnych miast (stolica, nowe osady pop 1–2, AI). To główne ryzyko projektu — jeśli potwierdzone, wpisz do DECISION_REQUIRED jednym zdaniem skutku.
+- Epoka 3 na trudnym (D=−46 na linię, −92 Prawa dla obcej kultury+religii): czy jest utrzymywalna bez budynków przy limicie 5 jednostek × 20 pkt (cap) i z Garnizonem 47 / Pretorium 38.
