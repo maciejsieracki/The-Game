@@ -1032,6 +1032,7 @@ import { getWzrostSurowcowZEpoka, isEraRebalanceEnabled, normalizeWzrostSurowcow
 import { setDiplomacyWarLevel } from './game/diplomacy-war-level';
 // R-WEB-CULT-REL-IMPL-Q1 (CULTIMPL): ustawienie „Kultura i religia” (nowa gra / zapis).
 import { getCulturaReligiaLevel, setCulturaReligiaLevel } from './game/culture-religion-level';
+import { aiCityGarrisonNeedFromOrder, aiGarrisonNeedApplies } from './game/ai-city-order-need';
 import {
   resolveAutoBattleByPower,
   sumRosterFieldM,
@@ -18928,6 +18929,13 @@ async function boot(): Promise<void> {
     }
 
     /** Wojsko na heksie miasta — bonus Prawo w Porządku. */
+    /**
+     * AICULT (#189): potrzeba garnizonu per miasto (cityId -> liczba jednostek) wyliczona w petli
+     * Porzadku miast (runWorldEndTurn) z pelnego rozbicia silnika; wypelniana TYLKO gdy poziom
+     * „Kultura i religia” = normalny/trudny. Odczyt: opts.cityGarrisonNeed decideAITurn.
+     */
+    const aiCityGarrisonNeedByCityId = new Map<string, number>();
+
     function lawGarrisonCountForCity(city: City): number {
       return countLawGarrisonOnCityHex(units, city.q, city.r, city.ownerId);
     }
@@ -44994,6 +45002,13 @@ async function boot(): Promise<void> {
                 data.societyParams,
                 difficulty,
               );
+              if (aiGarrisonNeedApplies(getCulturaReligiaLevel())) {
+                aiCityGarrisonNeedByCityId.set(
+                  city.id, aiCityGarrisonNeedFromOrder(ordPctEvaluated, data.societyParams, difficulty),
+                );
+              } else {
+                aiCityGarrisonNeedByCityId.delete(city.id);
+              }
               const happinessCivKey = ownerCivMap.get(city.ownerId);
               const ordPctRaw = happinessCivKey
                 ? applyCivMatrixHappinessModifier(
@@ -46640,6 +46655,12 @@ async function boot(): Promise<void> {
               forcedWar: forcedWarDirective,
               powerRank: powerRankInfo.rank,
               powerOfOwner: (oid: number) => objectivePowerByOwner.get(oid)?.power ?? 0,
+              cityGarrisonNeed: aiGarrisonNeedApplies(getCulturaReligiaLevel())
+                ? Object.fromEntries(
+                  [...aiCityGarrisonNeedByCityId.entries()]
+                    .filter(([cid]) => cities.find(c => c.id === cid && c.ownerId === ownerId)),
+                )
+                : undefined,
               cityBuildings: Object.fromEntries(
                 [...cityBuilt.entries()].filter(([cid]) => cities.find(c => c.id === cid && c.ownerId === ownerId))
               ),

@@ -10,8 +10,13 @@
  * (brak ustawienia) NIE uzywaja tej funkcji -- zachowanie AI jak dotad (patrz
  * `aiGarrisonNeedApplies`).
  */
-import { computePorPct, pctFromNetto, porPctBand, REVOLT_CRITICAL_POR_PCT } from './society-breakdown';
-import { FALLBACK_ORDER_PARAMS, type OrderParams } from './order';
+import {
+  computePorPct, pctFromNetto, porPctBand, REVOLT_CRITICAL_POR_PCT, loadRevoltParams, loadSocietyScaleParams,
+  type OrderPctBreakdown,
+} from './society-breakdown';
+import {
+  FALLBACK_ORDER_PARAMS, loadOrderParams, type OrderParams, type Difficulty, type SocietyParamsLike,
+} from './order';
 import type { CulturaReligiaLevel } from './culture-religion-level';
 
 export interface AiCityGarrisonNeedInput {
@@ -59,4 +64,34 @@ export function aiCityGarrisonNeed(input: AiCityGarrisonNeedInput): number {
  */
 export function aiGarrisonNeedApplies(level: CulturaReligiaLevel | null): boolean {
   return level === 'normalny' || level === 'trudny';
+}
+
+/**
+ * AICULT r3: wejscie `aiCityGarrisonNeed` z PELNEGO rozbicia Porzadku miasta (wynik silnika
+ * `evaluateOrderFromBreakdown`), bez duplikowania wzorow: Szczescie% i netto/mianownik Prawa
+ * biora sie z `order`, a linie garnizonu (jednostek) odejmujemy od netto. perUnit/capUnits/cap
+ * pochodza z tych samych parametrow `society-params` co silnik (`prawo_garnizon_*`, `prawo_pct_cap`).
+ * Zwraca potrzebna liczbe jednostek garnizonu (0 = miasto nie jest w buncie skrajnym bez garnizonu).
+ */
+export function aiCityGarrisonNeedFromOrder(
+  order: OrderPctBreakdown,
+  society: SocietyParamsLike | null | undefined,
+  difficulty: Difficulty,
+): number {
+  const prBlock = ((society as { prawo?: unknown } | null | undefined)?.prawo ?? {}) as Record<string, Record<string, unknown>>;
+  const pick = (key: string, fb: number): number => {
+    const v = prBlock[key]?.[difficulty];
+    return typeof v === 'number' && Number.isFinite(v) ? v : fb;
+  };
+  const garrLine = order.prawo.lines.find(l => l.id === 'garnizon');
+  return aiCityGarrisonNeed({
+    prawoNettoBezGarnizonu: order.prawo.netto - (garrLine ? garrLine.value : 0),
+    szPct: order.sz.szPct,
+    prawMax: order.prawo.prawMax,
+    perUnit: pick('prawo_garnizon_per_jednostka', 20),
+    capUnits: pick('prawo_garnizon_cap_jednostek', 5),
+    prawPctCap: loadSocietyScaleParams(society, difficulty).prawPctCap,
+    params: loadOrderParams(society, difficulty),
+    criticalPorPct: loadRevoltParams(society, difficulty).criticalPorPct,
+  });
 }
