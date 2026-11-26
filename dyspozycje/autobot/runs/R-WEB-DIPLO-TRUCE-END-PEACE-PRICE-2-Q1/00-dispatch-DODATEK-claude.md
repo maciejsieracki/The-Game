@@ -15,3 +15,13 @@ gra-robocza/, gra-kanon/, dyspozycje/WERSJE.md, manifest, rust-port/, npm run bu
 tsc 0; logic 213; tech-tree 20; research 33; unit-replace; combat 6; ai-test 297/0; diplo-truce-impl 93/0; truce-end-peace-price 54/0; truce-end-war-notice; war-limit-truce-count 19/0; diplo-human-peace-no-war 13/0; diplo-war-tribute-once 8/0; war-rules-multiwar-main-guard 21/0; nowe testy z mutacją czerwoną. Zacommituj i zwróć SHA.
 ## Binarne kryterium
 (1)–(3) spełnione z testami i mutacjami; bramki zielone; brak zmiany zachowania pokoi poza oknem po rozejmie.
+
+---
+# RUNDA 2/5 (Operator HAIKU 5.5; ten sam ID; BAZA = b49a48566f524b9a34ea1b55ac67181692f2bffe, czubek FC r1 = pkt 2 i 3 zrobione; raport FC r1: c39df23f4 w TRUCEPRICE2-wip/fc)
+FC r1: BLOCK tylko z powodu pkt (1) — wymaga zmian w plikach poza allowlistą. DECYZJA ORKIESTRATORA (rozszerzenie allowlisty, decyzja inżynierska): ALLOWLISTA RUNDY 2 DODATKOWO: gra/src/game/diplomacy-proposals.ts (TYLKO obsługa case 'pokoj' w oknie po rozejmie), gra/src/game/diplomacy-pn-engine.ts (TYLKO nowe pole okna w DiploPairMeta, np. truceEndTurn, z kompatybilnością wsteczną starych zapisów: brak pola = brak okna). 
+Zadanie: zrealizuj pkt (1) z DODATKU rundy 1:
+- Okno „po rozejmie”: pole w DiploPairMeta ustawiane przy końcu rozejmu (truceEndTickPair: oferta/ powrót do wojny), obowiązuje do końca tury po wygaśnięciu oferty (lub do N=1–2 tur po powrocie wojny — wybierz 1 turę + obecna tura, uzasadnij), czyszczone przy pokoju/ nowej wojnie/eliminacji; zapis/odczyt zapisu gry zachowuje pole (sprawdź serializację meta pary).
+- Propozycja pokoju gracza do AI (case 'pokoj' w diplomacy-proposals.ts) w oknie: AI przyjmuje, gdy pakiet gracza pokrywa requiredPn z truceEndPriceRule (waluta wg pasma 20%: ≤20% surowce, >20% miasto); w pozostałych przypadkach (poza oknem) zachowanie BEZ ZMIAN (zwykły evaluateProposal, odrzucenia przewagi silniejszej AI itd.). Zasada właściciela: „AI zawsze przyjmuje pokój zaproponowany przez gracza po rozejmie, jeśli cena jest zrównoważona”.
+- Testy: przypadki w oknie (przyjęta przy pokryciu ceny, odrzucona przy niedopłacie), poza oknem bez zmian (regresja), zapis/odczyt pola, mutacje czerwone (zdjęcie warunku okna; zamiana progu). Zaktualizuj istniejące testy tylko, jeśli kodują stary kontrakt (wypisz).
+- Przy realnym konflikcie reguł zwróć DECISION_REQUIRED.
+Pozostałe: bramki jak w rundzie 1 + diplomacy-proposals/diplo-* testy dotykające 'pokoj'. Pkt (2) i (3) zostają zielone.
