@@ -206,7 +206,7 @@ export interface ProposalEvalContext {
    * w oknie (truceEndWindowOpen) i to GRACZ płaci cenę wg truceEndPriceRule; `requiredPn` = ta cena (Pn).
    * Brak pola / open=false = zwykła ocena propozycji pokoju (bez zmian).
    */
-  truceEndWindow?: { open: boolean; requiredPn: number };
+  truceEndWindow?: { open: boolean; requiredPn: number; currency?: 'surowce' | 'miasto' };
   /**
    * R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (r3): zapas GRACZA (złoto = Skarbiec państwa, brąz/żelazo/rudy = Spichlerz państwa).
    * Płatnikiem ogona w gałęzi „gracz jest autorem pokoju" jest gracz — nie zawsze proponent (kontroferta, AI proponuje graczowi).
@@ -1583,7 +1583,9 @@ function evaluateProposalImpl(
   const stance = stanceForEval(ctx, proponentAgresor);
 
   // R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-2-Q1 (r2): okno „po rozejmie” — propozycja pokoju GRACZA do AI. AI przyjmuje,
-  // gdy pakiet gracza pokrywa cenę pokoju (truceEndPriceRule). Poza oknem / bez ceny → ocena jak dotąd (bez zmian).
+  // gdy pakiet gracza pokrywa cenę pokoju (truceEndPriceRule): waluta surowcowa (pasmo ≤20%) liczy wartość całego
+  // pakietu, waluta miejska (pasmo >20%) liczy WYŁĄCZNIE miasta w giveItems. Niepokryta oferta w oknie (oraz poza
+  // oknem / bez ceny) idzie dalej dotychczasową oceną bez zmian (dispatch r2: „w pozostałych przypadkach evaluateProposal”).
   const truceWindow = ctx.truceEndWindow;
   if (
     actionId === 'pokoj'
@@ -1593,13 +1595,16 @@ function evaluateProposalImpl(
     && responderOwnerId !== (pnOpts.playerOwnerId ?? 0)
   ) {
     const offeredPn = resolveProposalPn(payload, pnOpts).givePn;
-    if (offeredPn >= truceWindow.requiredPn) {
+    const cityItemsTE = (payload.giveItems ?? []).filter(i => i.typ === 'miasto');
+    const cityPnTE = cityItemsTE.length > 0
+      ? resolveProposalPn({ giveItems: cityItemsTE, actionId }, pnOpts).givePn
+      : 0;
+    const coveredTE = truceWindow.currency === 'miasto'
+      ? cityPnTE >= truceWindow.requiredPn
+      : offeredPn >= truceWindow.requiredPn;
+    if (coveredTE) {
       return { accepted: true, reason: 'Pokój zawarty — cena po rozejmie pokryta', oneShotTrade: true };
     }
-    return {
-      accepted: false,
-      reason: `Pokój po rozejmie: cena ${Math.round(truceWindow.requiredPn)} nie jest pokryta (oferta ${Math.round(offeredPn)})`,
-    };
   }
 
   if (ctx.warState && peaceProposalBlocked(actionId, stanWojny, ctx.warState.turnsAtWar)) {

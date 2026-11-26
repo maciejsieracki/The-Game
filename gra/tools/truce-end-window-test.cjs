@@ -81,8 +81,8 @@ const BASE_CTX = {
 };
 const PLAYER_PEACE = { actionId: 'pokoj', proposerOwnerId: 0, responderOwnerId: 2, payload: { givePn: 500, receivePn: 0 } };
 
-function withWindow(open, requiredPn) {
-  return { ...BASE_CTX, truceEndWindow: { open, requiredPn } };
+function withWindow(open, requiredPn, currency) {
+  return { ...BASE_CTX, truceEndWindow: { open, requiredPn, ...(currency ? { currency } : {}) } };
 }
 
 // Atrapy portów cyklu rozejmu (ta sama semantyka co main.ts truceEndPorts, bez stanu gry).
@@ -147,9 +147,39 @@ async function main() {
     check('okno + równa cena (500 = 500) → zaakceptowana (≥)', r.accepted === true, r);
   }
   {
+    // Dispatch r2: niepokryta oferta w oknie idzie dalej dotychczasową oceną (evaluateProposal bez zmian).
     const r = ev(withWindow(true, 501));
-    check('okno + niedopłata (500 < 501) → odrzucona', r.accepted === false, r);
-    check('okno + niedopłata → powód „nie jest pokryta”', typeof r.reason === 'string' && r.reason.includes('nie jest pokryta'), r.reason);
+    const b = ev(BASE_CTX);
+    check('okno + niedopłata (500 < 501) → wynik jak bez okna (dalej evaluateProposal)', r.accepted === b.accepted && r.reason === b.reason, { r, b });
+    check('okno + niedopłata → brak powodu „pokryta”', !(typeof r.reason === 'string' && r.reason.includes('pokryta')), r.reason);
+  }
+  {
+    // Waluta miejska (pasmo >20%): surowce o wartości ceny NIE wystarczają w oknie.
+    const r = ev(withWindow(true, 300, 'miasto'));
+    check('okno waluta miasto + surowce bez miasta → okno nie przyjmuje', !(typeof r.reason === 'string' && r.reason.includes('pokryta')), r);
+    const sur = ev(withWindow(true, 300, 'surowce'));
+    check('okno waluta surowce + pokryta cena → zaakceptowana', sur.accepted === true && sur.reason.includes('pokryta'), sur);
+  }
+  {
+    // Okno działa tylko dla akcji 'pokoj' — inne akcje w oknie dostają ocenę jak bez okna.
+    const rozejm = { ...PLAYER_PEACE, actionId: 'rozejm' };
+    const r = ev(withWindow(true, 300), rozejm);
+    const b = ev(BASE_CTX, rozejm);
+    check('okno + akcja „rozejm” → wynik jak bez okna', r.accepted === b.accepted && r.reason === b.reason, { r, b });
+    check('okno + akcja „rozejm” → brak powodu okna', !(typeof r.reason === 'string' && r.reason.includes('pokryta')), r.reason);
+  }
+  {
+    // Wiązanie main.ts (źródłowe): okno liczy się tylko dla gracza-płatnika, z walutą reguły.
+    const mainSrc = fs.readFileSync(path.resolve(GRA, 'src', 'main.ts'), 'utf8');
+    const need = [
+      'if (proposerId !== ME() || isHuman(responderId)) return closed;',
+      'truceEndWindowOpen(meta.truceEndTurn, turn)',
+      'rule.payerId !== ME()',
+      'aiAiPeacePriceFor(rule.payeeId, rule.payerId, \'pokoj\').requiredPn',
+      'currency: rule.currency',
+      'if (getDiploPairMeta(proposerId, responderId).truceEndOffer != null) clearTruceEndOffer(proposerId, responderId);',
+    ];
+    check('wiązanie main.ts: truceEndWindowFor i czyszczenie oferty na akceptacji pokoju (źródło)', need.every(n => mainSrc.includes(n)), need.filter(n => !mainSrc.includes(n)));
   }
   {
     const baseline = ev(BASE_CTX);
@@ -181,10 +211,35 @@ async function main() {
     {
       name: 'M-THR',
       target: PROPOSALS,
-      from: 'if (offeredPn >= truceWindow.requiredPn) {',
-      to: 'if (offeredPn > truceWindow.requiredPn) {',
+      from: ': offeredPn >= truceWindow.requiredPn;',
+      to: ': offeredPn > truceWindow.requiredPn;',
       expect: 'równa cena (500 = 500) musi być przyjęta',
-      check: async m => m.evaluateProposal(PLAYER_PEACE, withWindow(true, 500)).accepted === false,
+      check: async m => {
+        const r = m.evaluateProposal(PLAYER_PEACE, withWindow(true, 500));
+        return !(typeof r.reason === 'string' && r.reason.includes('pokryta'));
+      },
+    },
+    {
+      name: 'M-ACTION',
+      target: PROPOSALS,
+      from: "    actionId === 'pokoj'\n    && truceWindow?.open === true",
+      to: "    true\n    && truceWindow?.open === true",
+      expect: 'okno nie może przyjmować akcji innej niż pokój',
+      check: async m => {
+        const r = m.evaluateProposal({ ...PLAYER_PEACE, actionId: 'rozejm' }, withWindow(true, 300));
+        return typeof r.reason === 'string' && r.reason.includes('pokryta');
+      },
+    },
+    {
+      name: 'M-CUR',
+      target: PROPOSALS,
+      from: 'truceWindow.currency === \'miasto\'\n      ? cityPnTE >= truceWindow.requiredPn',
+      to: 'truceWindow.currency === \'miasto\'\n      ? offeredPn >= truceWindow.requiredPn',
+      expect: 'waluta miejska nie może być pokryta surowcami',
+      check: async m => {
+        const r = m.evaluateProposal(PLAYER_PEACE, withWindow(true, 300, 'miasto'));
+        return typeof r.reason === 'string' && r.reason.includes('pokryta');
+      },
     },
     {
       name: 'M-ACCEPT',

@@ -13282,7 +13282,10 @@ async function boot(): Promise<void> {
      * open = tura w oknie (truceEndWindowOpen), para w wojnie albo z ofertą po rozejmie, a GRACZ płaci wg
      * truceEndPriceRule. requiredPn = cena pokoju liczona jak w ofercie AI (aiAiPeacePriceFor, jak quotePn).
      */
-    function truceEndWindowFor(proposerId: number, responderId: number): { open: boolean; requiredPn: number } {
+    function truceEndWindowFor(
+      proposerId: number,
+      responderId: number,
+    ): { open: boolean; requiredPn: number; currency?: 'surowce' | 'miasto' } {
       const closed = { open: false, requiredPn: 0 };
       if (proposerId !== ME() || isHuman(responderId)) return closed;
       const meta = getDiploPairMeta(proposerId, responderId);
@@ -13291,7 +13294,7 @@ async function boot(): Promise<void> {
       const rule = truceEndPriceFor(truceEndPorts(), proposerId, responderId);
       if (rule == null || rule.payerId !== ME()) return closed;
       const requiredPn = aiAiPeacePriceFor(rule.payeeId, rule.payerId, 'pokoj').requiredPn;
-      return requiredPn > 0 ? { open: true, requiredPn } : closed;
+      return requiredPn > 0 ? { open: true, requiredPn, currency: rule.currency } : closed;
     }
 
     function tickTruceExpiries(): void {
@@ -27441,6 +27444,9 @@ async function boot(): Promise<void> {
           const cur = getDiploRelation(proposerId, responderId);
           setDiploRelation(proposerId, responderId, applyDiploEventTracked(proposerId, responderId, cur, 'trybut_oferta_przyjeta'));
         } else if (cywAction === 'pokoj') {
+          // R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-2-Q1 (r2): oferta AI po rozejmie (wpis w skrzynce) traci sens po pokoju
+          // z propozycji gracza — usuwamy wpis i meta (clearTruceEndOffer), zanim finalize zawiera pokój.
+          if (getDiploPairMeta(proposerId, responderId).truceEndOffer != null) clearTruceEndOffer(proposerId, responderId);
           finalizePeaceTreatyBetween(proposerId, responderId);
           // DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1 (Z7): akceptacja pokoju przez AI (propozycja ze stołu)
           // zostaje też w „Ważne" — sam toast znika po 4 s.

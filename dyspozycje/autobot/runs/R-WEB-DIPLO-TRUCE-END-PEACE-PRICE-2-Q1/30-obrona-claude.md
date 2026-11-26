@@ -1,41 +1,59 @@
-# R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-2-Q1 — obrona Operatora (runda 2/5)
+# R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-2-Q1 — Obrona Operatora (Claude, HAIKU 5.5, runda 2)
 
-STATUS: BLOCK
+STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-2-Q1
-GOAL: (1) pokój zaproponowany przez gracza po końcu rozejmu przyjmowany przez AI wg truceEndPriceRule, gdy cena zrównoważona; (2) realna płatność settleTruceEndPrice pokryta testem wykonawczym; (3) cena 0 → brak oferty w skrzynce, wpis „Rozejm wygasł, wojna wraca”.
-ZMIANY-COMMIT: baza b6f3e5dc0 (r1). Zmiany rundy 2 wyłącznie w testach: gra/tools/truce-end-settle-exec-test.cjs, gra/tools/truce-end-peace-price-test.cjs. Kod gra/src/ bez zmian względem r1. SHA: patrz pole sha w odpowiedzi.
+GOAL: poprawić kandydata 0ee8ad4ef wg zarzutów Evaluatora r2 (d5e25225f): okno „po rozejmie" zgodne z dispatchem (waluta wg pasma, akcja tylko 'pokoj', niepokryta oferta idzie dalej evaluateProposal, czyszczenie oferty AI przy pokoju z propozycji gracza), testy mutacyjne na te punkty.
+BAZA: 0ee8ad4ef (kandydat r2); poprawki w tym commicie.
 
-## Odpowiedzi na zarzuty Evaluatora
-1. Pkt (1) niezrealizowany — PRZYJMUJĘ. Dowód: git diff --name-only 8ad1d555d..b6f3e5dc0 nie zawiera diplomacy-proposals.ts ni diplomacy-pn-engine.ts. Wpięcie oceny pokoju gracza jest w gra/src/game/diplomacy-proposals.ts (case 'pokoj', ok. linia 1791), a pole okna (np. truceEndTurn) w DiploPairMeta w gra/src/game/diplomacy-pn-engine.ts (ok. linia 74). Oba pliki są poza allowlistą dispatchu. Allowlisty nie rozszerzałem samowolnie. Zob. BLOKADY.
-2. Test wykonawczy tylko na atrapie ledgera — PRZYJMUJĘ częściowo. Dodano przypadek (6): gracz (owner 0 = ME()) jako płatnik, surowce 0 → 9, jeden przelew, stan gracza 7 nietknięty. Wynik: 30 PASS, 0 FAIL. Realny port transferBasketItems w main.ts nadal nie jest wykonywany w teście (wiring sprawdzany regexem i tsc). NIE ZMIERZONO: żywa płatność w grze.
-3. Gałąź ceny 0 obejmuje AI↔AI i quotePn=NaN — ODRZUCAM część AI↔AI z dowodem: warunek `rule != null && ports.quotePn && !(ports.quotePn(...) > 0)` leży WEWNĄTRZ bloku `if (ports.isHuman(target) || ports.isHuman(initiator))` w truceEndTickPair (diplomacy-peace-lock.ts). Ścieżka AI↔AI idzie dalej przez truceEndSettleCore. Dodano test (d0b) AI↔AI z wyceną 0: brak oferty i pokój (finalize 1, wojna 0). PRZYJMUJĘ część NaN: NaN traktowane jak brak ceny (wojna, bez oferty). To zmiana względem r1 (wcześniej NaN dawało ofertę z wartością 0). Traktuję jako ZAŁOŻENIE (brak wyceny = brak pokoju z ceną); dodano test (d0c).
-4. Zmieniona asercja wiring w truce-end-peace-price-test.cjs — PRZYJMUJĘ jako odnotowaną. Stara asercja `pickTruceEndSettlementPlan({` w main.ts została zastąpiona asercją na `executeTruceEndSettlement({` i `return pick != null`. Kontrakt nie jest osłabiony: pickTruceEndSettlementPlan nadal jest wołana wewnątrz executora (exec-test sprawdza to osobno).
+## ZMIANY-COMMIT
+- gra/src/game/diplomacy-proposals.ts — typ `truceEndWindow` dostaje `currency?: 'surowce' | 'miasto'`. Blok okna: przyjęcie tylko gdy pokryta cena wg waluty (miasto → liczą się WYŁĄCZNIE miasta w giveItems; surowce → wartość pakietu). Niepokryta oferta NIE jest już odrzucana wprost: przechodzi do dotychczasowego evaluateProposal (dispatch r2: „w pozostałych przypadkach evaluateProposal bez zmian").
+- gra/src/main.ts — truceEndWindowFor zwraca także `currency: rule.currency`; w ścieżce akceptacji pokoju z tabeli (cywAction === 'pokoj') przed finalizePeaceTreatyBetween: jeśli meta.truceEndOffer != null → clearTruceEndOffer (usuwa wpis w skrzynce i meta). Inne miejsca bez zmian.
+- gra/tools/truce-end-window-test.cjs — asercja „niedopłata → odrzucona" zmieniona na „wynik jak bez okna" (koduje stary kontrakt, dispatch r2 dopuszcza); nowe asercje: waluta miasto/surowce, akcja 'rozejm' w oknie = jak bez okna, wiązanie main.ts (źródłowe); M-THR przepisany na kotwicę `: offeredPn >= truceWindow.requiredPn;` (poprzednia kotwica nie istnieje po przebudowie bloku); nowe mutanty M-ACTION (warunek actionId zdjęty) i M-CUR (waluta miasto liczona surowcami).
+- Plik runs/.../30-obrona-claude.md (ten raport).
 
-## TESTY (surowe wyniki, worktree po zmianach rundy 2; kod src bez zmian)
-- npx tsc --noEmit -p . (gra) → exit 0
-- node tools/logic-test.cjs → LOGIC OK (213/213)
-- node tools/truce-end-peace-price-test.cjs → 62 PASS, 0 FAIL, exit 0 (r1: 59/0; dodano d0b, d0c i tym samym zwiększono liczbę asercji)
-- node tools/truce-end-settle-exec-test.cjs → 30 PASS, 0 FAIL, exit 0 (mutanty M-NOPAY, M-SWAP, M-DOUBLE wykryte jak w r1; dodano przypadek (6))
-- node tools/diplo-truce-impl-test.cjs → 93 PASS, 0 FAIL
-- node tools/ai-test.cjs → 297 passed, 0 failed
-- node tools/truce-end-war-notice-test.cjs → PASS
-- node tools/war-limit-truce-count-test.cjs → 19 pass / 0 fail
-- node tools/diplo-human-peace-no-war-test.cjs → PASS=13 FAIL=0
-- node tools/diplo-war-tribute-once-test.cjs → PASS=8 FAIL=0
-- node tools/war-rules-multiwar-main-guard-test.cjs → 21 PASS / 0 FAIL
-- NIE ZMIERZONO: ścieżka pokoju gracza w tabeli negocjacji (pkt 1), żywa gra w przeglądarce, realny transferBasketItems.
+## ODPOWIEDZI NA ZARZUTY
+1. PRZYJMUJĘ. Dodany test: akcja 'rozejm' w oknie daje wynik identyczny z kontekstem bez okna i brak powodu „pokryta". Mutant M-ACTION (zdjęcie actionId === 'pokoj') wykryty (1 trafienie, test czerwony).
+2. PRZYJMUJĘ. Waluta miejska (pasmo >20%) jest egzekwowana: w oknie przyjmowane są tylko miasta w giveItems o wartości >= requiredPn. Test: surowce o wystarczającej wartości przy currency 'miasto' nie są przyjmowane przez okno. Mutant M-CUR wykryty. Uwaga: NIE dodano testu dodatniego z realnym miastem (kształt pozycji miasta w testach nie był zbadany) — NIE ZMIERZONO. Uwaga: gdy w paśmie >20% gracz nie ma cedowalnego miasta, reguła AI-owa (pickTruceEndSettlementPlan) przechodzi na surowce; okno tego fallbacku nie odtwarza — taka oferta idzie dalej evaluateProposal (założenie, do potwierdzenia przez FC).
+3. PRZYJMUJĘ (poprawione w main.ts, ścieżka akceptacji pokoju z tabeli). Kod kompiluje się (tsc 0). Zachowanie NIE ZMIERZONO w grze; test źródłowy sprawdza obecność linii czyszczącej.
+4. PRZYJMUJĘ częściowo. Dodany test źródłowy (grep na main.ts) dla warunków truceEndWindowFor (ME()/isHuman, truceEndWindowOpen, payerId, requiredPn z aiAiPeacePriceFor, currency) i czyszczenia oferty. Nie jest to test zachowania — pełne okablowanie nadal NIE ZMIERZONO w grze.
+5. PRZYJMUJĘ ZARZUT, NIE NAPRAWIONO w tej rundzie — patrz BLOKADY. Ścieżka deklaracji wojny (main.ts, declareWar po pokoju/oknie) jest poza allowlistą rundy 2 (DODATEK r2: tylko diplomacy-proposals.ts i diplomacy-pn-engine.ts + porty rozejmu). Bez zerowania truceEndTurn przy nowej wojnie okno zostaje otwarte w najbliższej turze, a warunek w oknie nie wymaga PEACE_PROPOSAL_MIN_WAR_TURNS. Wymaga decyzji orkiestratora (rozszerzenie allowlisty o miejsce deklaracji wojny i decyzja, czy okno ma respektować bramkę 10 tur wojny).
+6. PRZYJMUJĘ (procesowe). Wywołanie spawn_task z r1/r2 odrzucone, bez skutku; w tej rundzie żadnych narzędzi tworzących sesje nie użyto.
+7. PRZYJMUJĘ i POPRAWIONO: w oknie niedopłata przechodzi do evaluateProposal bez zmian (zgodnie z dispatchem). Odnotowuję: wynik niedopłaty w oknie może być więc przyjęciem wg zwykłej oceny pokoju, jeśli ta ocena go przepuszcza — to zgodne z brzmieniem dispatchu, ale FC powinien to potwierdzić wobec zasady „cena zrównoważona".
+
+## TESTY (surowe wyniki, ten commit)
+- npm ci w gra/ (71 pakietów) — exit 0 (potrzebne do esbuild w testach; node_modules usunięte po bramkach).
+- npx tsc --noEmit (gra/) — exit 0.
+- truce-end-window-test.cjs — PASS=39 FAIL=0 (mutanty M-OPEN, M-THR, M-ACCEPT, M-SETTURN, M-ACTION, M-CUR wykryte; każda mutacja 1 trafienie).
+- truce-end-peace-price-test.cjs — 62 PASS, 0 FAIL (liczba 62, nie 54 z dispatchu; plik nie zmieniony w tej rundzie).
+- truce-end-settle-exec-test.cjs — 30 PASS, 0 FAIL.
+- truce-end-war-notice-test.cjs — PASS (exit 0).
+- diplo-truce-impl-test.cjs — 93 PASS, 0 FAIL.
+- war-limit-truce-count-test.cjs — 19 pass / 0 fail.
+- diplo-human-peace-no-war-test.cjs — PASS=13 FAIL=0.
+- diplo-war-tribute-once-test.cjs — PASS=8 FAIL=0.
+- war-rules-multiwar-main-guard-test.cjs — 21 PASS / 0 FAIL.
+- ai-test.cjs — 297 passed, 0 failed.
+- logic-test.cjs — LOGIC OK (213/213).
+- tech-tree-test.cjs — 20 pass, 0 fail.
+- research-test.cjs — ALL GREEN.
+- combat-test.cjs — All sanity checks passed.
+- unit-replace-test.cjs — WSZYSTKIE TESTY ZIELONE (21/21).
+- git diff --check — czysto.
+- Przeglądarka / live: NIE ZMIERZONO.
 
 ## BLOKADY
-1. Pkt (1) wymaga zmian poza allowlistą: diplomacy-proposals.ts (case 'pokoj' → rachunek truceEndPriceRule) i diplomacy-pn-engine.ts (pole okna w DiploPairMeta). Bez tego pkt (1) nie jest zrealizowany i GOAL nie jest spełniony.
-2. Definicja okna „po rozejmie” (pole w meta pary, zachowanie po powrocie do wojny i przy zapisie/wczytaniu) — jeśli orkiestrator zdecyduje inaczej niż pole w meta, to decyzja inżynierska do potwierdzenia.
-3. Decyzja domyślna A (cena 0 = wojna) bez potwierdzenia właściciela (R-WEB-DIPLO-TRUCE-END-PRICE-EDGE-Q1).
+- ZARZUT 5 (nowa wojna w oknie): wymaga rozszerzenia allowlisty (miejsce deklaracji wojny w main.ts) i decyzji, czy okno respektuje bramkę 10 tur wojny. DECISION_REQUIRED dla orkiestratora — nie rozstrzygam sam; do decyzji przed READY_FOR_DEPLOY.
+- Zarzut 3 (wpis w skrzynce po pokoju) i zarzut 2 (brak cedowalnego miasta) — zamknięte w kodzie jak wyżej, z NIE ZMIERZONO w grze.
 
 ## RUNDY
-2/5 (poprzednio 1/5; ostatni werdykt Evaluatora: FAIL przez niespełniony pkt 1)
+2/5 (Operator HAIKU 5.5, obrona). Ostatni werdykt: Evaluator r2 PASS-WITH-NOTES (zarzuty 1–7).
 
 ## NASTĘPNY KROK
-Orkiestrator decyduje: (a) rozszerzyć allowlistę o gra/src/game/diplomacy-proposals.ts i gra/src/game/diplomacy-pn-engine.ts i wystawić nową rundę Operatora na pkt (1), albo (b) wydzielić pkt (1) do osobnego tematu, a ten temat zamknąć jako PASS-WITH-NOTES dla pkt (2)-(3) po Final Control. Pkty (2)-(3) i testy są gotowe do Evaluatora.
+Final Control r2 (Sonnet): przegląd diffu w 3 plikach (proposals, main, test) + decyzja orkiestratora w sprawie zarzutu 5 (allowlista deklaracji wojny) oraz potwierdzenie założeń: niedopłata w oknie idzie dalej evaluateProposal; okno bez cedowalnego miasta w paśmie >20% nie przyjmuje surowców.
 
-UWAGI-DLA-ORKIESTRATORA: gra/node_modules zainstalowano przez npm ci --ignore-scripts na czas bramek; usunięcie po zapisie raportu. Nie uruchamiano npm run build/dev.
 DEPLOY/PUSH: NIE WYKONANO
+
+## UWAGI-DLA-ORKIESTRATORA
+- Brak nowych sesji/tasków: w tej rundzie nie wywoływano spawn_task, create_session ani create_trigger.
+- Liczba testu truce-end-peace-price: 62 (dispatch r1 podawał 54) — rozbieżność z r1, nie wyjaśniona przez dispatch.
