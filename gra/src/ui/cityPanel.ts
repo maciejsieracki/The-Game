@@ -290,6 +290,7 @@ import {
   type RawConverterParamsJson,
 } from '../game/converters';
 import { isProductionBuildingEnabled, operationalBuiltIds } from '../game/building-toggle';
+import { demolishRefundFor, isDemolishBlockedBySiege, DEMOLISH_SIEGE_BLOCK_PL } from '../game/building-demolish';
 import { UI_PARAMS } from './uiParams';
 import type { EmpireFoodState, EmpireFoodTick } from '../game/empire-food';
 // Formatowanie liczb do wyświetlenia (obcięcie śmieci zmiennoprzecinkowych) — Maciej 2026-07-26.
@@ -378,6 +379,8 @@ export interface CityPanelConfig {
   getCityMoneySnap?: (cityId: string) => CityMoneySnap | null;
   /** Engine performs the actual rush-buy spend + completion. */
   onRushBuy?: (cityId: string, item: ProductionItem, koszt: number) => void;
+  /** R-WEB-BUILDING-DEMOLISH-Q1 (odp. 22C): wyburzenie budynku gracza; zwrot 50% surowców po potwierdzeniu. */
+  onDemolishBuilding?: (cityId: string, buildingId: string) => void;
   /** Called after the queue changes so the engine can react (e.g. refresh HUD). */
   onChange?: (cityId: string) => void;
   /** ‹ › między miastami gracza — silnik przełącza widok 3D okolicy + etykietę. */
@@ -9864,6 +9867,41 @@ function appendOwnedBuildingRow(
       tail.appendChild(bon);
     }
     if (tail.childElementCount > 0) row.appendChild(tail);
+    // R-WEB-BUILDING-DEMOLISH-Q1 (odp. 22C): przycisk „Wyburz” z podglądem zwrotu 50% surowców.
+    if (!compact && cfg.onDemolishBuilding) {
+      const demoBtn = document.createElement('button');
+      demoBtn.type = 'button';
+      demoBtn.className = 'hbtn bld-demolish-btn';
+      demoBtn.textContent = 'Wyburz';
+      demoBtn.setAttribute('aria-label', `Wyburz budynek ${def.nazwa}`);
+      // Oblężenie miasta blokuje wyburzanie (bez wyjątków, także Mennica/Pałac/mury): przycisk
+      // nieaktywny z powodem (PL) w podpowiedzi. Silnik i tak odrzuca (demolishBuilding blocked).
+      const demoSiegeBlocked = isDemolishBlockedBySiege([city], city.id);
+      if (demoSiegeBlocked) {
+        demoBtn.disabled = true;
+        demoBtn.title = DEMOLISH_SIEGE_BLOCK_PL;
+      }
+      demoBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (isDemolishBlockedBySiege([city], city.id)) return;
+        const refund = demolishRefundFor(def.id);
+        const refundTxt = Object.entries(refund).map(([k, v]) => `${k}: +${v}`).join(', ');
+        const msg = `Wyburzyć „${def.nazwa}”?\nZwrot surowców: ${refundTxt || 'brak'} (połowa kosztu, w dół).\nPieniądz i Praca nie wracają. Efekty budynku znikną od następnej tury.`;
+        if (typeof window !== 'undefined' && window.confirm(msg)) {
+          cfg.onDemolishBuilding?.(city.id, def.id);
+          rerender();
+        }
+      });
+      tail.appendChild(demoBtn);
+      // Widoczny komunikat blokady (odp. 28a): sama podpowiedź (title) nie jest widoczna w panelu.
+      if (demoSiegeBlocked) {
+        const demoNote = document.createElement('div');
+        demoNote.className = 'bld-demolish-siege-note';
+        demoNote.textContent = DEMOLISH_SIEGE_BLOCK_PL;
+        demoNote.style.cssText = 'font-size:12px;opacity:0.85;margin-top:4px;';
+        tail.appendChild(demoNote);
+      }
+    }
     // P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE: DRUGA linia, oddzielona od
     // `tail` (koszt utrzymania) -- bilans produkcji konwertera (Garncarnia i in.).
     // / EN: SECOND line, kept separate from `tail` (upkeep) -- converter

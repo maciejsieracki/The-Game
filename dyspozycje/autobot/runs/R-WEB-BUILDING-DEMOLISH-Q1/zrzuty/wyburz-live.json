@@ -1,0 +1,92 @@
+{
+  "steps": [
+    {
+      "name": "A_dismiss_palac",
+      "clicked": true,
+      "dialog": [
+        "Wyburzyć „Pałac”?\nZwrot surowców: brak (połowa kosztu, w dół).\nPieniądz i Praca nie wracają. Efekty budynku znikną od następnej tury."
+      ],
+      "builtBefore": [
+        "palac",
+        "koszary",
+        "mennica"
+      ],
+      "builtAfter": [
+        "palac",
+        "koszary",
+        "mennica"
+      ],
+      "unchanged": true
+    },
+    {
+      "name": "B_accept_koszary",
+      "clicked": true,
+      "dialog": [
+        "Wyburzyć „Koszary”?\nZwrot surowców: drewno: +80, kamien: +80 (połowa kosztu, w dół).\nPieniądz i Praca nie wracają. Efekty budynku znikną od następnej tury."
+      ],
+      "builtAfter": [
+        "palac",
+        "mennica"
+      ],
+      "koszaryRemoved": true,
+      "palacStillThere": true,
+      "treasuryBefore": 500,
+      "treasuryAfter": 500,
+      "resLinesAfter": {
+        "header": "Dostępne do budowy",
+        "boxText": "DOSTĘPNE DO BUDOWY\nPodgląd badań\n280\n280\n200\nStela / Pomnik\nKup\nBuduj\nStudnia\nKup\nBuduj\nKamienne kręgi\nKup\nBuduj\nSpichle",
+        "numbers": [
+          "280",
+          "280",
+          "200"
+        ]
+      }
+    },
+    {
+      "name": "C_accept_mennica",
+      "clicked": true,
+      "dialog": [
+        "Wyburzyć „Mennica”?\nZwrot surowców: drewno: +80, kamien: +80, cegla: +80 (połowa kosztu, w dół).\nPieniądz i Praca nie wracają. Efekty budynku znikną od następnej tury."
+      ],
+      "builtAfter": [
+        "palac"
+      ],
+      "mennicaRemoved": true
+    },
+    {
+      "name": "D_accept_palac",
+      "clicked": true,
+      "dialog": [
+        "Wyburzyć „Pałac”?\nZwrot surowców: brak (połowa kosztu, w dół).\nPieniądz i Praca nie wracają. Efekty budynku znikną od następnej tury."
+      ],
+      "builtAfter": [],
+      "palacRemoved": true
+    }
+  ],
+  "demolish_buttons_start": 3,
+  "before": {
+    "built": [
+      "palac",
+      "koszary",
+      "mennica"
+    ],
+    "treasury": 500,
+    "resLines": {
+      "header": "Dostępne do budowy",
+      "boxText": "DOSTĘPNE DO BUDOWY\nPodgląd badań\n200\n200\n200\nStela / Pomnik\nKup\nBuduj\nStudnia\nKup\nBuduj\nKamienne kręgi\nKup\nBuduj\nSpichle",
+      "numbers": [
+        "200",
+        "200",
+        "200"
+      ]
+    }
+  },
+  "demolish_buttons_after_B": 2,
+  "dialogsAll": [
+    "Wyburzyć „Pałac”?\nZwrot surowców: brak (połowa kosztu, w dół).\nPieniądz i Praca nie wracają. Efekty budynku znikną od następnej tury.",
+    "Wyburzyć „Koszary”?\nZwrot surowców: drewno: +80, kamien: +80 (połowa kosztu, w dół).\nPieniądz i Praca nie wracają. Efekty budynku znikną od następnej tury.",
+    "Wyburzyć „Mennica”?\nZwrot surowców: drewno: +80, kamien: +80, cegla: +80 (połowa kosztu, w dół).\nPieniądz i Praca nie wracają. Efekty budynku znikną od następnej tury.",
+    "Wyburzyć „Pałac”?\nZwrot surowców: brak (połowa kosztu, w dół).\nPieniądz i Praca nie wracają. Efekty budynku znikną od następnej tury."
+  ],
+  "errors": []
+}

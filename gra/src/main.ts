@@ -1268,6 +1268,7 @@ import { setKosztJednostekPaceResolver, applyUnitCostPace, type KosztJednostekPa
 import { getDiplomacyWarLevel, scalePenaltyForWarLevel, scaleBonusForWarLevel } from './game/diplomacy-war-level';
 import { unitRecruitBaseMoneyCost } from './game/production';
 import { applyMennicaCompletedInCapital } from './game/mennica-orphan';
+import { demolishBuilding, DEMOLISH_SIEGE_BLOCK_PL } from './game/building-demolish';
 import { unitFoodCardValue as unitFoodCardValueLive } from './game/economy-upkeep';
 import { scaleTerrainImprovementWorkCostForOwner, baseKosztPracaUlepszenia } from './game/terrain-improvements';
 import { convertFoodReserveToTax } from './game/empire-food';
@@ -35514,6 +35515,16 @@ async function boot(): Promise<void> {
       getUnlockedTechs: (ownerId: number) =>
         Array.from(isHuman(ownerId) ? (playerStateByHuman.get(ownerId)?.zbadane ?? player.zbadane) : (aiResearchDone.get(ownerId) ?? new Set<string>())),
       getBuiltBuildingIds: (cityId: string) => cityBuilt.get(cityId) ?? [],
+      // R-WEB-BUILDING-DEMOLISH-Q1 (odp. 22C): wyburzenie budynku gracza, zwrot 50% surowców do puli ownera.
+      onDemolishBuilding: (cityId: string, buildingId: string) => {
+        const dm = demolishBuilding({ cities, builtByCity: cityBuilt }, cityId, buildingId);
+        // Odmowa przez oblężenie (odp. 28a): widoczny komunikat zamiast cichego rerenderu.
+        if (dm.blocked === 'siege') { showHintMessage(DEMOLISH_SIEGE_BLOCK_PL, 6000); return; }
+        if (dm.removed) {
+          console.log(`[Demolish] ${cityId}: wyburzono ${buildingId}, zwrot`, dm.refund);
+          updateHud();
+        }
+      },
       // PYTANIE 83=B: panel miasta musi patrzeć na dokładnie ten sam dostęp do
       // złota co silnik (turn-economy.ts resolveOwnerZlotoAccess) -- jedna funkcja.
       getOwnerHasZlotoAccess: (ownerId: number) => ownerZlotoAccessForMennicaEffective(ownerId),
@@ -50405,6 +50416,16 @@ async function boot(): Promise<void> {
         getUnlockedTechs: (ownerId: number) =>
           Array.from(isHuman(ownerId) ? (playerStateByHuman.get(ownerId)?.zbadane ?? player.zbadane) : (aiResearchDone.get(ownerId) ?? new Set<string>())),
         getBuiltBuildingIds: (cityId: string) => cityBuilt.get(cityId) ?? [],
+        // R-WEB-BUILDING-DEMOLISH-Q1 (odp. 22C): wyburzenie budynku gracza, zwrot 50% surowców do puli ownera.
+        onDemolishBuilding: (cityId: string, buildingId: string) => {
+          const dm = demolishBuilding({ cities, builtByCity: cityBuilt }, cityId, buildingId);
+          // Odmowa przez oblężenie (odp. 28a): widoczny komunikat zamiast cichego rerenderu.
+          if (dm.blocked === 'siege') { showHintMessage(DEMOLISH_SIEGE_BLOCK_PL, 6000); return; }
+          if (dm.removed) {
+            console.log(`[Demolish] ${cityId}: wyburzono ${buildingId}, zwrot`, dm.refund);
+            updateHud();
+          }
+        },
         // PYTANIE 83=B: jedna funkcja co silnik (turn-economy.ts resolveOwnerZlotoAccess).
         getOwnerHasZlotoAccess: (ownerId: number) => ownerZlotoAccessForMennicaEffective(ownerId),
         // audyt #33: panel miasta jest tylko dla gracza (openCityPanelForPlayer) -- ulepszenia
