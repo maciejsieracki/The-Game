@@ -30,7 +30,11 @@ Przy „Kultura i religia: trudny” (poziom maksymalny) ok. 40–50 % miast AI 
 
 ## Pomiar (poziom maksymalny: „Trudny”, Kultura i religia „Trudny”, Koszty jednostek „Wysoki”, Porządek „hard”, 60 tur)
 
-Komendy: `gra/tools/ai-cult-rel-measure-run.cjs --seed {4242|7} --kr trudny --difficulty trudny --pace wysoki --unit-flow 1 --city-state 1 --turns 60` (bundle vite zbudowany poza repo). Hak odczytu: `cityStateTurn(14)` oraz nowe pola w wierszu właściciela (`krytyczne`, `seria3`, `lacznaZero`, `poCapture`, `osiedle`, `rebeliaDozwolona`, `czlowiek`). Dane surowe poza repo: `/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/aicultrebel/trudny-4242/seed4242.jsonl` i `.../trudny-7/seed7.jsonl`.
+Komendy: `gra/tools/ai-cult-rel-measure-run.cjs --seed {4242|7} --kr trudny --difficulty trudny --pace wysoki --unit-flow 1 --city-state 1 --turns 60` (bundle vite zbudowany poza repo). Hak odczytu: `cityStateTurn(14)` oraz nowe pola w wierszu właściciela (`krytyczne`, `seria3`, `lacznaZero`, `poCapture`, `osiedle`, `rebeliaDozwolona`, `czlowiek`).
+
+Dane surowe (JSONL, poza repo; SHA-256): `scratchpad/aicultrebel/trudny-4242/seed4242.jsonl` (fbaf1fda…) i `scratchpad/aicultrebel/trudny-7/seed7.jsonl` (31b595dc…). Wyprowadzenie per tura (tury 2–60, sumy po właścicielach AI i po graczu) jest w repo: `dyspozycje/autobot/runs/R-WEB-AI-CULT-REL-REBEL-Q1/pomiar-t2-60-wyprowadzony.csv` (średniki; kolumny `ai_*` = miasta właścicieli AI, `gracz_*` = gracz). Tabele poniżej są odtworzone z tego CSV (sprawdzone ponownie w rundzie obrony: wartości t60 zgodne).
+
+Uwaga o biegu s4242: jego podsumowanie (`seed4242.summary.json`) ma `startTurn: 20` i `resumed: true`, czyli tury 20–60 powstały z wznowienia ze slotu zapisanego w turze 20. Bieg s7 jest jednolity (`startTurn: 1`, `resumed: false`).
 
 ### Tura 60, miasta AI (właściciel > 0)
 
@@ -42,11 +46,12 @@ Komendy: `gra/tools/ai-cult-rel-measure-run.cjs --seed {4242|7} --kr trudny --di
 | z tego łaska wyczerpana (0) | 7 | 18 |
 | z tego w immunitecie osiedla (pop ≤ 4) — bez łaski | 49 | 55 |
 | z tego z ostrzeżeniem (`revoltWarning`) | 8 | 20 |
-| z tego przejęte przez wstrzymanie migracji/poCapture | 0 | 0 |
+| z tego w okresie po przejęciu miasta (`postCaptureLawTurnsRemaining` > 0) | 0 | 0 |
 | Miasta AI w rebelii (`rebelState`) | 0 | 0 |
-| Rebelie AI dozwolone warunkiem (`rebeliaDozwolona`) | 0 (z konstrukcji: `isHuman` = fałsz) | 0 |
 
-Liczby krytyczne i ostrzeżenia zgadzają się z wcześniejszą obserwacją: s7 w t60 daje 149 miast i 75 krytycznych dokładnie jak AICULTDIAG. Dla s4242 AICULTDIAG podał 153 miasta AI i 60 krytycznych, a ten bieg daje 149 i 57. Rozbieżność pojawia się od tury 50 (t30 i t40 zgadzają się co do miasta: 68 i 116). Nie ustalono przyczyny; możliwe, że to wznowienie ze slotu w turze 20 albo niedeterminizm. Tabela opiera się na tym biegu.
+Wiersz „Rebelie AI dozwolone warunkiem” został usunięty z tabeli: pole `rebeliaDozwolona` w haku jest liczone tylko dla `isHuman(właściciel)`, więc dla AI wynosi 0 z konstrukcji i nie jest pomiarem. Wstrzymanie migracji (osobny warunek w `main.ts` ok. 45170) NIE ZMIERZONO w tym haku.
+
+Liczby krytyczne i ostrzeżenia: s7 w t60 daje 149 miast i 75 krytycznych dokładnie jak AICULTDIAG. Dla s4242 AICULTDIAG podał 153 miasta AI i 60 krytycznych, a ten bieg daje 149 i 57. Rozbieżność pojawia się od tury 50 (t30 i t40 zgadzają się co do miasta: 68 i 116). Najbardziej prawdopodobny kandydat to wznowienie biegu s4242 ze slotu w turze 20 (patrz wyżej); nie jest to potwierdzone, bo nie wykonano czystego biegu bez wznowienia. Status: NIE ROZSTRZYGNIĘTE. Tabela opiera się na tym biegu i wnioski jakościowe (bramka `isHuman`, immunitet osiedla) nie zależą od tej rozbieżności, bo są strukturalne.
 
 ### Oś czasu (miasta AI krytyczne / z łaską 0 / w immunitecie)
 
@@ -71,7 +76,7 @@ Wniosek z osi: pierwsze miasta z łaską 0 pojawiają się w turze ok. 40–50, 
 | 3 | 1 | 0 |
 | 4+ | 2 | 3 |
 
-Porównanie z potrzebnym garnizonem (`aiCityGarrisonNeedByCityId`) NIE ZMIERZONO: wartość potrzeby nie jest zapisywana w rekordzie tury, a hak nie łączy miast z rekordami garnizonu po id. Z kodu wynika, że garnizon nie jest bramką rebelii (patrz tabela ścieżki).
+Porównanie z potrzebnym garnizonem (`aiCityGarrisonNeedByCityId`) NIE ZMIERZONO: wartość potrzeby nie jest zapisywana w rekordzie tury, a hak nie łączy miast z rekordami garnizonu po id. Wymaga osobnego rozszerzenia haka i ponownego biegu; w tej rundzie nie wykonano. Z kodu wynika, że garnizon nie jest bramką rebelii (patrz tabela ścieżki), więc luka nie zmienia rozstrzygnięcia, ale zostaje otwarta jako punkt 3 dispatchu.
 
 ### Gracz (odniesienie)
 
