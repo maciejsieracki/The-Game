@@ -277,6 +277,21 @@ export function stepPairState(store: WarWearinessStore, key: string, warStart: n
   return st;
 }
 
+/**
+ * R-WEB-WAR-END-CLEANUP-Q1 (L6): usuwa stan zmęczenia wojną dla par, które `keyHasOwner` uznaje za dotyczące
+ * wyeliminowanego właściciela (np. po eliminateOwner). Zwraca liczbę usuniętych wpisów. Pozostałe pary nietknięte.
+ */
+export function pruneWarWearinessPairs(store: WarWearinessStore, keyHasOwner: (key: string) => boolean): number {
+  let removed = 0;
+  for (const key of Array.from(store.keys())) {
+    if (keyHasOwner(key)) {
+      store.delete(key);
+      removed++;
+    }
+  }
+  return removed;
+}
+
 export interface WearinessPair {
   a: number;
   b: number;
