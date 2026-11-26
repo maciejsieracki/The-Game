@@ -90,6 +90,7 @@ import {
   applyCoastRing,
   enforceTargetDryLandFraction,
   purgeOpenOceanLandSpecks,
+  cutBackEarthLandOutsideMask,
   pangeaLandLayoutParams,
   type StartPosition,
   type TypSwiata,
@@ -728,6 +729,18 @@ export function generateMap(
   // Wybrzeże po ensureRiverOutlets potrafi odciąć ujścia (Maciej 2026-08-01) — ponowna bramka.
   ({ paths: riverPaths, kinds: riverPathKinds } =
     ensureRiverOutlets(hexes, riverPaths, riverPathKinds, width, height));
+
+  // ── Przebieg 3e-final (R-WEB-MAP-OFFMASK-STRANDED-FIX-Q1, P3+P4): ostatnie domknięcie
+  // geografii lądu. finalizeCoastAndInlandWater zamienia odcięte pule morza (także poza
+  // maską Ziemi) w łąkę — dla Ziemi cofamy suchy ląd poza maską do PŁYTKIEGO morza (0 heksów
+  // lądu poza maską, wybrzeże zostaje płytkie); wszystkie typy: usuwamy suchy ląd bez
+  // sąsiada-lądu (samotny heks na otwartym oceanie).
+  // Wołane PO ostatnim finalize/ensureRiverOutlets, PRZED przebiegami reliefu/złóż (które
+  // działają już tylko na lądzie).
+  if (typ === 'ziemia') {
+    cutBackEarthLandOutsideMask(hexes, width, height);
+  }
+  purgeOpenOceanLandSpecks(hexes);
 
   // ── Przebieg 4-fairplay-final: ostatni pierścień wybrzeża / bramka ujść mogły rozdrobnić
   // masy lądu lub skasować las/złoża — fair-play-grid-test i relief-grid-coverage-test
