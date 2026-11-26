@@ -1,0 +1,8 @@
+| plik | para | start | koniec | czas (tury) | typ | powod konca (wniosek) | zmeczenie w chwili konca | miasta zmienione (suma L+P) |
+|---|---|---|---|---|---|---|---|---|
+| war-kontynenty-4242.jsonl | 1 vs 8 | 59 | 79 | 19 | wymuszona-epoki | inne/nieznane (nie zapisane w logu) | 0.475 | 0 |
+| war-kontynenty-4242.jsonl | 0 vs 15 | 40 | 81 | 40 | wymuszona-epoki | pokoj-100% (wymuszony) | 1 | 0 |
+| war-kontynenty-4242.jsonl | 15 vs 29 | 81 | - | 9 | wymuszona-epoki | trwa (koniec danych) | 0.225 | 0 |
+
+Rozklad czasu trwania (zakonczone wojny): {"naturalna":{"n":0,"mediana":null,"min":null,"maks":null},"wymuszona-epoki":{"n":2,"mediana":29.5,"min":19,"maks":40}}
+Powody konca: {"inne/nieznane (nie zapisane w logu)":1,"pokoj-100% (wymuszony)":1,"trwa (koniec danych)":1}
