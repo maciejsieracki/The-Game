@@ -207,7 +207,7 @@ function allyOf(deal: ActiveDeal, ownerId: number): number | null {
   return null;
 }
 
-function isAllianceKind(rodzaj: TreatyKind): boolean {
+export function isAllianceKind(rodzaj: TreatyKind): boolean {
   return (
     rodzaj === RodzajTraktatu.SojuszWojskowy
     || rodzaj === 'sojusz_defensywny'
@@ -393,6 +393,23 @@ export function allianceFormalKindBetween(
   if (pair.some(d => normalizeTreatyKind(d.rodzaj) === 'sojusz_pelny')) return 'wojskowy';
   if (pair.some(d => normalizeTreatyKind(d.rodzaj) === 'sojusz_defensywny')) return 'obronny';
   return null;
+}
+
+/**
+ * ALLYCLEAN (odp. 7A, 2026-11-26): status relacji pary = „sojusz” bez żadnej umowy sojuszu
+ * między nimi w `state` to status nieaktualny — po zniknięciu umowy relacja wraca do pokoju.
+ * Czysta funkcja; wywołuje ją main.ts (reconcileAllianceStatusAfterDeals) po każdej ścieżce
+ * usunięcia traktatu.
+ */
+export function isStaleAllianceStatus(
+  state: readonly ActiveDeal[],
+  a: number,
+  b: number,
+  status: string,
+): boolean {
+  if (status !== 'sojusz') return false;
+  return !dealsForPair(state as ActiveDeal[], a, b)
+    .some(d => isAllianceKind(normalizeTreatyKind(d.rodzaj)));
 }
 
 /** Traktaty zerwane przez wypowiedzenie wojny / atak (NAP, sojusze, granice). */
