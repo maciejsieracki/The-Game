@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "706478e62ca0e38b30a3971ffd789582",
-  "bundleSha256": "0ace317fb2cda26b067c9820cd46c87d16c15d995abe06cd39bdd2a765e3b7f4",
-  "bundleBytes": 15024523,
+  "bundleMd5": "a2425f61cde79e9c585051fb726988b3",
+  "bundleSha256": "d46808f879a1e1e1571b232f9086aa13cafac2df12c44daf34d2b54f7d517fa5",
+  "bundleBytes": 15025885,
   "sourceSnapshot": {
-    "source": "FC 0a391ee18 (MINTCAPITAL-wip/fc 263273162, baza main b1e4e04ab)",
+    "source": "FC 9b4ef3916 (TRUCEPRICE2-wip/fc a7bc0124d, baza main 8ad1d555d)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 914: Bonus Mennicy działa na całą cywilizację, liczony raz i tylko z Mennicy stojącej w aktualnej stolicy (setOwnerCapitalCityResolver w turn-economy.ts, capitalCityIdForOwner z main.ts); Mennica poza stolicą nie działa (etykieta w panelu miasta: Mennica poza stolicą — nieaktywna) i nie blokuje budowy nowej w nowej stolicy"
+    "FALA 915: Propozycja pokoju gracza do AI w oknie po końcu rozejmu (tura końca + 1 tura; pole truceEndTurn) jest przyjmowana, gdy pakiet gracza pokrywa cenę (≤20% różnicy sił: surowce, >20%: miasto); poza oknem bez zmian; przy cenie 0 AI nie składa oferty i wojna trwa (wpis Rozejm wygasł, wojna wraca); płatność wykonywana przez executeTruceEndSettlement; oferta AI czyszczona przy pokoju z propozycji gracza"
   ],
   "verification": [
-    "tsc 0; logic 213/213; mint-capital-only 8/0 (mutacja resolvera 6/2); waluta-mennica 61/0; trade-routes-income 135/0; ai-unit-replace-same-rules 45/0; alliance-label-clean 26/0; main-guard 21/0; ai-test 297/0 (FC); vite build OK (merge z ALLYCLEAN bez konfliktu)"
+    "tsc 0; logic 213/213; truce-end-window 39/0; truce-end-peace-price 62/0; truce-end-settle-exec 30/0; diplo-truce-impl 93/0; truce-end-war-notice PASS; war-limit-truce-count 19/0; diplo-human-peace-no-war 13/0; diplo-war-tribute-once 8/0; main-guard 21/0; ai-test 297/0, tech-tree 20, research 33, combat 6, unit-replace 21 (FC); vite build OK"
   ],
   "limits": [
-    "NIE ZMIERZONO: zachowanie w przeglądarce (etykieta panelu, budowa w nowej stolicy przy osieroconej Mennicy); dług: pozostałe efekty stolicy w advanceCityEconomy i pre-pass D2 używają heurystyki pierwszego miasta"
+    "NIE ZMIERZONO: live w przeglądarce, test wykonawczy okablowania main.ts; cena 0 = wojna to założenie czekające na potwierdzenie właściciela (pytanie 10); rozjazd: okno bez miasta w paśmie >20% nie przyjmuje surowców, oferta AI tak (pytanie 11)"
   ],
-  "finalControl": "FC PASS-WITH-NOTES (Sonnet): bramki zielone, mutacja czerwona, zarzut 1 (dwa źródła stolicy) naprawiony",
+  "finalControl": "FC PASS-WITH-NOTES (Sonnet): zarzuty 1,2,3,7 naprawione, 4 częściowo, 5 oddany, bramki zielone",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-26T08:07:03",
+  "hubGeneratedAt": "2026-11-26T08:42:35",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "706478e62ca0e38b30a3971ffd789582",
-      "sizeBytes": 15024523
+      "md5": "a2425f61cde79e9c585051fb726988b3",
+      "sizeBytes": 15025885
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "706478e62ca0e38b30a3971ffd789582",
-      "sizeBytes": 15024523
+      "md5": "a2425f61cde79e9c585051fb726988b3",
+      "sizeBytes": 15025885
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "706478e62ca0e38b30a3971ffd789582",
-      "sizeBytes": 15024523
+      "md5": "a2425f61cde79e9c585051fb726988b3",
+      "sizeBytes": 15025885
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "706478e62ca0e38b30a3971ffd789582",
-      "sizeBytes": 15024523
+      "md5": "a2425f61cde79e9c585051fb726988b3",
+      "sizeBytes": 15025885
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "706478e62ca0e38b30a3971ffd789582",
-      "sizeBytes": 15024523
+      "md5": "a2425f61cde79e9c585051fb726988b3",
+      "sizeBytes": 15025885
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "706478e62ca0e38b30a3971ffd789582",
-      "sizeBytes": 15024523
+      "md5": "a2425f61cde79e9c585051fb726988b3",
+      "sizeBytes": 15025885
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "706478e62ca0e38b30a3971ffd789582",
-      "sizeBytes": 15024523
+      "md5": "a2425f61cde79e9c585051fb726988b3",
+      "sizeBytes": 15025885
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "706478e62ca0e38b30a3971ffd789582",
-      "sizeBytes": 15024523
+      "md5": "a2425f61cde79e9c585051fb726988b3",
+      "sizeBytes": 15025885
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "706478e62ca0e38b30a3971ffd789582",
-      "sizeBytes": 15024523
+      "md5": "a2425f61cde79e9c585051fb726988b3",
+      "sizeBytes": 15025885
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "706478e62ca0e38b30a3971ffd789582",
-      "sizeBytes": 15024523
+      "md5": "a2425f61cde79e9c585051fb726988b3",
+      "sizeBytes": 15025885
     }
   ],
-  "md5": "706478e62ca0e38b30a3971ffd789582",
+  "md5": "a2425f61cde79e9c585051fb726988b3",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

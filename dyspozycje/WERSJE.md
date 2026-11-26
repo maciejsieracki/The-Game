@@ -1,3 +1,9 @@
+## ROBOCZA a2425f61 -- 2026-11-26 -- FALA 915: Pokój po rozejmie: propozycja gracza wg ceny, cena 0 (testowa)
+
+- Propozycja pokoju gracza do AI w oknie po końcu rozejmu (tura końca + 1 tura; pole truceEndTurn) jest przyjmowana, gdy pakiet gracza pokrywa cenę (≤20% różnicy sił: surowce, >20%: miasto); poza oknem bez zmian; przy cenie 0 AI nie składa oferty i wojna trwa (wpis Rozejm wygasł, wojna wraca); płatność wykonywana przez executeTruceEndSettlement; oferta AI czyszczona przy pokoju z propozycji gracza
+- Weryfikacja: tsc 0; logic 213/213; truce-end-window 39/0; truce-end-peace-price 62/0; truce-end-settle-exec 30/0; diplo-truce-impl 93/0; truce-end-war-notice PASS; war-limit-truce-count 19/0; diplo-human-peace-no-war 13/0; diplo-war-tribute-once 8/0; main-guard 21/0; ai-test 297/0, tech-tree 20, research 33, combat 6, unit-replace 21 (FC); vite build OK
+- Limity: NIE ZMIERZONO: live w przeglądarce, test wykonawczy okablowania main.ts; cena 0 = wojna to założenie czekające na potwierdzenie właściciela (pytanie 10); rozjazd: okno bez miasta w paśmie >20% nie przyjmuje surowców, oferta AI tak (pytanie 11)
+
 ## ROBOCZA 706478e6 -- 2026-11-26 -- FALA 914: Mennica tylko w stolicy, raz na cywilizację (testowa)
 
 - Bonus Mennicy działa na całą cywilizację, liczony raz i tylko z Mennicy stojącej w aktualnej stolicy (setOwnerCapitalCityResolver w turn-economy.ts, capitalCityIdForOwner z main.ts); Mennica poza stolicą nie działa (etykieta w panelu miasta: Mennica poza stolicą — nieaktywna) i nie blokuje budowy nowej w nowej stolicy
