@@ -1,0 +1,246 @@
+[
+ {
+  "plik": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/am/pre-s4242/seed4242-harder0.jsonl",
+  "tury": [
+   2,
+   67
+  ],
+  "wiersze": 66,
+  "raportTury": {
+   "10": {
+    "sojuszeAI": 0,
+    "maxNaCywilizacje": 0,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "20": {
+    "sojuszeAI": 0,
+    "maxNaCywilizacje": 0,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "30": {
+    "sojuszeAI": 2,
+    "maxNaCywilizacje": 2,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "40": {
+    "sojuszeAI": 2,
+    "maxNaCywilizacje": 2,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "50": {
+    "sojuszeAI": 2,
+    "maxNaCywilizacje": 2,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "60": {
+    "sojuszeAI": 3,
+    "maxNaCywilizacje": 2,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "67": {
+    "sojuszeAI": 3,
+    "maxNaCywilizacje": 2,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   }
+  },
+  "maxSojuszyAI": 3,
+  "maxNaCywilizacje": 2,
+  "turyNaruszeniaLimitu2": 0,
+  "noweUmowy": 3,
+  "usunieciaUmow": 0,
+  "podmianyPartnera": 0,
+  "odnowienieW1Ture": 0,
+  "statusSojuszBezUmowySuma": 0,
+  "statusSojuszBezUmowyMaxNaTurze": 0
+ },
+ {
+  "plik": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/am/po-s4242/seed4242-harder0.jsonl",
+  "tury": [
+   2,
+   67
+  ],
+  "wiersze": 66,
+  "raportTury": {
+   "10": {
+    "sojuszeAI": 0,
+    "maxNaCywilizacje": 0,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "20": {
+    "sojuszeAI": 0,
+    "maxNaCywilizacje": 0,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "30": {
+    "sojuszeAI": 2,
+    "maxNaCywilizacje": 2,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "40": {
+    "sojuszeAI": 2,
+    "maxNaCywilizacje": 2,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "50": {
+    "sojuszeAI": 2,
+    "maxNaCywilizacje": 2,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "60": {
+    "sojuszeAI": 3,
+    "maxNaCywilizacje": 2,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "67": {
+    "sojuszeAI": 3,
+    "maxNaCywilizacje": 2,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   }
+  },
+  "maxSojuszyAI": 3,
+  "maxNaCywilizacje": 2,
+  "turyNaruszeniaLimitu2": 0,
+  "noweUmowy": 3,
+  "usunieciaUmow": 0,
+  "podmianyPartnera": 0,
+  "odnowienieW1Ture": 0,
+  "statusSojuszBezUmowySuma": 0,
+  "statusSojuszBezUmowyMaxNaTurze": 0
+ },
+ {
+  "plik": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/am/pre-s7/seed7-harder0.jsonl",
+  "tury": [
+   2,
+   67
+  ],
+  "wiersze": 66,
+  "raportTury": {
+   "10": {
+    "sojuszeAI": 0,
+    "maxNaCywilizacje": 0,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "20": {
+    "sojuszeAI": 0,
+    "maxNaCywilizacje": 0,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "30": {
+    "sojuszeAI": 0,
+    "maxNaCywilizacje": 0,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "40": {
+    "sojuszeAI": 2,
+    "maxNaCywilizacje": 2,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "50": {
+    "sojuszeAI": 2,
+    "maxNaCywilizacje": 2,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 1
+   },
+   "60": {
+    "sojuszeAI": 2,
+    "maxNaCywilizacje": 2,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 1
+   },
+   "67": {
+    "sojuszeAI": 5,
+    "maxNaCywilizacje": 2,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 2
+   }
+  },
+  "maxSojuszyAI": 5,
+  "maxNaCywilizacje": 2,
+  "turyNaruszeniaLimitu2": 0,
+  "noweUmowy": 8,
+  "usunieciaUmow": 3,
+  "podmianyPartnera": 3,
+  "odnowienieW1Ture": 1,
+  "statusSojuszBezUmowySuma": 24,
+  "statusSojuszBezUmowyMaxNaTurze": 3
+ },
+ {
+  "plik": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/am/po-s7/seed7-harder0.jsonl",
+  "tury": [
+   2,
+   67
+  ],
+  "wiersze": 66,
+  "raportTury": {
+   "10": {
+    "sojuszeAI": 0,
+    "maxNaCywilizacje": 0,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "20": {
+    "sojuszeAI": 0,
+    "maxNaCywilizacje": 0,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "30": {
+    "sojuszeAI": 0,
+    "maxNaCywilizacje": 0,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "40": {
+    "sojuszeAI": 2,
+    "maxNaCywilizacje": 2,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "50": {
+    "sojuszeAI": 2,
+    "maxNaCywilizacje": 2,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "60": {
+    "sojuszeAI": 3,
+    "maxNaCywilizacje": 2,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   },
+   "67": {
+    "sojuszeAI": 6,
+    "maxNaCywilizacje": 2,
+    "sojuszeZGraczem": 0,
+    "statusBezUmowy": 0
+   }
+  },
+  "maxSojuszyAI": 6,
+  "maxNaCywilizacje": 2,
+  "turyNaruszeniaLimitu2": 0,
+  "noweUmowy": 9,
+  "usunieciaUmow": 3,
+  "podmianyPartnera": 3,
+  "odnowienieW1Ture": 0,
+  "statusSojuszBezUmowySuma": 0,
+  "statusSojuszBezUmowyMaxNaTurze": 0
+ }
+]
