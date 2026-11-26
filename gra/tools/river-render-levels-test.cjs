@@ -76,7 +76,7 @@ for (const L of lens) {
   if (!(m > d && d > t && t === s)) orderOk = false;
   if (t < 0.3 - 1e-9) orderOk = false;
 }
-ok(orderOk, 'dla każdej długości: main > medium > tributary == short, tributary ≥ 0,3');
+ok(orderOk, 'dla każdej długości: main > medium > tributary == short; tributary ≥ 0,3 (dolna granica, dokładną wartość 0,45 sprawdza bandOk)');
 let bandOk = true;
 for (const L of lens) {
   const m = M.riverWidthMulForKind('main', L);

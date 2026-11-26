@@ -73,7 +73,7 @@ Wzór wizualny: rzeka główna gruba, dopływy cieńsze, wpływ pod kątem (jak 
 | Typ | `riverPathKinds` | Szerokość renderu | Generacja |
 |-----|------------------|-------------------|-----------|
 | **Główny nurt** | `main` | 100% (bazowa półszerokość wstęgi) | 1 na komórkę siatki N×N |
-| **Dopływ** | `tributary` | **50%** (2× cieńszy) | max ~2 na długi main (≥12 hex), łączy się z main w połowie trasy |
+| **Dopływ** | `tributary` | **0,45 szerokości głównej** (stałe; patrz akapit RIVTHICKIMPL niżej) | max ~2 na długi main (≥12 hex), łączy się z main w połowie trasy |
 
 - Dopływy generowane **po** siatce głównych nurtów.
 - Ujście / delta wizualna (fan na wybrzeżu): tylko **main** (`renderCoastalRiverExtension`).
