@@ -34784,7 +34784,7 @@ async function boot(): Promise<void> {
       (window as any).__nnsMeasureDebug = {
         // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1: epochId (opcjonalnie; brak = 'braz' jak dotąd) -- pomiar
         // wojen epoki startuje z Kamienia ('kamien'), bo przejście Kamień→Brąz jest jedynym wyzwalaczem puli Brązu.
-        startGame: (o: { seed: number; mapSize?: string; civTypes?: number; cityStates?: number; typSwiata?: string; epochId?: string; kulturaReligiaLevel?: 'latwy' | 'normalny' | 'trudny' }): void => {
+        startGame: (o: { seed: number; mapSize?: string; civTypes?: number; cityStates?: number; typSwiata?: string; epochId?: string; kulturaReligiaLevel?: 'latwy' | 'normalny' | 'trudny'; difficulty?: 'latwy' | 'normalny' | 'trudny' }): void => {
           const startEpochId = o.epochId ?? 'braz';
           const mqTier = mapQualityTierFromQuery('high');
           const mqBundle = bundledMapQualityPreset(mqTier);
@@ -34798,7 +34798,7 @@ async function boot(): Promise<void> {
           void doStartGame({
             civId: 'rzymianie', civName: 'Rzymianie',
             epoch: startEpochId === 'kamien' ? 'Epoka Kamienia' : startEpochId === 'zelazo' ? 'Epoka Żelaza' : 'Epoka Brązu',
-            epochId: startEpochId, difficulty: 'Normalny',
+            epochId: startEpochId, difficulty: o.difficulty === 'trudny' ? 'Trudny' : o.difficulty === 'latwy' ? 'Łatwy' : 'Normalny',
             mapSize: o.mapSize ?? 'Standardowy', rivals: String(o.cityStates ?? 2), speed: 'Normalna',
             worldType: 'Kontynenty', typSwiata: o.typSwiata ?? 'kontynenty', seed: o.seed,
             mapQualityLabel: qualityTierToLabel(mqTier), mapQuality: mqTier,
