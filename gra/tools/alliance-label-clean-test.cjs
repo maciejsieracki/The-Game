@@ -11,7 +11,12 @@
  *  E) statusy inne niż „sojusz” (wojna, pokój, neutralni) nigdy nie są oznaczane jako nieaktualne;
  *  F) wszystkie rodzaje sojuszu (wojskowy legacy, obronny, pełny) są rozpoznawane;
  *  G) main.ts: reconcileAllianceStatusAfterDeals wołana po każdej ścieżce usunięcia umowy sojuszu
- *     (odmowa wezwania, wygaśnięcie, zerwanie trybutu, wasalizacja, odmowa obrony sojusznika).
+ *     (odmowa wezwania, wygaśnięcie, zerwanie trybutu, wasalizacja, odmowa obrony sojusznika);
+ *     ciało wywołuje alliancePairsToReset z wyłączeniem same-civ (text-check — main.ts nie jest
+ *     ładowalny w node; zachowanie czystej funkcji pokrywają H–J);
+ *  H) para same-civ (major AI ↔ MP, exempt) z „sojusz” bez umowy NIE jest nieaktualna (regres z review);
+ *  I) alliancePairsToReset: pary nieaktualne wybierane, exempt i statusy inne niż „sojusz” pomijane;
+ *  J) alliancePairsToReset: kolejność owners i brak fałszywych trafień dla wielu par.
  */
 const fs = require('fs');
 const path = require('path');
@@ -26,7 +31,7 @@ const SRC = path.resolve(__dirname, '..', 'src');
 const ENTRY = path.resolve(__dirname, '.alliance-label-clean-entry.ts');
 const OUT = path.resolve(__dirname, '.alliance-label-clean-bundle.cjs');
 fs.writeFileSync(ENTRY, `
-export { isStaleAllianceStatus } from ${JSON.stringify(SRC + '/game/diplomacy-treaties')};
+export { isStaleAllianceStatus, alliancePairsToReset } from ${JSON.stringify(SRC + '/game/diplomacy-treaties')};
 export { RodzajTraktatu } from ${JSON.stringify(SRC + '/types/diplomacy')};
 `);
 try {
@@ -66,11 +71,33 @@ ok(B.isStaleAllianceStatus([deal('d', 'sojusz_defensywny', 1, 2)], 1, 2, 'sojusz
 ok(B.isStaleAllianceStatus([deal('p', 'sojusz_pelny', 1, 2)], 1, 2, 'sojusz') === false, 'F: sojusz pełny podtrzymuje');
 ok(B.isStaleAllianceStatus([deal('w', R.SojuszWojskowy, 1, 2)], 1, 2, 'sojusz') === false, 'F: sojusz wojskowy (legacy) podtrzymuje');
 
+// H) same-civ exempt: status „sojusz” bez umowy jest utrzymany przez maintainAiMajorSameCivRelation
+ok(B.isStaleAllianceStatus([], 1, 2, 'sojusz', true) === false, 'H: exempt same-civ nie jest nieaktualny');
+ok(B.isStaleAllianceStatus([], 1, 2, 'sojusz', false) === true, 'H: bez exempt bez umowy = nieaktualny');
+
+// I) alliancePairsToReset
+const stA = (map) => (a, b) => map[`${Math.min(a, b)}-${Math.max(a, b)}`] || 'pokoj';
+ok(JSON.stringify(B.alliancePairsToReset([], [0, 1, 2], stA({ '1-2': 'sojusz' }))) === '[[1,2]]',
+  'I: sojusz bez umowy wybrany do resetu');
+ok(JSON.stringify(B.alliancePairsToReset([], [0, 1, 2], stA({ '1-2': 'sojusz' }), (a, b) => a === 1 && b === 2)) === '[]',
+  'I: exempt para nie jest resetowana');
+ok(JSON.stringify(B.alliancePairsToReset([], [0, 1, 2], stA({ '1-2': 'wojna', '0-1': 'sojusz' }))) === '[[0,1]]',
+  'I: wojna nie jest resetowana, sojusz bez umowy tak');
+ok(JSON.stringify(B.alliancePairsToReset([SOJ], [0, 1, 2], stA({ '1-2': 'sojusz' }))) === '[]',
+  'I: sojusz z aktywną umową zostaje');
+
+// J) wiele par, kolejność owners
+const jr = B.alliancePairsToReset([], [3, 0, 2], stA({ '0-2': 'sojusz', '2-3': 'sojusz' }));
+ok(jr.length === 2 && jr.some(([a, b]) => a === 0 && b === 2) && jr.some(([a, b]) => a === 3 && b === 2),
+  'J: obie pary sojuszu bez umowy wybrane (niezależnie od kolejności owners)');
+
 // G) main.ts — punkty wywołania wspólnego porządkowania
 const mainSrc = fs.readFileSync(path.resolve(SRC, 'main.ts'), 'utf8');
 const defCount = (mainSrc.match(/function reconcileAllianceStatusAfterDeals\(\): void/g) || []).length;
 const callCount = (mainSrc.match(/reconcileAllianceStatusAfterDeals\(\);/g) || []).length;
 ok(defCount === 1, 'G: jedna definicja reconcileAllianceStatusAfterDeals');
+ok(/alliancePairsToReset\(/.test(mainSrc) && /isAiMajorToSameCivCityStatePair\(a, b, pairOpts\)/.test(mainSrc),
+  'G: reconcile wyłącza pary same-civ (exempt)');
 ok(callCount >= 5, `G: wołania po usunięciu umowy >= 5 (jest ${callCount})`);
 ok(/activeDeals = expireTreaties\(activeDeals, turn\);\s*reconcileAllianceStatusAfterDeals\(\);/.test(mainSrc),
   'G: wygaśnięcie traktatu porządkuje status');

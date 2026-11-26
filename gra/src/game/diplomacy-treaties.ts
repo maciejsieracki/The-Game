@@ -406,10 +406,36 @@ export function isStaleAllianceStatus(
   a: number,
   b: number,
   status: string,
+  exempt = false,
 ): boolean {
   if (status !== 'sojusz') return false;
+  // exempt = para bez umowy z założenia (major AI ↔ same-civ city-state, MP-DIPLO-Q1=A):
+  // jej status „sojusz” jest utrzymywany przez maintainAiMajorSameCivRelation, nie przez umowę.
+  if (exempt) return false;
   return !dealsForPair(state as ActiveDeal[], a, b)
     .some(d => isAllianceKind(normalizeTreatyKind(d.rodzaj)));
+}
+
+/**
+ * ALLYCLEAN: pary (a,b) z owners (a<b), których status „sojusz” jest nieaktualny i trzeba je
+ * przestawić na „pokoj”. Czysta funkcja — main.ts (reconcileAllianceStatusAfterDeals) tylko
+ * stosuje wynik. `isExempt` wyłącza pary bez umowy z założenia (same-civ major ↔ MP).
+ */
+export function alliancePairsToReset(
+  state: readonly ActiveDeal[],
+  owners: readonly number[],
+  getStatus: (a: number, b: number) => string,
+  isExempt: (a: number, b: number) => boolean = () => false,
+): Array<[number, number]> {
+  const out: Array<[number, number]> = [];
+  for (let i = 0; i < owners.length; i++) {
+    const a = owners[i];
+    if (a === undefined) continue;
+    for (const b of owners.slice(i + 1)) {
+      if (isStaleAllianceStatus(state, a, b, getStatus(a, b), isExempt(a, b))) out.push([a, b]);
+    }
+  }
+  return out;
 }
 
 /** Traktaty zerwane przez wypowiedzenie wojny / atak (NAP, sojusze, granice). */

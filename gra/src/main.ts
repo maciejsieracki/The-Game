@@ -1680,7 +1680,7 @@ import {
   isDefensiveAllianceWarObligation,
   normalizeTreatyKind, hydrateActiveDeals, addTreaty, resolvePokojTrustTier,
   hasSzlakowTreaty, hasWymianaTreaty,
-  allianceFormalKindBetween, isStaleAllianceStatus,
+  allianceFormalKindBetween, alliancePairsToReset,
   type HandelSurowiecCyklicznyItem,
   type AllianceObligation,
   type BarbarianCooperationGraceState,
@@ -24804,16 +24804,16 @@ async function boot(): Promise<void> {
      * „pokoj” (zaufanie/respekt zostają). Wojna i pozostałe statusy nietknięte.
      */
     function reconcileAllianceStatusAfterDeals(): void {
-      const owners = allPowerOwnerIds();
-      for (let i = 0; i < owners.length; i++) {
-        const a = owners[i];
-        if (a === undefined) continue;
-        for (const b of owners.slice(i + 1)) {
-          const rel = getDiploRelation(a, b);
-          if (isStaleAllianceStatus(activeDeals, a, b, rel.status)) {
-            setDiploRelation(a, b, { ...rel, status: 'pokoj' });
-          }
-        }
+      const pairOpts = aiMajorSameCivPairOpts();
+      const pairs = alliancePairsToReset(
+        activeDeals,
+        allPowerOwnerIds(),
+        (a, b) => getDiploRelation(a, b).status,
+        // Same-civ major AI ↔ MP nie ma umowy z założenia — jej „sojusz” nie jest nieaktualny.
+        (a, b) => isAiMajorToSameCivCityStatePair(a, b, pairOpts),
+      );
+      for (const [a, b] of pairs) {
+        setDiploRelation(a, b, { ...getDiploRelation(a, b), status: 'pokoj' });
       }
     }
 
