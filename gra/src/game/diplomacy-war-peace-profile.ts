@@ -39,6 +39,8 @@ export interface WarPeaceParams {
   hamulecRelacji: { progKryzysuMinusPunkty: number; bazaN: number; wagaProgWojny: number; minN: number; maxN: number };
   /** R-WEB-DIPLO-PEACE-AI-AI-NONNEGATIVE-BALANCE-Q1: minimalny bilans PW KAZDEJ z dwoch AI przy pokoju AI↔AI. */
   pokojAiAi: { minBilansPW: number };
+  /** R-WEB-DIPLO-TRUCE-END-PRICE-3-Q1 (10B): cena pokoju po rozejmie, gdy wyliczona cena = 0 (symboliczna opłata w Pn). */
+  pokojPoRozejmie: { minimalnaOplataSymbolicznaPn: number };
   /** R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1: AI wypowiada wojnę tylko przy Zaufaniu pary < progZaufaniaWojny. */
   wypowiedzenieZaufanie: { progZaufaniaWojny: number };
 }

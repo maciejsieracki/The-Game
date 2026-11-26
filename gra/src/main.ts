@@ -1770,7 +1770,7 @@ import {
   truceEndWindowOpen,
   type TruceEndPorts,
 } from './game/diplomacy-peace-lock';
-import { executeTruceEndSettlement, type TruceEndPayCurrency } from './game/diplomacy-truce-end-price';
+import { executeTruceEndSettlement, truceEndDuePn, type TruceEndPayCurrency } from './game/diplomacy-truce-end-price';
 import {
   computeIncomingPlayerAcceptNetPw,
   computePlayerAcceptanceSides,
@@ -13285,7 +13285,7 @@ async function boot(): Promise<void> {
     function truceEndWindowFor(
       proposerId: number,
       responderId: number,
-    ): { open: boolean; requiredPn: number; currency?: 'surowce' | 'miasto' } {
+    ): { open: boolean; requiredPn: number; currency?: 'surowce' | 'miasto'; cityAvailable?: boolean } {
       const closed = { open: false, requiredPn: 0 };
       if (proposerId !== ME() || isHuman(responderId)) return closed;
       const meta = getDiploPairMeta(proposerId, responderId);
@@ -13293,8 +13293,11 @@ async function boot(): Promise<void> {
       if (getDiploRelation(proposerId, responderId).status !== 'wojna' && meta.truceEndOffer == null) return closed;
       const rule = truceEndPriceFor(truceEndPorts(), proposerId, responderId);
       if (rule == null || rule.payerId !== ME()) return closed;
-      const requiredPn = aiAiPeacePriceFor(rule.payeeId, rule.payerId, 'pokoj').requiredPn;
-      return requiredPn > 0 ? { open: true, requiredPn, currency: rule.currency } : closed;
+      // R-WEB-DIPLO-TRUCE-END-PRICE-3-Q1 (10B): cena 0 = symboliczna opłata. cityAvailable (11A): gracz ma
+      // cedowalne miasto (płatnik miasta); bez niego okno przyjmuje pakiet surowców ≥ ceny (wariant zastępczy).
+      const requiredPn = truceEndDuePn(aiAiPeacePriceFor(rule.payeeId, rule.payerId, 'pokoj').requiredPn);
+      const cityAvailable = aiPeacePaymentAssets(rule.payerId, rule.payeeId, new Set<string>()).some(a => a.kind === 'miasto');
+      return requiredPn > 0 ? { open: true, requiredPn, currency: rule.currency, cityAvailable } : closed;
     }
 
     function tickTruceExpiries(): void {
@@ -40870,7 +40873,9 @@ async function boot(): Promise<void> {
      * Przelew tylko gdy plan pokrywa cenę w całości; inaczej false (bez przelewu) i pokoju nie ma.
      */
     function settleTruceEndPrice(payerId: number, payeeId: number, currency: TruceEndPayCurrency): boolean {
-      const price = aiAiPeacePriceFor(payeeId, payerId, 'pokoj');
+      // R-WEB-DIPLO-TRUCE-END-PRICE-3-Q1 (10B): cena 0 → symboliczna opłata (truceEndDuePn), nie wojna.
+      const price0 = aiAiPeacePriceFor(payeeId, payerId, 'pokoj');
+      const price = { ...price0, requiredPn: truceEndDuePn(price0.requiredPn) };
       const cityAssets = aiPeacePaymentAssets(payerId, payeeId, new Set<string>()).filter(a => a.kind === 'miasto');
       // Wybór planu (cena > 0, plan pełny, bilans PW, wariant zastępczy surowcami przy braku cedowalnego miasta)
       // — czysta funkcja pickTruceEndSettlementPlan (testowana w truce-end-peace-price-test.cjs).

@@ -72,6 +72,7 @@ import {
 } from './diplomacy-ai-offer-balance';
 import { BARBARIAN_COOPERATION_TURNS } from './diplomacy-barbarian-cooperation';
 import { normalizeTruceDuration, TRUCE_DEFAULT_TURNS } from './diplomacy-peace-lock';
+import { truceEndSurowceSubstituteCovers } from './diplomacy-truce-end-price';
 
 export { AI_TRADE_GOLD_MAX, AI_TRIBUTE_PEACE_MAX, capAiGoldOffer } from './diplomacy-economy';
 
@@ -206,7 +207,7 @@ export interface ProposalEvalContext {
    * w oknie (truceEndWindowOpen) i to GRACZ płaci cenę wg truceEndPriceRule; `requiredPn` = ta cena (Pn).
    * Brak pola / open=false = zwykła ocena propozycji pokoju (bez zmian).
    */
-  truceEndWindow?: { open: boolean; requiredPn: number; currency?: 'surowce' | 'miasto' };
+  truceEndWindow?: { open: boolean; requiredPn: number; currency?: 'surowce' | 'miasto'; cityAvailable?: boolean };
   /**
    * R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (r3): zapas GRACZA (złoto = Skarbiec państwa, brąz/żelazo/rudy = Spichlerz państwa).
    * Płatnikiem ogona w gałęzi „gracz jest autorem pokoju" jest gracz — nie zawsze proponent (kontroferta, AI proponuje graczowi).
@@ -1599,8 +1600,11 @@ function evaluateProposalImpl(
     const cityPnTE = cityItemsTE.length > 0
       ? resolveProposalPn({ giveItems: cityItemsTE, actionId }, pnOpts).givePn
       : 0;
+    // R-WEB-DIPLO-TRUCE-END-PRICE-3-Q1 (11A): waluta miejska bez cedowalnego miasta → wariant zastępczy surowcami
+    // (truceEndSurowceSubstituteCovers, ta sama reguła co pickTruceEndSettlementPlan).
     const coveredTE = truceWindow.currency === 'miasto'
       ? cityPnTE >= truceWindow.requiredPn
+        || truceEndSurowceSubstituteCovers(truceWindow.requiredPn, offeredPn, truceWindow.cityAvailable !== false)
       : offeredPn >= truceWindow.requiredPn;
     if (coveredTE) {
       return { accepted: true, reason: 'Pokój zawarty — cena po rozejmie pokryta', oneShotTrade: true };

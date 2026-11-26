@@ -63,6 +63,30 @@ export function truceEndPriceRule(input: TruceEndPriceInput): TruceEndPriceRule 
   return { band: 'outside', payerId: weakerId, payeeId: other(weakerId), currency: 'miasto' };
 }
 
+/**
+ * R-WEB-DIPLO-TRUCE-END-PRICE-3-Q1 (10B): cena pokoju po końcu rozejmu. Wyliczona cena > 0 → bez zmian;
+ * cena 0 (brak przewagi wyceny) → symboliczna opłata (pokojPoRozejmie.minimalnaOplataSymbolicznaPn), a NIE wojna.
+ * NaN / nieskończoność = brak ceny → 0 (wojna, jak dotąd). Jedno źródło prawdy dla oferty, okna i płatności.
+ */
+export function truceEndDuePn(
+  requiredPn: number,
+  symbolicPn: number = WAR_PEACE_PARAMS.pokojPoRozejmie.minimalnaOplataSymbolicznaPn,
+): number {
+  if (!Number.isFinite(requiredPn)) return 0;
+  if (requiredPn > 0) return requiredPn;
+  return Number.isFinite(symbolicPn) && symbolicPn > 0 ? symbolicPn : 0;
+}
+
+/**
+ * R-WEB-DIPLO-TRUCE-END-PRICE-3-Q1 (11A): wariant zastępczy surowcami w oknie propozycji gracza. Przy walucie
+ * miejskiej (pasmo >20%) bez cedowalnego miasta pakiet surowców o wartości ≥ ceny pokrywa pokój (to samo co
+ * pickTruceEndSettlementPlan: plan miastem niepełny → plan surowcami).
+ */
+export function truceEndSurowceSubstituteCovers(requiredPn: number, offeredSurowcePn: number, cityAvailable: boolean): boolean {
+  if (!Number.isFinite(requiredPn) || requiredPn <= 0) return false;
+  return !cityAvailable && Number.isFinite(offeredSurowcePn) && offeredSurowcePn >= requiredPn;
+}
+
 /** Minimalny kształt planu płatności (zgodny z peacePlanWithTail w main.ts). */
 export interface TruceEndPlanLike {
   readonly full: boolean;
