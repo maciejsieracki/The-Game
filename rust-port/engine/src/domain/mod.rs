@@ -86,6 +86,7 @@ pub mod pathfinding;
 pub mod playable;
 pub mod playable_movement;
 pub mod player;
+pub mod player_order_move;
 pub mod player_order_move_gate;
 pub mod player_order_queue;
 pub mod production_queue;

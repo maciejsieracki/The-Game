@@ -321,6 +321,78 @@ function runScenario(sc) {
     defenderEra: sc.defenderEra ?? 1,
   };
   const bs = new BattleScene(opts);
+  // R-RUSTPORT-P4-404 (K5EXEC-T3, D-404-3): doktryna jednostek PRZED `play()` (`sc.doctrine = { atk, def }`, wartosc albo
+  // lista per indeks rostera). Stan = pole `ru.unitDoctrine` (to samo pole co `_setUnitsDoctrine` `:17666-17671`;
+  // `playerOrder` jest juz `{ type: 'none' }` ze spawnu, flagi `_applySkirmishFlagsForUnit` `:17656-17660` NIE sa
+  // ustawiane: scenariusze uzywaja doktryny `skirmish` dla piechoty/jazdy bez zasiegu, dla ktorych sa no-op).
+  if (sc.doctrine) {
+    // Atrapa renderu: `_makeOrderArrow` (`:11373-11417`, wolane z `_refreshQueuedOrderVisuals` po rozkazie ruchu) buduje
+    // wylacznie obiekty three.js (strzalka rozkazu na ziemi); atrapa `THREE.Vector3` nie ma metody `length()`.
+    bs._makeOrderArrow = () => makeStub('orderArrow');
+    for (const [side, list] of [['atk', bs.atk], ['def', bs.def]]) {
+      const d = sc.doctrine[side];
+      if (d == null) continue;
+      list.forEach((ru, i) => {
+        const x = Array.isArray(d) ? d[i] : d;
+        if (x == null) return;
+        if (x === 'skirmish' && (ru.primaryRanged || ru.rangedBase || ru.range > 1)) {
+          throw new Error('skirmish dla strzelca (flagi _applySkirmishFlagsForUnit poza wektorem): ' + sc.name);
+        }
+        ru.unitDoctrine = x;
+      });
+    }
+  }
+  // R-RUSTPORT-P4-404: slad rozkazow ruchu (`sc.recordOrders`): kazde wywolanie `_performPlayerOrder` (`:18280-18353`) z
+  // rozkazem `move` poza planowaniem AUTO-batch: `{ t: vNow, u, from: [q, r], to: [tc, tr], kind, step, attack, route }`,
+  // gdzie `kind` = `target` (cel = pozycja), `attack` (`_adjacentEnemy` -> `_doAttack`), `move` (`_doMove(ru, nc, nr)`,
+  // `step = [nc, nr]`, takze odmowa `_siegeMoveRefused`), `done` (brak kroku albo bramka); `route` = wynik
+  // `_firstStepTowardMoveDestination` wywolanego w tym rozkazie (`[c, r]`, `null` = brak drogi, pole pominiete = nie
+  // wolano). Obserwatory = opakowania metod instancji (tekst pinu bez zmian, straznik SHA-256 nietkniety).
+  const orders = sc.recordOrders ? [] : null;
+  if (orders) {
+    const okey = (u) => (u.side === 'atk' ? 'atk:' : 'def:') + u.bu.id;
+    let cur = null;
+    const oPerf = bs._performPlayerOrder;
+    bs._performPlayerOrder = function (ru, done) {
+      const ord = ru.playerOrder;
+      if (this._autoBatchPlanning || ord.type !== 'move') return oPerf.call(this, ru, done);
+      const prev = cur;
+      cur = { t: this.vNow, u: okey(ru), from: [ru.q, ru.r], to: [ord.col, ord.row], kind: 'done', step: null, attack: null };
+      const rec = cur;
+      orders.push(rec);
+      try { return oPerf.call(this, ru, done); } finally { cur = prev; }
+    };
+    const oRoute = bs._firstStepTowardMoveDestination;
+    bs._firstStepTowardMoveDestination = function (...a) {
+      const out = oRoute.apply(this, a);
+      if (cur) cur.route = out == null ? null : out.split(',').map(Number);
+      return out;
+    };
+    const oMove = bs._doMove;
+    bs._doMove = function (ru, c, r, ...rest) {
+      if (cur && cur.kind === 'done') {
+        cur.kind = 'move';
+        cur.step = [c, r];
+        cur = null;
+      }
+      return oMove.call(this, ru, c, r, ...rest);
+    };
+    const oAtt = bs._doAttack;
+    bs._doAttack = function (a, d, ...rest) {
+      if (cur && cur.kind === 'done') {
+        cur.kind = 'attack';
+        cur.attack = okey(d);
+        cur = null;
+      }
+      return oAtt.call(this, a, d, ...rest);
+    };
+    const oRefresh = bs._refreshQueuedOrderVisuals;
+    bs._refreshQueuedOrderVisuals = function (...a) {
+      // `ru.playerOrder = none` + `_refreshQueuedOrderVisuals` + `done()` przy celu = pozycja (`:18300-18303`).
+      if (cur && cur.kind === 'done' && cur.from[0] === cur.to[0] && cur.from[1] === cur.to[1]) cur.kind = 'target';
+      return oRefresh.apply(this, a);
+    };
+  }
   // Diagnostyka (tylko z WIRING_A_TRACE, bez wplywu na wynik): slad etykiet obrazen, rozbic, smierci i ruchow.
   if (process.env.WIRING_A_TRACE === sc.name) {
     const wrap = (m, fmt) => {
@@ -688,6 +760,8 @@ function runScenario(sc) {
     ...(changes.length ? { speedChanges: applied, speedChangesWanted: changes.length, frames } : {}),
     ...(events ? { events } : {}),
     ...(order ? { towerOrder: order } : {}),
+    ...(orders ? { orders } : {}),
+    ...(sc.doctrine ? { doctrine: sc.doctrine } : {}),
     seed: sc.seed,
     battleIndex: sc.battleIndex ?? 0,
     input: {
@@ -951,6 +1025,357 @@ if (process.env.WIRING_A_TOWER_ORDER_VECTORS) {
 
 const t0 = Date.now();
 const vectors = [];
+// R-RUSTPORT-P4-404 (K5EXEC-T3, D-404-3): wektory rozkazu ruchu `_performPlayerOrder` (`:18280-18353`) i
+// `_firstStepTowardMoveDestination` (`:18478-18527`). Dwa tryby (pozostale pliki wektorow bez zmian):
+// * `WIRING_A_MOVE_ORDER_VECTORS=1`: PELNE bitwy oblezenia (`MOVE_ORDER_SCENARIOS`, przewijanie albo czas rzeczywisty) z
+//   doktryna `skirmish` czesci atakujacych (`sc.doctrine`), wiec `_executeSkirmishDoctrineStep` (`:18087-18124`) wydaje
+//   rozkaz ruchu wykonywany tekstem pinu. Zapis: `move_order_vectors.json` (wejscie sceny, doktryna, `expect` jak
+//   `vectors.json`, strumien zdarzen `events` C/R/K/D i slad rozkazow `orders`, patrz `runScenario`). Podzial na procesy:
+//   `WIRING_A_MOVE_ORDER_SHARD=k/n` (wynik do `WIRING_A_OUT`), `WIRING_A_MOVE_ORDER_MERGE=plik1,...`.
+// * `WIRING_A_MOVE_ORDER_STEPS=1`: przypadki jednego wywolania na scenie pinu z ustawionym stanem (pozycje, zajetosc,
+//   doktryna, `lastAutoMoveFrom`, `formationRank`, blokada linii). Metody wykonawcze (`_doMove`, `_doAttack`,
+//   `_executeGroupDoctrineStep`, `_refreshQueuedOrderVisuals`) sa zastapione zapisem decyzji (ruch NIE jest animowany:
+//   callback `_doMove` wolany od razu, jak koniec kroku); decyzja, `route` i `lastAutoMoveFrom` po wywolaniu = tekst pinu.
+//   Wejscia predykatow pinu zapisane w przypadku (`_passableForUnit` jako lista pol nieprzejezdnych sceny i rodzaju,
+//   `occByKey`, `_compactAttackAllowsStep` i `_destAllowedByBlockade` dla kolumn `q-1..q+1`, `_adjacentEnemy`,
+//   `_shouldAvoidAutoBacktrack`, bramka `steady` BFS). Zapis: `move_order_step_vectors.json`.
+const BF_COLS_PIN = 68;
+const BF_ROWS_PIN = 156;
+{
+  const l = show(SCENE).split('\n');
+  if (!l[660].startsWith('const BF_COLS = 68;') || !l[661].startsWith('const BF_ROWS = 156;')) throw new Error('BF_COLS/BF_ROWS pinu');
+}
+const MO_W = ['Wojownik', 'miecznik'];
+const MO_L = ['Łucznik', 'lucznik'];
+const MO_K = ['Konnica', 'konnica'];
+const MO_F = ['Falanga', 'falanga'];
+const MO_S = ['Włócznik', 'wlocznik'];
+const MO_T = ['Taran', 'obleznicza'];
+const MO_C = ['Katapulta', 'obleznicza'];
+const MOVE_ORDER_SCENARIOS = (() => {
+  const S = 'skirmish';
+  const lists = [
+    // [nazwa, mode, seed, teren, built, world, atk, def, doktryna atk]
+    ['mo_mur_piech3', 'skip', 401, 'Równina', ['mury'], null, [MO_W, MO_W, MO_W, MO_L], [MO_W, MO_L], [S, S, S, null]],
+    ['mo_palisada_piech6', 'skip', 402, 'Równina', ['palisada'], null, [MO_W, MO_W, MO_W, MO_W, MO_W, MO_W, MO_L, MO_T], [MO_W, MO_W, MO_L], [S, S, S, S, S, S, null, null]],
+    ['mo_mur_jazda_rzeka', 'skip', 403, 'Równina', ['mury'], { baza: 'Równina', las: false, rzeka: true }, [MO_K, MO_F, MO_C, MO_W], [MO_W, MO_F, MO_L], [S, S, null, S]],
+    ['mo_las_mury_baszta', 'skip', 404, 'Las', ['mury', 'baszta'], { baza: 'Las', las: true, rzeka: false }, [MO_W, MO_W, MO_S, MO_L, MO_T], [MO_W, MO_L, MO_L], [S, S, S, null, null]],
+    ['mo_wzg_palisada_mix', 'skip', 405, 'Wzgórza', ['palisada'], { baza: 'Wzgórza', las: false, rzeka: false }, [MO_W, MO_K, MO_W, MO_L, MO_C], [MO_S, MO_L, MO_L], [S, S, null, null, null]],
+    ['mo_gory_mury_cytadela', 'skip', 406, 'Góry', ['mury', 'fort', 'baszta'], { baza: 'Góry', las: false, rzeka: false }, [MO_W, MO_W, MO_W, MO_W], [MO_S, MO_S, MO_L, MO_L], [S, S, S, S]],
+    ['mo_mur_tlum8', 'skip', 407, 'Równina', ['mury'], null, [MO_W, MO_W, MO_W, MO_W, MO_W, MO_W, MO_W, MO_W], [MO_W, MO_W, MO_L, MO_L], [S, S, S, S, S, S, S, S]],
+    ['mo_palisada_jazda4', 'skip', 408, 'Równina', ['palisada'], { baza: 'Równina', las: true, rzeka: false }, [MO_K, MO_K, MO_K, MO_K, MO_T], [MO_W, MO_S, MO_L], [S, S, S, S, null]],
+    ['mo_rzeka_falangi', 'skip', 409, 'Równina', ['mury'], { baza: 'Równina', las: false, rzeka: true }, [MO_F, MO_F, MO_W, MO_W, MO_L, MO_L], [MO_W, MO_F, MO_L, MO_L], [S, S, S, null, null, null]],
+    ['mo_las_palisada_wloczn', 'skip', 410, 'Las', ['palisada'], { baza: 'Las', las: true, rzeka: false }, [MO_S, MO_S, MO_S, MO_W, MO_T], [MO_W, MO_L], [S, S, S, S, null]],
+    ['mo_mur_mieszane', 'skip', 411, 'Równina', ['mury'], null, [MO_W, MO_W, MO_W, MO_W, MO_L, MO_L], [MO_W, MO_L, MO_L], [S, null, S, null, null, null]],
+    ['mo_wzg_mury_baszta_jazda', 'skip', 412, 'Wzgórza', ['mury', 'baszta'], { baza: 'Wzgórza', las: false, rzeka: false }, [MO_K, MO_K, MO_W, MO_W, MO_L, MO_T], [MO_W, MO_L, MO_L, MO_L], [S, S, S, S, null, null]],
+    ['mo_palisada_slabi_obr', 'skip', 413, 'Równina', ['palisada'], null, [MO_W, MO_W, MO_W, MO_W, MO_W], [MO_L], [S, S, S, S, S]],
+    ['mo_mur_tylko_jeden', 'skip', 414, 'Równina', ['mury'], null, [MO_W], [MO_W, MO_L], [S]],
+    ['mo_rzeka_palisada_tlum', 'skip', 415, 'Równina', ['palisada'], { baza: 'Równina', las: false, rzeka: true }, [MO_W, MO_W, MO_W, MO_W, MO_W, MO_W, MO_K, MO_K], [MO_W, MO_W, MO_L, MO_L], [S, S, S, S, S, S, S, S]],
+    ['mo_gory_palisada', 'skip', 416, 'Góry', ['palisada'], { baza: 'Góry', las: false, rzeka: false }, [MO_W, MO_W, MO_S, MO_S, MO_L, MO_C], [MO_W, MO_L, MO_L], [S, S, S, S, null, null]],
+    ['mo_las_mury_tlum', 'skip', 417, 'Las', ['mury'], { baza: 'Las', las: true, rzeka: false }, [MO_W, MO_W, MO_W, MO_W, MO_W, MO_W, MO_T], [MO_W, MO_W, MO_W, MO_L], [S, S, S, S, S, S, null]],
+    ['mo_mur_baszta_wloczn', 'skip', 418, 'Równina', ['mury', 'baszta'], null, [MO_S, MO_S, MO_W, MO_W, MO_K], [MO_S, MO_L, MO_L], [S, S, S, S, S]],
+    ['mo_wzg_rzeka_mix', 'skip', 419, 'Wzgórza', ['mury'], { baza: 'Wzgórza', las: false, rzeka: true }, [MO_W, MO_W, MO_K, MO_F, MO_L, MO_L, MO_T], [MO_W, MO_F, MO_L], [S, S, S, S, null, null, null]],
+    ['mo_palisada_przewaga', 'skip', 420, 'Równina', ['palisada'], { baza: 'Równina', las: true, rzeka: false }, [MO_W, MO_W, MO_W, MO_W, MO_W, MO_W, MO_W, MO_W, MO_W, MO_T], [MO_W, MO_L], [S, S, S, S, S, S, S, S, S, null]],
+    ['mo_mur_cytadela_piech', 'skip', 421, 'Równina', ['mury', 'fort'], null, [MO_W, MO_W, MO_W, MO_L, MO_C], [MO_W, MO_S, MO_L, MO_L], [S, S, S, null, null]],
+    ['mo_las_jazda_palisada', 'skip', 422, 'Las', ['palisada'], { baza: 'Las', las: true, rzeka: false }, [MO_K, MO_K, MO_W, MO_W], [MO_W, MO_L, MO_L], [S, S, S, S]],
+    ['mo_mur_falanga_tlum', 'skip', 423, 'Równina', ['mury'], null, [MO_F, MO_F, MO_F, MO_W, MO_W, MO_W, MO_L], [MO_W, MO_W, MO_L], [S, S, S, S, S, S, null]],
+    ['mo_gory_rzeka_palisada', 'skip', 424, 'Góry', ['palisada'], { baza: 'Góry', las: false, rzeka: true }, [MO_W, MO_W, MO_W, MO_K], [MO_W, MO_L], [S, S, S, S]],
+  ];
+  // Kazda bitwa w CZASIE RZECZYWISTYM (klatki 16 ms, etykiety obrazen `D`): chwile zdarzen i rozkazow porownywane
+  // bezwzglednie. Przewijanie (`play()` + `skip()`) ma znany artefakt osi czasu tury 1 (PRE-SKIP-RAF,
+  // R-RUSTPORT-P6-K5LOOP-FRAME-QUANT-Q1 §5), wiec 8 pierwszych bitew dodatkowo jako bliźniaki `_skip` (porownanie bez
+  // chwil: decyzje, kolejnosc zdarzen, wynik).
+  const rt = lists.map(([name, , seed, teren, built, world, atk, def, dAtk]) => ({
+    name, mode: 'realtime', seed, teren, built, ...(world ? { world } : {}), atk, def, doctrine: { atk: dAtk },
+  }));
+  const sk = rt.slice(0, 8).map((sc) => ({ ...sc, name: sc.name + '_skip', mode: 'skip' }));
+  return [...rt, ...sk];
+})();
+if (process.env.WIRING_A_MOVE_ORDER_VECTORS) {
+  const tS = Date.now();
+  const outDefault = join(here, 'p6_k5loop_wiring_a_pin_vectors', 'move_order_vectors.json');
+  if (process.env.WIRING_A_MOVE_ORDER_MERGE) {
+    const parts = process.env.WIRING_A_MOVE_ORDER_MERGE.split(',').map((p) => JSON.parse(readFileSync(p, 'utf8')));
+    const byName = new Map();
+    for (const p of parts) {
+      if (p.pin !== PIN || p.pinSha256 !== EXPECTED_SHA256) throw new Error('czesc z innego pinu');
+      for (const v of p.vectors) {
+        if (byName.has(v.name)) throw new Error('powtorzony przypadek ' + v.name);
+        byName.set(v.name, v);
+      }
+    }
+    const merged = MOVE_ORDER_SCENARIOS.filter((c) => byName.has(c.name)).map((c) => byName.get(c.name));
+    if (merged.length !== byName.size || merged.length !== MOVE_ORDER_SCENARIOS.length) throw new Error('niepelne czesci: ' + merged.length);
+    const txtM = JSON.stringify({ pin: PIN, pinSha256: EXPECTED_SHA256, frameMs: 16, vectors: merged }) + '\n';
+    writeFileSync(outDefault, txtM);
+    console.log(createHash('md5').update(txtM).digest('hex') + '  ' + outDefault);
+    process.exit(0);
+  }
+  const shard = process.env.WIRING_A_MOVE_ORDER_SHARD ? process.env.WIRING_A_MOVE_ORDER_SHARD.split('/').map(Number) : null;
+  if (shard && !process.env.WIRING_A_OUT) throw new Error('WIRING_A_MOVE_ORDER_SHARD wymaga WIRING_A_OUT');
+  const only = process.env.WIRING_A_MOVE_ORDER_ONLY ? new Set(process.env.WIRING_A_MOVE_ORDER_ONLY.split(',')) : null;
+  const vecs = [];
+  for (const [ci, sc] of MOVE_ORDER_SCENARIOS.entries()) {
+    if (only && !only.has(sc.name)) continue;
+    if (shard && ci % shard[1] !== shard[0]) continue;
+    const v = runScenario({ ...sc, recordEvents: true, recordOrders: true });
+    vecs.push(v);
+    const kinds = {};
+    for (const o of v.orders) {
+      const k = o.kind + (o.route !== undefined ? (o.route ? '+route' : '+route-null') : '');
+      kinds[k] = (kinds[k] ?? 0) + 1;
+    }
+    console.error(`${sc.name}: ${v.expect.winner} tura ${v.expect.roundNo} wylom ${v.expect.wallEverBreached} rzuty ${v.expect.rollsDrawn} zdarzen ${v.events.length} rozkazow ${v.orders.length} ${JSON.stringify(kinds)} (${Date.now() - tS} ms)`);
+  }
+  if (hashed.size === 0) throw new Error('czesc bez przypadkow');
+  const shaM = hash.digest('hex');
+  if (shaM !== EXPECTED_SHA256) throw new Error('straznik SHA-256 pinu: ' + shaM + ' != ' + EXPECTED_SHA256);
+  const txt = JSON.stringify({ pin: PIN, pinSha256: shaM, frameMs: 16, vectors: vecs }) + '\n';
+  const outPath = process.env.WIRING_A_OUT ?? outDefault;
+  writeFileSync(outPath, txt);
+  console.log(createHash('md5').update(txt).digest('hex') + '  ' + outPath);
+  process.exit(0);
+}
+if (process.env.WIRING_A_MOVE_ORDER_STEPS) {
+  const tS = Date.now();
+  // Deterministyczny LCG generatora (nie `Math.random`, ktory jest atrapa dzwieku).
+  let seed = 0x404404;
+  const rnd = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+  const ri = (a, b) => a + Math.floor(rnd() * (b - a + 1));
+  const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
+  const okey = (u) => (u.side === 'atk' ? 'atk:' : 'def:') + u.bu.id;
+  const ck = (c, r) => `${c},${r}`;
+  const BASES = [
+    { name: 'st_mur', built: ['mury'], atk: [MO_W, MO_W, MO_W, MO_K, MO_L, MO_L, MO_F, MO_W], def: [MO_W, MO_S, MO_L, MO_L, MO_W, MO_W] },
+    { name: 'st_rzeka', built: ['palisada'], world: { baza: 'Równina', las: false, rzeka: true }, atk: [MO_W, MO_K, MO_K, MO_L, MO_W, MO_W, MO_F, MO_W], def: [MO_W, MO_L, MO_L, MO_S, MO_W, MO_K] },
+    { name: 'st_las', teren: 'Las', built: ['mury', 'baszta'], world: { baza: 'Las', las: true, rzeka: false }, atk: [MO_W, MO_W, MO_L, MO_K, MO_W, MO_S, MO_W, MO_L], def: [MO_W, MO_W, MO_L, MO_L, MO_K, MO_W] },
+  ];
+  const DOCS = [null, 'steady', 'skirmish', 'aggressive', 'defensive', 'manual'];
+  const cases = [];
+  const firstStep = [];
+  const doctrineCases = [];
+  const impassableBy = {};
+  const N_MOVE = Number(process.env.WIRING_A_MOVE_ORDER_N ?? 900);
+  const N_FIRST = Number(process.env.WIRING_A_MOVE_ORDER_NF ?? 400);
+  const N_DOC = Number(process.env.WIRING_A_MOVE_ORDER_ND ?? 120);
+  for (const base of BASES) {
+    modCache = new Map();
+    rafQ = [];
+    globalThis.__blowRandom = () => { throw new Error('rzut w przypadku kroku'); };
+    const { BattleScene } = load(SCENE);
+    const bs = new BattleScene({
+      attacker: JSON.parse(JSON.stringify(A(base.atk))),
+      defender: JSON.parse(JSON.stringify(D(base.def))),
+      teren: base.teren ?? 'Równina', worldTerrain: base.world, data: { units, counters, terrainCombat },
+      deploy: false, deployPlayerSide: 'atk', manualControlAllowed: false,
+      siege: { defCiv: 'rzym', builtBuildingIds: base.built }, attackerCivBonusy: [], defenderCivBonusy: [],
+      attackerEra: 1, defenderEra: 1,
+    });
+    const all = [...bs.atk, ...bs.def];
+    // Zapis decyzji (bez wykonania): `_doMove` zapisuje krok i od razu wola callback (koniec kroku), `_doAttack` cel.
+    let rec = null;
+    bs._doMove = function (ru, c, r, cb) { rec.kind = 'move'; rec.step = [c, r]; if (cb) cb(); };
+    bs._doAttack = function (a, d, cb) { rec.kind = 'attack'; rec.attack = okey(d); if (cb) cb(); };
+    bs._executeGroupDoctrineStep = function (ru, meta, cb) { rec.kind = 'doctrine'; rec.meta = meta.doctrine; if (cb) cb(); return true; };
+    bs._refreshQueuedOrderVisuals = function () {};
+    const oRoute = bs._firstStepTowardMoveDestination;
+    bs._firstStepTowardMoveDestination = function (...a) {
+      const out = oRoute.apply(this, a);
+      if (rec) { rec.route = out == null ? null : out.split(',').map(Number); rec.routeMax = a[3]; rec.routeAllow = typeof a[4] === 'function'; }
+      return out;
+    };
+    // Poza plansza `terrainMap.at` = Plains (`battle-terrain.ts:781-783`), wiec `_passableForUnit` = true; test Rust
+    // modeluje to tak samo (BFS sprawdza granice przed `_passableForUnit`, krok zachlanny idzie ku celowi w planszy).
+    for (const u of all) {
+      if (!bs._passableForUnit(u, -1, 0) || !bs._passableForUnit(u, 0, -1)
+        || !bs._passableForUnit(u, BF_COLS_PIN, 0) || !bs._passableForUnit(u, 0, BF_ROWS_PIN)) {
+        throw new Error('_passableForUnit poza plansza != true');
+      }
+    }
+    // Pola nieprzejezdne (`_passableForUnit`) calej planszy dla pieszego i jezdnego (teren sceny przypadkow jest staly:
+    // bez wylomu i bramy; `_moveCostForUnit` `:7436-7443` czyta tylko teren i `ru.mounted`), raz na scene.
+    for (const mounted of [false, true]) {
+      const u = all.find((x) => !!x.mounted === mounted);
+      if (!u) throw new Error('brak jednostki mounted=' + mounted + ' w ' + base.name);
+      const out = [];
+      for (let c = 0; c < BF_COLS_PIN; c++) {
+        for (let r = 0; r < BF_ROWS_PIN; r++) if (!bs._passableForUnit(u, c, r)) out.push([c, r]);
+      }
+      impassableBy[base.name + (mounted ? '|1' : '|0')] = out;
+    }
+    const wallCol = bs.siegeWallCol;
+    const layout = () => {
+      for (const u of all) { u.dead = false; u.fadingOut = false; u.routed = false; u.removed = false; }
+      const used = new Set();
+      const anchorC = ri(4, wallCol >= 0 ? Math.max(5, wallCol - 2) : 60);
+      const anchorR = ri(20, 130);
+      for (const u of all) {
+        let ok = false;
+        for (let k = 0; k < 400 && !ok; k++) {
+          const c = anchorC + ri(-5, 5);
+          const r = anchorR + ri(-5, 5);
+          if (c < 0 || c >= BF_COLS_PIN || r < 0 || r >= BF_ROWS_PIN) continue;
+          if (used.has(ck(c, r)) || !bs._passableForUnit(u, c, r)) continue;
+          used.add(ck(c, r));
+          u.q = c; u.r = r;
+          ok = true;
+        }
+        if (!ok) return false;
+      }
+      // Flagi zywotnosci (czesc martwa / uciekajaca / znikajaca: filtr `_enemiesOf` i `firingTiles`).
+      for (const u of all) {
+        const x = rnd();
+        if (x < 0.06) u.dead = true;
+        else if (x < 0.1) u.routed = true;
+        else if (x < 0.13) u.fadingOut = true;
+      }
+      bs.occByKey = new Map();
+      for (const u of all) if (!u.dead && !(u.routed && rnd() < 0.5)) bs.occByKey.set(ck(u.q, u.r), u);
+      return true;
+    };
+    const setDoctrine = (ru) => {
+      ru.unitDoctrine = pick(DOCS);
+      ru.groupId = rnd() < 0.35 ? pick(['g1', 'g2']) : null;
+      bs._groupMeta = new Map();
+      if (rnd() < 0.6) bs._groupMeta.set('g1', { doctrine: pick(DOCS.filter(Boolean)), autoPlay: rnd() < 0.7 });
+      ru.formationRank = rnd() < 0.5 ? ri(0, 3) : undefined;
+      for (const u of all) if (u !== ru) u.formationRank = rnd() < 0.5 ? ri(0, 3) : undefined;
+      ru.lastAutoMoveFrom = rnd() < 0.4 ? undefined : { q: ru.q + pick([-1, 0, 1]), r: ru.r + pick([-1, 0, 1]) };
+      if (ru.rangedBase) ru.ammoLeft = pick([0, 3, 10]);
+      ru.shootingEnabled = rnd() >= 0.15;
+      bs._generalSettings.blockadeActive = rnd() < 0.25;
+      bs._generalSettings.blockadeCol = bs._generalSettings.blockadeActive ? ru.q + ri(-2, 2) : null;
+    };
+    const snapshot = (ru) => {
+      const enemies = (ru.side === 'atk' ? bs.def : bs.atk).map((e) => ({ id: okey(e), q: e.q, r: e.r, dead: !!e.dead, fadingOut: !!e.fadingOut, routed: !!e.routed }));
+      const occ = [...bs.occByKey.keys()].map((k) => k.split(',').map(Number));
+      const cols = [ru.q - 1, ru.q, ru.q + 1];
+      const adj = bs._adjacentEnemy(ru);
+      const meta = bs._effectiveMetaForUnit(ru);
+      return {
+        base: base.name, unit: okey(ru), side: ru.side, mounted: !!ru.mounted, pos: [ru.q, ru.r],
+        unitDoctrine: ru.unitDoctrine ?? null, groupId: ru.groupId ?? null,
+        groupMeta: [...bs._groupMeta.entries()].map(([k, m]) => [k, m.doctrine, m.autoPlay]),
+        lastAutoMoveFrom: ru.lastAutoMoveFrom ? [ru.lastAutoMoveFrom.q, ru.lastAutoMoveFrom.r] : null,
+        rangedBase: !!ru.rangedBase, canShoot: !!(ru.rangedBase && ru.ammoLeft > 0), shootingEnabled: ru.shootingEnabled !== false,
+        range: ru.range,
+        enemies, occ,
+        compact: cols.map((c) => bs._compactAttackAllowsStep(ru, c)),
+        blockade: cols.map((c) => bs._destAllowedByBlockade(ru, c)),
+        adjacent: adj ? (ru.side === 'atk' ? bs.def : bs.atk).indexOf(adj) : null,
+        avoidBacktrack: bs._shouldAvoidAutoBacktrack(ru),
+        bfsSteady: bs._isUnitDoctrineAuto(ru) && meta.doctrine === 'steady',
+        doctrineAuto: bs._isUnitDoctrineAuto(ru),
+        metaDoctrine: meta.doctrine,
+      };
+    };
+    const live = () => all.filter((u) => !u.dead && !u.fadingOut && bs.occByKey.get(ck(u.q, u.r)) === u);
+    const per = Math.ceil(N_MOVE / BASES.length);
+    let made = 0;
+    let guard = 0;
+    while (made < per && guard++ < per * 20) {
+      if (!layout()) continue;
+      const pool = live();
+      if (pool.length === 0) continue;
+      const ru = pick(pool);
+      setDoctrine(ru);
+      // Cel: pozycja (rzadko), pole w oknie, przekatna, daleko; czesc celow na zajetym albo nieprzejezdnym polu.
+      const x = rnd();
+      let tc;
+      let tr;
+      if (x < 0.05) { tc = ru.q; tr = ru.r; }
+      else if (x < 0.6) { tc = ru.q + ri(-6, 6); tr = ru.r + ri(-6, 6); }
+      else if (x < 0.85) { tc = ru.q + pick([-1, 1]) * ri(1, 3); tr = ru.r + pick([-1, 1]) * ri(1, 3); }
+      else { tc = ru.q + ri(-25, 25); tr = ru.r + ri(-25, 25); }
+      tc = Math.max(0, Math.min(BF_COLS_PIN - 1, tc));
+      tr = Math.max(0, Math.min(BF_ROWS_PIN - 1, tr));
+      // Blokada drogi zachlannej: inna jednostka na polach (q+dc, r+dr), (q+dc, r), (q, r+dr).
+      if (rnd() < 0.55) {
+        const dc = Math.sign(tc - ru.q);
+        const dr = Math.sign(tr - ru.r);
+        const want = [[ru.q + dc, ru.r + dr], [ru.q + dc, ru.r], [ru.q, ru.r + dr]].filter(([c, r]) => !(c === ru.q && r === ru.r));
+        const others = all.filter((u) => u !== ru);
+        for (const [c, r] of want) {
+          if (rnd() < 0.75 && !bs.occByKey.has(ck(c, r)) && c >= 0 && c < BF_COLS_PIN && r >= 0 && r < BF_ROWS_PIN) {
+            const b = pick(others);
+            if (bs.occByKey.get(ck(b.q, b.r)) === b) bs.occByKey.delete(ck(b.q, b.r));
+            b.q = c; b.r = r; b.dead = false; b.fadingOut = false; b.routed = false;
+            bs.occByKey.set(ck(c, r), b);
+          }
+        }
+      }
+      // Mur poza oknem nie jest zapisany: przypadek tylko w polu okna 81x81 (cel i BFS w promieniu < 40).
+      const snap = snapshot(ru);
+      rec = { kind: 'done', step: null, attack: null };
+      ru.playerOrder = { type: 'move', col: tc, row: tr };
+      let doneCalls = 0;
+      const ret = bs._performPlayerOrder(ru, () => { doneCalls += 1; });
+      cases.push({
+        ...snap, order: 'move', target: [tc, tr],
+        expect: {
+          ret, doneCalls, kind: rec.kind, step: rec.step, attack: rec.attack,
+          ...(rec.route !== undefined ? { route: rec.route, routeMax: rec.routeMax, routeAllow: rec.routeAllow } : {}),
+          orderAfter: ru.playerOrder.type,
+          lastAutoMoveFrom: ru.lastAutoMoveFrom ? [ru.lastAutoMoveFrom.q, ru.lastAutoMoveFrom.r] : null,
+        },
+      });
+      rec = null;
+      made += 1;
+    }
+    // `_firstStepTowardMoveDestination` wolane wprost: limit odwiedzin i `allowFirstStep` (zbior zakazanych pierwszych pol).
+    const perF = Math.ceil(N_FIRST / BASES.length);
+    made = 0;
+    guard = 0;
+    while (made < perF && guard++ < perF * 20) {
+      if (!layout()) continue;
+      const pool = live();
+      if (pool.length === 0) continue;
+      const ru = pick(pool);
+      setDoctrine(ru);
+      const tc = Math.max(0, Math.min(BF_COLS_PIN - 1, ru.q + ri(-12, 12)));
+      const tr = Math.max(0, Math.min(BF_ROWS_PIN - 1, ru.r + ri(-12, 12)));
+      const maxVisited = pick([1024, 1024, 1, 2, 3, 5, 10, 25, 60, 200]);
+      const banned = rnd() < 0.5
+        ? [[ru.q, ru.r - 1], [ru.q + 1, ru.r], [ru.q, ru.r + 1], [ru.q - 1, ru.r]].filter(() => rnd() < 0.5)
+        : null;
+      const bannedSet = banned ? new Set(banned.map(([c, r]) => ck(c, r))) : null;
+      const snap = snapshot(ru);
+      const out = oRoute.call(bs, ru, tc, tr, maxVisited, bannedSet ? (c, r) => !bannedSet.has(ck(c, r)) : undefined);
+      firstStep.push({ ...snap, target: [tc, tr], maxVisited, banned, expect: out == null ? null : out.split(',').map(Number) });
+      made += 1;
+    }
+    // `hold` / `none` (bez oblezenia recznego `_performSiegeManualOrder`: `hold` albo strona `def`, `:18282-18296`).
+    const perD = Math.ceil(N_DOC / BASES.length);
+    made = 0;
+    guard = 0;
+    while (made < perD && guard++ < perD * 20) {
+      if (!layout()) continue;
+      const pool = live();
+      if (pool.length === 0) continue;
+      const ru = pick(pool);
+      setDoctrine(ru);
+      const type = rnd() < 0.3 ? 'hold' : 'none';
+      if (type === 'none' && ru.side === 'atk' && wallCol >= 0) continue;
+      const snap = snapshot(ru);
+      rec = { kind: 'done', step: null, attack: null };
+      ru.playerOrder = { type };
+      let doneCalls = 0;
+      const ret = bs._performPlayerOrder(ru, () => { doneCalls += 1; });
+      doctrineCases.push({ ...snap, order: type, wallCol, expect: { ret, doneCalls, kind: rec.kind, meta: rec.meta ?? null } });
+      rec = null;
+      made += 1;
+    }
+    console.error(`${base.name}: ruch ${cases.length} pierwszy-krok ${firstStep.length} hold/none ${doctrineCases.length} (${Date.now() - tS} ms)`);
+  }
+  const shaS = hash.digest('hex');
+  if (shaS !== EXPECTED_SHA256) throw new Error('straznik SHA-256 pinu: ' + shaS + ' != ' + EXPECTED_SHA256);
+  const txt = JSON.stringify({ pin: PIN, pinSha256: shaS, bfCols: BF_COLS_PIN, bfRows: BF_ROWS_PIN, impassable: impassableBy, cases, firstStep, doctrineCases }) + '\n';
+  const outPath = process.env.WIRING_A_OUT ?? join(here, 'p6_k5loop_wiring_a_pin_vectors', 'move_order_step_vectors.json');
+  writeFileSync(outPath, txt);
+  console.log(createHash('md5').update(txt).digest('hex') + '  ' + outPath);
+  process.exit(0);
+}
+
 // PIN2-PROBE-Q1: kandydaci scenariuszy (diagnostyka, np. przy szukaniu wektorow zabijajacych mutanty): `WIRING_A_EXTRA`
 // = plik JSON z lista scenariuszy w formacie `SCENARIOS`, wynik do `WIRING_A_OUT` (NIE do katalogu wektorow).
 const extra0 = process.env.WIRING_A_EXTRA ? JSON.parse(readFileSync(process.env.WIRING_A_EXTRA, 'utf8')) : null;

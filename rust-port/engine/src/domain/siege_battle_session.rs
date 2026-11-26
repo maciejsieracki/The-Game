@@ -1053,6 +1053,9 @@ impl SiegeBattleSession {
         // MARCH-INCREMENTAL-Q1 (D-MI-1): `_advanceStep` i `_rangedAction`/`_rangedForwardStep` krok po kroku — każda
         // decyzja kroku w chwili kroku (`_schedule(STEP_GAP_MS, …)`, `:6806`, `:8225`, `:8280`), jak pin.
         body.march_incremental = true;
+        // R-RUSTPORT-P4-404 (K5EXEC-T3, D-404-OP-1): rozkaz ruchu doktryny (`_performPlayerOrder` `'move'`,
+        // `:18297-18352`) wykonywany jak w pinie, nie jako tag `doktryna-rozkaz-ruchu`.
+        body.move_order_exec = true;
         // Obrona r2 (E2-1a, D-WIRA-16): `_applyTerrainRange` w ciele (`:6064`, `:7740`, `:7929`) z siatką
         // `terrainRangeDelta(combatTerrainName(c, r))` (`:7495-7496`).
         let mut range_grid = HashMap::new();

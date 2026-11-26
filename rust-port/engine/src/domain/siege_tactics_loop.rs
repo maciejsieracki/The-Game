@@ -30,8 +30,13 @@ use crate::domain::city_towers::{strongest_ranged_unit_for_era, tower_range_for,
 use crate::domain::formation_rules::CompactSide;
 use crate::domain::js_math::js_max0;
 use crate::domain::player_order_move_gate::{
-    compact_attack_allows_step, should_avoid_auto_backtrack, BacktrackUnit, BlockadeSettings,
-    CompactStepUnit, GroupDoctrine as GateDoctrine, GroupMeta, LineMember,
+    compact_attack_allows_step, dest_allowed_by_blockade, should_avoid_auto_backtrack,
+    BacktrackUnit, BlockadeSettings, CompactStepUnit, GroupDoctrine as GateDoctrine, GroupMeta,
+    LineMember,
+};
+use crate::domain::player_order_move::{
+    firing_tiles, move_order_step, perform_player_order_returns, FiringEnemy, FiringShooter,
+    MoveGrid, MoveOrderGates, MoveOrderInput, MoveOrderStep, PlayerOrder,
 };
 use crate::domain::siege_battle_adapter_body::{apply_terrain_range, TerrainRangeUnit};
 use crate::domain::siege_city_fortification::{melee_blocked_by_wall, MeleeWallContext};
@@ -80,7 +85,8 @@ use crate::domain::siege_tactics_cavalry::{
 use crate::domain::siege_tactics_clock::{ScheduleOutcome, VirtualClock};
 use crate::domain::siege_tactics_doctrine_state::{GroupDoctrine, ProdDoctrineState};
 use crate::domain::siege_tactics_doctrine_step::{
-    effective_doctrine, execute_group_doctrine_step, DoctrineAction, DoctrineStep, DoctrineStepUnit,
+    effective_doctrine, execute_group_doctrine_step, is_unit_doctrine_auto, DoctrineAction,
+    DoctrineStep, DoctrineStepUnit,
 };
 use crate::domain::siege_tactics_doctrine_target::{
     desired_hit_for_direction, enemies_of as enemies_of_cmb, pick_adjacent_target_by_priority,
@@ -1538,6 +1544,10 @@ enum MarchKind {
         arrive_base: Option<i64>,
         wall_col: i64,
     },
+    /// R-RUSTPORT-P4-404 (K5EXEC-T3): krok rozkazu ruchu `_performPlayerOrder` `'move'` (`:18349-18353`): jeden
+    /// `_doMove(ru, nc, nr, cb)`, w callbacku kroku `lastAutoMoveFrom = previousPosition` (gdy podane) i `done()`
+    /// (callback `finish` doktryny `:18113-18121` tylko ustawia rozkaz i woła `done()`).
+    MoveOrder,
 }
 
 /// MARCH-INCREMENTAL-Q1 (D-MI-1): na co czeka marsz.
@@ -1601,6 +1611,9 @@ struct ProdOps {
     tower_climb: bool,
     infantry_to_tower: bool,
     ram_tower_step: bool,
+    /// R-RUSTPORT-P4-404: `ru.playerOrder` w chwili aktywacji. AUTO: `{ type: 'none' }` (ciało nie trzyma rozkazów
+    /// gracza; doktryna zeruje rozkaz na starcie aktywacji `:6093-6095`).
+    player_order: PlayerOrder,
 }
 
 impl ActivateOps for ProdOps {
@@ -1609,8 +1622,13 @@ impl ActivateOps for ProdOps {
         // `ProdOps` (cele) czytają już przeliczony zasięg; maszyna dostaje gotową wartość.
         current
     }
+    /// R-RUSTPORT-P4-404 (K5EXEC-T3): wartość `_performPlayerOrder(ru, done)` (`battleScene.ts:18280-18428`) = `true`
+    /// dla każdej gałęzi ([`perform_player_order_returns`]). Maszyna woła to wyłącznie w trybie ręcznym gracza
+    /// (`:6068`), który ciało odcina PRZED maszyną jawnym tagiem `tryb-reczny` (stan rozkazów gracza `ru.playerOrder`
+    /// i kolejka UI = K5EXEC-T5/H4, poza zakresem T3, D-404-1); treść gałęzi `hold`/`none`/`move` jest portowana w
+    /// [`crate::domain::player_order_move::perform_player_order`], a rozkaz ruchu doktryny wykonuje ciało.
     fn perform_player_order(&mut self) -> bool {
-        false
+        perform_player_order_returns(self.player_order)
     }
     fn doctrine_step(&mut self) -> bool {
         self.doctrine_returns
@@ -1672,6 +1690,85 @@ fn unit_cu_mut(st: &mut TurnSeqState, r: UnitRef) -> &mut CombatUnit {
     }
 }
 
+/// R-RUSTPORT-P4-404 (K5EXEC-T3): zapis jednego rozkazu ruchu wykonanego przez [`ProdBody`] (obserwacja dla testów
+/// zgodności z pinem; odpowiednik śladu `orders` generatora `p6_k5loop_wiring_a_gen.mjs`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct MoveOrderRecord {
+    /// `vNow` wywołania `_performPlayerOrder`.
+    pub t: f64,
+    pub unit: UnitRef,
+    /// `(ru.q, ru.r)` przed rozkazem.
+    pub from: (i64, i64),
+    /// `(ord.col, ord.row)`.
+    pub to: (i64, i64),
+    /// Decyzja gałęzi `move` ([`move_order_step`]); `None` = brak [`MoveTerrain`] (jawny tag).
+    pub step: Option<MoveOrderStep>,
+    /// `_firstStepTowardMoveDestination` wołane w tym rozkazie (`Some(None)` = brak drogi).
+    pub route: Option<Option<(i64, i64)>>,
+}
+
+/// R-RUSTPORT-P4-404: wykonanie rozkazu ruchu przez ciało.
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum MoveOrderRun {
+    /// `done()` (cel = pozycja, brak drogi, bramka zwarcia albo blokady).
+    Done,
+    /// `_doAttack(ru, adj, done)`.
+    Attack(usize),
+    /// `_doMove(ru, nc, nr, cb)`; `prev` = `previousPosition` callbacku.
+    Move {
+        tile: (i64, i64),
+        prev: Option<(i64, i64)>,
+    },
+    /// Decyzja czyta `_passableForUnit` bez [`MoveTerrain`] (D1: jawny tag).
+    MissingTerrain,
+}
+
+/// R-RUSTPORT-P4-404: plansza rozkazu ruchu z terenu i zajętości ciała.
+struct ProdMoveGrid<'a> {
+    terrain: Option<&'a dyn MoveTerrain>,
+    mounted: bool,
+    occ: &'a HashMap<CellKey, String>,
+    missing: Cell<bool>,
+}
+
+impl MoveGrid for ProdMoveGrid<'_> {
+    fn passable(&self, col: i64, row: i64) -> bool {
+        match self.terrain {
+            Some(t) => unit_move_cost(t, self.mounted, col as f64, row as f64).is_finite(),
+            None => {
+                self.missing.set(true);
+                false
+            }
+        }
+    }
+    fn occupied(&self, col: i64, row: i64) -> bool {
+        self.occ.contains_key(&cell_key(col as f64, row as f64))
+    }
+}
+
+/// R-RUSTPORT-P4-404: bramki rozkazu ruchu ciała: `_compactAttackAllowsStep` przez [`ProdAdvanceWorld`] (ten sam port
+/// K5EXEC-T2 co `_advanceStep`), `_destAllowedByBlockade` z ustawieniami blokady AUTO (nieaktywna: `_generalSettings`
+/// zmienia wyłącznie panel generała `:17830`, tak jak w [`ProdBody::plan_doctrine_step`]).
+struct ProdMoveGates<'a> {
+    world: ProdAdvanceWorld<'a>,
+}
+
+impl MoveOrderGates for ProdMoveGates<'_> {
+    fn compact_allows(&self, col: i64) -> bool {
+        self.world.compact_attack_allows_step("", col as f64)
+    }
+    fn blockade_allows(&self, col: i64) -> bool {
+        dest_allowed_by_blockade(
+            BlockadeSettings {
+                active: false,
+                col: None,
+            },
+            CompactSide::Atk,
+            col as f64,
+        )
+    }
+}
+
 /// Zapis jednego ciosu wykonanego przez [`ProdBody`] (obserwacja dla testów zgodności z pinem).
 #[derive(Debug, Clone, PartialEq)]
 pub struct BlowRecord {
@@ -1706,6 +1803,15 @@ pub struct ProdBody<R: RollSource> {
     /// K5DOC-T8: decyzja każdego wykonanego kroku doktryny (`_executeGroupDoctrineStep`, `battleScene.ts:17966-18084`)
     /// w kolejności `start`: która metoda pinu wykonała turę jednostki (obserwacja dla testów zgodności z pinem).
     pub doctrine_steps: Vec<(UnitRef, DoctrineAction)>,
+    /// R-RUSTPORT-P4-404 (K5EXEC-T3): decyzja każdego wykonanego rozkazu ruchu (`_performPlayerOrder` `'move'`,
+    /// `battleScene.ts:18297-18352`) w kolejności wywołań: chwila (`vNow`), jednostka, pozycja, cel, decyzja.
+    pub move_orders: Vec<MoveOrderRecord>,
+    /// R-RUSTPORT-P4-404 (K5EXEC-T3, D-404-OP-1): `true` = rozkaz ruchu doktryny ([`DoctrineAction::MoveOrder`]) jest
+    /// WYKONYWANY (`_performPlayerOrder` `'move'`, [`move_order_step`]). `false` (domyślnie, dotychczasowe testy ciała
+    /// z wektorami generowanymi przy atrapie `_performPlayerOrder`: `p6_k5doc_t8`, `p6_k5loop_siege_atk_*`) = jawny tag
+    /// `doktryna-rozkaz-ruchu` jak przed T3. Sesja produkcyjna ([`crate::domain::siege_battle_session`]) ustawia `true`
+    /// (wzorzec [`Self::march_incremental`]).
+    pub move_order_exec: bool,
     /// Zbiór `engaged` sceny (`attacker>defender`, `battleScene.ts:8899`): tylko ciosy w zwarciu, także chybione.
     pub engaged: Vec<(UnitRef, UnitRef)>,
     /// Kontrataki obrońców (K5LOOP-KONTRATAK), osobno od ciosów głównych; jeden wpis na wykonany kontratak.
@@ -2643,6 +2749,8 @@ impl<R: RollSource> ProdBody<R> {
             trace: Vec::new(),
             blows: Vec::new(),
             doctrine_steps: Vec::new(),
+            move_orders: Vec::new(),
+            move_order_exec: false,
             engaged: Vec::new(),
             counters: Vec::new(),
             counter_round,
@@ -3502,6 +3610,111 @@ impl<R: RollSource> ProdBody<R> {
         }
     }
 
+    /// R-RUSTPORT-P4-404 (K5EXEC-T3): decyzja `_performPlayerOrder` `'move'` (`battleScene.ts:18297-18352`) z
+    /// bieżącego stanu ciała w chwili `self.now` ([`move_order_step`]): `_adjacentEnemy` (`:17481-17484` =
+    /// `_pickAdjacentTargetByPriority`, K5DOC-T2), `_passableForUnit` / `occByKey`, `_shouldAvoidAutoBacktrack` i
+    /// `_compactAttackAllowsStep` (K5EXEC-T2 przez [`ProdAdvanceWorld`]), bramka `steady` BFS (`:18509`), `firingTiles`
+    /// strzelca (`:18484-18498`). Zapis w [`Self::move_orders`].
+    fn move_order_start(
+        &mut self,
+        unit: UnitRef,
+        st: &TurnSeqState,
+        target: (i64, i64),
+    ) -> MoveOrderRun {
+        let ix = side_ix(unit.side);
+        let pu = self.units[ix][unit.idx].activate.clone();
+        let from = (pu.q, pu.r);
+        let me = self.combatant(unit, st);
+        let en = self.combatants(opposite(unit.side), st);
+        let adjacent = pick_adjacent_target_by_priority(&me, &en, &self.target_priorities, None);
+        let ds = self.doctrine[ix][unit.idx].clone();
+        let has_group = ds.group_id.as_deref().is_some_and(|g| !g.is_empty());
+        let group = ds
+            .group_id
+            .as_deref()
+            .filter(|g| !g.is_empty())
+            .and_then(|g| self.group_meta.get(g).copied())
+            .map(|m| (doctrine_of_gate(m.doctrine), m.auto_play));
+        let doctrine = effective_doctrine(ds.unit_doctrine, if has_group { group.map(|g| g.0) } else { None });
+        let bfs_steady = is_unit_doctrine_auto(ds.unit_doctrine, has_group, group)
+            && doctrine == GroupDoctrine::Steady;
+        let enemies: Vec<FiringEnemy> = self
+            .enemies_of(unit.side, st)
+            .iter()
+            .map(|e| FiringEnemy {
+                q: e.q,
+                r: e.r,
+                dead: e.dead,
+                fading_out: e.fading_out,
+                routed: e.routed,
+            })
+            .collect();
+        let firing = firing_tiles(
+            &FiringShooter {
+                ranged_base: self.ranged_base[ix][unit.idx],
+                can_shoot: pu.can_shoot,
+                shooting_enabled: !pu.shooting_disabled,
+                range: pu.range,
+            },
+            &enemies,
+        );
+        let world = self.advance_world(unit, st);
+        let avoid = world.avoid_auto_backtrack("");
+        let input = MoveOrderInput {
+            pos: from,
+            target,
+            adjacent_enemy: adjacent,
+            avoid_auto_backtrack: avoid,
+            last_auto_move_from: ds.last_auto_move_from,
+            bfs_steady,
+            firing,
+        };
+        let grid = ProdMoveGrid {
+            terrain: self.terrain.as_deref(),
+            mounted: pu.mounted,
+            occ: &self.occ_by_key,
+            missing: Cell::new(false),
+        };
+        let gates = ProdMoveGates { world };
+        let step = move_order_step(&input, &grid, &gates);
+        let missing = grid.missing.get();
+        debug_assert!(perform_player_order_returns(PlayerOrder::Move {
+            col: target.0,
+            row: target.1
+        }));
+        self.move_orders.push(MoveOrderRecord {
+            t: self.now,
+            unit,
+            from,
+            to: target,
+            step: (!missing).then_some(step),
+            route: if missing { None } else { step.bfs_result() },
+        });
+        if missing {
+            return MoveOrderRun::MissingTerrain;
+        }
+        match step {
+            MoveOrderStep::Attack(t) => MoveOrderRun::Attack(t),
+            MoveOrderStep::Move { col, row, prev, .. } => MoveOrderRun::Move {
+                tile: (col, row),
+                prev,
+            },
+            MoveOrderStep::ReachedTarget
+            | MoveOrderStep::NoRoute
+            | MoveOrderStep::CompactBlocked { .. }
+            | MoveOrderStep::BlockadeBlocked { .. } => MoveOrderRun::Done,
+        }
+    }
+
+    /// R-RUSTPORT-P4-404 (K5EXEC-T3): callback kroku rozkazu ruchu (`:18350-18352`): `lastAutoMoveFrom =
+    /// previousPosition` (gdy `_shouldAvoidAutoBacktrack`), `_refreshQueuedOrderVisuals` (render), `done()`.
+    fn move_order_step_end(&mut self, c: &MarchCont) -> MarchNext {
+        if let Some(p) = c.prev {
+            self.doctrine[side_ix(c.unit.side)][c.unit.idx].last_auto_move_from = Some(p);
+        }
+        MarchNext::Done
+    }
+
     /// MARCH-INCREMENTAL-Q1 (D-MI-1): `_doMove(ru, col, row, cb)` kroku marszu w chwili `self.now`. Odmowa bramki muru
     /// (`:8689-8692`) = `done()` bez callbacku; brak terenu = jawny tag `tag`.
     fn march_move(
@@ -3790,6 +4003,9 @@ impl<R: RollSource> ProdBody<R> {
             ) => self.cav_step_end(st, &mut c),
             (MarchStage::StepEnd, MarchKind::SiegeWalk { .. }) => self.walk_step_end(st, &c),
             (MarchStage::Gap, MarchKind::SiegeWalk { .. }) => self.walk_enter(st, &mut c),
+            // R-RUSTPORT-P4-404: rozkaz ruchu = jeden krok bez `_schedule` (przerwa nie występuje).
+            (MarchStage::StepEnd, MarchKind::MoveOrder) => self.move_order_step_end(&c),
+            (MarchStage::Gap, MarchKind::MoveOrder) => MarchNext::Done,
             (MarchStage::StepEnd, _) => self.ranged_step_end(st, &mut c),
             // Jazda nie planuje `_schedule` (kolejny krok w callbacku), więc przerwa jazdy nie występuje.
             (
@@ -5808,6 +6024,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             ram_tower_step: atk_plan
                 .as_ref()
                 .is_some_and(|p| p.ram_missing || p.ram != RamTowerPlan::NotHandled),
+            player_order: PlayerOrder::None,
         };
         let res = activate_unit(&mut au, &scene, &enemies, &mut ops);
         self.trace.push((unit, res.events.clone()));
@@ -5960,7 +6177,65 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 DoctrineAction::AdvanceStep => {
                     advance = true;
                 }
+                // R-RUSTPORT-P4-404 (K5EXEC-T3): `ru.playerOrder = { type: 'move', col, row }` + `_performPlayerOrder(ru,
+                // finish)` (`:18072-18082`, `:18112-18122`; gałąź `move` `:18297-18352`). `_performSiegeManualOrder`
+                // (`:18286`) zwraca `false` dla `move` (`:18436`), więc nie uczestniczy. Callback `finish` ustawia tylko
+                // `ru.playerOrder` (w AUTO zerowany na starcie kolejnej aktywacji, `:6093-6095`) i woła `done()`.
+                DoctrineAction::MoveOrder { col, row } if self.move_order_exec => {
+                    match self.move_order_start(unit, st, (col, row)) {
+                        MoveOrderRun::Attack(t) => pend.attack = Some(t),
+                        MoveOrderRun::Done => {
+                            self.pending[ix][unit.idx] = Some(pend);
+                            return 0.0;
+                        }
+                        MoveOrderRun::MissingTerrain => {
+                            self.unported.push((unit, "rozkaz-ruchu-brak-terenu"));
+                            self.pending[ix][unit.idx] = Some(pend);
+                            return 0.0;
+                        }
+                        MoveOrderRun::Move { tile, prev } => {
+                            let enemies = self.enemies_of(unit.side, st);
+                            // `_siegeApproachRestricted` (`:7953`) w bramce `_doMove` czyta `ru.routed` w chwili kroku.
+                            self.mover_routed = st.unit(unit).c.routed;
+                            let mut c = MarchCont {
+                                unit,
+                                kind: MarchKind::MoveOrder,
+                                stage: MarchStage::Gap,
+                                id: 0,
+                                move_left: st.unit(unit).c.move_left,
+                                moved: false,
+                                prev,
+                            };
+                            if self.march_incremental {
+                                self.pending[ix][unit.idx] = Some(pend);
+                                let next =
+                                    self.march_move(&mut c, tile, &enemies, "rozkaz-ruchu-brak-terenu");
+                                self.march_advance(c, next);
+                                return self.march_start_dur();
+                            }
+                            // Marsz atomowy (bez [`Self::march_incremental`]): krok i callback od razu.
+                            let res = self.move_step_core(
+                                unit, tile.0, tile.1, false, c.move_left, None, &enemies,
+                            );
+                            let Ok(res) = res else {
+                                self.unported.push((unit, "rozkaz-ruchu-brak-terenu"));
+                                self.pending[ix][unit.idx] = Some(pend);
+                                return 0.0;
+                            };
+                            pend.move_left = Some(res.move_left);
+                            // Odmowa bramki muru (`:8689-8692`): `done()` bez callbacku kroku.
+                            if !res.outcome.done {
+                                if let Some(p) = prev {
+                                    self.doctrine[ix][unit.idx].last_auto_move_from = Some(p);
+                                }
+                            }
+                            self.pending[ix][unit.idx] = Some(pend);
+                            return step_ms(&res, self.frame_ms);
+                        }
+                    }
+                }
                 DoctrineAction::MoveOrder { .. } => {
+                    // Bez [`Self::move_order_exec`] (kontrakt wektorów sprzed T3 z atrapą `_performPlayerOrder`):
                     // `_performPlayerOrder(ru, finish)` (`:18082`, `:18122`; ciało `:18280-18352`) to K5EXEC-T3 (#268):
                     // jawny tag, brak ruchu. K5LOOP-TAGS-REST: tag ZOSTAJE (decyzja techniczna, raport T4): rozkaz ruchu
                     // doktryny wydaje wyłącznie `_executeSkirmishDoctrineStep` (`:18110-18122`) i gałąź końcowa

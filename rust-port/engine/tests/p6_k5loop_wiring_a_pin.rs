@@ -2226,3 +2226,297 @@ fn kolejnosc_trafienia_wiezy_w_klatce_wektory_pinu_bajt_w_bajt() {
         list.len()
     );
 }
+
+// R-RUSTPORT-P4-404-K5EXEC-T3-MOVE-ORDER-Q1 (#404, T3): pełne bitwy oblężenia z doktryną `skirmish` części atakujących
+// (`move_order_vectors.json`, generator `WIRING_A_MOVE_ORDER_VECTORS=1`): `_executeSkirmishDoctrineStep`
+// (`battleScene.ts:18087-18124`) wydaje rozkaz ruchu, który pin wykonuje `_performPlayerOrder` (`:18297-18352`).
+// Porównanie bajt w bajt: wynik bitwy ([`diff`], w tym `unported` puste — tag `doktryna-rozkaz-ruchu` zniknął),
+// strumień zdarzeń `C`/`R`/`K`/`D` ([`pin_event_key`]) i ślad rozkazów (chwila, jednostka, pozycja, cel, decyzja, BFS).
+const MOVE_ORDER_VECTORS: &str =
+    include_str!("p6_k5loop_wiring_a_pin_vectors/move_order_vectors.json");
+
+/// Zdarzenie pętli jako klucz porównania (format [`pin_event_key`]); `None` = akcja spoza strumienia pinu.
+fn session_event_key(
+    a: &civ_engine::domain::siege_tactics_actions::TimedAction,
+    key: &dyn Fn(civ_engine::domain::siege_tactics_turnseq::UnitRef) -> String,
+) -> Option<String> {
+    use civ_engine::domain::siege_tactics_actions::{Actor, BattleAction};
+    use civ_engine::domain::siege_tactics_blow::ClashTag;
+    let t = hex_bits(a.t0);
+    Some(match a.action {
+        BattleAction::Clash {
+            attacker,
+            target,
+            dmg,
+            tag,
+            ..
+        } => {
+            let who = match attacker {
+                Actor::Unit(u) => key(u),
+                Actor::Tower(row) => format!("wieza:{row}"),
+            };
+            let tag = match tag {
+                ClashTag::Plain => "",
+                ClashTag::Padl => "padl",
+                ClashTag::Rout => "rout",
+            };
+            format!("{t} C {who} {} {} {tag}", key(target), hex_bits(dmg))
+        }
+        BattleAction::Damage { target, dmg } => {
+            format!("{t} D {} {}", key(target), hex_bits(dmg))
+        }
+        BattleAction::Rout { unit } => format!("{t} R {}", key(unit)),
+        BattleAction::Kill { unit } => format!("{t} K {}", key(unit)),
+        _ => return None,
+    })
+}
+
+/// Rozkaz pinu `{ t, u, from, to, kind, step, attack, route? }` jako klucz porównania.
+fn pin_order_key(o: &Value) -> String {
+    let p = |v: &Value| {
+        v.as_array()
+            .map_or("-".to_owned(), |a| format!("{},{}", a[0], a[1]))
+    };
+    let route = match o.get("route") {
+        None => "nie".to_owned(),
+        Some(v) => p(v),
+    };
+    format!(
+        "{} {} {}->{} {} {} {} bfs={route}",
+        hex_bits(f(&o["t"])),
+        o["u"].as_str().unwrap(),
+        p(&o["from"]),
+        p(&o["to"]),
+        o["kind"].as_str().unwrap(),
+        p(&o["step"]),
+        o["attack"].as_str().unwrap_or("-"),
+    )
+}
+
+/// Wynik przebiegu bitwy z rozkazami ruchu.
+struct MoveOrderRun {
+    out: Result<SessionOutcome, SessionError>,
+    events: Vec<String>,
+    orders: Vec<String>,
+}
+
+fn run_move_order_vector(v: &Value, data: &SessionData) -> MoveOrderRun {
+    use civ_engine::domain::player_order_move::MoveOrderStep;
+    use civ_engine::domain::siege_tactics_doctrine_state::GroupDoctrine;
+    use civ_engine::domain::siege_tactics_end::BattleSide;
+    use civ_engine::domain::siege_tactics_turnseq::UnitRef;
+    let mut s = SiegeBattleSession::prepare_scene(&scene_input(v), data).unwrap();
+    let ids = s.roster_ids().clone();
+    // Doktryna jednostek przed `play()` (generator: pole `ru.unitDoctrine`, wartość albo lista per indeks rosteru).
+    for (ix, side, pfx) in [(0usize, "atk", 'a'), (1, "def", 'd')] {
+        let d = &v["doctrine"][side];
+        if d.is_null() {
+            continue;
+        }
+        let n = v["input"][if ix == 0 { "attacker" } else { "defender" }]
+            .as_array()
+            .unwrap()
+            .len();
+        for i in 0..n {
+            let x = if d.is_array() { &d[i] } else { d };
+            let Some(name) = x.as_str() else { continue };
+            assert_eq!(name, "skirmish", "doktryna wektora {name}");
+            let id = format!("{pfx}{i}");
+            let idx = ids[ix].iter().position(|r| *r == id).expect("id rosteru");
+            s.battle_loop_mut().env.body.doctrine[ix][idx].unit_doctrine =
+                Some(GroupDoctrine::Skirmish);
+        }
+    }
+    let key = |u: UnitRef| {
+        let side = usize::from(u.side != BattleSide::Attacker);
+        format!("{}:{}", ["atk", "def"][side], ids[side][u.idx])
+    };
+    let mut events = Vec::new();
+    let mut push = |acts: &[civ_engine::domain::siege_tactics_actions::TimedAction]| {
+        for a in acts {
+            if let Some(k) = session_event_key(a, &key) {
+                events.push(k);
+            }
+        }
+    };
+    let mut err = None;
+    match v["mode"].as_str().unwrap() {
+        "skip" => {
+            s.play();
+            match s.skip() {
+                Ok(r) => push(&r.actions),
+                Err(e) => err = Some(e),
+            }
+        }
+        "realtime" => {
+            let mut frames = 0;
+            while s.phase() != SessionPhase::Finished {
+                match s.step(FRAME_MS) {
+                    Ok(r) => push(&r.actions),
+                    Err(e) => {
+                        err = Some(e);
+                        break;
+                    }
+                }
+                frames += 1;
+                assert!(frames < MAX_FRAMES, "bitwa bez końca");
+            }
+        }
+        m => panic!("tryb {m}"),
+    }
+    let body = &s.battle_loop().env.body;
+    let orders = body
+        .move_orders
+        .iter()
+        .map(|o| {
+            let (kind, step, attack) = match o.step {
+                Some(MoveOrderStep::Move { col, row, .. }) => {
+                    ("move", format!("{col},{row}"), "-".to_owned())
+                }
+                Some(MoveOrderStep::Attack(i)) => (
+                    "attack",
+                    "-".to_owned(),
+                    key(UnitRef {
+                        side: if o.unit.side == BattleSide::Attacker {
+                            BattleSide::Defender
+                        } else {
+                            BattleSide::Attacker
+                        },
+                        idx: i,
+                    }),
+                ),
+                Some(MoveOrderStep::ReachedTarget) => ("target", "-".to_owned(), "-".to_owned()),
+                Some(_) => ("done", "-".to_owned(), "-".to_owned()),
+                None => ("brak-terenu", "-".to_owned(), "-".to_owned()),
+            };
+            let route = match o.route {
+                None => "nie".to_owned(),
+                Some(None) => "-".to_owned(),
+                Some(Some((c, r))) => format!("{c},{r}"),
+            };
+            format!(
+                "{} {} {},{}->{},{} {kind} {step} {attack} bfs={route}",
+                hex_bits(o.t),
+                key(o.unit),
+                o.from.0,
+                o.from.1,
+                o.to.0,
+                o.to.1
+            )
+        })
+        .collect();
+    let out = match err {
+        Some(e) => Err(e),
+        None => s.finish(),
+    };
+    MoveOrderRun {
+        out,
+        events,
+        orders,
+    }
+}
+
+fn first_div(a: &[String], b: &[String]) -> Option<usize> {
+    (0..a.len().max(b.len())).find(|&i| a.get(i) != b.get(i))
+}
+
+#[test]
+fn rozkaz_ruchu_doktryny_bitwy_wektory_pinu_bajt_w_bajt() {
+    let doc: Value = serde_json::from_str(MOVE_ORDER_VECTORS).unwrap();
+    assert_eq!(doc["pin"], PIN);
+    assert_eq!(doc["pinSha256"], PIN_SHA256, "wektory z innego tekstu pinu");
+    let data = pin_session_data();
+    let list = doc["vectors"].as_array().unwrap();
+    assert!(list.len() >= 24, "wektorów {}", list.len());
+    let mut rozbiezne = Vec::new();
+    let mut cov = BTreeMap::<String, usize>::new();
+    for v in list {
+        let name = v["name"].as_str().unwrap();
+        assert_eq!(v["expect"]["otherRandom"], 0, "{name}");
+        let pin_events: Vec<String> = v["events"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(pin_event_key)
+            .collect();
+        let pin_orders: Vec<String> = v["orders"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(pin_order_key)
+            .collect();
+        for o in v["orders"].as_array().unwrap() {
+            let k = format!(
+                "{}{}",
+                o["kind"].as_str().unwrap(),
+                match o.get("route") {
+                    None => "",
+                    Some(r) if r.is_null() => "+bfs-brak",
+                    Some(_) => "+bfs",
+                }
+            );
+            *cov.entry(k).or_default() += 1;
+        }
+        *cov.entry(format!("tryb:{}", v["mode"].as_str().unwrap()))
+            .or_default() += 1;
+        if !pin_events.is_empty() {
+            *cov.entry("bitwa-ze-zdarzeniami".into()).or_default() += 1;
+        }
+        let run = run_move_order_vector(v, &data);
+        let mut d = Vec::new();
+        // Przewijanie (`play()` + `skip()`): oś czasu tury 1 ma znany artefakt sterownika generatora (PRE-SKIP-RAF,
+        // `R-RUSTPORT-P6-K5LOOP-FRAME-QUANT-Q1/01-operator-r1.md` §5), więc chwile porównuje się tylko w czasie
+        // rzeczywistym; w przewijaniu: decyzje rozkazów i zdarzenia bez chwili, wynik bitwy bajt w bajt.
+        let strip = |x: &[String]| -> Vec<String> {
+            x.iter().map(|r| r.split_once(' ').map_or(r.clone(), |(_, t)| t.to_owned())).collect()
+        };
+        let (run_orders, pin_orders, run_events, pin_events) = if v["mode"] == "skip" {
+            (strip(&run.orders), strip(&pin_orders), strip(&run.events), strip(&pin_events))
+        } else {
+            (run.orders.clone(), pin_orders, run.events.clone(), pin_events)
+        };
+        if let Some(i) = first_div(&run_orders, &pin_orders) {
+            d.push(format!(
+                "rozkaz {i}/{}: {:?} != pin {:?}",
+                pin_orders.len(),
+                run_orders.get(i),
+                pin_orders.get(i)
+            ));
+        }
+        if let Some(i) = first_div(&run_events, &pin_events) {
+            d.push(format!(
+                "zdarzenie {i}/{}: {:?} != pin {:?}",
+                pin_events.len(),
+                run_events.get(i),
+                pin_events.get(i)
+            ));
+        }
+        match &run.out {
+            Ok(out) => d.extend(diff(v, out)),
+            Err(e) => d.push(format!("błąd sesji {e:?}")),
+        }
+        if !d.is_empty() {
+            rozbiezne.push(format!("{name}: {}", d.join("; ")));
+        }
+    }
+    assert!(
+        rozbiezne.is_empty(),
+        "rozkaz ruchu doktryny: rozbieżne z pinem ({} z {}): {rozbiezne:#?}",
+        rozbiezne.len(),
+        list.len()
+    );
+    eprintln!("P4-404 bitwy: wektorów {}, pokrycie {cov:?}", list.len());
+    for (k, n) in [
+        ("move", 1000),
+        ("move+bfs", 20),
+        ("done+bfs-brak", 100),
+        ("tryb:realtime", 24),
+        ("tryb:skip", 8),
+        ("bitwa-ze-zdarzeniami", 10),
+    ] {
+        assert!(
+            cov.get(k).copied().unwrap_or(0) >= n,
+            "pokrycie {k} < {n}: {cov:?}"
+        );
+    }
+}
