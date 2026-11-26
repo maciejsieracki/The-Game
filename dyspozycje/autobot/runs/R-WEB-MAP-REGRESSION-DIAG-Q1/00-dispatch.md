@@ -1,0 +1,4 @@
+# R-WEB-MAP-REGRESSION-DIAG-Q1 — MAPREGDIAG: czy 11 twardych naruszeń map-gen-regression-test na kandydacie MAPFIX to regresja, czy stan bazy
+STATUS: DISPATCH | DOMAIN: GAME (diagnoza; zero zmian gra/src) | tag MAPREGDIAG | priorytet 1 (blokuje wdrożenie FALI 924)
+GOAL: na kandydacie MAPFIX f781bbd0a36b027e7b88466d63a2b20c9c5ae0ad pełny gra/tools/map-gen-regression-test.cjs (~65 min) zakończył się „poprawność generatora: FAIL (11 twardych naruszeń)”, dispatch FC wskazywał ten test jako NIE ZMIERZONO. Ustal, KTÓRE to naruszenia (seed, typ mapy, gęstość rzek, rodzaj: rzeka bez ujścia / bez realnego morza / sieć rzek / ujścia dopływów / inne) i czy WYSTĘPUJĄ TAK SAMO na bazie origin/main 690947a2adfb7c78e656959fea77fe50d864dda2 (stan sprzed MAPFIX). Wynik: tabela naruszeń kandydat vs baza, klasyfikacja NOWE (regresja MAPFIX) / ISTNIEJĄCE (baza) / NIEDETERMINISTYCZNE.
+BAZA: args.cand = origin/main (pełny SHA)
