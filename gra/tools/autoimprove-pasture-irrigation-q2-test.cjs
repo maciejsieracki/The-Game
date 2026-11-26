@@ -151,8 +151,9 @@ ok(D.rows.filter(x => x.cityId === 'c01').every(x => x.layers.length === 0), '(d
 console.log('(e) ROZWIJAJACA SIE cywilizacja, liczone OD TURY ODKRYCIA (AUTOIMPMASS, R-WEB-IMPROVEMENT-MASS-ON-DISCOVERY-Q1)');
 // Technologia „Oswojenie zwierzat” (trzoda) i „Gospodarka wodna” (= irygacja, TECH_CANONICAL) odkrywane w turze D (nie od startu gry).
 // Kryteria: od D nie ma glodzenia trzody/irygacji przy duzej puli; trzoda startuje w ciagu 3 tur od odkrycia; kolejnosc etapow zachowana.
-// Tempo irygacji od odkrycia NIE jest tu progiem: wynika z kolejnosci E3->E4 (trzoda na wszystkich farmach pierwsza) i z limitu 33% puli
-// gracza (decyzja #24). Zmierzone (ziarna 1-4, 90 tur): irygacja 36-46 tur po odkryciu — propozycja progu do zatwierdzenia przez orkiestratora.
+// Tempo irygacji od odkrycia NIE jest tu progiem. Hipoteza (NIEZBADANA): wynika z kolejnosci E3->E4 (trzoda na wszystkich farmach pierwsza).
+// Pomiar pary 33% / 100% (ziarna 1-14, AUTOIMPPCT) NIE pokazuje wplywu limitu puli: roznica 100% - 33% miesci sie w zakresie -2..+1 tury.
+// Zmierzone przy 100% (ziarna 1-4, 100 tur): irygacja 36-46 tur po odkryciu.
 {
   const { execFileSync } = require('node:child_process');
   const D = Number(process.env.E_DISC || 10);

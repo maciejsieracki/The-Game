@@ -50,7 +50,7 @@ function ok(cond, msg) {
   if (cond) { passed++; console.log('  [OK] ' + msg); } else { failed++; console.error('  [FAIL] ' + msg); }
 }
 const K = (q, r) => `${q},${r}`;
-const ERA = 2, PID = 0, POP = 16, NC = 8, TURNS = 12, POOL_REFILL = 400, PCT = Number(process.env.OWNER_RULES_PCT || 50); // AUTOIMPPCT: OWNER_RULES_PCT=100 = suwak maksymalny (sprawdzenie na maksimum)
+const ERA = 2, PID = 0, POP = 16, NC = 8, TURNS = 12, POOL_REFILL = 400, PCT = Number(process.env.OWNER_RULES_PCT || 100); // AUTOIMPPCT: domyslnie 100 = suwak maksymalny (reguła właściciela: testuj na maksimum); OWNER_RULES_PCT=50 tylko do porownania
 const TECHS = new Set([
   'Łowiectwo', 'Rolnictwo', 'Oswojenie zwierząt', 'Obróbka drewna', 'Garncarstwo', 'Murarstwo', 'Brązownictwo',
   'Hutnictwo żelaza', 'Jeździectwo', 'Koło', 'Waluta', 'Wojskowość', 'Żegluga', 'Gospodarka wodna', 'Irygacja',
