@@ -1032,6 +1032,7 @@ import { getWzrostSurowcowZEpoka, isEraRebalanceEnabled, normalizeWzrostSurowcow
 import { setDiplomacyWarLevel } from './game/diplomacy-war-level';
 // R-WEB-CULT-REL-IMPL-Q1 (CULTIMPL): ustawienie „Kultura i religia” (nowa gra / zapis).
 import { getCulturaReligiaLevel, setCulturaReligiaLevel } from './game/culture-religion-level';
+import { aiCityGarrisonNeedFromOrder, aiGarrisonNeedApplies } from './game/ai-city-order-need';
 import {
   resolveAutoBattleByPower,
   sumRosterFieldM,
@@ -18927,6 +18928,13 @@ async function boot(): Promise<void> {
       ).length;
     }
 
+    /**
+     * AICULT (#189): potrzeba garnizonu per miasto (cityId -> liczba jednostek) wyliczona w petli
+     * Porzadku miast (runWorldEndTurn) z pelnego rozbicia silnika; wypelniana TYLKO gdy poziom
+     * „Kultura i religia” = normalny/trudny. Odczyt: opts.cityGarrisonNeed decideAITurn.
+     */
+    const aiCityGarrisonNeedByCityId = new Map<string, number>();
+
     /** Wojsko na heksie miasta — bonus Prawo w Porządku. */
     function lawGarrisonCountForCity(city: City): number {
       return countLawGarrisonOnCityHex(units, city.q, city.r, city.ownerId);
@@ -34776,7 +34784,7 @@ async function boot(): Promise<void> {
       (window as any).__nnsMeasureDebug = {
         // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1: epochId (opcjonalnie; brak = 'braz' jak dotąd) -- pomiar
         // wojen epoki startuje z Kamienia ('kamien'), bo przejście Kamień→Brąz jest jedynym wyzwalaczem puli Brązu.
-        startGame: (o: { seed: number; mapSize?: string; civTypes?: number; cityStates?: number; typSwiata?: string; epochId?: string; kulturaReligiaLevel?: 'latwy' | 'normalny' | 'trudny' }): void => {
+        startGame: (o: { seed: number; mapSize?: string; civTypes?: number; cityStates?: number; typSwiata?: string; epochId?: string; kulturaReligiaLevel?: 'latwy' | 'normalny' | 'trudny'; difficulty?: 'latwy' | 'normalny' | 'trudny' }): void => {
           const startEpochId = o.epochId ?? 'braz';
           const mqTier = mapQualityTierFromQuery('high');
           const mqBundle = bundledMapQualityPreset(mqTier);
@@ -34790,7 +34798,7 @@ async function boot(): Promise<void> {
           void doStartGame({
             civId: 'rzymianie', civName: 'Rzymianie',
             epoch: startEpochId === 'kamien' ? 'Epoka Kamienia' : startEpochId === 'zelazo' ? 'Epoka Żelaza' : 'Epoka Brązu',
-            epochId: startEpochId, difficulty: 'Normalny',
+            epochId: startEpochId, difficulty: o.difficulty === 'trudny' ? 'Trudny' : o.difficulty === 'latwy' ? 'Łatwy' : 'Normalny',
             mapSize: o.mapSize ?? 'Standardowy', rivals: String(o.cityStates ?? 2), speed: 'Normalna',
             worldType: 'Kontynenty', typSwiata: o.typSwiata ?? 'kontynenty', seed: o.seed,
             mapQualityLabel: qualityTierToLabel(mqTier), mapQuality: mqTier,
@@ -45019,6 +45027,15 @@ async function boot(): Promise<void> {
               const ordPct = postCaptureLawActive
                 ? applyPostCaptureLawOverride(ordPctRaw, city, data.societyParams, difficulty)
                 : ordPctRaw;
+              // AICULT (#189): potrzeba garnizonu z TEGO Porzadku, ktory faktycznie wchodzi w bunt
+              // (po macierzy cywilizacji i ewentualnym nadpisaniu po podboju).
+              if (aiGarrisonNeedApplies(getCulturaReligiaLevel())) {
+                aiCityGarrisonNeedByCityId.set(
+                  city.id, aiCityGarrisonNeedFromOrder(ordPct, data.societyParams, difficulty),
+                );
+              } else {
+                aiCityGarrisonNeedByCityId.delete(city.id);
+              }
 
               const orderCivKey = ownerCivMap.get(city.ownerId);
               const orderEff = orderEffectsWithCivMatrix(ordPct.effects, orderCivKey ? {
@@ -46640,6 +46657,12 @@ async function boot(): Promise<void> {
               forcedWar: forcedWarDirective,
               powerRank: powerRankInfo.rank,
               powerOfOwner: (oid: number) => objectivePowerByOwner.get(oid)?.power ?? 0,
+              cityGarrisonNeed: aiGarrisonNeedApplies(getCulturaReligiaLevel())
+                ? Object.fromEntries(
+                  [...aiCityGarrisonNeedByCityId.entries()]
+                    .filter(([cid]) => cities.find(c => c.id === cid && c.ownerId === ownerId)),
+                )
+                : undefined,
               cityBuildings: Object.fromEntries(
                 [...cityBuilt.entries()].filter(([cid]) => cities.find(c => c.id === cid && c.ownerId === ownerId))
               ),

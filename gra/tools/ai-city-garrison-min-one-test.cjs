@@ -99,7 +99,7 @@ async function main() {
   // r4: mutanty filtrow garnizonu w sciezkach, ktorych dotad nie pilnowal zaden test.
   const MUT_CAMPAIGN = await buildBundle('mutcamp', [['if (campaignGarrisonIds.has(unit.id)) continue;', '', 3]]);
   const MUT_CS = await buildBundle('mutcs', [
-    ['const csGarrisonUnitIds = garrisonUnitIdSet(', 'const csGarrisonUnitIds: Set<string> = new Set(); void garrisonUnitIdSet(', 1]]);
+    ['const csGarrisonUnitIds = cityGarrisonPoolIds(', 'const csGarrisonUnitIds: Set<string> = new Set(); void cityGarrisonPoolIds(', 1]]);
   const MUT_FM = await buildBundle('mutfm', [['&& !cityGarrisonUnitIds.has(u.id)', '&& true', 1]]);
   const strengthById = (u) => (u.str !== undefined ? u.str : 1);
 

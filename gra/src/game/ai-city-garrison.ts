@@ -65,6 +65,48 @@ export function getCityGarrisonUnitIds(
   return out;
 }
 
+/**
+ * AICULT r3: garnizon WIELOJEDNOSTKOWY -- dla kazdego miasta do `targetOf(city.id)` najslabszych
+ * kwalifikujacych sie jednostek wlasciciela na heksie miasta (remis: id leksykograficznie).
+ * Zwraca zbior id (do wykluczenia z puli armii). Dla targetOf == 1 daje dokladnie te same id
+ * co `garrisonUnitIdSet(getCityGarrisonUnitIds(...))`.
+ */
+export function garrisonPoolUnitIds(
+  cities: readonly GarrisonCityRef[],
+  units: readonly RuntimeUnit[],
+  ownerId: number,
+  strengthOf: (u: RuntimeUnit) => number,
+  targetOf: (cityId: string) => number,
+): Set<string> {
+  const out = new Set<string>();
+  for (const city of cities) {
+    const n = Math.max(0, Math.floor(targetOf(city.id)));
+    if (n === 0) continue;
+    const here: { u: RuntimeUnit; s: number }[] = [];
+    for (const u of units) {
+      if (u.ownerId !== ownerId || u.q !== city.q || u.r !== city.r) continue;
+      if (!isGarrisonEligibleUnit(u)) continue;
+      here.push({ u, s: strengthOf(u) });
+    }
+    here.sort((a, b) => a.s - b.s || (a.u.id < b.u.id ? -1 : a.u.id > b.u.id ? 1 : 0));
+    for (const h of here.slice(0, n)) out.add(h.u.id);
+  }
+  return out;
+}
+
+/** AICULT r3: ile kwalifikujacych sie jednostek garnizonu stoi na heksie miasta. */
+export function cityGarrisonEligibleCount(
+  city: GarrisonCityRef,
+  units: readonly RuntimeUnit[],
+  ownerId: number,
+): number {
+  let n = 0;
+  for (const u of units) {
+    if (u.ownerId === ownerId && u.q === city.q && u.r === city.r && isGarrisonEligibleUnit(u)) n++;
+  }
+  return n;
+}
+
 /** Zbior id jednostek garnizonow (do wykluczenia z puli armii, zbiorki i scalania). */
 export function garrisonUnitIdSet(garrisonByCity: ReadonlyMap<string, string>): Set<string> {
   return new Set(garrisonByCity.values());
