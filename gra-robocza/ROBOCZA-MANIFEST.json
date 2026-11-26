@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "766479f11fd0278140b443ae74534ecf",
-  "bundleSha256": "45eb843b199e761d3625067ac71564c6ac4f1908d52a874c21c77fe82ed8f92d",
-  "bundleBytes": 15028416,
+  "bundleMd5": "c91000f3b42dca39e62e996b02a84364",
+  "bundleSha256": "659353749f55b5fee7db28e6c0caa46fadf8edb68ea12c0157ef77db797be635",
+  "bundleBytes": 15028518,
   "sourceSnapshot": {
-    "source": "FC 75684ce18 (WARENDCLEAN-wip/fc, baza main 4ae9560ee)",
+    "source": "FC 44772d6e3 (RIVERS3A-wip/fc, baza main 6c4f0f6ca)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 921: Po eliminacji cywilizacji znikają jej wpisy zmęczenia wojną (warWearinessByPairKey) — nowa funkcja pruneWarWearinessPairs wywoływana w eliminateOwner; bez zmiany balansu; martwe stałe wojen epoki (L2) pozostawione celowo, bo przypięte testami"
+    "FALA 922: Render rzek: dopływy (trzeci poziom) widoczne domyślnie, grubość zróżnicowana: główne > średnie > dopływy (średnie ok. 0,7× głównych, dopływy 0,30); generator rzek bez zmian"
   ],
   "verification": [
-    "FC PASS-WITH-NOTES; tsc 0; logic 213/213; war-weariness-elimination 11/0 (mutacja czerwona); ai-war-weariness-peace 96/0; diplo-weariness-forced-peace 14/0; vite build OK; MD5 odczytany z GitHub Raw"
+    "FC PASS-WITH-NOTES (RIVERS3A + bramka wizualna RIVVISUAL PASS-WITH-NOTES); tsc 0; logic 213/213; river-render-levels 18/0; river-fog-visibility 31/0; vite build OK; zrzuty Chromium: rzeki widoczne, bez błędów strony; MD5 odczytany z GitHub Raw"
   ],
   "limits": [
-    "Wiązanie testu z main.ts częściowo tekstowe; zapisy sprzed poprawki mogą zawierać stare wpisy zmęczenia; live w przeglądarce NIE ZMIERZONO"
+    "Płynność na prawdziwym GPU NIE ZMIERZONO (SwiftShader: różnica w szumie); koszt renderu przy 8 i 146 dopływach NIE ZMIERZONO; trzy poziomy słabo rozróżnialne (średnie +5% pikseli, dopływy +13%) — decyzja o grubości 0,30 po ocenie właściciela"
   ],
-  "finalControl": "FC PASS-WITH-NOTES 75684ce18",
+  "finalControl": "FC PASS-WITH-NOTES 44772d6e3",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-26T14:31:02",
+  "hubGeneratedAt": "2026-11-26T14:53:30",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "766479f11fd0278140b443ae74534ecf",
-      "sizeBytes": 15028416
+      "md5": "c91000f3b42dca39e62e996b02a84364",
+      "sizeBytes": 15028518
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "766479f11fd0278140b443ae74534ecf",
-      "sizeBytes": 15028416
+      "md5": "c91000f3b42dca39e62e996b02a84364",
+      "sizeBytes": 15028518
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "766479f11fd0278140b443ae74534ecf",
-      "sizeBytes": 15028416
+      "md5": "c91000f3b42dca39e62e996b02a84364",
+      "sizeBytes": 15028518
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "766479f11fd0278140b443ae74534ecf",
-      "sizeBytes": 15028416
+      "md5": "c91000f3b42dca39e62e996b02a84364",
+      "sizeBytes": 15028518
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "766479f11fd0278140b443ae74534ecf",
-      "sizeBytes": 15028416
+      "md5": "c91000f3b42dca39e62e996b02a84364",
+      "sizeBytes": 15028518
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "766479f11fd0278140b443ae74534ecf",
-      "sizeBytes": 15028416
+      "md5": "c91000f3b42dca39e62e996b02a84364",
+      "sizeBytes": 15028518
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "766479f11fd0278140b443ae74534ecf",
-      "sizeBytes": 15028416
+      "md5": "c91000f3b42dca39e62e996b02a84364",
+      "sizeBytes": 15028518
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "766479f11fd0278140b443ae74534ecf",
-      "sizeBytes": 15028416
+      "md5": "c91000f3b42dca39e62e996b02a84364",
+      "sizeBytes": 15028518
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "766479f11fd0278140b443ae74534ecf",
-      "sizeBytes": 15028416
+      "md5": "c91000f3b42dca39e62e996b02a84364",
+      "sizeBytes": 15028518
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "766479f11fd0278140b443ae74534ecf",
-      "sizeBytes": 15028416
+      "md5": "c91000f3b42dca39e62e996b02a84364",
+      "sizeBytes": 15028518
     }
   ],
-  "md5": "766479f11fd0278140b443ae74534ecf",
+  "md5": "c91000f3b42dca39e62e996b02a84364",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

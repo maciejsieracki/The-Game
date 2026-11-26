@@ -1,3 +1,9 @@
+## ROBOCZA c91000f3 -- 2026-11-26 -- FALA 922: Rzeki: trzy poziomy widoczne domyślnie, różna grubość (testowa)
+
+- Render rzek: dopływy (trzeci poziom) widoczne domyślnie, grubość zróżnicowana: główne > średnie > dopływy (średnie ok. 0,7× głównych, dopływy 0,30); generator rzek bez zmian
+- Weryfikacja: FC PASS-WITH-NOTES (RIVERS3A + bramka wizualna RIVVISUAL PASS-WITH-NOTES); tsc 0; logic 213/213; river-render-levels 18/0; river-fog-visibility 31/0; vite build OK; zrzuty Chromium: rzeki widoczne, bez błędów strony; MD5 odczytany z GitHub Raw
+- Limity: Płynność na prawdziwym GPU NIE ZMIERZONO (SwiftShader: różnica w szumie); koszt renderu przy 8 i 146 dopływach NIE ZMIERZONO; trzy poziomy słabo rozróżnialne (średnie +5% pikseli, dopływy +13%) — decyzja o grubości 0,30 po ocenie właściciela
+
 ## ROBOCZA 766479f1 -- 2026-11-26 -- FALA 921: Czyszczenie liczników zmęczenia wojną przy eliminacji cywilizacji (testowa)
 
 - Po eliminacji cywilizacji znikają jej wpisy zmęczenia wojną (warWearinessByPairKey) — nowa funkcja pruneWarWearinessPairs wywoływana w eliminateOwner; bez zmiany balansu; martwe stałe wojen epoki (L2) pozostawione celowo, bo przypięte testami
