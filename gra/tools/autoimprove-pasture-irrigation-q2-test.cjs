@@ -164,6 +164,12 @@ console.log('(e) ROZWIJAJACA SIE cywilizacja, liczone OD TURY ODKRYCIA (AUTOIMPM
   ok(g.starved === 0, `(e) od tury odkrycia ${D} (wzrost, 24 tury): 0 tur z glodzona trzoda/irygacja przy duzej puli (starved=${g.starved})`);
   ok(g.firstPast != null && g.firstPast - D <= 3, `(e) pierwsza trzoda: ${g.firstPast == null ? 'brak' : 'tura ' + g.firstPast + ' = ' + (g.firstPast - D) + ' tur po odkryciu'} (<=3)`);
   console.log(`  [info] pierwsza irygacja: ${g.firstIrr == null ? 'brak w ' + 44 + ' turach' : 'tura ' + g.firstIrr + ' (' + g.afterDiscIrr + ' tur po odkryciu)'} — bez progu, zob. raport`);
+  // Horyzont 90 tur od odkrycia (TURNS = D+90). PROPOZYCJA PROGU N=46 tur po odkryciu (ziarno 1, pomiar deterministyczny:
+  // baza 46; ziarna 2-4 w tym samym pomiarze: 37/45/36). Prog NIE zatwierdzony przez orkiestratora — do zatwierdzenia w raporcie.
+  // Mutacja E4 keys:[] (ta sama sciezka zapasowa) daje irygacje w 56 turze po odkryciu => FAIL przy N=46.
+  const PROG_IRR_N = 46;
+  const h = runBisect({ TURNS: String(D + 90) });
+  ok(h.firstIrr != null && h.afterDiscIrr <= PROG_IRR_N, `(e) irygacja po odkryciu w horyzoncie 90 tur: ${h.firstIrr == null ? 'brak' : h.afterDiscIrr + ' tur po odkryciu'} (propozycja progu <=${PROG_IRR_N}, do zatwierdzenia)`);
   ok(g.orderViol === 0, `(e) kolejnosc wycinka -> farmy -> trzoda -> irygacja od tury odkrycia (naruszen: ${g.orderViol})`);
   const z = runBisect({ ZERO_CITY: 'c01', LOW_PCT: '0' });
   ok(z.starved === 0 && z.orderViol === 0, `(e) j.w. przy jednym miescie z 0% (starved=${z.starved}, naruszen kolejnosci=${z.orderViol})`);
