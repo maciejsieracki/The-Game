@@ -89,6 +89,22 @@ ok(!out2.pathKinds.includes('tributary') && !out2.pathKinds.includes('short'),
   'stage 2 odcina tributary/short (wybór gracza respektowany)');
 ok(out2.pathKinds.includes('main') && out2.pathKinds.includes('medium'), 'stage 2 zachowuje main i medium');
 
+console.log('\n[E] podpięcie szerokości w renderLandRiversFromPaths (kontrakt źródłowy)');
+const sceneSrc = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'render', 'scene.ts'), 'utf8');
+const fnStart = sceneSrc.indexOf('function renderLandRiversFromPaths');
+const fnEnd = fnStart >= 0 ? sceneSrc.indexOf('\nexport function riverWidthMulForKind', fnStart) : -1;
+const fnBody = fnStart >= 0 && fnEnd > fnStart ? sceneSrc.slice(fnStart, fnEnd) : '';
+ok(fnBody.length > 0, 'znaleziono ciało renderLandRiversFromPaths');
+const wiringLine = 'const widthMul = riverWidthMulForKind(kind, landLen);';
+ok(fnBody.split(wiringLine).length - 1 === 1, 'dokładnie jedno wywołanie riverWidthMulForKind(kind, landLen) w renderLandRiversFromPaths');
+ok(!/const\s+widthMul\s*=\s*0\.\d/.test(fnBody), 'brak zahardkodowanego widthMul w renderLandRiversFromPaths');
+ok(/const halfWidth = mainHalfWidth \* widthMul;/.test(fnBody), 'halfWidth liczony z widthMul (mainHalfWidth * widthMul)');
+ok(/pushRiverMesh\(\s*batchBucket,[^)]*halfWidth/.test(fnBody), 'gałąź batch (medium/short/tributary) przekazuje halfWidth do siatki');
+
+console.log('\n[F] tributary trafia do gałęzi batch (nie do osobnego mesha main)');
+ok(/const isMain = kind === 'main';/.test(fnBody), 'isMain wyznaczany wyłącznie przez kind === main');
+ok(/if \(isMain\) \{[\s\S]*?\} else \{[\s\S]*?batchBucket/.test(fnBody), 'tributary idzie gałęzią else (batchBucket)');
+
 console.log(`\nWYNIK: ${pass} OK / ${fail} FAIL`);
 try { fs.unlinkSync(ENTRY); } catch { /* ignore */ }
 try { fs.unlinkSync(BUNDLE); } catch { /* ignore */ }
