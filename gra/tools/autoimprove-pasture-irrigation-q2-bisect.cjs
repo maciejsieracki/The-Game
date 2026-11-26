@@ -46,6 +46,9 @@ const ERA = 2, PID = 0;
 const NC = Number(process.env.NC || 10), GROW = Number(process.env.GROW || 24), TURNS = Number(process.env.TURNS || 44);
 const POP0 = 3, POPMAX = 16, POOL0 = 3000, REFILL = 120;
 const ZERO_CITY = process.env.ZERO_CITY || '';
+// AUTOIMPPCT (R-WEB-AUTOIMPROVE-IRRIGATION-MAX-PCT-Q1): suwak pracaAutoPercent (udział puli ulepszeń wydawany przez automat).
+// Domyślnie 100 = MAKSYMALNY poziom suwaka (MAX_ULEPSZENIA_PRACA_AUTO_PERCENT, reguła właściciela 2026-11-26). PRACA_PCT=33 = dawny domyślny poziom (tylko porównanie PRZED).
+const PCT = Number(process.env.PRACA_PCT || 100);
 const LOW_PCT = process.env.LOW_PCT != null ? Number(process.env.LOW_PCT) : 0; // % puli miasta ZERO_CITY (domyslnie 0)
 const TECHS = new Set([
   'Łowiectwo', 'Rolnictwo', 'Oswojenie zwierząt', 'Obróbka drewna', 'Garncarstwo', 'Murarstwo', 'Brązownictwo', 'Hutnictwo żelaza',
@@ -105,8 +108,8 @@ for (let t = 1; t <= TURNS; t++) {
   const picks = pickAutoImprovements({
     cities, ownerId: PID, map, territoryNodes: tn, placedImprovements: new Map(placed), pracaAvailable: pool, unlockedTechs: techsAt(t),
     pracaSurplusThreshold: 30, demandDriven: true, resourceDeficitKeys: [], civArchetype: 'grecy', playerEra: ERA, cityLimitExhausted: false,
-    getFocus: () => 'zrownowazone', pracaBudgetPercent: 33,
-    getPracaBudgetPercent: c => (ZERO_CITY && c.id === ZERO_CITY ? LOW_PCT : 33),
+    getFocus: () => 'zrownowazone', pracaBudgetPercent: PCT,
+    getPracaBudgetPercent: c => (ZERO_CITY && c.id === ZERO_CITY ? LOW_PCT : PCT),
     getWorkedHexKeys: c => wbc.get(c.id) ?? new Set(),
     foodImprovementStages: () => true, clearingHexKeys: new Set(),
   });

@@ -687,20 +687,20 @@ for (const profil of ['K2', 'K3']) {
   ok(count(c1.log, 'droga') > 0, `[${profil}] (c) niedobor bez ulepszenia/miejsca ({zloto,kamien} na rownie) NIE blokuje drog w nieskonczonosc (${count(c1.log, 'droga')} droga)`);
 }
 {
-  // (a2) K2: zywnosc CZEKA NA PRACE (irygacja 60 przy rezerwie 30) => zadnych drog w tym czasie
+  // (a2) K2: zywnosc CZEKA NA PRACE (irygacja 120 przy rezerwie 30 — koszt epoki 3) => zadnych drog w tym czasie
   const map = makeMap({ river: RIVER });
   const placed0 = placedE1Done();
-  const { log } = sim({ map, worked: WORKED_ALL, profil: 'K2', turns: 8, pool0: 50, income: 8, placed0 });
+  const { log } = sim({ map, worked: WORKED_ALL, profil: 'K2', turns: 8, pool0: 50, income: 25, placed0 });
   const firstIrr = log.findIndex(e => e.key === 'irygacja');
   const roadsBefore = log.slice(0, firstIrr < 0 ? log.length : firstIrr).filter(e => ROADS.has(e.key)).length;
-  ok(firstIrr >= 0 && roadsBefore === 0, `[K2] irygacja czeka na Prace (pula 50, +8/ture): 0 drog przed pierwsza irygacja (${roadsBefore}); irygacja w pozycji ${firstIrr}`);
+  ok(firstIrr >= 0 && roadsBefore === 0, `[K2] irygacja czeka na Prace (pula 50, +25/ture; koszt irygacji wg epoki 3): 0 drog przed pierwsza irygacja (${roadsBefore}); irygacja w pozycji ${firstIrr}`);
   // (a3) K2: niedobor z MOZLIWYM ulepszeniem (kamieniolom 22 > 50-30), brak zywnosci => drogi (15) czekaja
   const m2 = makeMap({ hills: [[11, 11]] });
   const bez = sim({ map: m2, worked: [[11, 11], [11, 12], [13, 12]], profil: 'K2', turns: 5, pool0: 50, income: 0,
     deficitFn: () => ['kamien'], techsByTurn: () => TECH_BEZ_ZYWNOSCI });
-  ok(bez.log.length === 0, `[K2] kamieniolom czeka na Prace (22 > 20 wolnych): 0 rozkazow, w tym 0 drog (${bez.log.length})`);
+  ok(bez.log.length === 0, `[K2] kamieniolom czeka na Prace (88 > 20 wolnych, koszt epoki 3): 0 rozkazow, w tym 0 drog (${bez.log.length})`);
   const m3 = makeMap({});
-  const brak = sim({ map: m3, worked: [[11, 12], [13, 12]], profil: 'K2', turns: 5, pool0: 50, income: 0,
+  const brak = sim({ map: m3, worked: [[11, 12], [13, 12]], profil: 'K2', turns: 5, pool0: 100, income: 0,
     deficitFn: () => ['kamien'], techsByTurn: () => TECH_BEZ_ZYWNOSCI, twin: true });
   ok(count(brak.log, 'droga') > 0, `[K2] niedobor kamienia, ale brak heksu pod kamieniolom: drogi ruszaja (${count(brak.log, 'droga')})`);
 }
@@ -722,9 +722,9 @@ for (const profil of ['K2', 'K3']) {
   };
   const czeka = mk(50);
   ok(czeka.length === 0, `[K2/K3] kamieniolom poza obrabianymi czeka na Prace (pula 50, rezerwa 30): 0 rozkazow, w tym 0 drog (${czeka.map(p => p.key).join(',') || '-'})`);
-  const staje = mk(80);
+  const staje = mk(130);
   ok(staje.length >= 1 && staje[0].key === 'kamieniolom' && !staje.some(p => ROADS.has(p.key)),
-    `[K2/K3] pula 80: kamieniolom (brakujacy surowiec) idzie PIERWSZY, bez drog w tej samej turze (${staje.map(p => p.key).join(',')})`);
+    `[K2/K3] pula 130 (koszt kamieniolomu 88 + rezerwa 30): kamieniolom (brakujacy surowiec) idzie PIERWSZY, bez drog w tej samej turze (${staje.map(p => p.key).join(',')})`);
 }
 
 console.log('(t) [K1] profil „Zywnosc” nie dostaje drog (lista profilu bez zmian)');
@@ -819,7 +819,7 @@ console.log('(s1) BUDZET SZTYWNO — test globalny: procent 10/33/50/100 x pule 
 
 console.log('(s2) AI cywilizacji i PANSTWA-MIASTA: budzet = 100% puli (brak limitu %, brak capu 50%/33%) — pula X => AI wydaje do X');
 {
-  const farmCost = getImprovementMeta('farma').kosztPraca;
+  const farmCost = getImprovementMeta('farma', 3).kosztPraca;
   const aiCmds = (defensiveCopy, pool, worked) => decideAITurn(0, [], [{ ...CITY, okolicaTryb: 'reczny', okolicaReczne: Object.fromEntries(worked.map(([q, r]) => [K(q, r), 1])) }], makeMap({ river: RIVER }),
     { units: [], buildings: [], aiParams: {}, terrainYields: { terrain_types: [] } }, {
       civType: 'grecy', poziomTrudnosci: 2, defensiveCopy, cityBuildings: {}, territoryNodes: TN,
@@ -829,7 +829,7 @@ console.log('(s2) AI cywilizacji i PANSTWA-MIASTA: budzet = 100% puli (brak limi
   for (const [nazwa, defensiveCopy] of [['AI cywilizacji', false], ['panstwo-miasto / kopia obronna', true]]) {
     const pool = 3 * farmCost + (defensiveCopy ? 12 : 0); // > 30 (rezerwa wejscia kopii obronnej), 3 farmy = maks. etapu
     const cmds = aiCmds(defensiveCopy, pool, WORKED_ALL);
-    const spent = cmds.reduce((n, c) => n + getImprovementMeta(c.key).kosztPraca, 0);
+    const spent = cmds.reduce((n, c) => n + getImprovementMeta(c.key, 3).kosztPraca, 0);
     ok(spent === 3 * farmCost && spent * 100 > 50 * pool, `[${nazwa}] pula ${pool}: wydano ${spent} (3 farmy = ${3 * farmCost}) > 50% puli — brak capu %`);
     const none = aiCmds(defensiveCopy, farmCost - 1, WORKED_ALL);
     ok(none.length === 0, `[${nazwa}] pula ${farmCost - 1} < koszt farmy ${farmCost}: 0 budow`);
@@ -907,7 +907,7 @@ console.log('(s5) BUDZET SZTYWNO — kazdy KROK z osobna: KROK 0 wyrabu (rzeka+l
     });
   };
   const sum = picks => picks.reduce((n, p) => n + p.kosztPraca, 0);
-  const wyrabKoszt = getImprovementMeta('wyrab').kosztPraca;
+  const wyrabKoszt = getImprovementMeta('wyrab', 3).kosztPraca;
   const FOR5 = [[14, 12], [11, 11], [13, 11], [11, 13], [14, 13]];
   const scen = {
     'KROK 0 (rzeka+las)': { profile: ['K1', 'K2'], mk: () => makeMap({ river: RIVER, forest: RIVER }), worked: WORKED_ALL, dd: true, key: 'wyrab',
@@ -925,11 +925,11 @@ console.log('(s5) BUDZET SZTYWNO — kazdy KROK z osobna: KROK 0 wyrabu (rzeka+l
       ok(naruszen === 0, `[${profil}] ${nazwa}: pct 1/2/3 x pula 100 (sufit 1/2/3 < koszt wyrabu ${wyrabKoszt}): wydatek <= sufit`);
       ok(direct(profil, s.mk(), 100, 2, { worked: s.worked, dd: s.dd, placed: s.placed ? s.placed() : new Map() }).filter(p => p.key === s.key).length === 0, `[${profil}] ${nazwa}: pct 2 x pula 100 = 2 < ${wyrabKoszt}: 0 wyrabow`);
       // granica: sufit calkowity zaokraglany W DOL (totalBudget = floor, auto-improvements.ts ~599) — pula 300 x 1% = 3 >= 2.5 => wyrab wolno,
-      // ale tylko 1 szt. (2 x 2.5 = 5 > 3); pula 200 x 1% = 2 < 2.5 => 0
-      const naGranicy = direct(profil, s.mk(), 300, 1, { worked: s.worked, dd: s.dd, placed: s.placed ? s.placed() : new Map() });
-      ok(naGranicy.filter(p => p.key === s.key).length === 1 && sum(naGranicy) * 100 <= 1 * 300, `[${profil}] ${nazwa}: pula 300 x 1% = 3 >= ${wyrabKoszt}: dokladnie 1 wyrab, wydatek <= sufit (${sum(naGranicy)})`);
-      const podGranica = direct(profil, s.mk(), 200, 1, { worked: s.worked, dd: s.dd, placed: s.placed ? s.placed() : new Map() });
-      ok(sum(podGranica) === 0, `[${profil}] ${nazwa}: pula 200 x 1% = 2 < ${wyrabKoszt}: wydatek ${sum(podGranica)} == 0`);
+      // ale tylko 1 szt. (2 x koszt wyrabu > sufit); pula 900 x 1% = 9 < koszt wyrabu => 0 (koszt wg epoki 3 = 10)
+      const naGranicy = direct(profil, s.mk(), 1000, 1, { worked: s.worked, dd: s.dd, placed: s.placed ? s.placed() : new Map() });
+      ok(naGranicy.filter(p => p.key === s.key).length === 1 && sum(naGranicy) * 100 <= 1 * 1000, `[${profil}] ${nazwa}: pula 1000 x 1% = 10 >= ${wyrabKoszt}: dokladnie 1 wyrab, wydatek <= sufit (${sum(naGranicy)})`);
+      const podGranica = direct(profil, s.mk(), 900, 1, { worked: s.worked, dd: s.dd, placed: s.placed ? s.placed() : new Map() });
+      ok(sum(podGranica) === 0, `[${profil}] ${nazwa}: pula 900 x 1% = 9 < ${wyrabKoszt}: wydatek ${sum(podGranica)} == 0`);
     }
   }
   for (const profil of ['I']) {
