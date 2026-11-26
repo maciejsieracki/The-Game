@@ -51,11 +51,12 @@ try {
   try { fs.unlinkSync(BUNDLE); } catch (e) { /* ignore */ }
 }
 
-// Ta sama logika klucza co diploPairKeyHasOwner w main.ts.
-const keyHasOwner = (ownerId) => (key) => {
-  const parts = key.split('_');
-  return parts.length === 2 && (Number(parts[0]) === ownerId || Number(parts[1]) === ownerId);
-};
+// Prawdziwa logika klucza: ciało diploPairKeyHasOwner wycinane wprost z main.ts (nie kopia).
+// Dzięki temu test wykrywa rozjazd między main.ts a testem (R-WEB-WAR-END-CLEANUP-Q1, uwaga Evaluatora 2).
+const helperMatch = mainSrc.match(/function diploPairKeyHasOwner\(key: string, ownerId: number\): boolean \{([\s\S]*?)\n    \}/);
+check(helperMatch !== null, 'znaleziono ciało diploPairKeyHasOwner w main.ts');
+const diploKeyHasOwnerFn = helperMatch ? new Function('key', 'ownerId', helperMatch[1]) : () => false;
+const keyHasOwner = (ownerId) => (key) => diploKeyHasOwnerFn(key, ownerId);
 
 console.log('2. pruneWarWearinessPairs: usuwa tylko pary z wyeliminowanym właścicielem');
 const store = new Map();
