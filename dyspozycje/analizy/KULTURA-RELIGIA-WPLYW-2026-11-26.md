@@ -1,128 +1,153 @@
-# Kultura i religia — wpływ na Szczęście, Prawo i Porządek (analiza, R-WEB-CULT-REL-INFLUENCE-ANALYSIS-Q1)
+# Kultura i religia — wpływ na Szczęście, Prawo i Porządek (analiza, R-WEB-CULT-REL-INFLUENCE-ANALYSIS-Q1, runda 2 — obrona)
 
 Data: 2026-11-26 · Baza: origin/main 8c45256803986c78572861ffc1319f21fed56d8e · Tag: CULTRELANALYSIS (#172)
-Status: ANALIZA I PROPOZYCJA — zero zmian w `gra/**`. Wartości poziomów „duży" i „neutralny" wymagają decyzji właściciela (pytanie ABC).
+Status: ANALIZA I PROPOZYCJA — zero zmian w `gra/**`. Wartości poziomów „neutralny" i „duży" wymagają decyzji właściciela (pytanie ABC, przez turniej C-018 przed pokazaniem właścicielowi).
+
+Ta wersja zastępuje wersję rundy 1. Model NIE jest już reimplementacją w Pythonie: liczby pochodzą z bundla esbuild, który woła prawdziwe funkcje silnika gry (`gra/src/game/society-breakdown.ts`, `gra/src/game/order.ts`). Oznaczenia: **SILNIK** = wynik modelu z bundla (obliczone, NIE w grze); **NIE ZMIERZONO** = brak pomiaru w grze, runtime ani AI.
 
 ## Streszczenie dla właściciela
 
-1. Dziś obca kultura i obca religia NIE są bez znaczenia: w modelu świeżo zdobyte miasto (5 mieszkańców, epoka 1, normalnie) bez budynków potrzebuje **2 jednostek garnizonu** do spokoju (Porządek ≥ 30), a nie 0 — tylko 5 tur po podboju Prawo jest wymuszone na 100% i to maskuje problem.
-2. Powodem jest to, że wpływ kultury i religii na Szczęście jest proporcjonalny (2·x·udział − x, x = 10 w epoce 1), ale wynik Szczęścia jest obcinany do 0% z dołu, więc kara „obca" znika w całości w postaci utraconego plusa (różnica własna–obca to ok. 60 pkt Szczęścia %, czyli ok. 30 pkt Porządku).
-3. Świątynia (+2 Szczęścia) przy obcej kulturze i religii nie daje nic, bo wynik i tak jest obcięty do 0%.
-4. Poziom „duży" (Szczęście kultury i religii bez obcinania od dołu, x = 16 w epoce 1) daje: obca kultura i religia bez budynków = **4 jednostki**, obca kultura lub religia = **2 jednostki**, świątynia zmniejsza wymóg o 1. Poziom „neutralny" (x = 7 bez obcinania) daje: obca kultura i religia = **2 jednostki**, pojedyncza obca = 2. Poziom „mały" = obecne wartości bit-w-bit.
-5. Ustawienie „Kultura i religia" (mały/neutralny/duży) wymaga parametrów per poziom i nowego klucza w `society-params.json`; stare zapisy zostają na „mały". Liczby to model (reimplementacja wzorów, NIE bundle gry) — NIE ZMIERZONO w grze, runtime i AI.
+1. Obca kultura i obca religia NIE są bez znaczenia. Pusty pop-5 gród epoki 1 (normal, bez budynków) z obcą kulturą i religią ma Porządek 0%, czyli bunt skrajny, a po 5 turach bunt (SILNIK). Potrzebuje **2 jednostek garnizonu** do tieru „neutralny" (Porządek ≥ 30) i **1** do wyjścia z buntu skrajnego. Własna kultura i religia potrzebuje 1 jednostki do neutralnego (SILNIK).
+2. Dwa ustalenia korygują rundę 1: silnik dolicza linię podatków (−5,6 pkt Szczęścia przy domyślnej Zamożności, także dla pustego miasta), a mianownik Prawa dla pop 5 to 44,8 (40 × 1,12), nie 35 × 1,12. Wniosek „2 jednostki dla obcej kultury i religii" został potwierdzony, ale liczby Szczęścia i Porządku się zmieniły.
+3. Propozycja „duży" z rundy 1 (bez dolnego obcięcia Szczęścia) NIE daje „4 jednostek" w tierze neutralnym: dla obcej kultury i religii bez budynków tier neutralny nie jest osiągalny nawet przy 6 jednostkach (SILNIK, normal, epoka 1). Te 4 jednostki dotyczą dopiero wyjścia z buntu skrajnego. Zmiana wymaga przeprojektowania (§3).
+4. Wariant z dolnym progiem Szczęścia −100% (zamiast 0%) daje dla obcej kultury i religii bez budynków **4 jednostki do tieru neutralnego** i 3 do wyjścia z buntu skrajnego (normal, epoka 1), a dla pojedynczej obcej linii 2. Świątynia i Garnizon (budynek) zmniejszają wymóg o 1. Ten wariant zmienia Szczęście% każdego miasta, więc wymaga analizy konsumentów (§3, §5).
+5. Kary bez budynków utrzymują się, dopóki miasto nie przejmie naszej kultury i religii. Tempo przejęcia NIE ZMIERZONO (§4). Wpływ na AI, balans wojen i stolice NIE ZMIERZONO (§5).
 
 ## 1. Stan (co dziś robi gra) — z cytowanych linii
 
-**Szczęście — kultura i religia** (`gra/src/game/society-breakdown.ts`, G4, linie ~560–583 i ~721–737):
-- Wzór: `szczęście = 2·x·udział_własnej − x` (`proporcjonalneSzczescie`), `x` z `szczescie_skala_kultura_religia` (`gra/data/society-params.json`): epoka 1 = 10, epoka 2 = 16, epoka 3+ = 23 (ta sama wartość dla easy/normal/hard).
-- Udział kultury: `input.ownCultureShare` (brak = 100% własnej); udział religii: `ownReligionShare`, a gdy brak — odtworzony z `haRel` (`ownShareFromSignal`). Miasto bez wyznawców = linia 0.
-- Stare schodki `cultureHappiness` (`culture-religion.ts`, linie 394–405; parametry `kultura_kara_zadowolenie_lt50/lt25` = −2/−4 w normal) i binarny `religionHappiness` są zastąpione przez G4; w `main.ts` (ok. 44770) `cultureHappiness` jest nadal liczone jako `haKult` — **do potwierdzenia, czy trafia do wyniku** (NIE ZMIERZONO).
-- Kara „obca religia" (`szczescie_kara_obca_religia`, −4) i „podbój obca kultura i religia" są usunięte (G5, komentarz przy `society-breakdown.ts:109`).
+**Szczęście — kultura i religia** (`gra/src/game/society-breakdown.ts`, `proporcjonalneSzczescie` ok. linii 573, `computeHappinessBreakdown` ok. linii 702–810):
+- Wzór: `szczęście = 2·x·udział_własnej − x`, x z `szczescie_skala_kultura_religia` (`gra/data/society-params.json`): epoka 1 = 10, epoka 2 = 16, epoka 3 = 23 (easy/normal/hard tak samo).
+- Udział kultury: `ownCultureShare` (brak = 1). Udział religii: `ownReligionShare`. Miasto bez wyznawców = linia 0.
+- Stare schodki `cultureHappiness` i binarny `religionHappiness` są zastąpione. Kary `kultura_kara_zadowolenie_lt50/lt25` (easy −1,5/−2, normal −2/−4, hard −2,5/−6) są w JSON; **czy trafiają do wyniku — NIE ZMIERZONO** (pole `haKult` jest oznaczone jako IGNOROWANE w typie `HappinessBreakdownInput`).
 
-**Szczęście — mianownik i obcinanie:** `szMax = szczescie_max_epoka[epoka] × (1 + 0,04)^max(0, pop − 2)` (`szMaxForCity`), normal epoka 1 = 30. `szPct = clampPct(100·netto / szMax, cap 120)` — `clampPct` (linia ~498) obcina do **[0, cap]**, więc ujemne Szczęście daje 0%.
+**Szczęście — mianownik i obcinanie:** `szMaxForCity` (ok. linii 616) = `Math.round(szczescie_max_epoka[epoka] × mnożnik × 100)/100`, mnożnik = (1 + 0,04)^(pop − 2) zaokrąglony do 2 miejsc (SILNIK: dla pop 5 = 1,12). Normal epoka 1 = 30 → szMax 33,6. `pctFromNetto` → `clampPct` (ok. linii 498–505) obcina wynik do **[0, cap = 120]**. Obcięcie dotyczy **sumy netto wszystkich linii Szczęścia**, nie samej linii kultury i religii (patrz §3).
 
-**Prawo** (`computeLawBreakdown`, linie ~817–905): `prawo_garnizon_per_jednostka` = 20 (normal), `prawo_garnizon_cap_jednostek` = 5; budynek Garnizon = 25 (epoka 1); Pretorium/Sąd/Trybunał/Dwór/Dom/Pałac wg tabeli. `prawMax = 35 × (1,04)^(pop−2)` (normal epoka 1); `prawPct` obcinany do [0, 170]. Brak garnizonu nie daje kary (kary `prawo_kara_brak_garnizonu` usunięte na stałe, D5).
+**Linie Szczęścia obecne w silniku, nie wymienione w rundzie 1:** `wysokie_podatki` (linia G7, liniowa od udziału Zamożności; bez danych Zamożności −5,6 pkt, SILNIK). Model z tego obliczenia obejmuje tę linię, pozostałe (luksus, cuda, Wealth, zaopatrzenie, Spichlerz, obywatele) NIE są modelowane.
 
-**Porządek** (`computePorPct`, linia ~991): `PorPct = clamp(0,5·szPct + 0,5·prawPct, 0, 120)` (normal: `porzadek_waga_szczescie` 0,5, `porzadek_waga_prawo` 0,5).
-- Pasma (`porPctBand`, ~912): Ład ≥90, Spokój ≥70, Napięcie ≥50, Niepokój ≥30, Bunt ≥12, Bunt skrajny <12 (`REVOLT_CRITICAL_POR_PCT` = 12, `society-breakdown.ts:192`).
-- Tier żywy (`tierFromPorPct`, ~932): unrest <30, neutral 30–89, order ≥90.
-- **Uwaga:** `order.ts` ma drugi system tierów (`orderTier` z `porzadek_prog_t1/t2` = 0/6 w normal, `computeOrder` w surowych punktach). Wygląda na pozostałość (komentarz przy ~1063: „zastępuje evaluateOrder"). Parametry `porzadek_prog_t1/t2`, `porzadek_kara_*_t1` itd. w JSON — do potwierdzenia, czy któreś są jeszcze czytane w turze (NIE ZMIERZONO).
+**Prawo** (`computeLawBreakdown`, ok. linii 817–905): `prawo_garnizon_per_jednostka` = 20 (easy 25, hard 15), cap = 5 (easy 5, hard 4); budynek Garnizon = 25/35/47 wg epoki (`prawo_garnizon_budynek_epoka`); Pretorium = `prawo_pretorium` (normal 38, easy 50, hard 31), tylko epoka 3 w modelu; `prawMax` = `prawo_max_epoka` (normal 40/65/85, easy 35/55/75, hard 45/75/100) × mnożnik populacji, obcięcie do [0, 170]. Brak garnizonu nie daje kary (kary `prawo_kara_*` są martwe, D5).
 
-**Podbój** (`post-capture-law.ts`): `POST_CAPTURE_LAW_PCT = 100` — przez `POST_CAPTURE_FRESH_TURNS = 5` tury Prawo = 100% (`applyPostCaptureLawOverride`, linia ~125); ochrona przed buntem `REBEL_PROTECTION_TURNS = 20` (linia 33). Oznacza to, że w pierwszych 5 turach garnizon i kultura nie mają znaczenia dla Porządku — **to jest główny powód, dla którego problem wygląda na „nieistotny"**.
+**Porządek** (`computePorPct`, ok. linii 991): `clampPct(waga_szczęście × szPct + waga_prawo × prawPct, cap 120)`. Wagi: normal 0,5/0,5; easy 0,55/0,45; hard 0,45/0,55.
+- Pasma (`porPctBand`, ok. linii 912): Ład ≥ 90, Spokój ≥ 70, Napięcie ≥ 50, Niepokój ≥ 30, Bunt ≥ `porzadek_prog_bunt_skrajny_pct` (normal 12, easy 6, hard 14), poniżej — Bunt skrajny.
+- Tier (`tierFromPorPct`, ok. linii 932): unrest < 30, neutral 30–89, order ≥ 90.
+- Bunt: `updateRevoltGrace` (ok. linii 1121) — przy Porządku poniżej progu krytycznego odlicza `REVOLT_GRACE_TURNS` = 3 tury, po czym `shouldTriggerRebellion`. SILNIK w tabeli „tura buntu": bunt skrajny w turze 1 → bunt w turze 5. **Skutek buntu po jego uruchomieniu — NIE PRZEANALIZOWANO.**
+- Uwaga: `order.ts` ma drugi system progów (`porzadek_prog_t1/t2`, w surowych punktach). **Czy jest czytany w turze — NIE ZMIERZONO.**
 
-**Kultura — przejęcie w czasie:** `convertCulture` (`culture-religion.ts` ~447; `kultura_konwersja_baza_tura`, `CultureBuildings`: biblioteka, teatr, akademia, pałac, stela, sad, łaźnia publiczna przyspieszają). Tempo przejęcia i wpływ świątyni na religię (`convertViaTemple`, ~1160) nie zostały zmierzone w tym temacie (NIE ZMIERZONO).
+**Podbój** (`post-capture-law.ts`): `POST_CAPTURE_LAW_PCT = 100` przez `POST_CAPTURE_FRESH_TURNS = 5` tur; to maskuje kare (§2, tabela A2).
 
-**Kary aktualnie zastosowane do obcej kultury/religii** (wg G4/G5): tylko utrata dodatniej części Szczęścia (`2·x·udział − x`, obcięta do 0%). Brak osobnej kary, brak limitu czasowego poza konwersją kultury.
+**Przejęcie miasta — religia** (`onCityCapturedReligion`, `gra/src/game/culture-religion.ts` ok. linii 788–813): udział nowego właściciela = `1 − udział poprzedniego właściciela` (linie 806–807). Dla miasta w 100% obcej religii start wynosi 0% naszej, czyli scenariusz „obca religia" z modelu. Wyjątek: ta sama kultura cywilizacyjna → stan domyślny (`defaultCityReligionState`). **Start udziału KULTURY po podboju — NIE SPRAWDZONO** (założenie 0% własnej, jak w rundzie 1).
 
-## 2. Model (zmierzone na modelu, NIE w grze)
+**Kultura — przejęcie w czasie:** parametry `kultura_konwersja_baza_tura` (easy 2, normal 1, hard 0), `kultura_konwersja_cel_100pct` (100), `kultura_konwersja_cap_tura` i wkłady budynków `kultura_konwersja_{swiatynia, amfiteatr, biblioteka, palac, stela, sad, laznia}` (sekcja `kultura` w JSON). Funkcja `convertCulture` (ok. linii 447). **Tempo przejęcia w turach — NIE ZMIERZONO.** Wpływ świątyni na religię (`convertViaTemple`, ok. linii 1160) — NIE ZMIERZONO.
 
-Skrypt: `dyspozycje/analizy/model-kultura-religia-2026-11-26.py`. Uruchomienie (w worktree): `python3 -I dyspozycje/analizy/model-kultura-religia-2026-11-26.py`.
-Model to **reimplementacja wzorów** z kodu w Pythonie (nie bundle esbuild z gry — bundle nie był uruchamiany w tym temacie; NIE ZMIERZONO w silniku TypeScript). Założenia: pop 5, epoka 1, normal; brak innych linii Szczęścia (luksus, ustrój, Wealth, cuda, osiedle pop 5 = 0); świeżo zdobyte miasto: udział kultury/religii 0 (obca) lub 1 (własna) — zgodnie z dispatchem, NIE sprawdzono w kodzie `onCityCapturedReligion`/`applyCapturePopulationLoss`, jaki jest start; świątynia = baza zadowolenia 2 (`buildings.json`, poziom 1).
+**Asymilacja i czas kar:** kary z tytułu obcej kultury i religii NIE mają osobnego limitu czasowego. Znikają wraz z przejęciem (przez konwersję), a w pierwszych 5 turach po podboju przesłania je wymuszone Prawo 100%. Osobny mechanizm „czasu kary" nie został zaprojektowany.
 
-Wynik „mały = obecne" (Porządek po zdobyciu, bez wymuszenia Prawa 100%):
+## 2. Model (SILNIK, nie w grze)
 
-| Scenariusz | Świątynia | Garnizon 0 | 1 | 2 | 4 | Minimum do Porządku ≥30 (neutral) |
-|---|---|---|---|---|---|---|
-| a) własna kultura + własna religia | nie | 29,8 (bunt, unrest) | 55,2 | 80,8 | 114,8 | **1** |
-| b) obca kultura, własna religia | nie | 0,0 (bunt skrajny) | 25,5 | 51,0 | 85,0 | **2** |
-| c) własna kultura, obca religia | nie | 0,0 | 25,5 | 51,0 | 85,0 | **2** |
-| d) obca kultura + obca religia | nie | 0,0 | 25,5 | 51,0 | 85,0 | **2** |
-| a) własna + własna | tak | 32,8 | 58,2 | 83,8 | 117,8 | 0 |
-| d) obca + obca | tak | 0,0 | 25,5 | 51,0 | 85,0 | **2** (świątynia nic nie daje — obcięcie) |
+Źródła modelu (committed): `dyspozycje/analizy/model-kultura-religia-entry.ts` — importuje `computeHappinessBreakdown`, `computeLawBreakdown`, `computePorPct`, `loadRevoltParams`, `updateRevoltGrace`, `tierFromPorPct`, `porPctBand`, `szMaxForCity`, `prawMaxForCity`, `loadOrderParams` z gry. Wariant „mały/neutralny/duży" to kopia `society-params.json` z podmienionym `szczescie_skala_kultura_religia`; wariant „bez dolnego obcięcia" i „dolny próg" liczy Szczęście% z `netto` zwróconego przez silnik.
 
-Wynik z wymuszonym Prawem 100% (5 pierwszych tur po podboju): wszystkie scenariusze 50–83, tier neutral, **niezależnie od garnizonu** — to maskuje problem.
+Budowa i uruchomienie (cwd = korzeń repo; bundle poza repo):
+```
+SCR=<scratchpad>
+npx -y esbuild@0.24.0 dyspozycje/analizy/model-kultura-religia-entry.ts --bundle --platform=node --format=cjs --outfile=$SCR/model.cjs --log-level=warning
+node $SCR/model.cjs > $SCR/model-out.txt
+```
+Wynik: `model-out.txt`, sekcje A, A2, B, C, D, E, F (pełne tabele w scratchpadzie, nie w repo). Założenia: pop 5, normal (chyba że podano inaczej), bez innych linii Szczęścia niż kultura, religia, podatki i Świątynia (era 2+); udział kultury/religii 0 lub 1.
 
-**Wniosek z modelu:** dziś zdobyte miasto obcej kultury i religii potrzebuje 2 jednostek po 5 turach (nie 0). Dispatch zakładał 0 — model tego nie potwierdza. Różnica własna–obca to ok. 30 pkt Porządku, czyli kara jest realna, tylko ukryta obcięciem Szczęścia do 0% i wymuszonym Prawem przez 5 tur.
+**Wynik „mały" (obecne wartości), normal, epoka 1, pusty pop 5 — Sz% / Por% / tier / tura buntu (SILNIK):**
 
-Wariant „poziomy" (Szczęście obcinane tylko od góry, cap 120; wszystkie inne parametry bez zmian; era 1, normal):
+| Scenariusz | Garnizon 0 | 1 | 2 | 3 |
+|---|---|---|---|---|
+| a) własna kultura + własna religia | 43 / 21,5 / bunt / — | 43 / 43,8 / neutral | 43 / 66,2 / neutral | 43 / 88,5 / neutral |
+| b) obca kultura, własna religia | 0 / 0 / bunt skrajny / **5** | 0 / 22,3 / bunt | 0 / 44,7 / neutral | 0 / 67 / neutral |
+| c) własna kultura, obca religia | 0 / 0 / bunt skrajny / **5** | 0 / 22,3 / bunt | 0 / 44,7 / neutral | 0 / 67 / neutral |
+| d) obca kultura + obca religia | 0 / 0 / bunt skrajny / **5** | 0 / 22,3 / bunt | 0 / 44,7 / neutral | 0 / 67 / neutral |
 
-| x (epoka 1) | a) własna+własna | b) obca kultura | c) obca religia | d) obca+obca | d) ze świątynią |
+Minimum jednostek (normal, epoka 1, mały): a = 1 (neutral), b/c/d = 2 (neutral), 1 (wyjście z buntu skrajnego).
+
+**Ten sam zestaw z wymuszonym Prawem 100% (5 tur po podboju, tabela A2):** a = 71,5, b/c/d = 50 (tier neutral, bez buntu). Kara jest w tym czasie niewidoczna.
+
+**Budynki (SILNIK, normal, epoka 1 i 3, mały):**
+- Garnizon (budynek): obniża wymóg d z 2 do 1 jednostki (Por 50,2 przy 1 jedn. i Garnizonie, epoka 1); a = 0 jednostek.
+- Świątynia (era 2+, wymaga Kamiennych kręgów; buildings.json: epokaWejscia 2, baza zadowolenie 2): dla d w epoce 2 nie zmienia wymogu (1 jedn. z Garnizonem, z lub bez Świątyni), bo Sz jest obcięte do 0%.
+- Pretorium (epoka 3, `prawo_pretorium` normal 38): dla d w epoce 3 z Garnizonem i Świątynią wymóg spada do 0 (SILNIK, tabela B).
+- Inne budynki (Teatr = epokaWejscia 3, „suppressed", wliczony w Akademię; Amfiteatr, Sąd, Trybunał, Dwór, Pałac) — NIE MODELOWANE (Amfiteatr: NIE SPRAWDZONO wartości).
+
+**Trudność (SILNIK, dla d, mały, bez budynków, tabela E):**
+
+| Trudność / epoka | n=0 | n=1 | n=2 | n=3 | n=4 |
 |---|---|---|---|---|---|
-| 10 (poziom obecny, bez obcinania) | 1 | 2 | 2 | **3** | 3 |
-| 7 (propozycja „neutralny") | 1 | 2 | 2 | **2** | 2 |
-| 16 (propozycja „duży") | 0 | 2 | 2 | **4** | 3 |
+| easy, epoka 1 | 0 (bunt skrajny) | 28,7 (bunt) | 57,4 (napięcie) | 76,5 | 76,5 |
+| normal, epoka 1 | 0 (bunt skrajny) | 22,3 (bunt) | 44,7 (niepokój) | 67 | 85 |
+| hard, epoka 1 | 0 (bunt skrajny) | 16,4 (bunt) | 32,7 (niepokój) | 49,1 | 65,5 |
+| normal, epoka 3 | 0 (bunt skrajny) | 10,5 (bunt skrajny) | 21 (bunt) | 31,5 (niepokój) | 42 |
+| hard, epoka 3 | 0 (bunt skrajny) | 7,4 (bunt skrajny) | 14,7 (bunt) | 22,1 (bunt) | 29,5 |
 
-Wyliczenie x=7 i x=16: `obca+obca` daje Szczęście −2x → Szczęście% ≈ −41,7 (x=7) i ≈ −95,2 (x=16, obcięte tylko od góry; cap nie dotyczy); potrzebny Prawo% wynosi wtedy odpowiednio 2 lub 4 jednostki. Pojedyncza obca daje Szczęście 0 — tak samo jak obecnie.
+Uwaga: w epoce 3 (normal, hard) jednostka nie wystarcza do wyjścia z buntu skrajnego; to ryzyko buntu, nie tylko wymóg tieru.
+
+**Kontrola składowych (SILNIK, F):** szMax = 33,6 i prawMax = 44,8 dla wszystkich trudności w epoce 1, pop 5. Scenariusz a netto = 14,4 (kultura +10, religia +10, podatki −5,6). Scenariusz d netto = −25,6 (kultura −10, religia −10, podatki −5,6).
 
 ## 3. Propozycja trzech poziomów (decyzja właściciela)
 
-Zasada: w każdym poziomie „Kultura i religia" zmienia się **jedno** zachowanie — obcięcie Szczęścia kultury/religii od dołu (`clampPct` dla linii kultura/religia) oraz skala `x` w epoce 1–3. Pozostałe parametry (garnizon 20/jednostkę, cap 5, Pałac, Pretorium, mianowniki, wagi Porządku, progi pasm) — BEZ ZMIAN we wszystkich poziomach.
+Wartości poziomów są propozycją, nie wyprowadzeniem mnożnikiem. Epoka 1: mały 10 / neutralny 7 (×0,7) / duży 16 (×1,6). Epoka 2: 16 / 11 / 23. Epoka 3: 23 / 16 / 33. Wartości „duży" 23 i 33 NIE są mnożnikiem 1,6 (23·1,6 = 36,8). Są to stałe wybrane do przetestowania. Wartości epok 2–3 są teraz liczone przez silnik (tabela B), ale nie są zatwierdzone.
 
-| Parametr | Plik / klucz | Mały (obecne, bit-w-bit) | Neutralny | Duży |
+| Parametr | Plik / klucz | Mały (obecne) | Neutralny (propozycja) | Duży (propozycja) |
 |---|---|---|---|---|
-| Skala Kultury i Religii x (epoka 1/2/3) | `gra/data/society-params.json` → `szczescie.szczescie_skala_kultura_religia` | 10 / 16 / 23 | 7 / 11 / 16 (propozycja: ×0,7) | 16 / 23 / 33 (propozycja: ×1,6) |
-| Obcięcie linii kultury/religii do 0% z dołu | NOWY klucz `szczescie.szczescie_kultura_religia_obciecie_dolu` (0/1) | 1 (obecne: obcięte) | 0 (nieobcięte) | 0 (nieobcięte) |
-| Zmiana wagi kary obcej kultury (opcjonalnie) | — | — | — | — |
-| Garnizon / Prawo / Porządek / pasma / mianowniki | bez zmian | bez zmian | bez zmian | bez zmian |
+| x kultury i religii (epoka 1/2/3) | `gra/data/society-params.json` → `szczescie.szczescie_skala_kultura_religia` | 10 / 16 / 23 | 7 / 11 / 16 | 16 / 23 / 33 |
+| Dolny próg Szczęścia % (NOWY klucz, wariant B) | `szczescie.szczescie_pct_dol` (nowy) | 0 (obecne) | 0 | −100 (wariant testowany; −50 jako alternatywa) |
+| Garnizon / Prawo / wagi / progi pasm | bez zmian | — | — | — |
 
-Wartości dla epok 2 i 3 (16/23 oraz 11/16/… i 16/23/33) są **do potwierdzenia** — model liczy tylko epokę 1 (NIE ZMIERZONO dla epok 2–3).
+**Wyniki SILNIKA dla każdego wariantu (normal, epoka 1, pop 5, scenariusz d = obca kultura i obca religia, bez budynków / z Garnizonem budynkiem; minimum do tieru neutralnego / do wyjścia z buntu skrajnego):**
 
-Wynik modelu dla poziomów (epoka 1, normal, bez świątyni / ze świątynią):
-- **Mały:** a = 1/0, b = 2/2, c = 2/2, d = 2/2 (obcięcie: świątynia nie pomaga obcej kulturze).
-- **Neutralny:** a = 1/1, b = 2/2, c = 2/2, d = 2/2 (zgodne z celem „ok. 2 jednostki dla obcej kultury i religii").
-- **Duży:** a = 0/0, b = 2/2, c = 2/2, d = 4/3 (zgodne z przykładem właściciela: 4 jednostki dla obcej kultury i religii bez budynków; świątynia obniża wymóg).
+| Wariant | a) | b)/c) | d) |
+|---|---|---|---|
+| MALY (obecne) | 1 / 0 | 2 / 1 | 2 / 1 (z Garnizonem: 1 / 0) |
+| NEUTRALNY x=7, obcięcie od 0% (jak MALY) | 1 / 0 | 2 / 1 | **2 / 1** (identyczne z MALY — x nie zmienia d przy obcięciu) |
+| DUZY x=16, obcięcie od 0% | 0 | 2 / 1 | 2 / 1 — identyczne z MALY dla d |
+| DUZY x=16, BEZ obcięcia (pełna liczba ujemna) | 0 | 2 / 1 | **>6 / 4** (z Garnizonem: >6 / 2) |
+| DUZY x=16, dolny próg −50 | 0 | 2 / 1 | 3 / 2 (z Garnizonem: 2 / 1) |
+| DUZY x=16, dolny próg −100 | 0 | 2 / 1 | **4 / 3** (z Garnizonem: 3 / 2) |
 
-Uwaga o zgodności z celami dispatchu: „duży" osiąga 4 jednostki dla d i 2 dla b/c, świątynia zmniejsza wymóg o 1 — zgodnie. „Neutralny" daje 2 dla d, zgodnie. Cel „budynki znacząco zmniejszają wymóg" osiągnięty tylko częściowo (−1 jednostka); większy efekt wymagałby nowego budynku lub większej wagi świątyni (NIE MODELOWANE).
+Wniosek dla właściciela: w wariancie z obcięciem od 0% (jak dziś) zmiana samego x nie zmienia obcej kultury i religii — poziomy różnią się tylko w scenariuszach a–c. Aby dostać „4 jednostki dla obcej kultury i religii" (przykład właściciela) w tierze neutralnym, potrzebny jest dolny próg Szczęścia poniżej 0%. Próg −100% daje 4 (epoka 1), ale w epoce 3 już >6 (bez budynków) i 5 (z Garnizonem), co wymaga osobnej decyzji.
 
-Kary do czasu przejęcia NASZEJ kultury: mechanizm przejęcia (`convertCulture`, `kultura_konwersja_baza_tura`, budynki kulturalne) pozostaje; w tej analizie nie zmieniano tempa konwersji (NIE ZMIERZONO, ile tur trwa przejęcie w grze).
+**Konsekwencja implementacyjna dolnego progu:** wartość obcięcia zmienia Szczęście% każdego miasta, nie tylko kultury i religii, ponieważ `clampPct` działa na sumie netto. Konsumenci `szPct` (Porządek, efekty pasm, HUD, `pctFromNetto`) NIE PRZEANALIZOWANI. Przed wyborem wariantu konieczna jest analiza tych konsumentów i wpływu na miasta bez obcej kultury (np. ujemne Szczęście przy wysokich podatkach).
 
-## 4. Ustawienie „Kultura i religia" (mały / neutralny / duży)
+**Ocena każdego wariantu pod kątem celów dispatchu:** cel „4 jednostki dla d (bez budynków)" — spełniony tylko przez wariant z progiem −100% (tier neutralny, normal epoka 1); cel „2 jednostki dla b/c" — spełniony przez wszystkie warianty; cel „budynki znacząco zmniejszają wymóg" — Garnizon budynek i Pretorium: −1 jednostkę; Świątynia: nie zmienia wymogu d w epoce 2 (z Garnizonem: 1 jednostka z Świątynią i bez niej, SILNIK tabela B), bo przy obcięciu od 0% dodatek +2 jest zjadany przez dno Szczęścia. Świątynia nie spełnia celu.
 
-Wzorzec do naśladowania: „Dyplomacja i wojna" (`gra/src/ui/newGameFlow.ts`, ok. linie 225–260 i 1887, etykieta ok. 2365; typ `DiplomacyWarLevel` w `gra/src/game/diplomacy-war-level.ts`) oraz „Koszty jednostek" (`kosztJednostekPace`, linie ~254 i 1927).
+## 4. Mechanizm przejęcia i czas kar (opis, NIE ZMIERZONO w tempie)
 
-Pliki do zmiany (propozycja):
-1. `gra/src/ui/newGameFlow.ts` — nowe pole `p.advanced.kulturaReligia: 'maly' | 'neutralny' | 'duzy'` (domyślnie `maly`), etykieta i podpowiedź w kreatorze, wiersz w podsumowaniu (~linia 2361), komentarz „musi być zsynchronizowany ręcznie" z typem w module gry.
-2. `gra/src/game/` — nowy moduł (np. `culture-religion-level.ts`) z typem i mapą poziom → zestaw parametrów (x, obcięcie), wzorem `diplomacy-war-level.ts`.
-3. `gra/data/society-params.json` — nowe wiersze (mały/neutralny/duży) dla `szczescie_skala_kultura_religia` (zmiana wartości per poziom) i nowy klucz `szczescie_kultura_religia_obciecie_dolu`.
-4. `gra/src/game/society-breakdown.ts` — `proporcjonalneSzczescie`/`computeHappinessBreakdown` czyta obcięcie z parametrów (zamiast stałego `clampPct` dla linii kultury/religii); `main.ts` przekazuje poziom ze stanu gry.
-5. Stan gry i zapis: pole w stanie gry + serializacja w zapisie; zapis bez pola = `maly` (kompatybilność starych zapisów = mały, bit-w-bit).
+- Religia po podboju: nowy udział = 1 − udział poprzedniego właściciela (`onCityCapturedReligion`). Dla miasta w 100% obcej religii start = 0% naszej religii.
+- Kultura po podboju: start udziału NIE SPRAWDZONY (założenie 0%).
+- Konwersja kultury: `convertCulture` z parametrami `kultura_konwersja_*`; budynki przyspieszają (świątynia, amfiteatr, biblioteka, pałac, stela, sad, łaźnia). Tempo w turach NIE ZMIERZONO.
+- Kara „bez budynków" trwa dopóki udział naszej kultury i religii nie wzrośnie. Brak osobnego limitu czasowego. Ten mechanizm nie został przeprojektowany w tej analizie.
+
+## 5. Ryzyka (wszystkie NIE ZMIERZONO, poza liczbami SILNIKA powyżej)
+
+- **AI:** `ai-city-garrison.ts` i `ai-city-capture-executor.ts` NIE ZBADANE pod kątem garnizonu 2–4 w miastach zdobytych. Wymagany pomiar 100+ tur na poziomach „duży" i „neutralny" (NIE ZMIERZONO).
+- **Bunt i rozpad AI:** bunt skrajny w epoce 3 (normal, hard) przy 1 jednostce i bez budynków (SILNIK, tabela E). Czy AI utrzyma garnizony i nie straci wszystkich miast — NIE ZMIERZONO.
+- **Balans wojen epoki:** wyższy koszt garnizonu (żywność jednostek 4/16/64, UPKEEPMULT) plus silniejsza kara za podbój — NIE ZMIERZONO.
+- **Stolice i osadnictwo:** stolica ma kulturę własną (mały wpływ). Nowe osady (pop 1–2) mają inny mianownik i wymagają osobnej tabeli — NIE MODELOWANE.
+- **Konsumenci Szczęścia%** (§3): wariant z dolnym progiem zmienia wartości wszystkich miast — NIE PRZEANALIZOWANE.
+- **Drugi system tierów (`order.ts`)** — czy czytany w turze: NIE ZMIERZONO.
+- **Sprzeczność komentarza:** `buildingZadowolenie` w typie opisuje Świątynię jako „+3", a `buildings.json` ma bazę zadowolenia 2. Model używa wartości z danych (2). Rozstrzygnięcie — do potwierdzenia.
+
+## 6. Ustawienie „Kultura i religia" (mały / neutralny / duży)
+
+Wzorzec: „Dyplomacja i wojna" (`gra/src/ui/newGameFlow.ts`, `gra/src/game/diplomacy-war-level.ts`) i „Koszty jednostek" (`kosztJednostekPace`). Pliki do zmiany (propozycja, nie wykonana):
+1. `gra/src/ui/newGameFlow.ts` — pole `advanced.kulturaReligia: 'maly' | 'neutralny' | 'duzy'` (domyślnie `maly`), etykieta i podsumowanie.
+2. `gra/src/game/culture-religion-level.ts` (nowy) — typ i mapa poziom → zestaw parametrów (x, dolny próg), wzorem `diplomacy-war-level.ts`.
+3. `gra/data/society-params.json` — wartości per poziom i nowy klucz dolnego progu (wariant B).
+4. `gra/src/game/society-breakdown.ts` — `clampPct` dla sumy Szczęścia czyta próg z parametrów zamiast stałego 0.
+5. Stan gry i zapis: pole stanu; zapis bez pola = `maly` (bit-w-bit).
 6. `gra/src/main.ts` — `__settingsLive` (hak civTest), jeśli testy na żywo mają zmieniać poziom.
 
-Testy: testy modułu poziomów (3 poziomy × wartości), test „mały = obecne bit-w-bit" (porównanie z tabelą z `culture-religion`/`society-breakdown` na zapisanych wartościach), test kompatybilności zapisu, test modelu z tabeli §2, pomiar AI (§5).
-
-## 5. Ryzyka
-
-- **AI:** `ai-city-garrison.ts` i `ai-city-capture-executor.ts` mogą nie przewidywać garnizonu 2–4 w miastach zdobytych; AI może tracić miasta w buncie. Wymaga pomiaru na 100+ tur przy „duży" (NIE ZMIERZONO).
-- **Balans wojen epoki:** wyższy koszt utrzymania garnizonu (żywność jednostek ×1/×2/×4 po FALACH 875/883/887) plus obcięcie Szczęścia → silniejsza kara za podbój; przy „duży" zdobywanie obcych miast może być nieopłacalne.
-- **Stolice i osadnictwo:** stolica ma kulturę własną — mało wpływu; nowe osady (mała pop) są najbardziej narażone na zmianę wymogu (pop 1–2 mają inny mianownik).
-- **Rozpad AI:** jeśli AI nie utrzyma garnizonu, buntuje się; wymagany pomiar, że AI nie traci wszystkich miast w jednej grze.
-- **Epoki 2–3:** `x` skaluje się w górę (16/23); przy „duży" bez obcięcia Szczęście może zejść poniżej −100%, co wymaga ograniczenia (NIE MODELOWANE dla epok 2–3).
-- **Porządek w order.ts:** druga definicja tierów — ryzyko rozjazdu UI i silnika, jeśli któreś miejsce czyta stare progi.
-
-## 6. Plan implementacji (po decyzji właściciela)
-
-1. Decyzja ABC: poziom domyślny i wartości „neutralny"/„duży" (pytanie do właściciela — wymaga zatwierdzenia przez turniej C-018 przed pokazaniem właścicielowi).
-2. Dodanie parametrów i modułu poziomów (bez zmiany zachowania dla „mały").
-3. Obcięcie kultury/religii sterowane poziomem; test „mały = bit-w-bit".
-4. Kreator + zapis (pole stanu, kompatybilność).
-5. Pomiar: model §2 w grze (NIE ZMIERZONO), 100 tur AI na trzech poziomach, live w przeglądarce.
-6. Wdrożenie za flagą `kulturaReligia` (domyślnie `maly`), FC, deploy na ROBOCZĄ dopiero po zatwierdzeniu.
+Testy: „mały = obecne bit-w-bit" (porównanie z tabelą A), tabela B jako test regresji silnika, test zapisu bez pola, test progu −100%.
 
 ## 7. Czego NIE zmierzono
 
-- Silnik TypeScript (bundle esbuild) — model to reimplementacja.
-- Start udziału kultury/religii po zdobyciu w kodzie `onCityCapturedReligion` (założenie: 0% własnej).
-- Tempo konwersji kultury i religii w grze; wpływ świątyni na religię (`convertViaTemple`).
-- Epoki 2–3 i wartości x dla nich.
-- Zachowanie AI przy „duży" i „neutralny"; balans wojen.
-- Czy `order.ts` (drugie progi) jest jeszcze czytane w turze.
+- Pomiar w grze, runtime i AI (wszystkie liczby to SILNIK, nie zrzut z gry).
+- Start udziału kultury po podboju.
+- Tempo konwersji kultury i religii; wpływ świątyni na religię.
+- Skutek uruchomienia buntu po grace.
+- Czy `haKult` (`cultureHappiness`) i `order.ts` (drugie progi) wpływają na wynik.
+- Linie Szczęścia poza kulturą, religią, podatkami i Świątynią (luksus, cuda, Wealth, zaopatrzenie, Spichlerz).
+- Amfiteatr, Sąd, Trybunał, Dwór, Pałac — NIE MODELOWANE.
+- Zachowanie AI i balans wojen przy poziomach „duży" i „neutralny".
