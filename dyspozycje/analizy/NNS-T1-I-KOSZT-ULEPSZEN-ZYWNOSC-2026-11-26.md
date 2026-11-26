@@ -73,6 +73,7 @@ rundy).
 Rekomendacja: wariant A do czasu decyzji; kwestia wariantu B/C jest decyzją gry, nie techniczną. Pytanie do
 właściciela należy przygotować wg zasad ABC (wpływ na pierwszą turę gracza), NIE w tej rundzie.
 
+
 ## (b) Koszt ulepszeń w żywności a automatyczne ulepszanie pastwisk i irygacji
 
 ### Fakty
@@ -82,15 +83,33 @@ właściciela należy przygotować wg zasad ABC (wpływ na pierwszą turę gracz
   `gra/data/improvement-cost-params.json`, `kosztUlepszenWgEpokiWlasciciela: true`; odczyt w
   `gra/src/game/terrain-improvements.ts` (ok. linii 177–189). Decyzja nie zawiera wyjątku dla żywności (ślad:
   `dyspozycje/autobot/runs/R-WEB-TEST-DEBT-Q14-D1C/30-obrona-claude.md`).
-- Metryka „głodowanie” (harness `gra/tools/autoimprove-pasture-irrigation-q2-bisect.cjs`): liczba tur fazy wzrostu
-  (tury 1–24), w których istnieje pole obywatela z farmą bez trzody (przy rzece, Łąka/Równina), a automat nie
-  postawił ani trzody, ani irygacji, mimo puli > 500. Czyli: „farma stoi bez trzody, a budżet się marnuje”.
-- Test (e) w `gra/tools/autoimprove-pasture-irrigation-q2-test.cjs` wymaga starved = 0, firstPast ≤ 3,
-  firstIrr ≤ 6 oraz zero naruszeń kolejności.
+- Dwie miary w harnessie `gra/tools/autoimprove-pasture-irrigation-q2-bisect.cjs` (ten sam produkcyjny picker):
+  - `starved` = liczba tur fazy wzrostu (1–24), w których istnieje pole obywatela z farmą bez trzody (przy rzece,
+    Łąka/Równina), a automat nie postawił ani trzody, ani irygacji, mimo puli > 500.
+  - `gapGrow` = liczba farm na polach obywateli bez trzody w turze 24 (koniec fazy wzrostu).
+- Test (e) w `gra/tools/autoimprove-pasture-irrigation-q2-test.cjs` działa na JEDNYM ziarnie (SEED = 1) i wymaga:
+  starved = 0; pierwsza trzoda w turze ≤ 3; pierwsza irygacja w turze ≤ 6; gapGrow.farmNoPast = 0; zero naruszeń
+  kolejności. Sekcja (a)+(b)+(c) tego samego pliku wymaga dodatkowo: pola obywateli POZA rzeką z farmą ≥ 1.
 
-### Pomiar na bazie 8ad1d555d (ZMIERZONO: uruchomienie harnessu, 14 ziaren, domyślne parametry)
+### Wynik pełnego pliku testowego (ZMIERZONO: pełny przebieg, ok. 55 s, baza 8ad1d555d)
 
-Harness uruchomiony na `gra/src` tej bazy (flaga true) i na kopii `gra/src` z flagą false (kopia poza repo).
+| Przebieg | WYNIK | Niespełnione asercje |
+|---|---|---|
+| flaga true (stan obecny) | 14 OK / 3 FAIL | (1) pola obywateli POZA rzeką z farmą: 0 (wymagane ≥ 1); (2) (e) pierwsza irygacja w turze 7 (wymagane ≤ 6); (3) (e) w turze 24 farmy na polach obywateli bez trzody: 38 (wymagane 0) |
+| flaga false (tymczasowa zmiana pliku danych, cofnięta `git checkout`) | 15 OK / 2 FAIL | (1) jw.; (3) (e) w turze 24 farmy bez trzody: 19 |
+
+Wnioski z wyniku:
+- Liczba „14/3" z dispatchu to wynik testu: 14 asercji OK, 3 FAIL. NIE oznacza „3 z 14 ziaren". Zdanie „3 z 14 ziaren
+  głoduje" pochodzi z osobnej pętli po 14 ziarnach (tabela niżej) i jest innym pomiarem.
+- Pełny test NIE przechodzi przy żadnej wartości flagi.
+- Asercja (1) „pola POZA rzeką" pada niezależnie od flagi kosztu (na ziarnie 1 nie ma pola obywatela poza rzeką z
+  farmą). To nie jest skutek kosztu żywności; to osobna sprawa scenariusza testu (rozstrzyga orkiestrator jako
+  kwestię inżynierską, nie balansową).
+- Asercja (2) (irygacja w turze 7) pada tylko przy fladze true.
+- Asercja (3) (luka trzody w turze 24) pada w obu przebiegach; flaga kosztu podwaja lukę (19 → 38 farm bez trzody).
+- Zarzut „wariant B naprawia test (e)" był błędny: patrz wariant B niżej.
+
+### Pomiar 14 ziaren na bazie 8ad1d555d (ZMIERZONO: pętla harnessu bisect po SEED = 1..14, domyślne parametry)
 
 | ziarno | flaga true: starved / firstIrr / pool | flaga false: starved / firstIrr / pool |
 |---|---|---|
@@ -109,64 +128,60 @@ Harness uruchomiony na `gra/src` tej bazy (flaga true) i na kopii `gra/src` z fl
 | 13 | 0 / 5 / 335 | 0 / 2 / 288 |
 | 14 | 0 / 5 / 330 | 0 / 3 / 315 |
 
-Podsumowanie ZMIERZONO:
-- Flaga true: 3 z 14 ziaren ma tury głodzone (ziarna 3, 5, 12; łącznie 4 tury), mediana firstIrr = 8 (irygacja
-  pojawia się późno: 35–40 tur w czterech ziarnach, brak w ziarnie 5 w horyzoncie testu).
-- Flaga false: 1 z 14 ziaren ma tury głodzone (ziarno 3, 2 tury), firstIrr = 2–3 we wszystkich ziarnach.
-- Ziarno 3 głoduje także przy fladze false. Flaga NIE jest jedyną przyczyną na tej bazie.
-- Średnia puli (14 ziaren): true ≈ 330, false ≈ 309 (ta sama metryka; przyczyny różnicy NIE ZMIERZONO).
-- Test (e) (ziarno 1, domyślne ustawienia): starved 0 i firstPast 2 spełnione; firstIrr = 7 przy progu ≤ 6, czyli
-  asercja irygacji z flagą true na tej bazie wypada. NIE ZMIERZONO: pełny przebieg `npm`-testu (uruchomiono
-  tylko harness, nie cały plik testowy).
+Podsumowanie:
+- Flaga true: starved > 0 w 3 z 14 ziaren (ziarna 3, 5, 12; łącznie 4 tury); firstIrr w czterech ziarnach 35–40 tur
+  (ziarno 5: brak irygacji w horyzoncie).
+- Flaga false: starved > 0 tylko w ziarnie 3 (2 tury); firstIrr 2–3 we wszystkich ziarnach z irygacją.
+- Ziarno 3 głodzi także przy fladze false: flaga nie jest jedyną przyczyną.
+- Średnia puli (14 ziaren): true ≈ 330, false ≈ 309 (przyczyna różnicy NIE ZMIERZONO).
+- Ziarno 1 (test (e)): starved 0 w obu przebiegach (test przechodzi tę miarę); luka gapGrow 38 / 19 — NIE była
+  widoczna w tabeli starved, stąd konieczność podania obu miar.
 
-Uwaga o liczbach z dispatchu: „starved 3 z pulą 340” pochodzi z kandydata 141a2bc56 (FALA 878) i
-z kandydata 79d6972c2 (Obrona R-WEB-TEST-DEBT-Q14-D1C), a nie z bazy 8ad1d555d. Na bazie 8ad1d555d zjawisko
-jest mniejsze (1–3 ziarna z 14 zależnie od flagi). Związek „flaga = jedyna przyczyna” z Obrony NIE potwierdza się
-na obecnej bazie, bo ziarno 3 głodzi także przy fladze false.
+### Interpretacja (ZAŁOŻENIE, nie rozstrzygnięte pomiarem)
 
-### Interpretacja (ZAŁOŻENIE, rozstrzygnięte w tej analizie)
-
-- Koszt wg epoki właściciela podnosi cenę ulepszeń (w tym farm, trzody i irygacji) w epokach wyższych od ich
-  epoki odblokowania. Skutek: w tej samej turze mniej ulepszeń się mieści w puli, a kolejność (farmy → trzoda →
-  irygacja) jest egzekwowana. To zgodne z decyzją B (ZAŁOŻENIE: decyzja nie wyłącza żywności).
-- „Głodowanie” z testu (e) jest skutkiem kolejności etapów przy rosnącej liczbie farm, a nie wyczerpaniem żywności
-  w sensie ekonomii państwa. Metryka mierzy opóźnienie trzody/irygacji przy farmach bez trzody, nie niedobór żywności.
-- Realny wpływ na grę: AI i gracz z autoulepszaniem dostają trzodę/irygację później (firstIrr 35–40 tur na
-  czterech ziarnach zamiast 2–3), co obniża wydajność pól przy rzece w połowie wzrostu. To jest konsekwencja
-  zatwierdzonej decyzji kosztu, a nie błąd kolejności (kolejność jest zachowana: orderViol = 0 we wszystkich
-  przebiegach).
+- Koszt wg epoki właściciela podnosi cenę ulepszeń (farm, trzody, irygacji) w epokach wyższych niż epoka ich
+  odblokowania. Skutek w pomiarze: trzoda i irygacja pojawiają się później (irygacja 35–40 tur w czterech ziarnach
+  zamiast 2–3), a liczba farm bez trzody w turze 24 rośnie z 19 do 38 (ziarno 1).
+- Mechanizm, dlaczego nawet przy fladze false zostaje 19 farm bez trzody w turze 24 i dlaczego ziarno 3 głodzi
+  w obu przebiegach: NIE ZMIERZONO w tej rundzie (wymaga osobnego śledzenia kolejki w pickerze).
+- Realny wpływ na grę (ZAŁOŻENIE): AI i gracz z autoulepszaniem dostają trzodę i irygację później; pola przy rzece
+  dłużej działają bez wydajności. Kolejność etapów jest zachowana (orderViol = 0 we wszystkich przebiegach).
 
 ### Warianty dla właściciela (skutek dla gry, po polsku)
 
 - Wariant A (obecny): koszt wg epoki właściciela dla wszystkich ulepszeń, także farm, trzody i irygacji.
-  - Za: jedna, prosta reguła; zgodna z decyzją z 2026-11-19; spójna dla gracza i AI.
-  - Przeciw: w epokach wyższych automat stawia trzodę i irygację późno (w części ziaren dopiero po 35–40 turach);
-    pola przy rzece dłużej bez wydajności.
-  - Konsekwencja implementacyjna: brak. Konsekwencja testowa: test (e) pozostaje czerwony na części ziaren; wymaga
-    decyzji o zmianie kryterium albo o wariancie B.
-- Wariant B (wyjątek dla żywności): koszt wg epoki tylko dla surowców i ulepszeń nieżywnościowych; farmy, trzoda
-  i irygacja liczone po epoce odblokowania.
-  - Za: trzoda i irygacja wracają wcześnie (firstIrr 2–3 we wszystkich ziarnach na bazie flagi false); kryterium
-    testu (e) jest spełnione.
-  - Przeciw: łamie jednolitość reguły z decyzji 2026-11-19; w wyższych epokach ulepszenia żywnościowe są relatywnie
-    tańsze niż reszta.
-  - Konsekwencja implementacyjna: wyjątek w funkcji kosztu budowy (jedna funkcja wg decyzji „z jednej funkcji”),
-    flaga per kategoria. Konsekwencja testowa: testy kosztu ulepszeń (ścieżka gracza, AI, karta) wymagają
-    zaktualizowania; test (e) wraca do zielonego.
-- Wariant C (kryterium zmienione): zostaje koszt wg epoki, a test (e) zostaje przeformułowany na
-  „trzoda/irygacja w rozsądnym czasie od wyczerpania farm”, z progiem liczbowym do zatwierdzenia przez właściciela.
-  - Za: reguła gry bez zmian; test mierzy to, co gra ma robić.
-  - Przeciw: wymaga nowego kryterium i decyzji, czy 35–40 tur to akceptowalne opóźnienie.
-  - Konsekwencja implementacyjna: tylko test/harness. Konsekwencja testowa: zmiana asercji (e); bez zmiany gry.
+  - Za: jedna, prosta reguła zgodna z decyzją z 2026-11-19; spójna dla gracza i AI.
+  - Przeciw: w epokach wyższych trzoda i irygacja pojawiają się późno (w części ziaren po 35–40 turach); pola przy
+    rzece dłużej bez wydajności; gracz widzi więcej farm bez zwierząt w połowie wzrostu.
+  - Konsekwencja implementacyjna: brak zmian w grze. Konsekwencja testowa: test (e) pozostaje czerwony (asercje 2
+    i 3), a asercja (1) pada niezależnie. Zielony test wymaga wariantu B lub C oraz osobnej naprawy asercji (1).
+- Wariant B (wyjątek dla żywności): farmy, trzoda i irygacja liczone po epoce odblokowania; reszta po epoce właściciela.
+  - Za: irygacja wraca wcześnie (przy fladze false: 2–3 tury na wszystkich ziarnach z irygacją; asercja (2) przechodzi);
+    luka trzody maleje z 38 do 19 farm.
+  - Przeciw: łamie jednolitość decyzji z 2026-11-19; luka trzody (19 farm) NIE znika; asercja (3) i asercja (1)
+    nadal padają, więc test NIE wraca do zielonego.
+  - Konsekwencja implementacyjna: wyjątek w jednej funkcji kosztu budowy (dla kategorii żywnościowych) oraz osobne
+    zbadanie przyczyny luki trzody (NIE ZMIERZONO). Konsekwencja testowa: testy kosztu ulepszeń (gracz, AI, karta)
+    do aktualizacji; asercja (2) przechodzi; asercje (3) i (1) wymagają dalszej pracy.
+- Wariant C (kryterium zmienione): koszt wg epoki zostaje; test (e) przeformułowany na progi czasowe do zatwierdzenia
+  przez właściciela (np. dopuszczalne opóźnienie irygacji i trzody).
+  - Za: reguła gry bez zmian; test mierzy to, co gra ma zapewniać.
+  - Przeciw: progi są decyzją gry; 35–40 tur opóźnienia i 38 farm bez trzody w turze 24 trzeba zaakceptować albo
+    odrzucić; asercja (1) (pola poza rzeką) wymaga osobnej decyzji o scenariuszu.
+  - Konsekwencja implementacyjna: tylko test/harness, bez zmiany gry. Konsekwencja testowa: zmiana asercji (2), (3)
+    i (1); wymagany nowy pomiar na 14 ziarnach po zmianie progów.
 
-Rekomendacja orkiestratora (do decyzji właściciela, NIE rozstrzygam sam): wariant C, jeśli 35–40 tur opóźnienia
-trzody i irygacji w części ziaren jest akceptowalne dla gry; wariant B, jeśli nie. Wariant A bez zmiany kryterium
-zostawia test czerwony.
+Rekomendacja: nie rozstrzygam za właściciela. Pytanie ABC do właściciela należy przygotować po zakończeniu rundy
+(ile tur gracz czeka na trzodę i irygację przy farmach, przy jakim koszcie budowy), z wariantami A/B/C powyżej.
 
 ## Ograniczenia
 
-- Harness uruchomiono na 14 ziarnach z domyślnymi parametrami; test (e) używa tej samej metryki na ziarnie 1.
+- Pełny plik testowy uruchomiono na bazie 8ad1d555d (flaga true i false); tabelę 14 ziaren zebrano harnessem bisect
+  (ta sama baza, pętla po SEED).
 - Gra w przeglądarce NIE była uruchamiana (NIE ZMIERZONO): brak zrzutów, brak pomiaru tooltipu bramki na żywo.
-- Dwie liczby z rejestru (89 s / 250 s, prognozy −2/−3) NIE zostały tu ponownie zmierzone.
-- Nie wykonano zmian w `gra/`, `dyspozycje/WERSJE.md` ani w manifeście. Środowisko: `npm ci` w `gra/` tylko na
-  potrzeby harnessu; `gra/node_modules` usunięty po pomiarze.
+- Liczby 89 s / 250 s i prognozy −2 / −3 dla t57 z rejestru NIE zostały tu ponownie zmierzone.
+- Tanie testy bramki NNS uruchomiono w tej rundzie (ZMIERZONO): no-negative-stocks-test.cjs 25/0,
+  end-turn-gate-projection-only-test.cjs 49/0, no-negative-stocks-ai-from-turn1-test.cjs 27/0. Nie mierzą one
+  prognozy tury 1 przy domyślnych podatkach; ta liczba pozostaje NIE ZMIERZONO.
+- Nie wykonano zmian w `gra/src/`, `gra/data/` (flaga przywrócona `git checkout`), `dyspozycje/WERSJE.md` ani w manifeście.
+- Środowisko: `npm ci --ignore-scripts` w `gra/` tylko na potrzeby harnessu; `gra/node_modules` usuwany po rundzie.
