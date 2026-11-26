@@ -18,3 +18,12 @@ gra-robocza/, gra-kanon/, dyspozycje/WERSJE.md, manifest, rust-port/, npm run bu
 tsc 0; logic 213; tech-tree 20; research 33; unit-replace; combat 6; ai-test 297/0 (przy poziomie legacy/domyślnym wynik niezmieniony; przy trudnym — zmierz i opisz); society-* i order-* testy istniejące zielone lub sklasyfikowane STARY-PIN z uzasadnieniem. Zacommituj i zwróć SHA.
 ## Binarne kryterium
 Linie kultury i religii w Szczęściu i Prawie wg tabeli D/G i skali epok; ustawienie w nowej grze; zapisy bez pola = dzisiejsze zachowanie bit-w-bit; testy z mutacjami czerwonymi na poziomie trudnym; pomiar AI 60 tur na trudnym; bramki zielone.
+
+---
+# DECYZJE WŁAŚCICIELA 33–35 (wyniki modelu CULTMODEL2; odpowiedź „33A 34a 35A”) — WSZYSTKIE „ZOSTAJE”, ZERO ZMIAN PARAMETRÓW PROJEKTU
+- 33A: na trudnym każde miasto, także własne, potrzebuje garnizonu (własne miasto bez garnizonu: Porządek 0, rebelia w turze 4; z 1 jednostką Porządek 16% — nad progiem buntu skrajnego); bez stałego plusa Prawa i bez okresu ochrony nowych osad.
+- 34A: trudny D=−20 bez zmian (4 jednostki obcej kultury+religii dają wyjście z buntu, spokój wymaga budynku Garnizon; limit jednostek 5 bez zmian).
+- 35A: skala epok ×1,6/×2,3 także na trudnym bez zmian (epoka 3 na trudnym: spokój tylko z budynkami Pretorium+Garnizon).
+- Domyślnie zostaje: obcięcie Szczęścia od 0%; łatwy: własne miasto +20 Prawa/+20 Szczęścia.
+- Model: dyspozycje/analizy/KULTURA-RELIGIA-MODEL2-2026-11-26.md (refs/keep/CULTMODEL2-fc 221bfd05c) — użyj go jako referencji testów (potrzebne jednostki: łatwy 2/2, normalny 3/3, trudny 4 do wyjścia z buntu przy pop 5 epoce 1 bez budynków); test wartości z silnika musi je odtworzyć.
+- Zadanie dodatkowe dla AI (pomiar na trudnym, 60 tur, seed 4242): AI trzyma 1 jednostkę na miasto — potwierdź, czy własne miasta AI przeżywają (Porządek z 1 jednostką 16%), i ile miast obcej kultury AI traci przez bunty; wynik opisz liczbami, nie zmieniaj ai-city-garrison.ts bez DECISION_REQUIRED.
