@@ -34547,6 +34547,10 @@ async function boot(): Promise<void> {
         isEnabled: (): boolean => isEraRebalanceEnabled() === true,
         status: (): { flag: boolean } => ({ flag: isEraRebalanceEnabled() === true }),
       };
+      // DIAG-OBRONA (tylko odczyt): mapa id miasta -> właściciel z poprzedniego wywołania cityStateTurn oraz
+      // przejęcia miast (poprzedni -> nowy właściciel) z ostatniego wywołania. Zero zapisu do stanu gry.
+      let cityOwnerPrevForTest: Map<number, number> | null = null;
+      let cityTransfersLastForTest: Array<{ z: number; na: number; liczba: number }> = [];
       (window as any).__aiEconomyMeasure = {
         schemaVersion: 1,
         /** R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1 (tylko ?civTest=1, domyślnie OFF): gracz (0) wykonuje w fazie AI
@@ -34612,8 +34616,26 @@ async function boot(): Promise<void> {
             const band = st?.bandLabel ?? 'brak';
             row.pasma[band] = (row.pasma[band] ?? 0) + 1;
           }
+          // DIAG-OBRONA: przejęcia miast od poprzedniego wywołania (zmiana ownerId; -99 = rebelianci, -1 = barbarzyńcy).
+          const curOwner = new Map<number, number>();
+          for (const c of cities) curOwner.set(Number(c.id), c.ownerId);
+          const transfers = new Map<string, { z: number; na: number; liczba: number }>();
+          if (cityOwnerPrevForTest) {
+            for (const [id, o] of curOwner) {
+              const was = cityOwnerPrevForTest.get(id);
+              if (was === undefined || was === o) continue;
+              const key = was + '>' + o;
+              const t = transfers.get(key) ?? { z: was, na: o, liczba: 0 };
+              t.liczba++;
+              transfers.set(key, t);
+            }
+          }
+          cityOwnerPrevForTest = curOwner;
+          cityTransfersLastForTest = [...transfers.values()];
           return [...by.values()].sort((a, b) => a.owner - b.owner);
         },
+        /** DIAG-OBRONA (tylko odczyt): przejęcia miast z ostatniego wywołania cityStateTurn (z -> na, liczba); pusta lista w pierwszej turze (linia bazowa). */
+        cityTransfersLast: (): Array<{ z: number; na: number; liczba: number }> => cityTransfersLastForTest.slice(),
         /** R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1 (r2): właściciele przetworzeni przez ownerLoop w ostatniej fazie AI. */
         lastAiPhaseOwnersForTest: (): number[] => aiPhaseOwnersForTest.slice(),
         /** R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1 (tylko odczyt, ?civTest=1): rozmiar dziennika w pamieci (wszyscy wlasciciele). */

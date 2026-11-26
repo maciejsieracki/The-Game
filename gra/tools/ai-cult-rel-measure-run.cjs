@@ -447,6 +447,7 @@ async function playOneTurn(page, ctxState) {
       aiOffersRejected: offersRec.confirmed, aiOffersRejectAttempts: offersRec.attempts };
     if (UNIT_FLOW) recH.unitFlow = await page.evaluate(() => window.__aiEconomyMeasure.unitFlowTurn());
     if (CITY_STATE) recH.cityState = await page.evaluate(p => window.__aiEconomyMeasure.cityStateTurn(p), CITY_STATE_PROG);
+    if (CITY_STATE) recH.cityTransfers = await page.evaluate(() => window.__aiEconomyMeasure.cityTransfersLast());
     recH.wars = await collectWars(page, mH.owners);
     recH.upkeepGate = gateDelta(gateBefore, await readGateStats(page));
     if (HASH) recH.stateHash = await stateHash(page, null);
@@ -489,6 +490,7 @@ async function playOneTurn(page, ctxState) {
   };
   if (UNIT_FLOW) rec.unitFlow = await page.evaluate(() => window.__aiEconomyMeasure.unitFlowTurn());
   if (CITY_STATE) rec.cityState = await page.evaluate(p => window.__aiEconomyMeasure.cityStateTurn(p), CITY_STATE_PROG);
+  if (CITY_STATE) rec.cityTransfers = await page.evaluate(() => window.__aiEconomyMeasure.cityTransfersLast());
   rec.wars = await collectWars(page, m.owners);
   rec.upkeepGate = gateDelta(gateBefore, await readGateStats(page));
   // R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1: rozmiar dziennika w pamieci (co 10 tur, tura koncowa i pierwsza tura po starcie segmentu; poza pomiarem tury).
