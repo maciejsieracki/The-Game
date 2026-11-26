@@ -29,11 +29,12 @@ use bridge::{
     EngineBridge, EngineCommand, StartGameParams, WallMs,
 };
 use civ_client::{
-    is_not_finished, tower_projectile_of, ClientError, HighlightPriority, MapDetailQuality,
-    RenderClient, RenderFramePayload, RenderMapPayload, RenderSource, RenderUiParams, SiegeAfterUi,
-    SiegeBattleAnswer, SiegeBattleCommand, SiegeBattleEnd, SiegeBattleErrorDto, SiegeBattlePayload,
-    SiegeBattlePhaseDto, SiegeBattleSource, SiegeClientError, SiegeSourceError, StreamOrder,
-    SIEGE_ATTACKER_COLOR, SIEGE_DEFENDER_COLOR,
+    is_not_finished, tower_projectile_of, ClientError, HighlightPriority, LoadGameError,
+    MapDetailQuality, RenderClient, RenderFramePayload, RenderMapPayload, RenderSource,
+    RenderUiParams, SaveLoadSource, SiegeAfterUi, SiegeBattleAnswer, SiegeBattleCommand,
+    SiegeBattleEnd, SiegeBattleErrorDto, SiegeBattlePayload, SiegeBattlePhaseDto,
+    SiegeBattleSource, SiegeClientError, SiegeSourceError, StreamOrder, SIEGE_ATTACKER_COLOR,
+    SIEGE_DEFENDER_COLOR, SIEGE_WITHDRAW_REASON,
 };
 use civ_engine::domain::diplomacy::{CivilizationPair, Relation, RelationStatus};
 use civ_engine::domain::playable::{
@@ -153,6 +154,8 @@ struct Seen {
     actions: Vec<BattleActionDto>,
     /// Frames of every siege answer.
     frames: Vec<BattleFrameDto>,
+    /// R-RUSTPORT-P4-409-CLIENT-API-GAPS-Q1: `LoadGame` commands sent.
+    loads: usize,
 }
 
 /// `RenderSource` + `SiegeBattleSource` over the real bridge.
@@ -279,6 +282,24 @@ impl SiegeBattleSource for BridgeSource {
             battle,
             state_changed,
         })
+    }
+}
+
+/// R-RUSTPORT-P4-409-CLIENT-API-GAPS-Q1: `SaveGame` / `LoadGame` over the same bridge.
+impl SaveLoadSource for BridgeSource {
+    fn save_game(&mut self) -> Result<String, BridgeError> {
+        let d = self.request(EngineCommand::SaveGame)?;
+        d.response
+            .save_game
+            .ok_or_else(|| unexpected("no saveGame", "save_game"))
+    }
+
+    fn load_game(&mut self, save: &str) -> Result<(), BridgeError> {
+        self.seen.loads += 1;
+        self.request(EngineCommand::LoadGame {
+            save: save.to_owned(),
+        })
+        .map(|_| ())
     }
 }
 
@@ -1817,4 +1838,236 @@ fn fq_speed_bridge_klatka_tylko_z_przyjetej_odpowiedzi() {
         (9, 512.0, 8192.0)
     );
     assert!(b.scene().is_none());
+}
+
+// ------------------------------------------------------------ #409: withdrawal and load during a battle
+
+/// The engine has no battle: a battle command is `noActiveBattle`.
+fn assert_no_engine_battle(c: &mut Client) {
+    let e = c
+        .source_mut()
+        .request(EngineCommand::StepSiegeBattle {
+            wall_ms: WallMs(16.0),
+        })
+        .expect_err("no battle in the engine");
+    assert_eq!(e.siege_battle, Some(SiegeBattleErrorDto::NoActiveBattle));
+}
+
+/// R-RUSTPORT-P4-409-CLIENT-API-GAPS-Q1: the player's "Wycofaj się z bitwy" (`battle/battleScene.ts:3359`) in the
+/// middle of the battle, with and without a scene: `AbortSiegeBattle` -> battle screen closed, end `Aborted`, game
+/// state unchanged (machines not consumed), no `StateChanged` / `GetRenderFrame` / `GetRenderMap`, map UI kept
+/// (`onCancel` = `setMood('mapa')` only, D-409-OP-1); the engine has no battle and a new storm runs to its result.
+#[test]
+fn wycofanie_z_bitwy_w_trakcie_e2e() {
+    for with_scene in [true, false] {
+        let mut c = client_for(siege_state(11));
+        c.select_unit(Some(ANCHOR)).expect("select");
+        let state_before = c.source_mut().state();
+        c.start_siege_storm(CITY, ANCHOR, with_scene)
+            .expect("start");
+        for _ in 0..3 {
+            c.step_siege_battle(16.0).expect("step");
+        }
+        assert_eq!(
+            c.siege_battle().expect("battle").phase(),
+            SiegeBattlePhaseDto::Running,
+            "withdrawal before the end of the fight"
+        );
+        let ui = c.ui().clone();
+        let frame_before = frame(&c).clone();
+        let (maps, frames) = (c.source().seen.map_calls, c.source().seen.frame_calls);
+
+        let end = c.abort_siege_battle().expect("withdrawal").clone();
+        assert_eq!(
+            end,
+            SiegeBattleEnd::Aborted {
+                city_id: CITY,
+                reason: SIEGE_WITHDRAW_REASON.to_owned()
+            }
+        );
+        assert_eq!(
+            c.source().seen.siege,
+            vec!["start", "step", "step", "step", "abort"]
+        );
+        assert!(c.siege_battle().is_none(), "battle screen closed");
+        assert!(
+            c.last_siege_battle_view().is_none(),
+            "scene disposed (`this.dispose()`)"
+        );
+        assert_eq!(c.last_siege_battle_end(), Some(&end));
+        assert_eq!(
+            (c.source().seen.map_calls, c.source().seen.frame_calls),
+            (maps, frames),
+            "no StateChanged: no GetRenderFrame / GetRenderMap"
+        );
+        assert_eq!(c.ui(), &ui, "map UI kept (onCancel = setMood only)");
+        assert_eq!(c.ui().frame_ui.selected_unit_id, Some(ANCHOR));
+        assert_eq!(frame(&c), &frame_before, "cached map frame unchanged");
+        let state_after = c.source_mut().state();
+        assert_eq!(state_after, state_before, "game state unchanged");
+        assert_eq!(
+            state_after.siege_machines_ready.get(&CityId::new(CITY)),
+            Some(&vec![PlayableSiegeMachineKind::Taran]),
+            "machines not consumed"
+        );
+        assert_no_engine_battle(&mut c);
+        // The client has no battle any more: refused without an engine call.
+        let n = c.source().seen.siege.len();
+        assert_eq!(
+            c.step_siege_battle(16.0).err(),
+            Some(SiegeClientError::NoBattle)
+        );
+        assert_eq!(
+            c.abort_siege_battle().err(),
+            Some(SiegeClientError::NoBattle)
+        );
+        assert_eq!(c.source().seen.siege.len(), n);
+        // A new storm starts in engine and client and runs to its result.
+        c.start_siege_storm(CITY, ANCHOR, with_scene)
+            .expect("restart");
+        assert!(c.last_siege_battle_end().is_none());
+        c.skip_siege_battle().expect("skip");
+        c.finish_siege_battle().expect("finish");
+        assert!(matches!(
+            c.last_siege_battle_end(),
+            Some(SiegeBattleEnd::Applied { .. })
+        ));
+    }
+}
+
+/// Withdrawal right after the start (no step yet) is accepted too (the button is visible through the whole battle).
+#[test]
+fn wycofanie_zaraz_po_starcie() {
+    let mut c = client_for(siege_state(11));
+    let state_before = c.source_mut().state();
+    c.start_siege_storm(CITY, ANCHOR, true).expect("start");
+    c.abort_siege_battle().expect("withdrawal");
+    assert_eq!(c.source().seen.siege, vec!["start", "abort"]);
+    assert!(c.siege_battle().is_none());
+    assert_eq!(c.source_mut().state(), state_before);
+    assert_no_engine_battle(&mut c);
+}
+
+/// On the end screen (phase `finished`, before `Finish`) the engine refuses the withdrawal (`abortNotAllowed`,
+/// D-1I6D-4): explicit engine error, battle kept with its end screen, `Finish` applies the result. After `Finish` the
+/// client has no battle: `NoBattle` without an engine call.
+#[test]
+fn wycofanie_po_koncu_walki_odrzucone() {
+    let mut c = client_for(siege_state(11));
+    c.start_siege_storm(CITY, ANCHOR, true).expect("start");
+    c.skip_siege_battle().expect("skip");
+    assert!(c.siege_battle().expect("battle").end_screen());
+    let frames = c.source().seen.frame_calls;
+    assert_eq!(
+        c.abort_siege_battle().err(),
+        Some(SiegeClientError::Engine(
+            SiegeBattleErrorDto::AbortNotAllowed { city_id: CITY }
+        ))
+    );
+    assert_eq!(c.source().seen.siege, vec!["start", "skip", "abort"]);
+    let v = c.siege_battle().expect("battle kept");
+    assert!(v.end_screen(), "end screen kept: only Finish remains");
+    assert!(c.last_siege_battle_end().is_none(), "no end yet");
+    assert_eq!(c.source().seen.frame_calls, frames, "no refresh");
+    c.finish_siege_battle().expect("finish");
+    assert!(matches!(
+        c.last_siege_battle_end(),
+        Some(SiegeBattleEnd::Applied { .. })
+    ));
+    let n = c.source().seen.siege.len();
+    assert_eq!(
+        c.abort_siege_battle().err(),
+        Some(SiegeClientError::NoBattle),
+        "after Finish: no battle"
+    );
+    assert_eq!(c.source().seen.siege.len(), n, "no engine call");
+    // The engine also has none: `noActiveBattle`.
+    assert_eq!(
+        c.source_mut().siege_battle(SiegeBattleCommand::Abort).err(),
+        Some(SiegeSourceError::Battle(
+            SiegeBattleErrorDto::NoActiveBattle
+        ))
+    );
+}
+
+/// Without a battle: `NoBattle`, no engine call. The engine's own `noActiveBattle` (the engine closed the battle behind
+/// the client's back) is an explicit engine error and leaves the client's battle as it is.
+#[test]
+fn wycofanie_bez_bitwy() {
+    let mut c = client_for(siege_state(11));
+    assert_eq!(
+        c.abort_siege_battle().err(),
+        Some(SiegeClientError::NoBattle)
+    );
+    assert!(c.source().seen.siege.is_empty(), "no engine call");
+    c.start_siege_storm(CITY, ANCHOR, false).expect("start");
+    c.source_mut()
+        .siege_battle(SiegeBattleCommand::Abort)
+        .expect("abort behind the client");
+    assert_eq!(
+        c.abort_siege_battle().err(),
+        Some(SiegeClientError::Engine(
+            SiegeBattleErrorDto::NoActiveBattle
+        ))
+    );
+    assert!(
+        c.siege_battle().is_some(),
+        "client battle kept on an engine error"
+    );
+    assert!(c.last_siege_battle_end().is_none());
+}
+
+/// D-409-OP-4: loading a save during a siege battle (the pin does not guard `Ctrl+L`): the engine replaces the game
+/// (battle included); the client closes its battle locally (no `AbortSiegeBattle`), refreshes with ONE map + ONE
+/// frame of the loaded state. A rejected save during the battle keeps the battle and the session, the battle goes on.
+#[test]
+fn odczyt_w_trakcie_bitwy() {
+    let mut c = client_for(siege_state(11));
+    let save = c.save_game().expect("save before the battle");
+    let saved_state = c.source_mut().state();
+    c.start_siege_storm(CITY, ANCHOR, true).expect("start");
+    c.step_siege_battle(16.0).expect("step");
+    // Saving during a battle is refused by the engine (DL-SLB-1).
+    assert!(c.save_game().is_err(), "no save during a battle");
+
+    // Rejected save: battle and session kept.
+    let (maps, frames) = (c.source().seen.map_calls, c.source().seen.frame_calls);
+    let err = c.load_game("{").expect_err("rejected");
+    assert!(matches!(err, LoadGameError::Rejected(_)), "{err:?}");
+    assert_eq!(
+        (c.source().seen.map_calls, c.source().seen.frame_calls),
+        (maps, frames)
+    );
+    assert!(c.siege_battle().is_some(), "battle kept");
+    c.step_siege_battle(16.0).expect("the battle goes on");
+
+    // Accepted save: battle closed locally, one map + one frame.
+    let siege_calls = c.source().seen.siege.clone();
+    c.load_game(&save).expect("load");
+    assert_eq!(c.source().seen.loads, 2);
+    assert_eq!(c.source().seen.siege, siege_calls, "no AbortSiegeBattle");
+    assert_eq!(
+        (c.source().seen.map_calls, c.source().seen.frame_calls),
+        (maps + 1, frames + 1),
+        "ONE GetRenderMap + ONE GetRenderFrame"
+    );
+    assert!(c.siege_battle().is_none(), "battle closed locally");
+    assert!(c.last_siege_battle_view().is_none());
+    assert!(
+        c.last_siege_battle_end().is_none(),
+        "new session: no last battle"
+    );
+    assert_no_engine_battle(&mut c);
+    assert_eq!(c.source_mut().state(), saved_state, "state of the save");
+    let ui = c.ui().frame_ui.clone();
+    let direct = c.source_mut().render_frame(None, Some(ui)).expect("direct");
+    assert_eq!(&direct.0, frame(&c), "frame = frame of the loaded state");
+    // A new storm on the loaded game.
+    c.start_siege_storm(CITY, ANCHOR, true).expect("restart");
+    c.skip_siege_battle().expect("skip");
+    c.finish_siege_battle().expect("finish");
+    assert!(matches!(
+        c.last_siege_battle_end(),
+        Some(SiegeBattleEnd::Applied { .. })
+    ));
 }

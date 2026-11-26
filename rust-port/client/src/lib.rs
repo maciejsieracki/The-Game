@@ -733,9 +733,9 @@ impl<S: RenderSource> RenderClient<S> {
 //   end is `SiegeBattleEnd::Aborted`. The engine accepts the abort at any
 //   moment before the end of the battle (D-1I6D-4: web "Wycofaj się z bitwy",
 //   `battleScene.ts:3359`, `onCancel` -> `setMood('mapa')`, `main.ts:37023`)
-//   and refuses it after the end (`abortNotAllowed`); this client sends it
-//   only on that failure path; the player's withdrawal button is debt
-//   D-1I6D-5 of the battle UI (engine command ready, no client call yet).
+//   and refuses it after the end (`abortNotAllowed`). R-RUSTPORT-P4-409-
+//   CLIENT-API-GAPS-Q1 closes debt D-1I6D-5: the player's withdrawal button
+//   is [`RenderClient::abort_siege_battle`] (decision D-409-OP-1 there).
 // - D-1I6-4 (skip): after `SkipSiegeBattle` the client plays to the frame and
 //   calls `BattlePlayback::apply_snapshot` with it (the fast-forward emits no
 //   `Damage`, contract of `BattlePlayback`).
@@ -1152,6 +1152,11 @@ pub fn tower_projectile_of(start: &SiegeBattlePayload) -> Option<ProjectileKind>
         .map(|t| tower_projectile_kind(t.typ.as_deref(), t.jednostka.as_deref()))
 }
 
+/// R-RUSTPORT-P4-409-CLIENT-API-GAPS-Q1: the reason of the
+/// [`SiegeBattleEnd::Aborted`] end of [`RenderClient::abort_siege_battle`]
+/// (the label of the web button, `battle/battleScene.ts:3359`).
+pub const SIEGE_WITHDRAW_REASON: &str = "Wycofaj się z bitwy";
+
 /// R-RUSTPORT-P4-FQ-SPEED-Q1: `speedMul` of the engine session when the
 /// battle starts: `SPEED_STEPS[0]` (`battleScene.ts:2554-2555`; the scene
 /// constructor resets it with `_setSpeedIdx(this.speedIdx)`, `:3370`, and
@@ -1456,6 +1461,49 @@ impl<S: SiegeBattleSource> RenderClient<S> {
         self.battle_end.as_ref().ok_or(SiegeClientError::NoBattle)
     }
 
+    /// R-RUSTPORT-P4-409-CLIENT-API-GAPS-Q1 (D-1I6D-5 closed): the player's
+    /// withdrawal, web top-bar button "Wycofaj się z bitwy"
+    /// (`battle/battleScene.ts:3359` @ `07d2fbd72`: `this.dispose();
+    /// this.onCancelCb()`, visible through the whole battle) whose `onCancel`
+    /// is `setMood('mapa')` only (`main.ts:37023`): `AbortSiegeBattle`
+    /// (D-1I6D-3 / D-1I6D-4). Only AFTER the engine accepted it the battle
+    /// screen closes ([`Self::siege_battle`] and
+    /// [`Self::last_siege_battle_view`] are `None`: the scene is disposed) and
+    /// the end is [`SiegeBattleEnd::Aborted`] with [`SIEGE_WITHDRAW_REASON`].
+    /// The game state is unchanged: no `StateChanged`, no `GetRenderFrame`
+    /// (a `StateChanged` in the answer would still be honoured, D-371-4).
+    ///
+    /// Decision D-409-OP-1 (pin): the web `onCancel` neither calls
+    /// `clearBattleUiState()` nor reopens the siege map panel, so the map UI
+    /// (selection, hover, highlight writer, gates) is kept as it is and the
+    /// cached map frame is not recomposed.
+    ///
+    /// # Errors
+    ///
+    /// [`SiegeClientError::NoBattle`] without a battle in the client (no
+    /// engine call, also after `Finish`); the engine errors are explicit and
+    /// leave the battle as it is: `abortNotAllowed` on the end screen (only
+    /// `Finish` remains, D-1I6D-4) and `noActiveBattle` when the engine has no
+    /// battle ([`SiegeClientError::Engine`]); source errors.
+    pub fn abort_siege_battle(&mut self) -> Result<&SiegeBattleEnd, SiegeClientError<S::Error>> {
+        let city_id = self
+            .battle
+            .as_ref()
+            .ok_or(SiegeClientError::NoBattle)?
+            .city_id;
+        let answer = self.source.siege_battle(SiegeBattleCommand::Abort)?;
+        self.battle = None;
+        self.battle_closed = None;
+        self.battle_end = Some(SiegeBattleEnd::Aborted {
+            city_id,
+            reason: SIEGE_WITHDRAW_REASON.to_owned(),
+        });
+        if answer.state_changed {
+            self.on_state_changed().map_err(SiegeClientError::Refresh)?;
+        }
+        self.battle_end.as_ref().ok_or(SiegeClientError::NoBattle)
+    }
+
     /// D-1I6D-3: the engine battle of a start whose scene could not be built
     /// is closed (`AbortSiegeBattle`), so no battle stays open in the engine
     /// while the client has none. Returns the error to report: `cause`, or
@@ -1551,4 +1599,123 @@ fn feed<E>(
             .map_err(SiegeClientError::Playback)?;
     }
     Ok(())
+}
+
+// ------------------------------------------------------------ save / load (#409)
+//
+// R-RUSTPORT-P4-409-CLIENT-API-GAPS-Q1 (part B of #403): the client as the
+// caller of `SaveGame` / `LoadGame` (R-RUSTPORT-P4-SAVE-LOAD-BRIDGE-Q1).
+//
+// Pin `07d2fbd72` (`gra/src/main.ts`): `loadGameFromSlot` (`:46005`) ->
+// `restoreGameFromSave(saved)` (`:46225`; its end `:47328-47332`: `selectedId
+// = null; reachable = new Set(); unitRenderer.clearHighlight();
+// unitRenderer.clearPathRoute(); hoverKey = null`) and then the full rebuild of
+// the map scene (`:46138-46156`: `syncUnitsRender`, `cityRenderer.sync`,
+// `refreshTradeRoutesOverlay`, `refreshSiegeMarkers`, `refreshFog`,
+// `updateHud`, `refreshMapOverlayToggles`).
+//
+// Technical decisions (D-409-1..4 of the dispatch; operator decisions):
+// - D-409-OP-2 (refresh): after an accepted `LoadGame` the client refreshes
+//   as after `CreateSession` (D-371-4): ONE `GetRenderMap` (the loaded game
+//   may have another map) then ONE `GetRenderFrame` (the bridge emits
+//   `StateChanged` for every accepted load). The previous frame cache and
+//   renderer scene are dropped; the first frame builds a new scene.
+// - D-409-OP-3 (rejection): a rejected save leaves the engine session
+//   untouched (bridge contract), so the client keeps EVERYTHING (map, frame,
+//   scene, UI, battle): no refresh, no engine query.
+// - D-409-OP-4 (load during a siege battle, D-409-2): the pin does not decide
+//   it (`Ctrl+L` -> `openLoadGameDialog`, `main.ts:44019-44023`, has no
+//   battle guard and `restoreGameFromSave` does not dispose the scene). The
+//   engine replaces the whole `PlayableGame` on an accepted load, battle
+//   included, so the client closes its battle LOCALLY after the accepted load
+//   (no `AbortSiegeBattle`: that would change the engine session even when
+//   the save is then rejected); a rejected load keeps the battle
+//   (D-409-OP-3).
+
+/// The save / load commands of the bridge (`EngineCommand::SaveGame` /
+/// `EngineCommand::LoadGame { save }`); the caller implements it over its
+/// `EngineBridge` (D-371-1), like [`RenderSource`].
+pub trait SaveLoadSource: RenderSource {
+    /// `SaveGame`: the snapshot JSON text (`BridgeResponse.save_game`).
+    ///
+    /// # Errors
+    ///
+    /// The source error (e.g. rejected during a siege battle, DL-SLB-1).
+    fn save_game(&mut self) -> Result<String, Self::Error>;
+
+    /// `LoadGame { save }`: `Ok` = the engine replaced the session with the
+    /// save (the bridge emitted `StateChanged`).
+    ///
+    /// # Errors
+    ///
+    /// The source error: the save was rejected and the engine session is
+    /// untouched.
+    fn load_game(&mut self, save: &str) -> Result<(), Self::Error>;
+}
+
+/// Why [`RenderClient::load_game`] failed.
+#[derive(Debug, Clone, PartialEq)]
+pub enum LoadGameError<E> {
+    /// The engine rejected the save: the engine session AND the client state
+    /// (map, frame, scene, UI, battle) are unchanged (D-409-OP-3).
+    Rejected(E),
+    /// The engine loaded the save but the refresh failed: the previous
+    /// session state of the client is dropped (no map or no frame).
+    Refresh(ClientError<E>),
+}
+
+impl<E: fmt::Display> fmt::Display for LoadGameError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Rejected(e) => write!(f, "load game rejected: {e}"),
+            Self::Refresh(e) => write!(f, "after load game: {e}"),
+        }
+    }
+}
+
+impl<E: fmt::Debug + fmt::Display> std::error::Error for LoadGameError<E> {}
+
+/// Save / load API of the client (#409).
+impl<S: SaveLoadSource> RenderClient<S> {
+    /// `SaveGame` (web `buildSaveGameSnapshot`, `main.ts:37171`): the save
+    /// text. Nothing in the client changes (no `StateChanged`).
+    ///
+    /// # Errors
+    ///
+    /// The source error.
+    pub fn save_game(&mut self) -> Result<String, S::Error> {
+        self.source.save_game()
+    }
+
+    /// `restoreGameFromSave` (`main.ts:46225`) and the rebuild of the map
+    /// scene after it (`:46138-46156`): `LoadGame { save }`; when the engine
+    /// accepted it:
+    /// - the UI of the end of `restoreGameFromSave` (`:47328-47332`): no
+    ///   selection (`unit_selected_after_build_open` zeroed), no hover,
+    ///   highlight writer [`HighlightPriority::Cleared`]; the build mode and
+    ///   the renderer gates are kept (the pin does not touch them);
+    /// - the battle of the previous game is closed locally (D-409-OP-4) and
+    ///   the "last battle" accessors are cleared (new session, as
+    ///   [`Self::on_session_created`]);
+    /// - ONE `GetRenderMap` ([`Self::on_session_created`]) then ONE
+    ///   `GetRenderFrame` ([`Self::on_state_changed`]), in this order
+    ///   (D-409-OP-2). Works without a previous session too (load from the
+    ///   main menu).
+    ///
+    /// # Errors
+    ///
+    /// [`LoadGameError::Rejected`]: nothing changed (no refresh, D-409-OP-3);
+    /// [`LoadGameError::Refresh`]: the save is loaded, the refresh failed.
+    pub fn load_game(&mut self, save: &str) -> Result<(), LoadGameError<S::Error>> {
+        self.source
+            .load_game(save)
+            .map_err(LoadGameError::Rejected)?;
+        let frame_ui = &mut self.ui.frame_ui;
+        frame_ui.selected_unit_id = None;
+        frame_ui.unit_selected_after_build_open = false;
+        frame_ui.hover = None;
+        self.ui.highlight_last_writer = HighlightPriority::Cleared;
+        self.on_session_created().map_err(LoadGameError::Refresh)?;
+        self.on_state_changed().map_err(LoadGameError::Refresh)
+    }
 }
