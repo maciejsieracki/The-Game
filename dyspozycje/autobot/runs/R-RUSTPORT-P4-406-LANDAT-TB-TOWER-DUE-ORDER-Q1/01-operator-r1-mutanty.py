@@ -78,7 +78,16 @@ def main():
             verdict = 'ZABITY' if (lib != 0 or vec != 0) else 'PRZEZYL'
             if build_err:
                 verdict = 'BLAD KOMPILACJI'
-            print(f'{mid} | {desc} | {lib} | {vec}, {nvec} | {verdict}', flush=True)
+            extra = ''
+            # `MUT_FULL=1`: dla mutanta, ktory przezyl, dodatkowo CALE testy lib i CALY plik testow wektorow pinu
+            # K5LOOP-WIRING-A (wszystkie wektory: pelna bitwa, predkosc, zmiana predkosci, kolejnosc wiezy).
+            if os.environ.get('MUT_FULL') and verdict == 'PRZEZYL':
+                full_lib, _ = run(['--lib'])
+                full_pin, _ = run(['--test', 'p6_k5loop_wiring_a_pin'])
+                extra = f' | pelne: lib {full_lib}, p6_k5loop_wiring_a_pin {full_pin}'
+                if full_lib != 0 or full_pin != 0:
+                    verdict = 'ZABITY (pelne testy)'
+            print(f'{mid} | {desc} | {lib} | {vec}, {nvec} | {verdict}{extra}', flush=True)
         finally:
             open(full, 'w', encoding='utf-8').write(src)
     st = subprocess.run(['git', 'status', '--porcelain', '--', LOOP, CLOCK], cwd=ROOT, capture_output=True, text=True)
