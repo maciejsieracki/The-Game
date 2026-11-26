@@ -23046,8 +23046,14 @@ async function boot(): Promise<void> {
      *  Zwraca powód odrzucenia albo null (propozycja dopuszczona). */
     function humanPeaceRejectReason(fromOwnerId: number, toOwnerId: number, cmd: AIDiplomacyCommand): string | null {
       if (cmd.type !== 'zaproponuj_pokoj') return null;
-      if (getDiploRelation(fromOwnerId, toOwnerId).status === 'wojna') return null;
-      return 'Pokój — brak trwającej wojny';
+      if (getDiploRelation(fromOwnerId, toOwnerId).status !== 'wojna') return 'Pokój — brak trwającej wojny';
+      // R-WEB-HOTSEAT-PEACE-PROTECTION-Q1 (P21b, odp. właściciela 4A): pokój między fotelami wymaga
+      // tych samych PEACE_PROPOSAL_MIN_WAR_TURNS pełnych tur wojny co pokój z AI (ta sama bramka
+      // `peaceProposalIsTooEarly`, bez stałej dla hotseat). Sprawdzane przy propozycji i akceptacji.
+      if (peaceProposalIsTooEarly(fromOwnerId, toOwnerId, 'pokoj')) {
+        return `Pokój i rozejm będą dostępne po ${PEACE_PROPOSAL_MIN_WAR_TURNS} pełnych turach wojny`;
+      }
+      return null;
     }
 
     function proposeToHuman(
