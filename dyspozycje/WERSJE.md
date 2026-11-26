@@ -1,3 +1,9 @@
+## ROBOCZA 390479a6 -- 2026-11-26 -- FALA 923: Wyburzanie budynków ze zwrotem połowy surowców, zakaz podczas oblężenia (testowa)
+
+- Nowa akcja Wyburz budynek w panelu miasta dla gracza: każdy budynek (także Pałac, cuda, mury, Mennica) można wyburzyć za zwrot połowy surowców z kosztu (w dół; bez Pieniądza i Pracy), z potwierdzeniem i podglądem zwrotu; w mieście oblężonym wyburzanie zablokowane (przycisk nieaktywny, widoczny komunikat); AI nie wyburza; reguły Mennicy bez zmian
+- Weryfikacja: FC PASS-WITH-NOTES (r1+r2+r3); tsc 0; logic 213/213; building-demolish 36/0; building-demolish-siege 32/0; mint-capital-only 8/0; mint-orphan; vite build OK; live Chromium: zwrot Koszary +80 drewna/+80 kamienia, Pieniądz bez zmian, w oblężeniu 3 przyciski nieaktywne i brak okna potwierdzenia, 0 błędów strony; MD5 z GitHub Raw
+- Limity: NIE ZMIERZONO: odblokowanie po końcu oblężenia live; hotseat live; efekt ekonomiczny Mennicy po końcu tury po wyburzeniu; interakcja zwrotu z ustawieniem kosztu wg epoki; commity r2 (792b29411, 948a8aedf, b837c8ac3) bez ważnego podpisu (awaria podpisu), merge podpisany
+
 ## ROBOCZA c91000f3 -- 2026-11-26 -- FALA 922: Rzeki: trzy poziomy widoczne domyślnie, różna grubość (testowa)
 
 - Render rzek: dopływy (trzeci poziom) widoczne domyślnie, grubość zróżnicowana: główne > średnie > dopływy (średnie ok. 0,7× głównych, dopływy 0,30); generator rzek bez zmian

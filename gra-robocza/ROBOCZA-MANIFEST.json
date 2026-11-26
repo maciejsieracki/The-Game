@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "c91000f3b42dca39e62e996b02a84364",
-  "bundleSha256": "659353749f55b5fee7db28e6c0caa46fadf8edb68ea12c0157ef77db797be635",
-  "bundleBytes": 15028518,
+  "bundleMd5": "390479a6096712ad55b1ce0c594f76bf",
+  "bundleSha256": "0d25b4f6a1556a457d6af03b7fec0aa2d5d2c42e044f569a5fed04143bc728e1",
+  "bundleBytes": 15030799,
   "sourceSnapshot": {
-    "source": "FC 44772d6e3 (RIVERS3A-wip/fc, baza main 6c4f0f6ca)",
+    "source": "FC 2077cac4d / b965146a0 (WYBURZ-wip/fc3; baza main 7bebd2ee6)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 922: Render rzek: dopływy (trzeci poziom) widoczne domyślnie, grubość zróżnicowana: główne > średnie > dopływy (średnie ok. 0,7× głównych, dopływy 0,30); generator rzek bez zmian"
+    "FALA 923: Nowa akcja Wyburz budynek w panelu miasta dla gracza: każdy budynek (także Pałac, cuda, mury, Mennica) można wyburzyć za zwrot połowy surowców z kosztu (w dół; bez Pieniądza i Pracy), z potwierdzeniem i podglądem zwrotu; w mieście oblężonym wyburzanie zablokowane (przycisk nieaktywny, widoczny komunikat); AI nie wyburza; reguły Mennicy bez zmian"
   ],
   "verification": [
-    "FC PASS-WITH-NOTES (RIVERS3A + bramka wizualna RIVVISUAL PASS-WITH-NOTES); tsc 0; logic 213/213; river-render-levels 18/0; river-fog-visibility 31/0; vite build OK; zrzuty Chromium: rzeki widoczne, bez błędów strony; MD5 odczytany z GitHub Raw"
+    "FC PASS-WITH-NOTES (r1+r2+r3); tsc 0; logic 213/213; building-demolish 36/0; building-demolish-siege 32/0; mint-capital-only 8/0; mint-orphan; vite build OK; live Chromium: zwrot Koszary +80 drewna/+80 kamienia, Pieniądz bez zmian, w oblężeniu 3 przyciski nieaktywne i brak okna potwierdzenia, 0 błędów strony; MD5 z GitHub Raw"
   ],
   "limits": [
-    "Płynność na prawdziwym GPU NIE ZMIERZONO (SwiftShader: różnica w szumie); koszt renderu przy 8 i 146 dopływach NIE ZMIERZONO; trzy poziomy słabo rozróżnialne (średnie +5% pikseli, dopływy +13%) — decyzja o grubości 0,30 po ocenie właściciela"
+    "NIE ZMIERZONO: odblokowanie po końcu oblężenia live; hotseat live; efekt ekonomiczny Mennicy po końcu tury po wyburzeniu; interakcja zwrotu z ustawieniem kosztu wg epoki; commity r2 (792b29411, 948a8aedf, b837c8ac3) bez ważnego podpisu (awaria podpisu), merge podpisany"
   ],
-  "finalControl": "FC PASS-WITH-NOTES 44772d6e3",
+  "finalControl": "FC PASS-WITH-NOTES b965146a0",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-26T14:53:30",
+  "hubGeneratedAt": "2026-11-26T18:00:26",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "c91000f3b42dca39e62e996b02a84364",
-      "sizeBytes": 15028518
+      "md5": "390479a6096712ad55b1ce0c594f76bf",
+      "sizeBytes": 15030799
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "c91000f3b42dca39e62e996b02a84364",
-      "sizeBytes": 15028518
+      "md5": "390479a6096712ad55b1ce0c594f76bf",
+      "sizeBytes": 15030799
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "c91000f3b42dca39e62e996b02a84364",
-      "sizeBytes": 15028518
+      "md5": "390479a6096712ad55b1ce0c594f76bf",
+      "sizeBytes": 15030799
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "c91000f3b42dca39e62e996b02a84364",
-      "sizeBytes": 15028518
+      "md5": "390479a6096712ad55b1ce0c594f76bf",
+      "sizeBytes": 15030799
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "c91000f3b42dca39e62e996b02a84364",
-      "sizeBytes": 15028518
+      "md5": "390479a6096712ad55b1ce0c594f76bf",
+      "sizeBytes": 15030799
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "c91000f3b42dca39e62e996b02a84364",
-      "sizeBytes": 15028518
+      "md5": "390479a6096712ad55b1ce0c594f76bf",
+      "sizeBytes": 15030799
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "c91000f3b42dca39e62e996b02a84364",
-      "sizeBytes": 15028518
+      "md5": "390479a6096712ad55b1ce0c594f76bf",
+      "sizeBytes": 15030799
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "c91000f3b42dca39e62e996b02a84364",
-      "sizeBytes": 15028518
+      "md5": "390479a6096712ad55b1ce0c594f76bf",
+      "sizeBytes": 15030799
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "c91000f3b42dca39e62e996b02a84364",
-      "sizeBytes": 15028518
+      "md5": "390479a6096712ad55b1ce0c594f76bf",
+      "sizeBytes": 15030799
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "c91000f3b42dca39e62e996b02a84364",
-      "sizeBytes": 15028518
+      "md5": "390479a6096712ad55b1ce0c594f76bf",
+      "sizeBytes": 15030799
     }
   ],
-  "md5": "c91000f3b42dca39e62e996b02a84364",
+  "md5": "390479a6096712ad55b1ce0c594f76bf",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
