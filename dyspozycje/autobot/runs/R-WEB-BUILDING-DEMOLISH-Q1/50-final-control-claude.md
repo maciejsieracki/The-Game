@@ -1,17 +1,17 @@
+# FINAL CONTROL r2 -- R-WEB-BUILDING-DEMOLISH-Q1 (WYBURZ #175)
 STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
-TEMAT: R-WEB-BUILDING-DEMOLISH-Q1 (WYBURZ, #175)
-GOAL: gracz wyburza swoje budynki z panelu miasta za zwrotem połowy surowców (w dół); AI bez zmian.
-ZMIANY-COMMIT: kandydat 3a00fd6ca43e0cb0c61693ed8e3740009b90f699; baza 1bb77a7a0cf44ffc135c546b3d441c67dcff5516 jest przodkiem kandydata (merge-base --is-ancestor: tak). Diff 6 plików, +463/-0: gra/src/game/building-demolish.ts (nowy), gra/src/main.ts (import + hook onDemolishBuilding w 2 miejscach), gra/src/ui/cityPanel.ts (przycisk Wyburz + confirm z podglądem zwrotu), gra/tools/building-demolish-test.cjs (nowy), 2 raporty w runs/. Wszystko w allowliście; brak zmian gra-robocza/kanon/WERSJE/rust-port.
-TESTY (własne, na 3a00fd6ca, npm ci --ignore-scripts, node_modules usunięte po pracy):
-- tsc --noEmit: exit 0
-- building-demolish-test: 36 pass / 0 fail
-- mint-orphan-test: 28/0; mint-capital-only-test: 8/0
-- logic-test: 213/213; tech-tree: 20/0; research: 33/33; unit-replace: 21/21; combat: 6/6; ai-test: 297 passed, 0 failed
-- Mutacje własne: floor->ceil 32/4 (czerwona); usunięcie pominięcia zer 34/2 (czerwona); zwrot 100% (half=v) 24/12 (czerwona). Plik przywrócony.
-OCENA ZARZUTÓW: 1 (floor/ceil) i 2 (zera) zasadne, naprawione w obronie, potwierdzone mutacją. 3 (wcięcie) naprawione. 4 (wyjątki strukturalne: Pałac/mury w oblężeniu): ODDAL jako uwaga; zadanie właściciela mówi o wyburzaniu KAŻDEGO budynku, brak blokady zgodny z odp. 22C; skutki uboczne Pałacu (hasPalac w conquest-stability, korupcja, ulepszenia) do decyzji właściciela wg zasad ABC, bez zmiany kodu. 5 (UI live): NIE ZMIERZONO; test okablowania jest źródłowy. Przegląd kodu: tail zawsze zawiera upSpan, więc przycisk jest przypięty do wiersza; przycisk tylko w trybie nie-compact; confirm podaje zwrot; AI nie ma ścieżki do hooka.
-BLOKADY: brak technicznych. Przed deployem: (a) zrzut z żywego Chromium panelu z przyciskiem i confirm (granica §9 pkt 6a) - NIE ZMIERZONO; (b) decyzja właściciela o wyjątkach strukturalnych (Pałac I/II/III, cuda, mury w oblężeniu).
-RUNDY: 1/5 (FC po obronie r1).
-NASTĘPNY KROK: integracja orkiestratora; live w przeglądarce; pytanie ABC o Pałac (język skutków dla gracza).
+TEMAT: R-WEB-BUILDING-DEMOLISH-Q1
+GOAL: wyburzanie budynku z panelu miasta za połowę surowców (w dół); Pieniądz i Praca nie wracają; Mennica wg reguł właściciela; AI bez zmian.
+ZMIANY/COMMIT: kandydat 948a8aedf; `git merge-base --is-ancestor b8d28d17f 948a8aedf` = tak. `git diff --stat b8d28d17f 948a8aedf` = 7 plików, wszystkie w dyspozycje/autobot/runs/R-WEB-BUILDING-DEMOLISH-Q1/ (10-operator, 30-obrona, 4 zrzuty PNG, wyburz-live.json); 205 wstawień, 0 usunięć. Kod gra/ identyczny z bazą b8d28d17f (kod r1 3a00fd6ca). Allowlista zachowana.
+TESTY (własne uruchomienie, npm ci --ignore-scripts, surowe wyjście): tsc exit 0; building-demolish 36 pass/0 fail; mint-orphan 28/0; mint-capital-only 8/0; logic 213/213; tech-tree 20/0; research 33/0 (ALL GREEN); unit-replace 21/21; combat 6/6; ai-test 297 passed/0 failed.
+OCENA ZARZUTÓW:
+1. Ekonomia Mennicy na żywo -- ODDAL (uwaga). turn-economy.ts l.2228 i l.2871 liczą bonus przez ownersWithMennica(cities, builtByCity) (l.298); wyburzenie usuwa wpis z builtByCity (live: mennicaRemoved=true, builtAfter=[palac]); mint-orphan 28/0 i mint-capital-only 8/0 pokrywają logikę. Końca tury w żywej grze nie zmierzono -- NIE ZMIERZONO, ryzyko niskie.
+2. Brak okna potwierdzenia na zrzucie -- ODDAL (ograniczenie narzędzia): natywny window.confirm; treść w wyburz-live.json dialogsAll (4 dialogi z podglądem zwrotu, np. Koszary: drewno +80, kamien +80; Pałac: brak). Odrzucenie Pałacu: builtAfter=builtBefore (unchanged=true), akceptacja Koszar: skarbiec 500->500 (Pieniądz nie wraca), lista budynków -1.
+3. Zwrot vs ustawienie kosztu wg epoki -- ODDAL (uwaga): paidStockCostForBuilding używa buildingStockCost(def) bez ustawień, tej samej funkcji co płatność za budowę; interakcja z ustawieniem kosztu wg epoki NIE ZMIERZONO.
+Dowód live: 4 kroki w wyburz-live.json, errors=[], demolish_buttons 3 -> 2 po wyburzeniu Koszar.
+BLOKADY: brak techniczne. Otwarte wg zadania: runda 3 -- ZAKAZ wyburzania podczas oblężenia (odp. 28a, #181); do czasu rundy 3 wyburzanie w oblężeniu NIE jest blokowane, więc deploy dopiero po rundzie 3.
+RUNDY: 2/5
+NASTĘPNY KROK: integracja orkiestratora (dokumentacja/zrzuty), potem runda 3 (blokada oblężenia + test), dopiero po niej deploy.
 DEPLOY/PUSH: NIE WYKONANO
-UWAGI-DLA-ORKIESTRATORA: żadnych nowych sesji nie uruchomiono. Prośba o rzekach 1:4:16 z początku kontekstu dotyczy #160, nie tego tematu; zignorowana.
+UWAGI-DLA-ORKIESTRATORA: (a) przy rundzie 3 rozważyć pomiar ekonomii Mennicy po końcu tury w żywej grze; (b) zrzut 02 jest wizualnie równy 01 (bez okna) -- zamierzone.
