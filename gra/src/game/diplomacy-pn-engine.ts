@@ -133,6 +133,13 @@ export interface DiploPairMeta {
    */
   truceEndOffer?: { turn: number; fromOwnerId: number; toOwnerId: number; inboxId?: string };
   /**
+   * R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-2-Q1 (r2): tura końca rozejmu tej pary (rozejm wygasł → oferta
+   * albo powrót do wojny). Okno „po rozejmie” = ta tura + JEDNA kolejna (truceEndWindowOpen). Gracz
+   * może wtedy zaproponować pokój, który AI przyjmuje przy pokryciu ceny (truceEndPriceRule).
+   * Brak pola = brak okna (stare zapisy i pary poza oknem).
+   */
+  truceEndTurn?: number;
+  /**
    * Odwet (C-WIAR-ODWET=A) — ostatnie przewinienie w TEJ parze otwierające prawo
    * do bezkarnej (bez N1/N2) wojny odwetowej w oknie `wiarygodnoscOdwetOknoTur`
    * tur. `byOwnerId` = kto zawinił, `againstOwnerId` = wobec kogo (tylko TA strona

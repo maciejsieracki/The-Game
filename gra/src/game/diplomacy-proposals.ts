@@ -202,6 +202,12 @@ export interface ProposalEvalContext {
    */
   payerStock?: Readonly<Record<string, number>>;
   /**
+   * R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-2-Q1 (r2): okno „po rozejmie” pary gracz→AI (main.ts). `open` = tura
+   * w oknie (truceEndWindowOpen) i to GRACZ płaci cenę wg truceEndPriceRule; `requiredPn` = ta cena (Pn).
+   * Brak pola / open=false = zwykła ocena propozycji pokoju (bez zmian).
+   */
+  truceEndWindow?: { open: boolean; requiredPn: number };
+  /**
    * R-WEB-DIPLO-PEACE-LAST-STAGE-GOLD-ORES-Q1 (r3): zapas GRACZA (złoto = Skarbiec państwa, brąz/żelazo/rudy = Spichlerz państwa).
    * Płatnikiem ogona w gałęzi „gracz jest autorem pokoju" jest gracz — nie zawsze proponent (kontroferta, AI proponuje graczowi).
    * Brak pola = jak `payerStock`.
@@ -1575,6 +1581,26 @@ function evaluateProposalImpl(
   // R-WEB-WAR-AGGRESSOR-FLAG-Q1: proponent z aktywną flagą agresora → gorszy próg/chęć (JSON).
   const proponentAgresor = czyAgresorAktywny(proposerOwnerId, ctx.turn);
   const stance = stanceForEval(ctx, proponentAgresor);
+
+  // R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-2-Q1 (r2): okno „po rozejmie” — propozycja pokoju GRACZA do AI. AI przyjmuje,
+  // gdy pakiet gracza pokrywa cenę pokoju (truceEndPriceRule). Poza oknem / bez ceny → ocena jak dotąd (bez zmian).
+  const truceWindow = ctx.truceEndWindow;
+  if (
+    actionId === 'pokoj'
+    && truceWindow?.open === true
+    && truceWindow.requiredPn > 0
+    && proposerOwnerId === (pnOpts.playerOwnerId ?? 0)
+    && responderOwnerId !== (pnOpts.playerOwnerId ?? 0)
+  ) {
+    const offeredPn = resolveProposalPn(payload, pnOpts).givePn;
+    if (offeredPn >= truceWindow.requiredPn) {
+      return { accepted: true, reason: 'Pokój zawarty — cena po rozejmie pokryta', oneShotTrade: true };
+    }
+    return {
+      accepted: false,
+      reason: `Pokój po rozejmie: cena ${Math.round(truceWindow.requiredPn)} nie jest pokryta (oferta ${Math.round(offeredPn)})`,
+    };
+  }
 
   if (ctx.warState && peaceProposalBlocked(actionId, stanWojny, ctx.warState.turnsAtWar)) {
     return { accepted: false, reason: `Pokój i rozejm dostępne po ${PEACE_PROPOSAL_MIN_WAR_TURNS} pełnych turach wojny` };

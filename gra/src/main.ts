@@ -1766,6 +1766,8 @@ import {
   truceEndToWarCore,
   clearTruceEndOfferCore,
   truceEndAcceptCore,
+  truceEndPriceFor,
+  truceEndWindowOpen,
   type TruceEndPorts,
 } from './game/diplomacy-peace-lock';
 import { executeTruceEndSettlement, type TruceEndPayCurrency } from './game/diplomacy-truce-end-price';
@@ -13019,6 +13021,7 @@ async function boot(): Promise<void> {
           // B: inicjator rozejmu → adresatem propozycji pokoju po jego wygaśnięciu jest druga strona.
           truceInitiatorId: proposerId,
           truceEndOffer: undefined,
+          truceEndTurn: undefined,
         });
       } else {
         const metaS = getDiploPairMeta(proposerId, responderId);
@@ -13026,7 +13029,7 @@ async function boot(): Promise<void> {
           proposerId,
           responderId,
           startPeaceTreatyLock(
-            { ...metaS, truceInitiatorId: undefined, truceEndOffer: undefined, truceUntilTurn: undefined },
+            { ...metaS, truceInitiatorId: undefined, truceEndOffer: undefined, truceUntilTurn: undefined, truceEndTurn: undefined },
             turn,
             lockTurnsOverride,
           ),
@@ -13272,6 +13275,23 @@ async function boot(): Promise<void> {
         });
         setDiploRelation(gracz, o, next);
       }
+    }
+
+    /**
+     * R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-2-Q1 (r2): okno „po rozejmie” dla propozycji pokoju GRACZA do AI.
+     * open = tura w oknie (truceEndWindowOpen), para w wojnie albo z ofertą po rozejmie, a GRACZ płaci wg
+     * truceEndPriceRule. requiredPn = cena pokoju liczona jak w ofercie AI (aiAiPeacePriceFor, jak quotePn).
+     */
+    function truceEndWindowFor(proposerId: number, responderId: number): { open: boolean; requiredPn: number } {
+      const closed = { open: false, requiredPn: 0 };
+      if (proposerId !== ME() || isHuman(responderId)) return closed;
+      const meta = getDiploPairMeta(proposerId, responderId);
+      if (!truceEndWindowOpen(meta.truceEndTurn, turn)) return closed;
+      if (getDiploRelation(proposerId, responderId).status !== 'wojna' && meta.truceEndOffer == null) return closed;
+      const rule = truceEndPriceFor(truceEndPorts(), proposerId, responderId);
+      if (rule == null || rule.payerId !== ME()) return closed;
+      const requiredPn = aiAiPeacePriceFor(rule.payeeId, rule.payerId, 'pokoj').requiredPn;
+      return requiredPn > 0 ? { open: true, requiredPn } : closed;
     }
 
     function tickTruceExpiries(): void {
@@ -26957,6 +26977,8 @@ async function boot(): Promise<void> {
         // ZARZUT 6 (Evaluator r2): złoto to Skarbiec państwa (ownerTreasury), nie suma c.surowce miast (tam złota nie ma).
         // Brąz/żelazo/rudy: suma Spichlerzy miast właściciela (ownerResourceStock).
         payerStock: peaceTailPricingForPayer(proposerId, responderId, peaceTailWiringDeps()).holdings,
+        // R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-2-Q1 (r2): okno „po rozejmie” dla propozycji pokoju gracza (tylko proposer = gracz).
+        truceEndWindow: truceEndWindowFor(proposerId, responderId),
         // r3: płatnikiem ogona w ścieżce „gracz jest autorem pokoju" jest GRACZ (nie zawsze proponent: kontroferta, AI proponuje graczowi).
         playerStock: peaceTailPricingForPayer(ME(), proposerId, peaceTailWiringDeps()).holdings,
         // R-WEB-DIPLO-TREATY-PAYMENT-CARRIER-Q1 (r2): stopień technologii nośnika dopłaty D — techy gracza i drugiej strony.

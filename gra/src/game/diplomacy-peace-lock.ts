@@ -315,6 +315,20 @@ export function truceEndAcceptCore(ports: TruceEndPorts, a: number, b: number): 
 }
 
 /**
+ * R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-2-Q1 (r2): okno „po rozejmie” dla propozycji pokoju GRACZA.
+ * Okno = tura końca rozejmu (truceEndTurn) + JEDNA kolejna tura (TRUCE_END_WINDOW_EXTRA_TURNS = 1):
+ * tyle czasu zostaje graczowi, by oferta AI w skrzynce (timeout w kolejnej turze) albo powrót do wojny
+ * zdążyły być widoczne, zanim pokój za cenę przestanie być możliwy. Brak tury = brak okna.
+ */
+export const TRUCE_END_WINDOW_EXTRA_TURNS = 1;
+
+export function truceEndWindowOpen(truceEndTurn: number | undefined, turn: number): boolean {
+  if (truceEndTurn == null || !Number.isFinite(turn)) return false;
+  const delta = turn - truceEndTurn;
+  return delta >= 0 && delta <= TRUCE_END_WINDOW_EXTRA_TURNS;
+}
+
+/**
  * Jeden tick dla pary (raz na turę). Wygasły rozejm: AI ZAWSZE składa propozycję pokoju z ceną.
  * Para z graczem → oferta w skrzynce gracza (od AI, `truceEndOffer`, timeout w kolejnej turze).
  * Para AI↔AI → pokój od razu, gdy płaci strona wskazana regułą ceny; brak zapłaty = wojna.
@@ -330,7 +344,8 @@ export function truceEndTickPair(ports: TruceEndPorts, a: number, b: number, tur
   if (truceExpiryAction(meta.truceUntilTurn, turn) !== 'revert_to_war') return;
   const initiator = meta.truceInitiatorId;
   const target = truceEndOfferTarget(initiator, a, b);
-  ports.setMeta(a, b, { ...meta, truceUntilTurn: undefined });
+  // R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-2-Q1 (r2): tura końca rozejmu otwiera okno propozycji pokoju (truceEndWindowOpen).
+  ports.setMeta(a, b, { ...meta, truceUntilTurn: undefined, truceEndTurn: turn });
   if (ports.getStatus(a, b) !== 'pokoj') return;
   if (initiator == null || target == null) {
     truceEndToWarCore(ports, a, b);
