@@ -1508,6 +1508,8 @@ struct MidRun {
     at_change: Vec<ChangeAt>,
     /// Strumień zdarzeń sesji (format porównania [`pin_event_key`]).
     events: Vec<String>,
+    /// Czas `t0` (`vNow`) każdego zdarzenia z `events` (ta sama kolejność).
+    event_t: Vec<f64>,
     /// Indeks pierwszego zdarzenia różnego od pinu (`None` = zgodny).
     first_div: Option<usize>,
     frames: u64,
@@ -1591,6 +1593,7 @@ fn run_midchange(
     let mut run = MidRun {
         at_change: Vec::new(),
         events: Vec::new(),
+        event_t: Vec::new(),
         first_div: None,
         frames: 0,
         out: None,
@@ -1663,6 +1666,7 @@ fn run_midchange(
                 run.first_div = Some(run.events.len());
             }
             run.events.push(row);
+            run.event_t.push(a.t0);
         }
         if stop_on_div && run.first_div.is_some() {
             return run;
@@ -1700,6 +1704,37 @@ fn mid_diff(bv: &Value, sv: &Value, run: MidRun) -> Vec<String> {
     d
 }
 
+/// R-RUSTPORT-P4-412 (obrona, Uwaga 1 Evaluatora): dla wektora z listy [`ROZBIEZNE_FQ_SPEED_MIDCHANGE`] przebieg do
+/// pierwszej zmiany prędkości musi być zgodny z pinem: chwila pierwszej zmiany (klatka, `vNow`, `roundNo`, prędkość przed
+/// i po) równa pinowi, a pierwsze rozbieżne zdarzenie (po stronie Rusta i pinu) ma `vNow` nie mniejsze niż `vNow` pierwszej
+/// zmiany. `None` = rozbieżność wyłącznie po zmianie (dopuszczona listą); `Some` = opis regresji przed zmianą.
+fn przed_pierwsza_zmiana(sv: &Value, run: &MidRun) -> Option<String> {
+    let c = &sv["changes"].as_array().unwrap()[0];
+    let want: ChangeAt = (
+        c["frame"].as_u64().unwrap(),
+        f(&c["vNow"]),
+        c["roundNo"].as_i64().unwrap(),
+        f(&c["from"]),
+        f(&c["speedMul"]),
+    );
+    match run.at_change.first() {
+        Some(got) if *got == want => {}
+        got => return Some(format!("chwila pierwszej zmiany {got:?} != pin {want:?}")),
+    }
+    let i = run.first_div?;
+    let t_change = want.1;
+    let pin_t = sv["events"].get(i).map(|e| f(&e[0]));
+    let rust_t = run.event_t.get(i).copied();
+    let before = |t: Option<f64>| t.is_some_and(|t| t < t_change);
+    (before(rust_t) || before(pin_t)).then(|| {
+        format!(
+            "zdarzenie {i} przed zmianą (vNow zmiany {t_change}): Rust {:?} t={rust_t:?}, pin {:?} t={pin_t:?}",
+            run.events.get(i),
+            sv["events"].get(i).map(pin_event_key)
+        )
+    })
+}
+
 fn base_by_name(base: &Value) -> BTreeMap<String, Value> {
     base["vectors"]
         .as_array()
@@ -1724,6 +1759,8 @@ fn zmiana_predkosci_w_trakcie_bitwy_wektory_pinu_bajt_w_bajt() {
     let list = doc["vectors"].as_array().unwrap();
     let mut rozbiezne = Vec::new();
     let mut zgodne_z_listy = Vec::new();
+    let mut przed_zmiana = Vec::new();
+    let mut straz_sprawdzona = false;
     let mut n_listed = 0;
     let (mut n_changes, mut multi, mut up, mut down, mut n_events) = (0, 0, 0, 0, 0);
     let mut cov = BTreeMap::<&str, usize>::new();
@@ -1763,8 +1800,32 @@ fn zmiana_predkosci_w_trakcie_bitwy_wektory_pinu_bajt_w_bajt() {
             }
         }
         n_events += run.events.len();
-        d.extend(mid_diff(bv, sv, run));
         let listed = ROZBIEZNE_FQ_SPEED_MIDCHANGE.contains(&name);
+        if listed {
+            // Uwaga 1 Evaluatora #412: pozycja listy rozbieżności nie może maskować regresji PRZED zmianą prędkości.
+            if let Some(e) = przed_pierwsza_zmiana(sv, &run) {
+                przed_zmiana.push(format!("{name}: {e}"));
+            }
+            // Czułość strażnika: pierwsze zdarzenie pinu przed zmianą podmienione w kopii wektora (symulowana regresja
+            // przy stałej prędkości) musi zostać wykryte. Raz na test (pierwsza pozycja listy ze zdarzeniem przed zmianą).
+            let t_change = f(&changes[0]["vNow"]);
+            let pre = sv["events"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .position(|e| f(&e[0]) < t_change);
+            if let (false, Some(j)) = (straz_sprawdzona, pre) {
+                let mut zle = sv.clone();
+                zle["events"][j][2] = Value::from("atk:regresja");
+                let r = run_midchange(bv, &zle, &data, MidMut::None, true);
+                assert!(
+                    przed_pierwsza_zmiana(&zle, &r).is_some(),
+                    "{name}: strażnik nie wykrył regresji przed zmianą (zdarzenie {j})"
+                );
+                straz_sprawdzona = true;
+            }
+        }
+        d.extend(mid_diff(bv, sv, run));
         if listed && d.is_empty() {
             zgodne_z_listy.push(name.to_owned());
         }
@@ -1799,6 +1860,14 @@ fn zmiana_predkosci_w_trakcie_bitwy_wektory_pinu_bajt_w_bajt() {
     assert!(
         rozbiezne.is_empty(),
         "zmiana prędkości w trakcie: rozbieżne z pinem: {rozbiezne:#?}"
+    );
+    assert!(
+        straz_sprawdzona || std::env::var("WIRING_A_SPEED_CHANGE_FILE").is_ok(),
+        "kontrola czułości strażnika przed zmianą nie wykonana"
+    );
+    assert!(
+        przed_zmiana.is_empty(),
+        "pozycje listy ROZBIEZNE_FQ_SPEED_MIDCHANGE rozbieżne PRZED pierwszą zmianą prędkości (regresja przy stałej prędkości): {przed_zmiana:#?}"
     );
     assert!(
         zgodne_z_listy.is_empty(),

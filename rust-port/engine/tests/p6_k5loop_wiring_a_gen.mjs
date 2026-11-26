@@ -722,6 +722,9 @@ if (process.env.WIRING_A_SPEED_CHANGE_VECTORS) {
     });
     console.error(`${c.name}: ${v.expect.winner} tura ${v.expect.roundNo} klatek ${v.frames} zdarzen ${v.events.length} zmiany ${JSON.stringify(v.speedChanges.map((a) => [a.frame, a.from, a.speedMul, a.inFlight, a.preHit, a.moving, a.lunging]))} (${Date.now() - tS} ms)`);
   }
+  // Obrona #412 (Uwaga 5 Evaluatora): czesc bez zadnego przypadku (`SHARD`/`ONLY` nic nie wybraly) nie laduje pinu,
+  // wiec strażnik SHA-256 liczylby skrot pusty; jawny blad zamiast mylacego „straznik SHA-256” (zmniejsz `n` podzialu).
+  if (hashed.size === 0) throw new Error('czesc bez przypadkow (WIRING_A_SPEED_CHANGE_SHARD / _ONLY nic nie wybraly)');
   const shaC = hash.digest('hex');
   if (shaC !== EXPECTED_SHA256) throw new Error('straznik SHA-256 pinu: ' + shaC + ' != ' + EXPECTED_SHA256);
   const txt = JSON.stringify({ pin: PIN, pinSha256: shaC, frameWallMs: 16, vectors: vecs }) + '\n';
