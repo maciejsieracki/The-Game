@@ -1,3 +1,9 @@
+## ROBOCZA 74da3a41 -- 2026-11-26 -- FALA 917: Hotseat: licznik tur do pokoju w oknie dyplomacji (testowa)
+
+- W oknie dyplomacji między dwoma graczami (hotseat) przy akcji Pokój widoczna etykieta Dostępne za N tur (to samo źródło co bramka 10 tur wojny z FALI 916), a przyciski Akceptuj/Wyślij dla pokoju są zablokowane do końca licznika; pozostałe akcje i rozejm bez zmian (nowy helper peaceCounterLabel, pole peaceTurnsAtWar w interHumanDiplomacyHud)
+- Weryfikacja: tsc 0; logic 213/213; hotseat-peace-counter-ui 25/0 (mutacje czerwone); hotseat-peace-protection 4/0; diplo-human-peace-no-war 13/0; hotseat-etap6d B 48/0 D 46/0 E 24/0; main-guard 21/0; ai-test 297/0, tech-tree 20, research 33, unit-replace 21, combat 6 (FC); vite build OK
+- Limity: NIE ZMIERZONO: render w żywym Chromium (test sprawdza źródło i czysty rdzeń, brak jsdom); rozejm w hotseat bez licznika
+
 ## ROBOCZA 9930ea1a -- 2026-11-26 -- FALA 916: Pokój między graczami w hotseat: 10 tur wojny przed pokojem (testowa)
 
 - Między dwoma graczami (hotseat) pokój można zawrzeć dopiero po 10 turach wojny, tak jak z AI (ta sama bramka peaceProposalIsTooEarly w humanPeaceRejectReason; ochrona 10 tur PO pokoju działała już wcześniej); komunikat odmowy jak dla AI

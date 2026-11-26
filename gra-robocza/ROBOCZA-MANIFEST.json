@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "9930ea1a7b5bb964177201368af5f871",
-  "bundleSha256": "9308774d1dbb0718e5701418ea5e6e9dc29163a743edb361753c70b44f2fd40d",
-  "bundleBytes": 15025991,
+  "bundleMd5": "74da3a41cbfd00397342d323455eb3d4",
+  "bundleSha256": "ed3d706fac0c5f967b547d4a13c7c4f44bb639406768082e627f36743deb903e",
+  "bundleBytes": 15026798,
   "sourceSnapshot": {
-    "source": "FC e2f499615 (HOTSEATPEACE-wip/fc 559cdcff5, baza main b1e4e04ab)",
+    "source": "FC 2c726f7b1 (HOTSEATHUD-wip/fc e5a5f87ae, baza main 7148b2f4e)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 916: Między dwoma graczami (hotseat) pokój można zawrzeć dopiero po 10 turach wojny, tak jak z AI (ta sama bramka peaceProposalIsTooEarly w humanPeaceRejectReason; ochrona 10 tur PO pokoju działała już wcześniej); komunikat odmowy jak dla AI"
+    "FALA 917: W oknie dyplomacji między dwoma graczami (hotseat) przy akcji Pokój widoczna etykieta Dostępne za N tur (to samo źródło co bramka 10 tur wojny z FALI 916), a przyciski Akceptuj/Wyślij dla pokoju są zablokowane do końca licznika; pozostałe akcje i rozejm bez zmian (nowy helper peaceCounterLabel, pole peaceTurnsAtWar w interHumanDiplomacyHud)"
   ],
   "verification": [
-    "tsc 0; logic 213/213; hotseat-peace-protection 4/0 (mutacje czerwone); diplo-human-peace-no-war 13/0; diplo-war-tribute-once 8/0; hotseat-etap6d B 48/0, D 46/0, E exec 24/0, E source 77/0; main-guard 21/0; ai-test 297/0 (FC); vite build OK"
+    "tsc 0; logic 213/213; hotseat-peace-counter-ui 25/0 (mutacje czerwone); hotseat-peace-protection 4/0; diplo-human-peace-no-war 13/0; hotseat-etap6d B 48/0 D 46/0 E 24/0; main-guard 21/0; ai-test 297/0, tech-tree 20, research 33, unit-replace 21, combat 6 (FC); vite build OK"
   ],
   "limits": [
-    "NIE ZMIERZONO: live w przeglądarce, hotseat-etap8 (Chromium), licznik tur w oknie dyplomacji (zadanie #152); test używa produkcyjnego peaceProposalBlocked, ale main.ts sprawdzony tylko źródłowo; peace-vazne-always M1 czerwony już w bazie (#151)"
+    "NIE ZMIERZONO: render w żywym Chromium (test sprawdza źródło i czysty rdzeń, brak jsdom); rozejm w hotseat bez licznika"
   ],
-  "finalControl": "FC PASS-WITH-NOTES (Sonnet): bramki zielone, 2 mutacje czerwone, wdrożono po odp. właściciela 4A",
+  "finalControl": "FC PASS-WITH-NOTES (Sonnet): 4 własne mutacje HUD czerwone, zarzut 1 naprawiony",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-26T12:49:31",
+  "hubGeneratedAt": "2026-11-26T13:00:50",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "9930ea1a7b5bb964177201368af5f871",
-      "sizeBytes": 15025991
+      "md5": "74da3a41cbfd00397342d323455eb3d4",
+      "sizeBytes": 15026798
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "9930ea1a7b5bb964177201368af5f871",
-      "sizeBytes": 15025991
+      "md5": "74da3a41cbfd00397342d323455eb3d4",
+      "sizeBytes": 15026798
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "9930ea1a7b5bb964177201368af5f871",
-      "sizeBytes": 15025991
+      "md5": "74da3a41cbfd00397342d323455eb3d4",
+      "sizeBytes": 15026798
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "9930ea1a7b5bb964177201368af5f871",
-      "sizeBytes": 15025991
+      "md5": "74da3a41cbfd00397342d323455eb3d4",
+      "sizeBytes": 15026798
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "9930ea1a7b5bb964177201368af5f871",
-      "sizeBytes": 15025991
+      "md5": "74da3a41cbfd00397342d323455eb3d4",
+      "sizeBytes": 15026798
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "9930ea1a7b5bb964177201368af5f871",
-      "sizeBytes": 15025991
+      "md5": "74da3a41cbfd00397342d323455eb3d4",
+      "sizeBytes": 15026798
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "9930ea1a7b5bb964177201368af5f871",
-      "sizeBytes": 15025991
+      "md5": "74da3a41cbfd00397342d323455eb3d4",
+      "sizeBytes": 15026798
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "9930ea1a7b5bb964177201368af5f871",
-      "sizeBytes": 15025991
+      "md5": "74da3a41cbfd00397342d323455eb3d4",
+      "sizeBytes": 15026798
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "9930ea1a7b5bb964177201368af5f871",
-      "sizeBytes": 15025991
+      "md5": "74da3a41cbfd00397342d323455eb3d4",
+      "sizeBytes": 15026798
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "9930ea1a7b5bb964177201368af5f871",
-      "sizeBytes": 15025991
+      "md5": "74da3a41cbfd00397342d323455eb3d4",
+      "sizeBytes": 15026798
     }
   ],
-  "md5": "9930ea1a7b5bb964177201368af5f871",
+  "md5": "74da3a41cbfd00397342d323455eb3d4",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
