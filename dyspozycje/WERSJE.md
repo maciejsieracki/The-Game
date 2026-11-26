@@ -1,3 +1,9 @@
+## ROBOCZA c106582c -- 2026-11-26 -- FALA 924: Kultura i religia: wpływ na Szczęście i Prawo, ustawienie nowej gry (testowa)
+
+- Kultura i religia liczą się teraz do Szczęścia i do Prawa miasta (każda z dwóch linii osobno): łatwy −10/+10, normalny −15/+5, trudny −20/0 (miasto w całości obce / w całości nasze), skala epok ×1,0/×1,6/×2,3, jednostka garnizonu nadal 20 pkt Prawa; nowe ustawienie zaawansowane nowej gry Kultura i religia: Mały wpływ (łatwy, domyślnie) / Neutralny (normalny) / Duży wpływ (trudny); zapisy bez ustawienia grają jak dotąd; na łatwym własne miasta dostają do +20 Prawa
+- Weryfikacja: FC PASS-WITH-NOTES (CULTIMPL r1+obrona); tsc 0; logic 213/213; culture-religion-level 59/0 (4 mutacje na źródle czerwone); porównanie PRZED/PO bit-w-bit 64800 przypadków 0 rozjazdów; round-trip zapisu OK; pomiar AI 60 tur seed 4242 na trudnym; ai-test 297/0; vite build OK; MD5 z GitHub Raw
+- Limity: NIE ZMIERZONO: wybór opcji w kreatorze w przeglądarce; bunty AI jako przyczyna; AI na trudnym ma −30% jednostek i 36% pustych miast (16% dziś) — pytanie 36 do właściciela; cel garnizonu 2/3/4 niewdrożony (model: łatwy 2/2, normalny 3/3)
+
 ## ROBOCZA 390479a6 -- 2026-11-26 -- FALA 923: Wyburzanie budynków ze zwrotem połowy surowców, zakaz podczas oblężenia (testowa)
 
 - Nowa akcja Wyburz budynek w panelu miasta dla gracza: każdy budynek (także Pałac, cuda, mury, Mennica) można wyburzyć za zwrot połowy surowców z kosztu (w dół; bez Pieniądza i Pracy), z potwierdzeniem i podglądem zwrotu; w mieście oblężonym wyburzanie zablokowane (przycisk nieaktywny, widoczny komunikat); AI nie wyburza; reguły Mennicy bez zmian
