@@ -74,3 +74,33 @@ z wcześniejszego pomiaru zapisanego w rejestrze, nie z tej rundy.
 4. Pomiar PRZED/PO na poziomie trudnym, seed 4242 i 7, 60 tur, z licznikiem powodów. NIE_ZMIERZONO.
 5. Decyzja o ewentualnej zmianie balansu utrzymania jednostek (H3): DECISION_REQUIRED, jeśli okaże się
    przyczyną.
+
+## 6. Runda 3 -- wpiecie i pomiar (kandydat r3)
+
+Zmiany (kod): `emptyCityGarrisonRecruitIds` i 6 konsumentow puli garnizonu w `ai.ts` uzywaja celu `max(1, need)` TYLKO gdy silnik
+poda `opts.cityGarrisonNeed` (main.ts, tylko gdy poziom = normalny/trudny; wejscie = `aiCityGarrisonNeedFromOrder` z pelnego
+rozbicia `evaluateOrderFromBreakdown`, bez duplikacji wzorow). Brak pola = zachowanie dotychczasowe (ai-test 297/0 bez zmian).
+Preferencja budynkow: +`AI_ORDER_DEFICIT_BUILDING_BONUS` (40) do score budynkow grupy "Prawo i administracja" oraz `dajeSzczescie`
+w miescie z need >= 1 (tylko normalny/trudny). Test: `gra/tools/ai-city-order-need-wiring-test.cjs` (119/0, 5 mutacji czerwonych;
+tabela CULTMODEL2 z pelnego wejscia: normalny 3, trudny 4). Preferencja budynkow NIE ma osobnego testu jednostkowego (NIE ZMIERZONO testem).
+
+Pomiar (zywa gra, bundle vite, Chromium; poziom MAKSYMALNY "Kultura i religia" = trudny; hak startGame ustawia trudnosc gry Normalny
+i tempo kosztow jednostek niski; 60 tur; AI = wlasciciele != 0 razem z miastami-panstwami; runner `ai-cult-rel-measure-run.cjs`).
+Surowe wyniki: `dyspozycje/autobot/runs/R-WEB-AI-CULT-REL-GARRISON-BUILD-Q1/20-pomiar-r3-surowy.txt`.
+
+| t60 | miasta | jednostki | puste miasta | bud. Prawa | bud. Szczescia |
+|---|---|---|---|---|---|
+| zgodnosc 4242 | 166 | 243 | 27 (16,3%) | 42 | 140 |
+| PRZED trudny 4242 | 154 | 171 | 55 (35,7%) | 12 | 60 |
+| PO trudny 4242 | 151 | 156 | 51 (33,8%) | 11 | 45 |
+| zgodnosc 7 | 194 | 268 | 53 (27,3%) | 11 | 110 |
+| PRZED trudny 7 | 146 | 164 | 44 (30,1%) | 3 | 41 |
+| PO trudny 7 | 163 | 204 | 45 (27,6%) | 13 | 58 |
+
+Wniosek: PRZED na trudnym potwierdza notatke FALI 924 (171 vs 243 jednostek, 35,7% vs 16,3% pustych). Na trudnym AI ma o 57-70%
+mniej budynkow Szczescia i o ok. 30% mniej jednostek niz w zgodnosci -- spojne z oslabiona produkcja miast w pasmach
+Niepokoj/Bunt (kary Porzadku), ale przyczyna NIE jest rozstrzygnieta (brak licznika powodow/buntow w hooku; NIE ZMIERZONO).
+Efekt wpiecia (PO vs PRZED) jest MIESZANY: ziarno 7 poprawa (jednostki 164 -> 204, puste 30,1% -> 27,6%, bud. Prawa 3 -> 13),
+ziarno 4242 bez poprawy (jednostki 171 -> 156, puste 35,7% -> 33,8%). Biegi roznia sie trajektoria (inne decyzje AI), wiec
+pojedyncze ziarno nie jest dowodem. Cel "brak rozpadu AI" NIE jest osiagniety. Utrata miast i bunty: NIE ZMIERZONO
+(liczba miast AI rosnie we wszystkich biegach).
