@@ -8004,7 +8004,11 @@ mod tower_target_tests {
                     _ => None,
                 })
                 .expect("akcja TowerShot");
-            assert_eq!(land_at, 1008.0 + frame_sched(frame, TOWER_FLY_MS), "klatka {frame}");
+            assert_eq!(
+                land_at,
+                1008.0 + frame_sched(frame, TOWER_FLY_MS),
+                "klatka {frame}"
+            );
             assert_eq!(
                 lp.tower_in_flight,
                 vec![(0, 3, 1008.0 + TOWER_FLY_MS)],
@@ -8024,9 +8028,18 @@ mod tower_target_tests {
             assert!(lp.tower_in_flight.is_empty());
         }
         // Klatka 8 ms: trafienie `t0 = 1008`, nominał 1388, siatka 1392; krok marszu z `due = 1390` w tej samej klatce.
-        assert!(!timeline_done(1392.0, 1390.0, 1392.0, 1388.0), "nominał: krok po trafieniu");
-        assert!(timeline_done(1392.0, 1390.0, 1392.0, 1392.0), "siatka: krok przed trafieniem");
-        assert!(timeline_done(1392.0, 1386.0, 1392.0, 1388.0), "krok z mniejszym due: przed trafieniem");
+        assert!(
+            !timeline_done(1392.0, 1390.0, 1392.0, 1388.0),
+            "nominał: krok po trafieniu"
+        );
+        assert!(
+            timeline_done(1392.0, 1390.0, 1392.0, 1392.0),
+            "siatka: krok przed trafieniem"
+        );
+        assert!(
+            timeline_done(1392.0, 1386.0, 1392.0, 1388.0),
+            "krok z mniejszym due: przed trafieniem"
+        );
     }
 
     /// Obrona r1 FRAME-QUANT-Q1 (U3, mutant E2): w czasie rzeczywistym (`step_realtime`) skutek ciała odłożony do fazy

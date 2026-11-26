@@ -1934,3 +1934,295 @@ fn zmiana_predkosci_w_trakcie_mutanty_sterownika_daja_fail() {
     let survived: Vec<_> = killed.iter().filter(|(_, n)| **n == 0).collect();
     assert!(survived.is_empty(), "mutanty niezabite: {survived:?}");
 }
+
+// ------------------------------------------------- R-RUSTPORT-P4-406 (LANDAT-TB-TOWER-DUE-ORDER)
+
+const TOWER_ORDER_VECTORS: &str =
+    include_str!("p6_k5loop_wiring_a_pin_vectors/tower_due_order_vectors.json");
+
+/// R-RUSTPORT-P4-406 (D-406-1): wektory kolejności trafienia wieży (`tower_due_order_vectors.json`, generator
+/// `WIRING_A_TOWER_ORDER_VECTORS=16,8`): nagłówek pinu i strażnik SHA-256.
+fn tower_order_vectors() -> Value {
+    let v: Value = serde_json::from_str(TOWER_ORDER_VECTORS).unwrap();
+    assert_eq!(v["pin"], PIN);
+    assert_eq!(v["pinSha256"], PIN_SHA256, "wektory z innego tekstu pinu");
+    v
+}
+
+/// Zdarzenie wektora 406 jako klucz porównania: `S` (wystrzał wieży, `:4262`), `B` (kamień katapulty, `:7555`),
+/// `T` (napis tury `_beginTurn`, `:5675`) oraz `C`/`R`/`K`/`D` jak [`pin_event_key`].
+fn order_event_key(e: &Value) -> String {
+    let a = e.as_array().unwrap();
+    let t = hex_bits(f(&a[0]));
+    let s = |i: usize| a[i].as_str().unwrap();
+    match s(1) {
+        "S" => format!("{t} S {} {}", s(2), s(3)),
+        "B" => format!("{t} B {} {}", s(2), a[3].as_i64().unwrap()),
+        "T" => format!("{t} T {}", a[2].as_i64().unwrap()),
+        _ => pin_event_key(e),
+    }
+}
+
+/// Wystrzał wieży w sesji: `(t0, wiersz, cel, landAt)`.
+type TowerFlight = (f64, i64, String, f64);
+/// Kamień katapulty w sesji: `(t0, jednostka, wiersz muru, landAt)`.
+type BoulderFlight = (f64, String, i64, f64);
+
+/// Przebieg wektora 406 w sesji.
+struct OrderRun {
+    events: Vec<String>,
+    tower: Vec<TowerFlight>,
+    boulder: Vec<BoulderFlight>,
+    out: Result<SessionOutcome, SessionError>,
+}
+
+/// Przebieg wektora 406 w sesji: wejście scenariusza bazowego, czas rzeczywisty (klatki 16 ms ściany, jak generator),
+/// przy bliźniaku `wallFrameMs` (granica klatki 8 ms) `speedMul = wallFrameMs / 16`. Strumień zdarzeń w formacie
+/// [`order_event_key`], wystrzały wież, kamienie i wynik.
+fn run_tower_order(bv: &Value, tv: &Value, data: &SessionData) -> OrderRun {
+    use civ_engine::domain::siege_tactics_actions::{Actor, BattleAction};
+    use civ_engine::domain::siege_tactics_blow::ClashTag;
+    use civ_engine::domain::siege_tactics_end::BattleSide;
+    use civ_engine::domain::siege_tactics_turnseq::UnitRef;
+    let mut s = SiegeBattleSession::prepare_scene(&scene_input(bv), data).unwrap();
+    // Klatka ściany pinu `F` ms przy `speedMul = 1` = krok `vNow` o `F`; w sesji klatka 16 ms przy `speedMul = F / 16`.
+    if let Some(ms) = tv["wallFrameMs"].as_f64() {
+        s.diag_set_speed_mul(ms / FRAME_MS).unwrap();
+    }
+    let ids = s.roster_ids().clone();
+    let key = |u: UnitRef| {
+        let side = usize::from(u.side != BattleSide::Attacker);
+        format!("{}:{}", ["atk", "def"][side], ids[side][u.idx])
+    };
+    let mut run = OrderRun {
+        events: Vec::new(),
+        tower: Vec::new(),
+        boulder: Vec::new(),
+        out: Err(SessionError::NotFinished),
+    };
+    let mut actions = Vec::new();
+    let mut frames = 0;
+    while s.phase() != SessionPhase::Finished {
+        match s.step(FRAME_MS) {
+            Ok(rep) => actions.extend(rep.actions),
+            Err(e) => {
+                run.out = Err(e);
+                return run;
+            }
+        }
+        frames += 1;
+        assert!(frames < MAX_FRAMES, "bitwa bez końca");
+    }
+    for a in actions {
+        let t = hex_bits(a.t0);
+        let row = match a.action {
+            BattleAction::TowerShot {
+                row,
+                target,
+                land_at,
+            } => {
+                run.tower.push((a.t0, row, key(target), land_at));
+                format!("{t} S wieza:{row} {}", key(target))
+            }
+            BattleAction::Boulder { unit, row, land_at } => {
+                run.boulder.push((a.t0, key(unit), row, land_at));
+                format!("{t} B {} {row}", key(unit))
+            }
+            BattleAction::Turn { round_no } => format!("{t} T {round_no}"),
+            BattleAction::Clash {
+                attacker,
+                target,
+                dmg,
+                tag,
+                ..
+            } => {
+                let who = match attacker {
+                    Actor::Unit(u) => key(u),
+                    Actor::Tower(row) => format!("wieza:{row}"),
+                };
+                let tag = match tag {
+                    ClashTag::Plain => "",
+                    ClashTag::Padl => "padl",
+                    ClashTag::Rout => "rout",
+                };
+                format!("{t} C {who} {} {} {tag}", key(target), hex_bits(dmg))
+            }
+            BattleAction::Damage { target, dmg } => {
+                format!("{t} D {} {}", key(target), hex_bits(dmg))
+            }
+            BattleAction::Rout { unit } => format!("{t} R {}", key(unit)),
+            BattleAction::Kill { unit } => format!("{t} K {}", key(unit)),
+            _ => continue,
+        };
+        run.events.push(row);
+    }
+    run.out = s.finish();
+    run
+}
+
+/// Różnice przebiegu wektora 406 z pinem (pusta lista = bajt w bajt): strumień zdarzeń, loty wież i kamieni (chwila
+/// wystrzału, wiersz, cel, `landAt` = `vNow` klatki trafienia w pinie), wynik bitwy.
+fn tower_order_diff(tv: &Value, run: &OrderRun) -> Vec<String> {
+    let mut d = Vec::new();
+    let pin: Vec<String> = tv["events"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(order_event_key)
+        .collect();
+    if let Some(i) = (0..pin.len().max(run.events.len())).find(|&i| pin.get(i) != run.events.get(i))
+    {
+        d.push(format!(
+            "zdarzenie {i}: {:?} != pin {:?}",
+            run.events.get(i),
+            pin.get(i)
+        ));
+    }
+    let pt = tv["tower"].as_array().unwrap();
+    if pt.len() != run.tower.len() {
+        d.push(format!(
+            "wystrzałów wież {} != pin {}",
+            run.tower.len(),
+            pt.len()
+        ));
+    }
+    for (p, r) in pt.iter().zip(&run.tower) {
+        let ok = r.0 == f(&p[0])
+            && r.1 == p[2].as_i64().unwrap()
+            && r.2 == p[3].as_str().unwrap()
+            && (p[1].is_null() || r.3 == f(&p[1]));
+        if !ok {
+            d.push(format!("wieża {r:?} != pin {p}"));
+            break;
+        }
+    }
+    let pb = tv["boulder"].as_array().unwrap();
+    if pb.len() != run.boulder.len() {
+        d.push(format!("kamieni {} != pin {}", run.boulder.len(), pb.len()));
+    }
+    for (p, r) in pb.iter().zip(&run.boulder) {
+        let ok = r.0 == f(&p[0])
+            && r.1 == p[2].as_str().unwrap()
+            && r.2 == p[3].as_i64().unwrap()
+            && (p[1].is_null() || r.3 == f(&p[1]));
+        if !ok {
+            d.push(format!("kamień {r:?} != pin {p}"));
+            break;
+        }
+    }
+    match &run.out {
+        Ok(o) => d.extend(diff(tv, o)),
+        Err(e) => d.push(format!("błąd sesji {e:?}")),
+    }
+    d
+}
+
+/// R-RUSTPORT-P4-406 (LANDAT-TB-TOWER-DUE-ORDER): kolejność trafienia wieży wobec innych zegarów TEJ SAMEJ klatki bajt w
+/// bajt z wykonaniem tekstu pinu. Pin (`battleScene.ts:9595-9640`): `_schedule(ms)` daje `due = vNow + ms`,
+/// `_drainTimers` odpala w klatce zegary z `due <= vNow` rosnąco po `due` (remis: `id`), bez przesuwania `vNow` do `due`.
+/// Trafienie wieży (`_fireOneTower` `_schedule(RANGED_FLY_MS)` `:4262`) ma `due = t0 + 380` i pada w klatce `t0 + 384`
+/// (krok 16 ms); inny zegar z `due ∈ (t0 + 380, t0 + 384]` pada w TEJ SAMEJ klatce PO nim (`pairFrames` wektora: lista
+/// zegarów klatki w kolejności pinu). Test porównuje cały strumień zdarzeń (wystrzał `S`, kamień `B`, tura `T`,
+/// `C`/`R`/`K`/`D`) i wynik każdej bitwy oraz loty wież i kamieni z chwilą trafienia w pinie (kontrakt `landAt`:
+/// `t0 + 384` / `t0 + 704` przy 16 ms, D-LTB-1, zamrożony z wykonania pinu, E-3 Evaluatora #400). Czas rzeczywisty
+/// (klatki 16 ms ściany), bo chwile są porównywane bezwzględnie (przewijanie po `play()` ma dług tury 1, PRE-SKIP-RAF
+/// #405). Klatka 8 ms (bliźniak granicy klatki, D-PIN2-2) daje też pary z krokiem marszu `_schedule(STEP_GAP_MS)` w oknie
+/// `(t0 + 380, t0 + 384]`.
+#[test]
+fn kolejnosc_trafienia_wiezy_w_klatce_wektory_pinu_bajt_w_bajt() {
+    use civ_engine::domain::siege_tactics_loop::frame_sched;
+    let by_name = base_by_name(&vectors());
+    let doc = tower_order_vectors();
+    let data = pin_session_data();
+    let list = doc["vectors"].as_array().unwrap();
+    let mut rozbiezne = Vec::new();
+    let mut pairs = BTreeMap::<u64, (u64, usize)>::new();
+    let mut land = BTreeMap::<String, usize>::new();
+    let mut observable = 0usize;
+    for tv in list {
+        let name = tv["name"].as_str().unwrap();
+        let bv = &by_name[tv["base"].as_str().unwrap()];
+        assert!(
+            bv["frameMs"].is_null(),
+            "{name}: scenariusz bazowy z klatką produkcyjną"
+        );
+        assert_eq!(tv["mode"], "realtime", "{name}");
+        assert_eq!(tv["expect"]["otherRandom"], 0, "{name}");
+        let step = tv["wallFrameMs"].as_f64().unwrap_or(FRAME_MS);
+        // Kontrakt czasu trafienia z PINU (nie z silnika): `fire - t0 = ceil(nominał / krok) * krok`, przy 16 ms
+        // literalnie 384 / 704.
+        for (k, nom, lit) in [("tower", 380.0, 384.0), ("boulder", 700.0, 704.0)] {
+            for p in tv[k].as_array().unwrap() {
+                if p[1].is_null() {
+                    continue;
+                }
+                let gap = f(&p[1]) - f(&p[0]);
+                assert_eq!(gap, frame_sched(step, nom), "{name}: {k} {p}");
+                if step == FRAME_MS {
+                    assert_eq!(gap, lit, "{name}: {k} {p}");
+                }
+                *land.entry(format!("{k}@{step}:{gap}")).or_default() += 1;
+            }
+        }
+        // Pary (trafienie wieży, inny zegar z `due ∈ (due wieży, vNow klatki]`): w pinie inny zegar PO wieży.
+        let pf = tv["pairFrames"].as_array().unwrap();
+        let e = pairs.entry(step as u64).or_default();
+        e.0 += tv["pairs"].as_u64().unwrap();
+        e.1 += pf.len();
+        let events: Vec<String> = tv["events"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(order_event_key)
+            .collect();
+        for fr in pf {
+            let t = f(&fr[0]);
+            let timers = fr[1].as_array().unwrap();
+            let tower = timers.iter().position(|x| x[3] == "towerHit").unwrap();
+            assert!(
+                timers[tower + 1..]
+                    .iter()
+                    .any(|x| f(&x[0]) > f(&timers[tower][0]) && f(&x[0]) <= t),
+                "{name}: para w klatce {t}"
+            );
+            // Kolejność obserwowalna w strumieniu: w tej klatce jest trafienie wieży i co najmniej jedno inne zdarzenie.
+            let tk = hex_bits(t);
+            let at: Vec<&String> = events.iter().filter(|r| r.starts_with(&tk)).collect();
+            if at.iter().any(|r| r.contains(" C wieza:")) && at.len() > 1 {
+                observable += 1;
+            }
+        }
+        let run = run_tower_order(bv, tv, &data);
+        if std::env::var("P406_DUMP").is_ok_and(|n| n == name) {
+            for (i, r) in run.events.iter().enumerate() {
+                let p = tv["events"].get(i).map(order_event_key);
+                eprintln!("{i} R {r} | P {p:?}");
+            }
+        }
+        let d = tower_order_diff(tv, &run);
+        if !d.is_empty() {
+            rozbiezne.push(format!("{name}: {}", d.join("; ")));
+        }
+    }
+    assert!(
+        rozbiezne.is_empty(),
+        "kolejność trafienia wieży: rozbieżne z pinem: {rozbiezne:#?}"
+    );
+    // Pokrycie: pary wieża / inny zegar przy 16 ms (model produkcyjny) i przy 8 ms, loty obu rodzajów z czasem trafienia.
+    for st in [16, 8] {
+        let (p, fr) = pairs.get(&st).copied().unwrap_or_default();
+        assert!(p > 0 && fr > 0, "brak par przy {st} ms: {pairs:?}");
+    }
+    for k in [
+        "tower@16:384",
+        "boulder@16:704",
+        "tower@8:384",
+        "boulder@8:704",
+    ] {
+        assert!(land.get(k).copied().unwrap_or(0) > 0, "brak {k}: {land:?}");
+    }
+    eprintln!(
+        "P4-406: wektorów {}, par (krok -> (par, klatek)) {pairs:?}, klatek pary z trafieniem wieży i innym zdarzeniem {observable}, trafienia {land:?}",
+        list.len()
+    );
+}
