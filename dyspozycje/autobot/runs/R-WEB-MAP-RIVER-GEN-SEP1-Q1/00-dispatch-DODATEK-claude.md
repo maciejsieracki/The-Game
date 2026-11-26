@@ -21,3 +21,18 @@ tsc 0; logic 213; tech-tree 20; research 33; unit-replace; combat 6; ai-test 297
 Jak w pkt 3; oraz gdy przepięcie pinów wymaga zmiany wartości spoza generatora map.
 ## Binarne kryterium
 Odstęp 1 + naprawa ujść wdrożone; liczba średnich ≥ baza, trzeci poziom zauważalny (lub DECISION_REQUIRED z liczbami); testy rzek z etapu 4 zielone lub NIE ZMIERZONO z listą; piny przepięte tabelą; czas generowania zmierzony; dokumentacja poprawiona.
+
+---
+# DODATEK RUNDA 3 (Operator HAIKU 5.5; r1+obrona = BLOCK/DECISION_REQUIRED, FC tip 74b0ceaa9; ECHO 26B z 2026-11-26)
+BAZA: args.cand = origin/main PO integracji MAPFIX (ten sam plik gen-helpers.ts — etapy lądu zmienione). Poprzedni kod: refs/keep/RIVERS3B-fc = 74b0ceaa913cbcda49957d90bec3edbe13db6666 (baza cb18bff7c). Zastosuj z niego wyłącznie: gen-helpers.ts (RIVMOUTH + stałe sep), river-turn-window-test.cjs, docs/obieg/MAPA-RZEKI-SPEC.md, MAPA-KANON-GENERATOR.md — przez `git diff cb18bff7c 74b0ceaa9 -- <pliki> | git apply --3way`, bez scalania gałęzi.
+## Decyzja właściciela (26B)
+Przebudować KOLEJNOŚĆ generacji: najpierw średnie i dopływy (małe), potem rzeki główne wypełniają wolne miejsce z odstępem 1 pole. Limit ujść zostaje 7 (FALA 170); jeśli niewykonalny → DECISION_REQUIRED z liczbami (nie rozluźniaj sam).
+## NOWA REGUŁA PROPORCJI (polecenie właściciela, nadrzędna nad kryteriami z r1)
+Rzeki to drzewo: na każdą główną ≥ 4 średnie dopływy, na każdy średni ≥ 4 małe (stosunek ≥ 1 : 4 : 16). Poprzednie kryteria „średnie ≥ 100% bazy / dopływy ≥ 50% bazy” NIEAKTUALNE.
+## Zadanie (kolejność)
+0. POMIAR WYKONALNOŚCI (przed kodem): na 84×60 (kontynenty s1/s7/s42, pangea s7) i 168×120 s42 policz ile głównych/średnich/małych daje GENERATOR DZIŚ (baza) oraz teoretyczny sufit: ile heksów lądu, ile zajmuje rzeka każdego poziomu (średnia długość), ile głównych mieści mapa przy stosunku 1:4:16. Zapisz tabelę. Jeśli stosunek 1:4:16 wymaga mniej głównych niż dzisiejsze 40–45 (84×60) → wypisz liczbę głównych, przy której stosunek jest wykonalny, i zwróć DECISION_REQUIRED (jedno zdanie skutku per wariant: A mniej głównych niż dziś / B stosunek łagodniejszy np. 1:2:4 / C inny), NIE rozstrzygaj sam, i NIE pisz generatora na ślepo.
+1. Jeśli wykonalne: przebuduj kolejność generacji (średnie/małe najpierw, potem główne odstęp 1), generuj dopływy jako gałęzie przyłączone do rzeki wyższego poziomu (drzewo), tak by stosunek ≥ 1:4:16 wyszedł per mapa; zachowaj naprawę ujść (RIVMOUTH), render RIVERS3A (FALA 922) nietknięty.
+2. Pomiar PRZED/PO (te same ziarna): główne/średnie/małe + stosunek, czas generowania z powtórzeniami na cichej maszynie, bufor od morza (river-sea-buffer, regres z r1 — ZBADAJ i napraw lub zgłoś), ujścia (limit 7).
+3. Domknięcie ≈15 testów rzek/map/pinów (tabela test|przed|po|powód; ciężkie >10 min NIE ZMIERZONO z wypisaniem), piny przepięte TYLKO z uzasadnieniem, nowy test proporcji z mutacją czerwoną.
+4. Dokumentacja: MAPA-RZEKI-SPEC.md (reguła proporcji 1:4:16 i kolejność generacji), MAPA-KANON-GENERATOR.md.
+## Zakazy jak w r1; Operator Haiku; nie pytaj właściciela (DECISION_REQUIRED).
