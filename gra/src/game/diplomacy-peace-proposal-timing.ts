@@ -44,3 +44,16 @@ export function peaceRejectReasonSuffix(actionId: string, reason: string | undef
   const r = (reason ?? '').trim();
   return r.length > 0 ? ' — powód: ' + r : '';
 }
+
+/**
+ * R-WEB-DIPLO-HOTSEAT-PEACE-COUNTER-UI-Q1 (HOTSEATHUD): etykieta licznika „Dostępne za N tur” przy
+ * akcji pokoju między dwoma fotelami ludzkimi. Zwraca tekst tylko gdy para jest w wojnie i blokada
+ * czasu trwa (`peaceProposalBlocked('pokoj', true, turnsAtWar)`); w pozostałych przypadkach null.
+ * Ta sama reguła co bramka `humanPeaceRejectReason` w main.ts (brak własnej liczby).
+ */
+export function peaceCounterLabel(turnsAtWar: number | null | undefined): string | null {
+  if (turnsAtWar === null || turnsAtWar === undefined) return null;
+  if (!peaceProposalBlocked('pokoj', true, turnsAtWar)) return null;
+  const left = peaceProposalTurnsLeft(turnsAtWar);
+  return `Dostępne za ${left} ${turyWojnyLabel(left)}`;
+}

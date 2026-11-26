@@ -23204,8 +23204,11 @@ async function boot(): Promise<void> {
       const otherOwnerId = nextHumanSeat(humanSeats);
       if (otherOwnerId === null) return;
       const meId = ME();
+      // HOTSEATHUD: te same źródła co bramka `peaceProposalIsTooEarly(meId, otherOwnerId, 'pokoj')`.
+      const peaceAtWar = getDiploRelation(meId, otherOwnerId).status === 'wojna';
       showInterHumanDiplomacyHud({
         otherLabel: ownerDiploLabel(otherOwnerId),
+        peaceTurnsAtWar: peaceAtWar ? diploWarStateFor(meId, otherOwnerId).turnsAtWar : null,
         proposals: getInterHumanProposalsFor(meId).map(p => ({
           id: p.id,
           fromLabel: ownerDiploLabel(p.fromOwnerId),
