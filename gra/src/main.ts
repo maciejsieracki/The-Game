@@ -23059,8 +23059,9 @@ async function boot(): Promise<void> {
       if (action === 'reject') return true;
       if (action === 'counter') {
         if (!counterCmd) return false;
-        proposeToHuman(p.toOwnerId, p.fromOwnerId, counterCmd, counterReason ?? p.reason);
-        return true;
+        // P21c: proposeToHuman zwraca '' gdy strażnik odrzucił kontrpropozycję (np. pokój bez wojny).
+        const wyslano = proposeToHuman(p.toOwnerId, p.fromOwnerId, counterCmd, counterReason ?? p.reason);
+        return wyslano !== '';
       }
       // action === 'accept' — DOKŁADNIE ta sama gałąź akceptacji co resolvePendingDiplomacy()
       // dla AI, z jawną parą (p.fromOwnerId, p.toOwnerId) zamiast niejawnego (p.ownerId, ME()).
