@@ -1,3 +1,18 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-MAP-RIVER-THICKNESS-IMPL-Q1
+GOAL: trzy poziomy rzek wyraźnie różne i grubsze (main>medium>tributary), dowód wizualny PRZED/PO i pomiar pikseli per poziom.
+ZMIANY/COMMIT: kandydat 8d2109462 (merge-base --is-ancestor 59ad2debe 8d2109462 = tak; baza kodu 690947a2a). Od 59ad2debe diff tylko dyspozycje/** (37 plików: zrzuty, JSON, skrypty analizy, raporty); gra/src bez zmian od 9c5ca3437. Kod: riverWidthMulForKind medium = 0,7 x main (0,595-0,945), tributary/short = 0,45; main bez zmian. Allowlista zachowana (gra/src/map, gra/data, WERSJE.md nietknięte).
+TESTY (własne, worktree na 8d2109462, gra/node_modules dowiązane): tsc --noEmit exit 0; river-render-levels-test 19 OK / 0 FAIL (z mutacjami wiringu); river-fog-visibility-test 31/0; logic-test 213/213; tech-tree-test 20/0; research-test 33/0; unit-replace-test 21/21; combat-test 6/6; ai-test 297 passed / 0 failed.
+Pomiar pikseli (własny bluecount.cjs, kadr 8x seed 1): PRZED-S1 3152, PRZED-S2 3304, PRZED-S3 5015; PO-S1 3152, PO-S2 4847, PO-S3 5818. Zgodne z raportem obrony. Główne identyczne (kontrola izolacji); średnie +1543 (+47%); wszystkie +803 (+16%). errors=[] we wszystkich 6 JSON.
+Ocena zarzutów: (1) dowód wizualny - przyjęty; kompozycja SRAVNENIE-8x-srodek.png pokazuje wyraźnie więcej średnich rzek PO niż PRZED-S2, miasta nieprzesłonięte; domknięty. (2) brak PRZED per poziom - domknięty pomiarem S1/S2; cel "średnie wyraźnie większe niż +5%" spełniony (+47% na unii pikseli). (3) ilość tuszu, nie szerokość - ODDAL jako uwaga: miara jest przybliżeniem; nie blokuje, bo szerokość wynika wprost z kodu (stałe 0,45 i 0,7 x main) i jest pokryta testem.
+BLOKADY: brak blokad. Uwagi: (a) grubość dopływów 0,30->0,45 potwierdzona kodem i testem, NIE potwierdzona pomiarem pikseli (przyrost dopływów w unii spadł 1711->971; założenie: nakładanie na szersze średnie, niesprawdzone); (b) FPS PRZED/PO NIE ZMIERZONO w tej rundzie (SwiftShader orientacyjnie z r2), na GPU NIE ZMIERZONO; (c) czytelność oceniona tylko seed 1, a na całej mapie zmiana jest niewidoczna z oddalenia; (d) pliki zrzutów nazwane "zblizenie-4x" są szerokim kadrem.
+RUNDY: FC runda 3 (ocena kandydata 8d2109462) w limicie 5.
+NASTĘPNY KROK: integracja orkiestratora (kod 9c5ca3437 + dokumentacja), deploy na ROBOCZĄ za osobną autoryzacją; opcjonalnie później mały pomiar szerokości dopływów w px; właściciel ocenia wygląd na ROBOCZEJ.
+UWAGI-DLA-ORKIESTRATORA: skrypty rivers-live-measure/bluecount/compose w dyspozycje/analizy/rzeki-render-r3a/; zrzuty PNG (37 plików) - rozważ czy wszystkie wnosić do main.
+DEPLOY/PUSH: NIE WYKONANO
+
+---- POPRZEDNI WERDYKT FC (runda 2, zachowany) ----
 STATUS: FAIL
 DOMAIN: GAME
 TEMAT: R-WEB-MAP-RIVER-THICKNESS-IMPL-Q1
