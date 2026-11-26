@@ -30,7 +30,7 @@ const ENTRY_FILE = path.resolve(__dirname, '.building-demolish-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.building-demolish-bundle.cjs');
 
 fs.writeFileSync(ENTRY_FILE, `
-export { demolishBuilding, demolishRefundFor, paidStockCostForBuilding } from '../src/game/building-demolish';
+export { demolishBuilding, demolishRefundFor, paidStockCostForBuilding, refundFromPaidCost } from '../src/game/building-demolish';
 export { ownersWithMennica, setOwnerCapitalCityResolver } from '../src/game/turn-economy';
 `);
 
@@ -49,7 +49,7 @@ try {
 }
 
 const lib = require(BUNDLE_FILE);
-const { demolishBuilding, demolishRefundFor, paidStockCostForBuilding } = lib;
+const { demolishBuilding, demolishRefundFor, paidStockCostForBuilding, refundFromPaidCost } = lib;
 const { ownersWithMennica, setOwnerCapitalCityResolver } = lib;
 
 let pass = 0;
@@ -176,6 +176,17 @@ console.log('[8] Okablowanie: UI -> hook -> logika; AI nie wyburza');
   const gameDir = path.resolve(GRA, 'src/game');
   const aiHits = fs.readdirSync(gameDir).filter(f => /^ai/.test(f) && fs.readFileSync(path.join(gameDir, f), 'utf8').includes('building-demolish'));
   check('AI (src/game/ai*.ts) nie importuje wyburzania', aiHits.length === 0, aiHits);
+}
+
+console.log('[9] Zaokrąglenie w dół i pomijanie zerowych wpisów (nieparzyste wartości; w danych gry koszty są parzyste)');
+{
+  check('51 drewna -> zwrot 25 (w dół, nie 26)', eq(refundFromPaidCost({ drewno: 51 }), { drewno: 25 }), refundFromPaidCost({ drewno: 51 }));
+  check('3 kamienia -> zwrot 1 (w dół)', eq(refundFromPaidCost({ kamien: 3 }), { kamien: 1 }), refundFromPaidCost({ kamien: 3 }));
+  check('1 cegły -> połowa 0 -> wpis pominięty (brak klucza)', eq(refundFromPaidCost({ cegla: 1 }), {}), refundFromPaidCost({ cegla: 1 }));
+  check('mieszane {drewno:51, kamien:1, cegla:0} -> {drewno:25}',
+    eq(refundFromPaidCost({ drewno: 51, kamien: 1, cegla: 0 }), { drewno: 25 }),
+    refundFromPaidCost({ drewno: 51, kamien: 1, cegla: 0 }));
+  check('pusty koszt -> pusty zwrot', eq(refundFromPaidCost({}), {}));
 }
 
 console.log('');

@@ -50414,14 +50414,14 @@ async function boot(): Promise<void> {
         getUnlockedTechs: (ownerId: number) =>
           Array.from(isHuman(ownerId) ? (playerStateByHuman.get(ownerId)?.zbadane ?? player.zbadane) : (aiResearchDone.get(ownerId) ?? new Set<string>())),
         getBuiltBuildingIds: (cityId: string) => cityBuilt.get(cityId) ?? [],
-      // R-WEB-BUILDING-DEMOLISH-Q1 (odp. 22C): wyburzenie budynku gracza, zwrot 50% surowców do puli ownera.
-      onDemolishBuilding: (cityId: string, buildingId: string) => {
-        const dm = demolishBuilding({ cities, builtByCity: cityBuilt }, cityId, buildingId);
-        if (dm.removed) {
-          console.log(`[Demolish] ${cityId}: wyburzono ${buildingId}, zwrot`, dm.refund);
-          updateHud();
-        }
-      },
+        // R-WEB-BUILDING-DEMOLISH-Q1 (odp. 22C): wyburzenie budynku gracza, zwrot 50% surowców do puli ownera.
+        onDemolishBuilding: (cityId: string, buildingId: string) => {
+          const dm = demolishBuilding({ cities, builtByCity: cityBuilt }, cityId, buildingId);
+          if (dm.removed) {
+            console.log(`[Demolish] ${cityId}: wyburzono ${buildingId}, zwrot`, dm.refund);
+            updateHud();
+          }
+        },
         // PYTANIE 83=B: jedna funkcja co silnik (turn-economy.ts resolveOwnerZlotoAccess).
         getOwnerHasZlotoAccess: (ownerId: number) => ownerZlotoAccessForMennicaEffective(ownerId),
         // audyt #33: panel miasta jest tylko dla gracza (openCityPanelForPlayer) -- ulepszenia

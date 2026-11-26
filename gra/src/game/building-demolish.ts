@@ -84,18 +84,26 @@ export function paidStockCostForBuilding(
   return total;
 }
 
-/** Zwrot = połowa (w dół) surowców poniesionych na budynek. Wpisy 0 są pomijane. */
-export function demolishRefundFor(
-  buildingId: string,
-  buildings: ReadonlyArray<DemolishBuildingDef> = DEFAULT_BUILDINGS,
-): Record<string, number> {
-  const paid = paidStockCostForBuilding(buildingId, buildings);
+/**
+ * Reguła zwrotu na poziomie surowca: połowa w dół. Wpisy, w których połowa wynosi 0, są pomijane.
+ * Wydzielona, bo dla aktualnych danych (koszty zawsze parzyste: FALA2 ×2 i mnożnik ery 1/2/4)
+ * zaokrąglenie nie jest widoczne w grze -- test sprawdza ją bezpośrednio na nieparzystych wartościach.
+ */
+export function refundFromPaidCost(paid: Record<string, number>): Record<string, number> {
   const refund: Record<string, number> = {};
   for (const [k, v] of Object.entries(paid)) {
     const half = Math.floor(v / 2);
     if (half > 0) refund[k] = half;
   }
   return refund;
+}
+
+/** Zwrot = połowa (w dół) surowców poniesionych na budynek. Wpisy 0 są pomijane. */
+export function demolishRefundFor(
+  buildingId: string,
+  buildings: ReadonlyArray<DemolishBuildingDef> = DEFAULT_BUILDINGS,
+): Record<string, number> {
+  return refundFromPaidCost(paidStockCostForBuilding(buildingId, buildings));
 }
 
 /**
