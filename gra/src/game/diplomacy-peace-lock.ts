@@ -7,7 +7,7 @@
 import type { DiploPairMeta } from './diplomacy-pn-engine';
 import type { AllianceObligation } from './diplomacy-treaties';
 import { WAR_PEACE_PARAMS } from './diplomacy-war-peace-profile';
-import { truceEndOfferReason, truceEndPriceRule, type TruceEndPayCurrency, type TruceEndPriceRule } from './diplomacy-truce-end-price';
+import { truceEndDuePn, truceEndOfferReason, truceEndPriceRule, type TruceEndPayCurrency, type TruceEndPriceRule } from './diplomacy-truce-end-price';
 
 /** Liczba tur pokoju po akceptacji traktatu pokoju / rozejmu. */
 export const PEACE_TREATY_LOCK_TURNS = 10;
@@ -356,14 +356,14 @@ export function truceEndTickPair(ports: TruceEndPorts, a: number, b: number, tur
     const ai = ports.isHuman(target) ? initiator : target;
     const human = ai === target ? initiator : target;
     const rule = truceEndPriceFor(ports, a, b);
-    // R-WEB-DIPLO-TRUCE-END-PEACE-PRICE-2-Q1 (pkt 3): cena 0 (requiredPn ≤ 0) = brak oferty w skrzynce gracza;
-    // zamiast niej zwykły powrót do wojny („Rozejm wygasł, wojna wraca” przez declareWarAfterTruce).
-    if (rule != null && ports.quotePn && !(ports.quotePn(rule.payerId, rule.payeeId) > 0)) {
+    // R-WEB-DIPLO-TRUCE-END-PRICE-3-Q1 (10B): cena 0 = symboliczna opłata (truceEndDuePn), oferta nadal składana.
+    // Brak ceny (NaN / brak wyceny) = brak oferty w skrzynce gracza; zwykły powrót do wojny (declareWarAfterTruce).
+    // Port quotePn opcjonalny (stare atrapy bez wyceny): bez niego treść bez kwoty, reguła i tak liczona w chwili zgody.
+    const quote = rule != null && ports.quotePn ? truceEndDuePn(ports.quotePn(rule.payerId, rule.payeeId)) : null;
+    if (rule != null && quote != null && !(quote > 0)) {
       truceEndToWarCore(ports, a, b);
       return;
     }
-    // Port quotePn opcjonalny (stare atrapy bez wyceny): bez niego treść bez kwoty, reguła i tak liczona w chwili zgody.
-    const quote = rule != null && ports.quotePn ? ports.quotePn(rule.payerId, rule.payeeId) : null;
     const reason = rule != null && quote != null
       ? truceEndOfferReason(rule, ports.isHuman(rule.payerId), quote)
       : 'Rozejm wygasł — propozycja pokoju stałego z ceną (odmowa = wojna)';

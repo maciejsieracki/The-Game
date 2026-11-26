@@ -85,6 +85,11 @@ function withWindow(open, requiredPn, currency) {
   return { ...BASE_CTX, truceEndWindow: { open, requiredPn, ...(currency ? { currency } : {}) } };
 }
 
+// R-WEB-DIPLO-TRUCE-END-PRICE-3-Q1 (11A): okno z informacją o cedowalnym mieście gracza.
+function withWindowCity(open, requiredPn, currency, cityAvailable) {
+  return { ...BASE_CTX, truceEndWindow: { open, requiredPn, currency, cityAvailable } };
+}
+
 // Atrapy portów cyklu rozejmu (ta sama semantyka co main.ts truceEndPorts, bez stanu gry).
 function makePorts(initialMeta, status, quote) {
   const metas = { '0-2': { ...initialMeta } };
@@ -130,9 +135,9 @@ async function main() {
     const { ports, metas, key, log } = makePorts({ truceUntilTurn: 10, truceInitiatorId: 0 }, 'pokoj', 0);
     base.truceEndTickPair(ports, 0, 2, 10);
     const m = metas[key(0, 2)];
-    check('tick cena 0: brak oferty w skrzynce', log.offers.length === 0 && m.truceEndOffer === undefined);
-    check('tick cena 0: wojna wraca raz', log.warDeclared === 1, log.warDeclared);
-    check('tick cena 0: okno zapisane, ale zamknięte przez cenę 0 w ctx', m.truceEndTurn === 10);
+    // R-WEB-DIPLO-TRUCE-END-PRICE-3-Q1 (10B): cena 0 = symboliczna opłata → oferta składana, wojny nie ma.
+    check('tick cena 0: oferta w skrzynce z opłatą symboliczną (nie wojna)', log.offers.length === 1 && m.truceEndOffer !== undefined && log.warDeclared === 0, log);
+    check('tick cena 0: okno zapisane (truceEndTurn = 10)', m.truceEndTurn === 10);
   }
 
   console.log('== Propozycja gracza w oknie (evaluateProposal) ==');
@@ -159,6 +164,15 @@ async function main() {
     check('okno waluta miasto + surowce bez miasta → okno nie przyjmuje', !(typeof r.reason === 'string' && r.reason.includes('pokryta')), r);
     const sur = ev(withWindow(true, 300, 'surowce'));
     check('okno waluta surowce + pokryta cena → zaakceptowana', sur.accepted === true && sur.reason.includes('pokryta'), sur);
+  }
+  {
+    // R-WEB-DIPLO-TRUCE-END-PRICE-3-Q1 (11A): pasmo >20%, brak cedowalnego miasta → surowce ≥ ceny pokrywają pokój.
+    const noCity = ev(withWindowCity(true, 300, 'miasto', false));
+    check('okno 11A: miasto + brak cedowalnego miasta + surowce ≥ cena → przyjęte (wariant zastępczy)', noCity.accepted === true && noCity.reason.includes('pokryta'), noCity);
+    const noCityLow = ev(withWindowCity(true, 501, 'miasto', false));
+    check('okno 11A: brak miasta + surowce < cena → nie przyjęte jako pokryte', !(typeof noCityLow.reason === 'string' && noCityLow.reason.includes('pokryta')), noCityLow);
+    const hasCity = ev(withWindowCity(true, 300, 'miasto', true));
+    check('okno 11A: miasto dostępne + tylko surowce → nie przyjęte jako pokryte (miasto wymagane)', !(typeof hasCity.reason === 'string' && hasCity.reason.includes('pokryta')), hasCity);
   }
   {
     // Okno działa tylko dla akcji 'pokoj' — inne akcje w oknie dostają ocenę jak bez okna.
@@ -248,6 +262,17 @@ async function main() {
       to: "return { accepted: false, reason: 'Pokój zawarty — cena po rozejmie pokryta', oneShotTrade: true };",
       expect: 'pokryta cena w oknie musi dać przyjęcie',
       check: async m => m.evaluateProposal(PLAYER_PEACE, withWindow(true, 300)).accepted === false,
+    },
+    {
+      name: 'M-SUB',
+      target: PROPOSALS,
+      from: 'truceEndSurowceSubstituteCovers(truceWindow.requiredPn, offeredPn, truceWindow.cityAvailable !== false)',
+      to: 'truceEndSurowceSubstituteCovers(truceWindow.requiredPn, offeredPn, true)',
+      expect: 'okno 11A musi przyjąć surowce przy braku miasta (wariant zastępczy)',
+      check: async m => {
+        const r = m.evaluateProposal(PLAYER_PEACE, withWindowCity(true, 300, 'miasto', false));
+        return typeof r.reason === 'string' && !r.reason.includes('pokryta');
+      },
     },
     {
       name: 'M-SETTURN',

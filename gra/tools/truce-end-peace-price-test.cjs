@@ -35,7 +35,7 @@ function check(name, cond, detail) {
 }
 
 const ENTRY_SRC = [
-  'export { truceEndPriceRule, pickTruceEndSettlementPlan, truceEndOfferReason, executeTruceEndSettlement } from \'./game/diplomacy-truce-end-price\';',
+  'export { truceEndPriceRule, pickTruceEndSettlementPlan, truceEndOfferReason, executeTruceEndSettlement, truceEndDuePn, truceEndSurowceSubstituteCovers } from \'./game/diplomacy-truce-end-price\';',
   'export {',
   '  truceEndTickPair, truceEndToWarCore, truceEndAcceptCore, truceEndSettleCore, truceEndPriceFor,',
   '} from \'./game/diplomacy-peace-lock\';',
@@ -175,7 +175,7 @@ function expiringPair(w, a, b, initiator) {
       m.truceEndOffer && m.truceEndOffer.fromOwnerId === 7 && m.truceEndOffer.toOwnerId === 0 && w.inbox[0].ownerId === 7, m);
     check('(d) oferta nie zawiera płatności ani wojny w turze wygaśnięcia', w.settle.length === 0 && w.warCalls.length === 0);
   }
-  // (d0) cena 0 (quotePn ≤ 0) → brak oferty w skrzynce gracza i brak wpisu oferty; wojna wraca (wpis przez declareWarAfterTruce).
+  // (d0) R-WEB-DIPLO-TRUCE-END-PRICE-3-Q1 (10B): cena 0 → symboliczna opłata (1 Pn z parametrów): oferta w skrzynce, bez wojny.
   {
     const w = makeWorld();
     w.quoteValue = 0;
@@ -183,9 +183,26 @@ function expiringPair(w, a, b, initiator) {
     w.army[0] = 100; w.army[7] = 100;
     lib.truceEndTickPair(w.ports, 0, 7, 110);
     const m = w.meta[w.key(0, 7)];
-    check('(d0) cena 0 gracz↔AI: brak oferty w skrzynce (inbox pusty)', w.inbox.length === 0, w.inbox);
-    check('(d0) cena 0: brak wpisu truceEndOffer w meta pary', m.truceEndOffer === undefined, m);
-    check('(d0) cena 0: wojna wraca przez declareWarAfterTruce (wpis „Rozejm wygasł, wojna wraca”)', w.warCalls.length === 1 && w.status[w.key(0, 7)] === 'wojna', w.warCalls);
+    check('(d0) cena 0 gracz↔AI: oferta w skrzynce z opłatą symboliczną (inbox 1)', w.inbox.length === 1 && w.warCalls.length === 0, w.inbox);
+    check('(d0) cena 0: wpis truceEndOffer w meta pary (oferta składana)', m.truceEndOffer !== undefined && m.truceEndOffer.fromOwnerId === 7, m);
+    check('(d0) cena 0: treść oferty niesie opłatę symboliczną (ok. 1)', w.inbox.length === 1 && /ok\. 1 \(/.test(w.inbox[0].reason), w.inbox);
+  }
+  // (d0s) brak wyceny (NaN) = brak ceny → brak oferty, wojna wraca (dotychczasowy kontrakt dla NaN).
+  {
+    const w = makeWorld();
+    w.quoteValue = NaN;
+    expiringPair(w, 0, 7, 0);
+    w.army[0] = 100; w.army[7] = 100;
+    lib.truceEndTickPair(w.ports, 0, 7, 110);
+    check('(d0s) brak ceny (NaN) gracz↔AI: brak oferty, wojna wraca', w.inbox.length === 0 && w.warCalls.length === 1, w.inbox);
+  }
+  {
+    const d0 = lib.truceEndDuePn(0);
+    check('(d0u) truceEndDuePn: cena 0 → symboliczna 1 Pn; NaN → 0; dodatnia bez zmian',
+      d0 === 1 && lib.truceEndDuePn(NaN) === 0 && lib.truceEndDuePn(50) === 50 && lib.truceEndDuePn(-3) === 1, { d0 });
+    check('(d0u) truceEndSurowceSubstituteCovers: tylko bez miasta i przy pokryciu ceny',
+      lib.truceEndSurowceSubstituteCovers(300, 300, false) === true && lib.truceEndSurowceSubstituteCovers(300, 300, true) === false
+      && lib.truceEndSurowceSubstituteCovers(300, 299, false) === false && lib.truceEndSurowceSubstituteCovers(0, 300, false) === false);
   }
   {
     const w = makeWorld();
@@ -205,6 +222,30 @@ function expiringPair(w, a, b, initiator) {
     lib.truceEndTickPair(w.ports, 7, 9, 110);
     check('(d0b) cena 0 AI↔AI: nie wchodzi w gałąź gracza (brak oferty w skrzynce)', w.inbox.length === 0, w.inbox);
     check('(d0b) cena 0 AI↔AI: zachowanie sprzed zmiany (pokój przez truceEndSettleCore, bez wojny)', w.finalize.length === 1 && w.warCalls.length === 0, { f: w.finalize, w: w.warCalls });
+  }
+  // (d0k) R-WEB-DIPLO-TRUCE-END-PRICE-3-Q1 (10B): brak środków na opłatę symboliczną (port płatności = false) → wojna, bez pokoju.
+  {
+    const w = makeWorld();
+    w.quoteValue = 0;
+    expiringPair(w, 0, 7, 0);
+    w.army[0] = 100; w.army[7] = 100;
+    lib.truceEndTickPair(w.ports, 0, 7, 110);
+    w.settleOk = false;
+    const ok = lib.truceEndAcceptCore(w.ports, 0, 7);
+    check('(d0k) cena 0 gracz płaci opłatę symboliczną, brak środków → wojna, bez pokoju',
+      ok === false && w.settle.length === 1 && w.finalize.length === 0 && w.warCalls.length === 1, { s: w.settle, f: w.finalize, w: w.warCalls });
+  }
+  // (d0m) R-WEB-DIPLO-TRUCE-END-PRICE-3-Q1 (10B): AI↔AI cena 0, płatność (bilans PW) nie przechodzi → wojna, bez pokoju.
+  {
+    const w = makeWorld();
+    w.humans.delete(0);
+    w.quoteValue = 0;
+    expiringPair(w, 7, 9, 7);
+    w.army[7] = 100; w.army[9] = 100;
+    w.settleOk = false;
+    lib.truceEndTickPair(w.ports, 7, 9, 110);
+    check('(d0m) cena 0 AI↔AI bez bilansu/środków na opłatę → wojna, bez pokoju',
+      w.finalize.length === 0 && w.warCalls.length === 1 && w.settle.length === 1, { f: w.finalize, w: w.warCalls, s: w.settle });
   }
   // (d0c) wycena NaN (brak liczby) traktowana jak brak ceny: wojna wraca, bez oferty (decyzja ZAŁOŻENIE, patrz raport).
   {
@@ -299,13 +340,18 @@ function expiringPair(w, a, b, initiator) {
     /koniecRozejmuPokoj\s*\?\s*truceEndAcceptCore\(truceEndPorts\(\), ME\(\), p\.ownerId\)/.test(main));
   check('wiring: cena AI↔AI wydzielona (aiAiPeacePriceFor) i użyta w tickAiAiPeaceRequests i płatności po rozejmie',
     /function aiAiPeacePriceFor\(/.test(main) && /price: \(winner, loser, kind\) => aiAiPeacePriceFor\(winner, loser, kind\)/.test(main)
-    && /const price = aiAiPeacePriceFor\(payeeId, payerId, 'pokoj'\);/.test(main));
+    && /const price0 = aiAiPeacePriceFor\(payeeId, payerId, 'pokoj'\);/.test(main) && /requiredPn: truceEndDuePn\(price0\.requiredPn\)/.test(main));
   check('wiring: płatność po rozejmie AI↔AI sprawdza nieujemny bilans PW (pokojAiAi.minBilansPW), gracz wyłączony',
     /balanceOk: plan => isHuman\(payerId\) \|\| isHuman\(payeeId\)\s*\|\|\s*isAiAiPeaceBalanceAllowed\(price\.balanceFor\(plan\.coveredPn\), price\.loserBalanceFor\?\.\(plan\.coveredPn\)\)/.test(main));
   check('wiring: settleTruceEndPrice wybiera i płaci przez executeTruceEndSettlement (cena >0, pełny plan, fallback)',
     /executeTruceEndSettlement\(\{/.test(main) && /return pick != null;/.test(main) && !/pickTruceEndSettlementPlan\(\{/.test(main));
-  check('wiring: cena 0 w truceEndTickPair = powrót do wojny, bez oferty w skrzynce',
-    /!\(ports\.quotePn\(rule\.payerId, rule\.payeeId\) > 0\)\)\s*\{\s*truceEndToWarCore\(ports, a, b\);\s*return;/.test(lock));
+  check('wiring: cena 0 w truceEndTickPair = symboliczna opłata (truceEndDuePn), brak ceny = wojna',
+    /truceEndDuePn\(ports\.quotePn\(rule\.payerId, rule\.payeeId\)\)/.test(lock)
+    && /if \(rule != null && quote != null && !\(quote > 0\)\)\s*\{\s*truceEndToWarCore\(ports, a, b\);\s*return;/.test(lock));
+  // Zarzut 1/2 (obrona 11A): okno gracza dostaje cityAvailable liczone z miast CEDOWALNYCH (bez forbidden, pn > 0).
+  check('wiring 11A: truceEndWindowFor podaje cityAvailable z miast niezakazanych (!forbidden, pn > 0)',
+    /const cityAvailable = aiPeacePaymentAssets\(rule\.payerId, rule\.payeeId, new Set<string>\(\)\)\s*\.some\(a => a\.kind === 'miasto' && !a\.forbidden && a\.pn > 0\);/.test(main)
+    && /return requiredPn > 0 \? \{ open: true, requiredPn, currency: rule\.currency, cityAvailable \} : closed;/.test(main));
   check('wiring: oferta po rozejmie niesie cenę przez truceEndOfferReason (port quotePn)',
     /truceEndOfferReason\(rule, ports\.isHuman\(rule\.payerId\), quote\)/.test(lock) && /ports\.quotePn\(rule\.payerId, rule\.payeeId\)/.test(lock)
     && /quotePn: \(payerId, payeeId\) => aiAiPeacePriceFor\(payeeId, payerId, 'pokoj'\)\.requiredPn/.test(main));
@@ -350,6 +396,24 @@ function expiringPair(w, a, b, initiator) {
     (() => { const r = pickPlan({ requiredPn: 50, currency: 'miasto', planCity: () => planOf(true), planTail: () => planOf(true), balanceOk: okBal }); return r && r.currency === 'miasto'; })());
   check('(i) miasto: brak cedowalnego miasta (plan miastem niepełny) → wariant zastępczy surowcami z tego koszyka',
     (() => { const r = pickPlan({ requiredPn: 50, currency: 'miasto', planCity: () => planOf(false), planTail: () => planOf(true), balanceOk: okBal }); return r && r.currency === 'surowce'; })());
+  check('(10B) symboliczna opłata 1 Pn bez bilansu PW (AI↔AI) → brak pokoju (wojna)',
+    pickPlan({ requiredPn: lib.truceEndDuePn(0), currency: 'surowce', planCity: () => planOf(true), planTail: () => planOf(true), balanceOk: () => false }) === null);
+  {
+    // Zarzut 4 (obrona): okno gracza (truceEndSurowceSubstituteCovers) i plan AI (pickTruceEndSettlementPlan) dają ten
+    // sam wynik wariantu zastępczego przy braku cedowalnego miasta (plan miastem niepełny ⇔ brak miasta).
+    let agree = true;
+    const grid = [];
+    for (const req of [1, 50, 300]) {
+      for (const cov of [0, req - 1, req, req + 1]) {
+        const pick = pickPlan({ requiredPn: req, currency: 'miasto', planCity: () => planOf(false),
+          planTail: () => ({ full: cov >= req, coveredPn: cov, items: [0] }), balanceOk: okBal }) !== null;
+        const win = lib.truceEndSurowceSubstituteCovers(req, cov, false);
+        grid.push([req, cov, pick, win]);
+        if (pick !== win) agree = false;
+      }
+    }
+    check('(11A) wariant zastępczy: okno gracza = plan AI przy braku miasta (siatka cen × pokryć)', agree, grid);
+  }
   check('(i) miasto: ani miasto, ani surowce nie pokrywają ceny → brak pokoju',
     pickPlan({ requiredPn: 50, currency: 'miasto', planCity: () => planOf(false), planTail: () => planOf(false), balanceOk: okBal }) === null);
   {
@@ -394,6 +458,14 @@ function expiringPair(w, a, b, initiator) {
   check('M-FALL wykryty: brak wariantu zastępczego przy braku miasta (mutant = wojna)',
     libMfall.pickTruceEndSettlementPlan({ requiredPn: 50, currency: 'miasto', planCity: () => planOf(false), planTail: () => planOf(true), balanceOk: okBal }) === null
     && pickPlan({ requiredPn: 50, currency: 'miasto', planCity: () => planOf(false), planTail: () => planOf(true), balanceOk: okBal }) !== null);
+
+  // ---- Część 7: mutant czerwony na symbolicznej opłacie (R-WEB-DIPLO-TRUCE-END-PRICE-3-Q1, 10B) ----
+  const MSYM = path.resolve(__dirname, '.truce-end-peace-price-msym.cjs');
+  const msym = mutantPlugin(PRICE, 'return Number.isFinite(symbolicPn) && symbolicPn > 0 ? symbolicPn : 0;', 'return 0;');
+  const libMsym = await buildBundle(MSYM, [msym.plugin]);
+  check('M-SYM zastosowany', msym.info.applied === 1, msym.info);
+  check('M-SYM wykryty: zdjęta opłata symboliczna (mutant: cena 0 = wojna, czysta: 1 Pn)',
+    libMsym.truceEndDuePn(0) === 0 && lib.truceEndDuePn(0) === 1);
 
   console.log(`\nWynik: ${pass} PASS, ${fail} FAIL`);
   process.exit(fail === 0 ? 0 : 1);

@@ -86,6 +86,10 @@
     "prog": 0.20,
     "epsilon": 1e-9
   },
+  "pokojPoRozejmie": {
+    "_opis": "R-WEB-DIPLO-TRUCE-END-PRICE-3-Q1 (decyzja WLASCICIELA 2026-11-26, 10B): koniec rozejmu z wyliczona cena 0 nie oznacza wojny — pokoj jest oferowany za SYMBOLICZNA oplate (ok. 1 surowca; wartosc startowa, Pn). Zero lub brak wyceny nie dotyczy NaN (NaN = brak ceny = wojna).",
+    "minimalnaOplataSymbolicznaPn": 1
+  },
   "wypowiedzenieZaufanie": {
     "_opis": "R-WEB-DIPLO-WAR-DECLARE-ZERO-TRUST-Q1 (decyzja wlasciciela 2026-11-13) — AI moze wypowiedziec wojne (priorytet 4 decideAIDiplomacy) tylko gdy Zaufanie pary jest ponizej progZaufaniaWojny ORAZ przewaga sily militarnej AI wynosi co najmniej progPrzewagiProc (diplomacy-military-strength-params.json). Charakter cywilizacji (effAgresja, willingnessWar) nadal decyduje, czy wykorzysta mozliwosc.",
     "progZaufaniaWojny": 30
