@@ -542,6 +542,7 @@ function runScenario(sc) {
   // (`:7915`, wolane z `:6215`, `:8035`, `:8049`), `''` = inne. Obserwatory = opakowania metod instancji (tekst pinu bez
   // zmian, strażnik SHA-256 nietkniety); stan zwracany w `probe2Log` (sonda).
   let moveCls = '';
+  const probe2Calls = {};
   if (sc.probe2) {
     for (const [m, cls] of [['_phalanxStep', 'ph'], ['_advanceToward', 'adv']]) {
       const o = bs[m];
@@ -549,6 +550,7 @@ function runScenario(sc) {
       bs[m] = function (...a) {
         const prev = moveCls;
         moveCls = cls;
+        probe2Calls[cls] = (probe2Calls[cls] ?? 0) + 1;
         try { return o.apply(this, a); } finally { moveCls = prev; }
       };
     }
@@ -737,7 +739,7 @@ function runScenario(sc) {
       lungeTail: lunges.filter((l) => now - l.t0 >= 150 && live(l.t0, 260)).length,
     };
   }
-  if (sc.probe2) globalThis.__probe2Log = { moves, lunges };
+  if (sc.probe2) globalThis.__probe2Log = { moves, lunges, calls: probe2Calls };
   bs.play((r) => { res = r; });
   if (mode === 'skip') bs.skip();
   let t = 0;
@@ -951,6 +953,12 @@ if (process.env.WIRING_A_SPEED_CHANGE_VECTORS) {
   process.exit(0);
 }
 
+// R-RUSTPORT-P4-414 (sonda, kryterium 1): krok falangi `_phalanxStep` (`:6588-6636`) NIE jest osiagany w AUTO oblezenia:
+// obroncy oblezenia koncza `_activateUnit` w `:6225-6236` (przed `:6290`), a atakujacy z doktryna AUTO (`unitDoctrine`
+// null + `autoPlay` grupy domyslnie true, `_isUnitDoctrineAuto` `:17621-17628`) wykonuja `_executeGroupDoctrineStep`
+// (`:6092-6098`) przed galezia taktyczna. Zmierzone: 0 wywolan `_phalanxStep` w 21 scenariuszach bazowych i w 2
+// scenariuszach z 2-3 falangami atakujacego (palisada / mury z taranem, x1 do konca bitwy).
+const EXTRA2_SCENARIOS = [];
 // R-RUSTPORT-P4-414 (FQ-SPEED-MIDCHANGE-VEC-2, D-414-2): SONDA (`WIRING_A_SPEED_CHANGE2_SONDA=1`, podzial
 // `WIRING_A_SPEED_CHANGE2_SHARD=k/n`, wynik JSON do `WIRING_A_OUT`): kazdy scenariusz bazowy `SCENARIOS` z klatka
 // produkcyjna w czasie rzeczywistym x1 z obserwatorami `probe2` (bez zmian predkosci): kroki falangi / `_advanceToward`
@@ -959,14 +967,16 @@ if (process.env.WIRING_A_SPEED_CHANGE2_SONDA) {
   const shard = process.env.WIRING_A_SPEED_CHANGE2_SHARD ? process.env.WIRING_A_SPEED_CHANGE2_SHARD.split('/').map(Number) : null;
   const out = [];
   const tS = Date.now();
-  for (const [i, sc0] of SCENARIOS.filter((s) => s.ffStepMs == null).entries()) {
+  const only2 = process.env.WIRING_A_SPEED_CHANGE2_ONLY ? new Set(process.env.WIRING_A_SPEED_CHANGE2_ONLY.split(',')) : null;
+  for (const [i, sc0] of [...SCENARIOS.filter((s) => s.ffStepMs == null), ...EXTRA2_SCENARIOS].entries()) {
     if (shard && i % shard[1] !== shard[0]) continue;
+    if (only2 && !only2.has(sc0.name)) continue;
     const v = runScenario({ ...sc0, mode: 'realtime', probe2: true });
     const { moves, lunges } = globalThis.__probe2Log;
     const rounds = (cls) => moves.filter((m) => m.cls === cls).map((m) => m.round);
     const row = { name: sc0.name, winner: v.expect.winner, roundNo: v.expect.roundNo, ph: rounds('ph'), adv: rounds('adv'), lunges: lunges.length, lungeRounds: [...new Set(lunges.map((l) => l.round))] };
     out.push(row);
-    console.error(`${sc0.name}: ${row.winner} tura ${row.roundNo} ph ${JSON.stringify(row.ph)} adv ${JSON.stringify(row.adv)} wypadow ${row.lunges} (${Date.now() - tS} ms)`);
+    console.error(`${sc0.name}: ${row.winner} tura ${row.roundNo} ph ${JSON.stringify(row.ph)} adv ${JSON.stringify(row.adv)} wypadow ${row.lunges} wywolan ${JSON.stringify(globalThis.__probe2Log.calls)} (${Date.now() - tS} ms)`);
   }
   if (process.env.WIRING_A_OUT) writeFileSync(process.env.WIRING_A_OUT, JSON.stringify(out) + '\n');
   process.exit(0);
@@ -982,9 +992,24 @@ if (process.env.WIRING_A_SPEED_CHANGE2_SONDA) {
 // pliki wektorow bez zmian. Przypadki dobrane sonda (`WIRING_A_SPEED_CHANGE2_SONDA`), raport
 // `dyspozycje/autobot/runs/R-RUSTPORT-P4-414-FQ-SPEED-MIDCHANGE-VEC-2-Q1/01-operator-r1.md`.
 const SPEED_CHANGE2_CASES = (() => {
-  const base = SCENARIOS.filter((s) => s.ffStepMs == null);
+  const base = [...SCENARIOS.filter((s) => s.ffStepMs == null), ...EXTRA2_SCENARIOS];
   const list = JSON.parse(process.env.WIRING_A_SPEED_CHANGE2_CASES_JSON ?? 'null') ?? [
-    // [scenariusz bazowy, predkosc startowa, [[at, speedMul], ...]]
+    // [scenariusz bazowy, predkosc startowa, [[at, speedMul], ...]]; dobor: sonda (`WIRING_A_SPEED_CHANGE2_SONDA`).
+    // Krok `_advanceToward` (tarany/katapulty/wieze w turach 1..~25).
+    ['mur_machiny_wylom', 1, [[{ when: 'movingAdv', afterRound: 2 }, 4]]],
+    ['b07_las_katapulta_zejscie_z_korony', 2, [[{ when: 'movingAdv', afterRound: 3 }, 16]]],
+    ['b03_wzgorza_palisada_katapulta', 1, [[{ when: 'movingAdv', afterRound: 2 }, 8]]],
+    ['p3_las_jazda_d6l_mury_111', 4, [[{ when: 'movingAdv', afterRound: 2 }, 1], [{ round: 30 }, 16]]],
+    // Wypad przed ciosem: zmiana przesuwa klatke ciosu (`BLOW_HIT_T`).
+    ['fq_las_mix_d8l_palisada_122', 4, [[{ when: 'lungeShift', afterRound: 2 }, 1]]],
+    ['p3_wzg_mix_d5_palisada_156', 2, [[{ when: 'lungeShift', afterRound: 2 }, 8]]],
+    ['b03_gory_lucznicy_mury_baszta', 1, [[{ when: 'lungeShift', afterRound: 2 }, 4]]],
+    ['rt_mur_machiny_wylom', 8, [[{ when: 'lungeShift', afterRound: 2 }, 2]]],
+    // Wypad po ciosie przed koncem (`BLOW_LUNGE_MS`, potem `_schedule(BLOW_SETTLE_MS)`).
+    ['p3_las_mix_d5_mury_123', 1, [[{ when: 'lungeTail', afterRound: 2 }, 4]]],
+    ['fq_wzg_lucz2_d8l_palisada_162', 2, [[{ when: 'lungeTail', afterRound: 2 }, 16]]],
+    ['p3_rown_mix_d8l_palisada_218', 4, [[{ when: 'lungeTail', afterRound: 2 }, 1]]],
+    ['mi_las_mix_d3l_palisada_118', 1, [[{ when: 'lungeTail', afterRound: 2 }, 64]]],
   ];
   return list.map(([b, s0, ch]) => {
     if (!base.some((s) => s.name === b)) throw new Error('brak scenariusza bazowego ' + b);
@@ -1020,7 +1045,7 @@ if (process.env.WIRING_A_SPEED_CHANGE2_VECTORS) {
   for (const [ci, c] of SPEED_CHANGE2_CASES.entries()) {
     if (only && !only.has(c.name)) continue;
     if (shard && ci % shard[1] !== shard[0]) continue;
-    const sc0 = SCENARIOS.find((s) => s.name === c.base);
+    const sc0 = SCENARIOS.find((s) => s.name === c.base) ?? EXTRA2_SCENARIOS.find((s) => s.name === c.base);
     const v = runScenario({ ...sc0, name: c.name, mode: 'realtime', speedMul: c.speedMul, speedChanges: c.speedChanges, recordEvents: true, probe2: true });
     if (v.speedChanges.length !== c.speedChanges.length) {
       console.error(`POMINIETY ${c.name}: zastosowano ${v.speedChanges.length}/${c.speedChanges.length} zmian`);
@@ -1029,6 +1054,9 @@ if (process.env.WIRING_A_SPEED_CHANGE2_VECTORS) {
     vecs.push({
       name: c.name, base: c.base, mode: 'realtime', ...(c.speedMul != null ? { speedMul: c.speedMul } : {}),
       wanted: c.speedChanges, changes: v.speedChanges, frames: v.frames, expect: v.expect, events: v.events,
+      // Wejscie sceny w wektorze (scenariusze `EXTRA2_SCENARIOS` nie maja wpisu w `vectors.json`; dla pozostalych test
+      // sprawdza rownosc z `vectors.json`).
+      seed: v.seed, battleIndex: v.battleIndex, input: v.input,
     });
     console.error(`${c.name}: ${v.expect.winner} tura ${v.expect.roundNo} klatek ${v.frames} zdarzen ${v.events.length} zmiany ${JSON.stringify(v.speedChanges.map((a) => [a.frame, a.from, a.speedMul, a.roundNo, a.movingPh, a.movingAdv, a.lungeShift, a.lungeTail]))} (${Date.now() - tS} ms)`);
   }

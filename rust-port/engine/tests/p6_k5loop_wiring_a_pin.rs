@@ -1945,6 +1945,12 @@ const SPEED_CHANGE_VECTORS_2: &str =
 /// (`BLOW_HIT_T`, `:9122`) i wypad po ciosie przed końcem (`BLOW_LUNGE_MS`, `:9149`).
 const RAF_KLASY: [&str; 4] = ["movingPh", "movingAdv", "lungeShift", "lungeTail"];
 
+/// Klasy wymagane w pokryciu (≥ 2 bitwy każda). Krok falangi (`movingPh`) jest w AUTO oblężenia nieosiągany w pinie
+/// (sonda generatora #414: obrońcy kończą `_activateUnit` w `battleScene.ts:6225-6236`, atakujący z doktryną AUTO idą
+/// przez `_executeGroupDoctrineStep` `:6092-6098`; 0 wywołań `_phalanxStep` w 21 scenariuszach bazowych i 2 scenariuszach
+/// z 2–3 falangami atakującego) — liczony, nie wymagany.
+const RAF_KLASY_WYMAGANE: [&str; 3] = ["movingAdv", "lungeShift", "lungeTail"];
+
 /// R-RUSTPORT-P4-414 (D-414-1): wektory `speed_change_vectors_2.json` (generator `WIRING_A_SPEED_CHANGE2_VECTORS=1`);
 /// nadpisanie ścieżką `WIRING_A_SPEED_CHANGE2_FILE` (tylko diagnostyka kandydatów).
 fn speed_change_vectors_2() -> Value {
@@ -1961,12 +1967,35 @@ fn speed_change_vectors_2() -> Value {
     doc
 }
 
+/// R-RUSTPORT-P4-414: scenariusz bazowy wektora klas `_raf`: wpis `vectors.json` (wejście wektora musi być z nim równe)
+/// albo — dla scenariuszy spoza `vectors.json` (`EXTRA2_SCENARIOS` generatora: ≥ 2 falangi atakującego) — wejście
+/// zapisane w samym wektorze (`input`, `seed`, `battleIndex`).
+fn base2(by_name: &BTreeMap<String, Value>, sv: &Value) -> Value {
+    let name = sv["name"].as_str().unwrap();
+    match by_name.get(sv["base"].as_str().unwrap()) {
+        Some(bv) => {
+            for k in ["input", "seed", "battleIndex"] {
+                assert_eq!(sv[k], bv[k], "{name}: {k} różne od vectors.json");
+            }
+            bv.clone()
+        }
+        None => {
+            let mut bv = Value::Object(serde_json::Map::new());
+            for k in ["input", "seed", "battleIndex"] {
+                assert!(!sv[k].is_null(), "{name}: brak {k} w wektorze spoza vectors.json");
+                bv[k] = sv[k].clone();
+            }
+            bv
+        }
+    }
+}
+
 /// R-RUSTPORT-P4-414-FQ-SPEED-MIDCHANGE-VEC-2-Q1: zmiana prędkości w trakcie bitwy trafiająca w odcinek `_raf` w toku,
 /// którego koniec przesuwa się na nowej siatce klatki (pin: `localT >= ms` sprawdzane w każdej klatce, `_setSpeedIdx`
 /// `:9518-9527` zmienia deltę od następnej klatki): krok falangi, krok `_advanceToward`, cios wypadu wręcz o klatkę
 /// wcześniej/później i koniec wypadu po ciosie. Sesja (`SiegeLoop::respeed`) bajt w bajt z wykonaniem tekstu pinu:
 /// chwila każdej zmiany (klatka, `vNow`, `roundNo`, prędkość przed/po), strumień zdarzeń z czasem, liczba klatek, wynik.
-/// Pokrycie: każda klasa odcinka trafiona przez zastosowaną zmianę w co najmniej jednej bitwie, ≥ 8 bitew.
+/// Pokrycie: każda klasa [`RAF_KLASY_WYMAGANE`] trafiona przez zastosowaną zmianę w ≥ 2 bitwach, ≥ 8 bitew.
 #[test]
 fn zmiana_predkosci_w_trakcie_klasy_raf_wektory_pinu_bajt_w_bajt() {
     let by_name = base_by_name(&vectors());
@@ -1978,7 +2007,7 @@ fn zmiana_predkosci_w_trakcie_klasy_raf_wektory_pinu_bajt_w_bajt() {
     let mut n_events = 0;
     for sv in list {
         let name = sv["name"].as_str().unwrap();
-        let bv = &by_name[sv["base"].as_str().unwrap()];
+        let bv = &base2(&by_name, sv);
         assert!(bv["frameMs"].is_null(), "{name}: tylko klatka produkcyjna");
         assert_eq!(sv["mode"], "realtime");
         assert_eq!(sv["expect"]["otherRandom"], 0, "{name}");
@@ -2022,7 +2051,7 @@ fn zmiana_predkosci_w_trakcie_klasy_raf_wektory_pinu_bajt_w_bajt() {
     );
     if std::env::var("WIRING_A_SPEED_CHANGE2_FILE").is_err() {
         assert!(list.len() >= 8, "bitew {}", list.len());
-        for k in RAF_KLASY {
+        for k in RAF_KLASY_WYMAGANE {
             assert!(
                 cov.get(k).map_or(0, std::collections::BTreeSet::len) >= 2,
                 "klasa {k}: bitew z zastosowaną zmianą {:?}",
@@ -2051,7 +2080,7 @@ fn zmiana_predkosci_w_trakcie_klasy_raf_mutanty_sterownika_daja_fail() {
         let n = list
             .iter()
             .filter(|sv| {
-                let bv = &by_name[sv["base"].as_str().unwrap()];
+                let bv = &base2(&by_name, sv);
                 !mid_diff(bv, sv, run_midchange(bv, sv, &data, m, true)).is_empty()
             })
             .count();
