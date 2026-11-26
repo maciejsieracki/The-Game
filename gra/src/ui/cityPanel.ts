@@ -1504,21 +1504,20 @@ function ownerHasSpichlerz(ownerId: number): boolean {
 }
 
 /**
- * Czy właściciel ma Mennicę zbudowaną GDZIEKOLWIEK w imperium (nie tylko w
- * tym mieście) -- Maciej 2026-07-25, pytanie 71/C: Mennica stoi wyłącznie w
+ * Czy właściciel ma Mennicę zbudowaną w AKTUALNEJ stolicy (R-WEB-MINT-CAPITAL-ONLY-Q1; wcześniej:
+ * gdziekolwiek w imperium) -- Maciej 2026-07-25, pytanie 71/C: Mennica stoi wyłącznie w
  * stolicy (pytanie 70/B), więc bramka Efektu 1 (Waluta+Mennica) musi patrzeć
  * na całe imperium, inaczej żadne miasto poza stolicą nie dostałoby mnożnika.
  * Spójne z turn-economy.ts ownersWithMennica() (ten sam union, liczony po
  * stronie panelu zamiast silnika tury).
  */
 function ownerHasMennica(ownerId: number): boolean {
-  const cities = cfg.getCities?.() ?? [];
-  for (const c of cities) {
-    if (c.ownerId !== ownerId) continue;
-    const ids = cfg.getBuiltBuildingIds?.(c.id) ?? [];
-    if (ids.includes('mennica')) return true;
-  }
-  return false;
+  // R-WEB-MINT-CAPITAL-ONLY-Q1 (odp. 8A): bonus liczy się tylko z Mennicy w AKTUALNEJ stolicy
+  // (ta sama reguła co turn-economy ownersWithMennica). Mennica poza stolicą nie działa.
+  const capitalId = cfg.getCapitalCityId?.(ownerId) ?? null;
+  if (!capitalId) return false;
+  const ids = cfg.getBuiltBuildingIds?.(capitalId) ?? [];
+  return ids.includes('mennica');
 }
 
 /**

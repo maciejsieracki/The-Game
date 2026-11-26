@@ -255,13 +255,23 @@ function routeCashForCity(total: number, maritime: number, civKey: string | unde
  * stoi wyłącznie w stolicy, bramka Efektu 1 musi sprawdzać całe imperium, nie
  * "to miasto", inaczej żadne miasto poza stolicą nie dostałoby mnożnika).
  */
-function ownersWithMennica(
+/**
+ * R-WEB-MINT-CAPITAL-ONLY-Q1 (odp. 8A, 2026-11-26): bonus Mennicy (Waluta+Mennica) działa na całą
+ * cywilizację, ale liczy się WYŁĄCZNIE z Mennicy stojącej w aktualnej stolicy właściciela. Stolica =
+ * ta sama heurystyka co `isCapital` w silniku tury (pierwsze miasto ownera w `cities`). Mennica
+ * osierocona poza stolicą (po przeniesieniu/utracie stolicy) nie daje bonusu. Set = bonus raz na
+ * cywilizację, nawet gdy stoją dwie.
+ */
+export function ownersWithMennica(
   cities: ReadonlyArray<{ id: string; ownerId: number }>,
   builtByCity: ReadonlyMap<string, readonly string[]>,
 ): Set<number> {
   const owners = new Set<number>();
+  const capitalSeen = new Set<number>();
   for (const c of cities) {
-    if ((builtByCity.get(c.id) ?? []).includes('mennica')) owners.add(c.ownerId);
+    const isCapital = !capitalSeen.has(c.ownerId);
+    capitalSeen.add(c.ownerId);
+    if (isCapital && (builtByCity.get(c.id) ?? []).includes('mennica')) owners.add(c.ownerId);
   }
   return owners;
 }
