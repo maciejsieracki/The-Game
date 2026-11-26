@@ -1680,7 +1680,7 @@ import {
   isDefensiveAllianceWarObligation,
   normalizeTreatyKind, hydrateActiveDeals, addTreaty, resolvePokojTrustTier,
   hasSzlakowTreaty, hasWymianaTreaty,
-  allianceFormalKindBetween,
+  allianceFormalKindBetween, alliancePairsToReset,
   type HandelSurowiecCyklicznyItem,
   type AllianceObligation,
   type BarbarianCooperationGraceState,
@@ -22867,6 +22867,7 @@ async function boot(): Promise<void> {
         appendWiarygodnoscEvent(recipientOwnerId, 'odmowa_obowiazku_sojuszu', _diplomacyParams().wiarygodnoscN4OdmowaObowiazkuSojuszu);
         const brokenIds = treatiesBrokenByRefusal([{ ...obligation, obligatedAllies: [recipientOwnerId] }], []);
         if (brokenIds.length) activeDeals = removeTreatiesById(activeDeals, brokenIds);
+        reconcileAllianceStatusAfterDeals();
         syncRelationFromDeals(recipientOwnerId, p.ownerId);
         showHintMessage('Odmówiono wezwania — sojusz zerwany', 4500);
         recordAllianceWarCallOutcome(id, call, 'refused');
@@ -24797,6 +24798,25 @@ async function boot(): Promise<void> {
         });
     }
 
+    /**
+     * ALLYCLEAN (odp. 7A, 2026-11-26): wspólny punkt porządkowania statusu sojuszu po KAŻDYM
+     * usunięciu/wygaśnięciu umowy sojuszu. Para ze statusem „sojusz” bez umowy sojuszu wraca do
+     * „pokoj” (zaufanie/respekt zostają). Wojna i pozostałe statusy nietknięte.
+     */
+    function reconcileAllianceStatusAfterDeals(): void {
+      const pairOpts = aiMajorSameCivPairOpts();
+      const pairs = alliancePairsToReset(
+        activeDeals,
+        allPowerOwnerIds(),
+        (a, b) => getDiploRelation(a, b).status,
+        // Same-civ major AI ↔ MP nie ma umowy z założenia — jej „sojusz” nie jest nieaktualny.
+        (a, b) => isAiMajorToSameCivCityStatePair(a, b, pairOpts),
+      );
+      for (const [a, b] of pairs) {
+        setDiploRelation(a, b, { ...getDiploRelation(a, b), status: 'pokoj' });
+      }
+    }
+
     function syncRelationFromDeals(a: number, b: number): void {
       const rel = getDiploRelation(a, b);
       if (rel.status === 'wojna') return;
@@ -26317,6 +26337,7 @@ async function boot(): Promise<void> {
           else if (isMe(deal.strony[1])) playerRefusalAllies.add(deal.strony[0]);
         }
         activeDeals = removeTreatiesById(activeDeals, brokenTreatyIds);
+        reconcileAllianceStatusAfterDeals();
         for (const allyId of playerRefusalAllies) {
           showHintMessage(
             'Sojusz zerwany — ' + ownerDiploLabel(allyId) + ' nie wszedł do wojny',
@@ -26708,6 +26729,7 @@ async function boot(): Promise<void> {
     function runDiplomacyTurnTick(): void {
       const dealsBeforeExpire = activeDeals;
       activeDeals = expireTreaties(activeDeals, turn);
+      reconcileAllianceStatusAfterDeals();
       for (const d of dealsBeforeExpire) {
         if (activeDeals.some(x => x.id === d.id)) continue;
         zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, d.id);
@@ -26771,6 +26793,7 @@ async function boot(): Promise<void> {
       }
       for (const id of broken) {
         activeDeals = removeTreatiesById(activeDeals, [id]);
+        reconcileAllianceStatusAfterDeals();
         zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, id);
         if (!tributeBreaks.some(p => p.dealId === id)) {
           showHintMessage('Trybut zerwany — brak środków w skarbcu', 3500);
@@ -27238,6 +27261,7 @@ async function boot(): Promise<void> {
         }
         const wasalDeal = findWasalDeal(activeDeals, proposerId, responderId);
         if (wasalDeal) activeDeals = removeTreatiesById(activeDeals, [wasalDeal.id]);
+        reconcileAllianceStatusAfterDeals();
         for (const oid of aiOwnerCivMap.keys()) {
           if (oid !== responderId) clearAiCsPairState(oid, responderId);
         }

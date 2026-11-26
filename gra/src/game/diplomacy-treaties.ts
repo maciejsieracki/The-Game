@@ -207,7 +207,7 @@ function allyOf(deal: ActiveDeal, ownerId: number): number | null {
   return null;
 }
 
-function isAllianceKind(rodzaj: TreatyKind): boolean {
+export function isAllianceKind(rodzaj: TreatyKind): boolean {
   return (
     rodzaj === RodzajTraktatu.SojuszWojskowy
     || rodzaj === 'sojusz_defensywny'
@@ -393,6 +393,49 @@ export function allianceFormalKindBetween(
   if (pair.some(d => normalizeTreatyKind(d.rodzaj) === 'sojusz_pelny')) return 'wojskowy';
   if (pair.some(d => normalizeTreatyKind(d.rodzaj) === 'sojusz_defensywny')) return 'obronny';
   return null;
+}
+
+/**
+ * ALLYCLEAN (odp. 7A, 2026-11-26): status relacji pary = „sojusz” bez żadnej umowy sojuszu
+ * między nimi w `state` to status nieaktualny — po zniknięciu umowy relacja wraca do pokoju.
+ * Czysta funkcja; wywołuje ją main.ts (reconcileAllianceStatusAfterDeals) po każdej ścieżce
+ * usunięcia traktatu.
+ */
+export function isStaleAllianceStatus(
+  state: readonly ActiveDeal[],
+  a: number,
+  b: number,
+  status: string,
+  exempt = false,
+): boolean {
+  if (status !== 'sojusz') return false;
+  // exempt = para bez umowy z założenia (major AI ↔ same-civ city-state, MP-DIPLO-Q1=A):
+  // jej status „sojusz” jest utrzymywany przez maintainAiMajorSameCivRelation, nie przez umowę.
+  if (exempt) return false;
+  return !dealsForPair(state as ActiveDeal[], a, b)
+    .some(d => isAllianceKind(normalizeTreatyKind(d.rodzaj)));
+}
+
+/**
+ * ALLYCLEAN: pary (a,b) z owners (a<b), których status „sojusz” jest nieaktualny i trzeba je
+ * przestawić na „pokoj”. Czysta funkcja — main.ts (reconcileAllianceStatusAfterDeals) tylko
+ * stosuje wynik. `isExempt` wyłącza pary bez umowy z założenia (same-civ major ↔ MP).
+ */
+export function alliancePairsToReset(
+  state: readonly ActiveDeal[],
+  owners: readonly number[],
+  getStatus: (a: number, b: number) => string,
+  isExempt: (a: number, b: number) => boolean = () => false,
+): Array<[number, number]> {
+  const out: Array<[number, number]> = [];
+  for (let i = 0; i < owners.length; i++) {
+    const a = owners[i];
+    if (a === undefined) continue;
+    for (const b of owners.slice(i + 1)) {
+      if (isStaleAllianceStatus(state, a, b, getStatus(a, b), isExempt(a, b))) out.push([a, b]);
+    }
+  }
+  return out;
 }
 
 /** Traktaty zerwane przez wypowiedzenie wojny / atak (NAP, sojusze, granice). */
