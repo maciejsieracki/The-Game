@@ -15,3 +15,15 @@ gra/src/map/**, gra/data/**, gra-robocza/, gra-kanon/, dyspozycje/WERSJE.md, man
 tsc 0; logic 213; tech-tree 20; research 33; unit-replace; combat 6; ai-test 297/0; river-render-levels-test zielony z mutacją czerwoną; river-fog-visibility-test 31/0. Zacommituj i zwróć SHA.
 ## Binarne kryterium
 Nowe szerokości w kodzie; hierarchia main>medium>tributary; test przepięty z mutacją czerwoną; zrzuty PRZED/PO i pomiar pikseli; FPS PRZED/PO; bramki zielone.
+
+---
+# DODATEK RUNDA 2 (Operator HAIKU 5.5) — DOWÓD WIZUALNY (r1: FC FAIL tylko z powodu braku zrzutów; kod gra/src OK)
+BAZA: args.cand = 59ad2debe7f65e50819b19eaef86ab48701bdb0d (FC tip r1; kod 9c5ca3437: riverWidthMulForKind medium=0,7×main, tributary/short=0,45; test 19/0; refs/keep/RIVTHICKIMPL-fc).
+## Błąd dispatchu r1 (po stronie orkiestratora)
+Dispatch r1 wskazywał skrypt rivers-live-measure.cjs jako istniejący w repo — NIE istnieje w main; leży w commicie bramki RIVVISUAL: cebb33416d738bd954bee02e8c35ec7ac674ec2d (refs/keep/RIVVISUAL-fc). Pobierz go: `git show cebb33416d738bd954bee02e8c35ec7ac674ec2d:dyspozycje/analizy/rzeki-render-r3a/rivers-live-measure.cjs > dyspozycje/analizy/rzeki-render-r3a/rivers-live-measure.cjs` (oraz bluecount.cjs z tego samego katalogu; istniejące zrzuty RIVERS3A cand/base/fpsb/fpsc w tym samym commicie jako odniesienie „PRZED = szerokości RIVERS3A”).
+## Zadanie
+1. Skopiuj skrypty z cebb33416 do dyspozycje/analizy/rzeki-render-r3a/ (w allowliście), dostosuj ścieżki (playwright względna do node_modules worktree; BAZA = origin/main 690947a2a build poza repo, PO = 9c5ca3437 build poza repo; node ./node_modules/vite/bin/vite.js build --outDir /tmp/<unikalny> --emptyOutDir; NIE npm run build).
+2. Chromium /opt/pw-browsers/chromium (NIE instaluj Playwright), headless --no-sandbox, do 3 prób; zrzuty PRZED/PO: cała mapa, zbliżenia 2×/4×/8× (kółko kamery wg v2), pomiar pikseli rzek per poziom w kadrze 8× (bluecount.cjs; cel: różnica poziomów wyraźnie większa niż w RIVERS3A: średnie +5%, dopływy +13%), FPS 5×20 s PRZED/PO (SwiftShader orientacyjnie), pageErrors 0. Mapy PRZED i PO identyczne (generator nietknięty) — potwierdź (ten sam seed/typ/rozmiar).
+3. Oceń czytelność w zbliżeniu 4×/8×: czy grubsze rzeki zasłaniają miasta/teren (opisz zrzutami). Jeśli ewidentnie psują czytelność → DECISION_REQUIRED z liczbami i zrzutem (NIE zmieniaj szerokości sam).
+4. Kod gra/src bez zmian w tej rundzie (chyba że znajdziesz błąd w szerokościach).
+## Zasada podpisu commitów: NIGDY --no-gpg-sign; przy braku podpisu → INFRA. Allowlista dopisana: dyspozycje/analizy/rzeki-render-r3a/** (skrypty, zrzuty, JSON). Zakazy jak r1.
