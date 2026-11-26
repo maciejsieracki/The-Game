@@ -1,0 +1,17 @@
+# DODATEK (runda 1/5, Operator HAIKU 5.5)
+## Fakty
+Źródło: dyspozycje/analizy/GENERATOR-MAP-BLEDY-REPRO-2026-11-25.md (sekcje 1 i 4) + skrypty odtworzeń w dyspozycje/autobot/runs/R-WEB-MAP-GEN-BUG-REPRO-Q1/repro/ (r1-earth-offmask.cjs 777|42; r4-stranded-specks.cjs 108 74 wyspy 42 i 168 120 kontynenty 42). Reguła maski: gra/src/map/earth-land-mask.ts:1–10, earth-template-test.cjs:51 („0 lądu poza maską”). Postwarunek P4: gra/src/map/gen-helpers.ts ≈5177–5179 („po removeTinyLandIslands powinno być 0”), gra/tools/stranded-land-test.cjs:77. Przyczyna techniczna (który etap dokłada łąki poza maską; dlaczego removeTinyLandIslands zostawia heks) NIE ZMIERZONO — ustal ją na dowodzie przed poprawką.
+## Zadanie
+1. P3: znajdź etap, który dokłada łąki poza maskę; popraw minimalnie tak, by po wszystkich etapach lądu typu Ziemia było 0 heksów poza maską (przycięcie albo niedokładanie). Jeśli jedynym sposobem jest świadome dopuszczenie bufora 1 heksa poza maską → zwróć DECISION_REQUIRED (jedno zdanie skutku dla gry per wariant), NIE rozstrzygaj sam.
+2. P4: znajdź, dlaczego samotny heks przeżywa removeTinyLandIslands (kolejność etapów po ostatecznym wybrzeżu?) i dodaj/przestaw usuwanie tak, by postwarunek 0 był prawdziwy dla wszystkich typów map i rozmiarów; test stranded-land-test.cjs bez zmiany oczekiwań (0).
+3. Pomiar wpływu (PRZED/PO, te same ziarna): udział lądu, liczba mas lądu, liczba rzek główne/medium/dopływy, czas generowania (ziemia 777, wyspy 108×74 s42, kontynenty 168×120 s42, pangea s7) — zmiana lądu poza naprawianymi heksami ma być 0; rzeki dopuszczalnie zmienią się tylko przez usunięte heksy (wypisz różnice).
+4. Piny/testy zależne od geometrii (earth-template, map-gen-regression, world-density, determinism-save-load, stranded-land, river-* które liczą po lądzie) uruchom przed i po; przepnij TYLKO piny, które zmieniły się wyłącznie przez usunięte heksy (tabela: test | przed | po | powód). Ciężkie testy >10 min: NIE ZMIERZONO z wypisaniem.
+5. Dokumentacja: docs/obieg/MAPA-KANON-GENERATOR.md (sekcja maski/lądu) — jedno zdanie o gwarancji 0 poza maską i 0 samotnych heksów.
+## Allowlista
+gra/src/map/gen-helpers.ts (tylko etapy lądu/maski i usuwania samotnych heksów — NIE rzeki), gra/src/map/earth-land-mask.ts (jeśli konieczne), gra/tools/earth-template-test.cjs, stranded-land-test.cjs, piny wskazane w pkt 4, nowe testy gra/tools/map-offmask-stranded-fix-test.cjs, docs/obieg/MAPA-KANON-GENERATOR.md, dyspozycje/analizy/MAPFIX-2026-11-26.md, dyspozycje/autobot/runs/R-WEB-MAP-OFFMASK-STRANDED-FIX-Q1/**.
+## Zakazy
+gra-robocza/, gra-kanon/, dyspozycje/WERSJE.md, manifest, rust-port/, npm run build/dev w gra/ (build do testów live: node ./node_modules/vite/bin/vite.js build --outDir /tmp/<unikalny> --emptyOutDir), zmiana kodu rzek (RIVERS3B wstrzymane — nie dotykać gen-helpers.ts poza etapami lądu), osłabianie asercji, git add -A, push, spawn_task/create_session/create_trigger/send_later (ZAKAZANE), run_in_background w Bash. Dysk >= 6 GB; usuń node_modules/tmp po pracy. Nie pytaj właściciela (DECISION_REQUIRED).
+## Bramki ogólne
+tsc 0; logic 213; tech-tree 20; research 33; unit-replace; combat 6; ai-test 297/0; war-rules-multiwar-main-guard 21/0; testy tematu z mutacją czerwoną (przywrócenie błędu → test czerwony). Zacommituj i zwróć SHA.
+## Binarne kryterium
+Ziemia 777 i 42: 0 heksów poza maską; wyspy 108×74 s42: 0 samotnych heksów; test z mutacją czerwoną; tabela PRZED/PO bez regresji udziału lądu; piny przepięte tylko z uzasadnieniem; bramki zielone.
