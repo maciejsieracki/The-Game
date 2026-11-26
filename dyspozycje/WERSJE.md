@@ -1,3 +1,9 @@
+## ROBOCZA b51dba5d -- 2026-11-26 -- FALA 910: Dyplomacja hotseat: pokój tylko w wojnie; trybut w wojnie jednorazowy (testowa)
+
+- Pokój lub rozejm między dwoma graczami w hotseat można zaproponować i przyjąć tylko w trwającej wojnie (komunikat „brak trwającej wojny”); „Zaproponuj trybut” w wojnie z okna dyplomacji jest jednorazowy jak w koszyku (nie tworzy stałej wasalizacji)
+- Weryfikacja: tsc 0; logic 213/213; diplo-human-peace-no-war 13/0; diplo-war-tribute-once 8/0 (mutacje czerwone); peace-vazne-always ZIELONE; diplo-world-news 67/0; truce-end-war-notice PASS; war-end-reason-log 41/0; era-war-end-like-classic 17/0; hud-me-literal-zero 150/0; main-guard 21/0; hotseat e-source 77/0, B 48/0, D 46/0, E 24/0; bramki-tmpdir 18/0; ai-test 297/0; vite 0
+- Limity: Hotseat i okno trybutu na żywo NIE ZMIERZONO; strażnik nie dodany do finalizePeaceTreatyBetween; przycisk w UI nie jest blokowany (jest komunikat po próbie); bramka 10 tur pokoju hotseat bez zmian (pytanie ABC)
+
 ## ROBOCZA b4cc40a5 -- 2026-11-25 -- FALA 909: Powód końca wojny w Wydarzeniach na świecie (testowa)
 
 - Wpisy „Wydarzenia na świecie” o pokojach i wojnach między innymi cywilizacjami niosą powód (pokój wymuszony po 40 turach, oferta zmęczenia, pokój po 2 zdobytych miastach, prośba o pokój, wypowiedzenie AI/wojna epoki); log diagnostyczny pod ?civTest=1
