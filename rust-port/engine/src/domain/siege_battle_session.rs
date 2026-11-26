@@ -1328,7 +1328,11 @@ impl SiegeBattleSession {
         self.speed_idx = speed_step_index(idx, clamp);
         self.clock.speed_mul = SPEED_STEPS[self.speed_idx];
         // FRAME-QUANT-Q1 (D-FQ-1): klatka ciała = krok przewijania przy nowym `speedMul`.
-        self.lp.env.body.frame_ms = self.clock.scaled_wall_delta(BATTLE_FRAME_WALL_MS);
+        let frame = self.clock.scaled_wall_delta(BATTLE_FRAME_WALL_MS);
+        self.lp.env.body.frame_ms = frame;
+        // R-RUSTPORT-P4-413 (D-413-4): odcinki `_raf` w toku (cios/koniec lunge, koniec kroku) kończą się w pierwszej
+        // klatce NOWEJ siatki, jak w pinie ([`SiegeLoop::respeed`]).
+        self.lp.respeed(&mut self.clock, frame);
         self.clock.speed_mul
     }
 

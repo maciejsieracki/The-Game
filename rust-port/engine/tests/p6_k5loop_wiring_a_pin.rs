@@ -1452,19 +1452,10 @@ fn speed_change_vectors() -> Value {
 /// (zmiana przy pocisku tuż przed trafieniem, zmiana tury / klatki przy innym odcinku ciała w toku). Bez poprawki kodu
 /// silnika w tym temacie (D-412-2: rozbieżność = osobny temat). Test pada, gdy pozycja z listy zacznie się zgadzać albo
 /// rozjedzie się wektor spoza listy.
-const ROZBIEZNE_FQ_SPEED_MIDCHANGE: [&str; 9] = [
-    // L
-    "sc_mur_jazda_rzeka_x1to2_lunge",
-    "sc_p3_rown_mix_d8l_palisada_218_x1to4_lunge",
-    "sc_fq_rown_mix_d8l_mury_217_x1to2_lunge",
-    // R
-    "sc_p3_las_mix_d5_mury_123_x2to128_prehit",
-    "sc_fq_las_mix_d8l_palisada_122_x64to1_round",
-    "sc_fq_gory_lucz2_d6l_mury_191_x64to1_prehit",
-    "scm_mr_wzg_jazda3_d3l_mury_333_2_1_64",
-    "scm_mi_las_mix_d3l_palisada_118_1_512_1_4",
-    "scm_rt_mur_machiny_wylom_1_4_64_2",
-];
+/// R-RUSTPORT-P4-413-FQ-SPEED-MIDCHANGE-DIV-Q1: lista pusta (9 -> 0) po naprawie odcinków `_raf` w toku
+/// (`SiegeLoop::respeed`, ogon wypadu z chwili ciosu, trafienie strzału w klatce odpalenia; raport
+/// `dyspozycje/autobot/runs/R-RUSTPORT-P4-413-FQ-SPEED-MIDCHANGE-DIV-Q1/01-operator-r1.md`).
+const ROZBIEZNE_FQ_SPEED_MIDCHANGE: [&str; 0] = [];
 
 /// Mutant sterownika zmiany prędkości (kontrola czułości wektorów; `MidMut::None` = model pinu).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1806,6 +1797,11 @@ fn zmiana_predkosci_w_trakcie_bitwy_wektory_pinu_bajt_w_bajt() {
             if let Some(e) = przed_pierwsza_zmiana(sv, &run) {
                 przed_zmiana.push(format!("{name}: {e}"));
             }
+        }
+        // R-RUSTPORT-P4-413: lista rozbieżności pusta (9 -> 0), więc kontrola czułości strażnika idzie na pierwszym
+        // wektorze listy, a przy pustej liście na pierwszym wektorze pliku ze zdarzeniem przed zmianą (strażnik nadal
+        // pilnuje każdej przyszłej pozycji listy).
+        if listed || ROZBIEZNE_FQ_SPEED_MIDCHANGE.is_empty() {
             // Czułość strażnika: pierwsze zdarzenie pinu przed zmianą podmienione w kopii wektora (symulowana regresja
             // przy stałej prędkości) musi zostać wykryte. Raz na test (pierwsza pozycja listy ze zdarzeniem przed zmianą).
             let t_change = f(&changes[0]["vNow"]);

@@ -231,6 +231,58 @@ pub trait LoopBody {
     fn done_is_timer(&self, _unit: UnitRef) -> bool {
         false
     }
+    /// R-RUSTPORT-P4-413 (D-413-4): plan odcinka pętli `_raf` właśnie przekazanego sterownikowi czasu (`key`):
+    /// [`LoopTimer::BodyDone`] po `start`/[`LoopBody::take_march_done`], [`LoopTimer::BodyTail`] po
+    /// [`LoopBody::take_tail`], [`LoopTimer::BodyTimer`] z [`LoopBody::take_timers`]. Pin wyznacza koniec takiego
+    /// odcinka w KAŻDEJ klatce (`localT = _now() - t0 >= ms`, `_doMove` `:8746-8775`, lunge `_doMeleeAttack` `:9117-9172`),
+    /// więc przy zmianie prędkości w trakcie odcinka liczy się siatka klatek obowiązująca PO zmianie
+    /// ([`SiegeLoop::respeed`]). `None` (domyślnie) = czas bez planu (zegar nominalny albo odcinek złożony), bez przeliczenia.
+    /// Sterownik odbiera plan raz, tuż po zaplanowaniu klocka.
+    fn take_raf_plan(&mut self, _key: RafPlanKey) -> Option<RafPlan> {
+        None
+    }
+}
+
+/// R-RUSTPORT-P4-413 (D-413-4): klocek zegara, którego dotyczy [`RafPlan`] ([`LoopBody::take_raf_plan`]).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RafPlanKey {
+    /// [`LoopTimer::BodyDone`] jednostki (cios wręcz w chwili `localT >= BLOW_HIT_T`).
+    Done(UnitRef),
+    /// [`LoopTimer::BodyTail`] jednostki (koniec lunge `localT >= BLOW_LUNGE_MS`, potem `_schedule(BLOW_SETTLE_MS)`).
+    Tail(UnitRef),
+    /// [`LoopTimer::BodyTimer`] o identyfikatorze ciała (koniec kroku `_doMove`, `p >= 1`).
+    Timer(u64),
+}
+
+/// R-RUSTPORT-P4-413 (D-413-4): odcinek pętli `_raf` liczony od chwili zaplanowania klocka `t` (= `vNow` klatki): koniec
+/// odcinka = pierwsza klatka `>= t + ms` (pin: `localT >= ms` sprawdzane w każdej klatce), potem nominalne `then`
+/// (`_schedule(then)` z klatki końca, `0` = brak). `frame` = klatka, którą ciało skwantyzowało czas klocka
+/// ([`frame_raf`]); sterownik przyjmuje plan tylko, gdy `t + frame_raf(frame, ms) + then` jest dokładnie `due` klocka.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct RafPlan {
+    pub ms: f64,
+    pub then: f64,
+    pub frame: f64,
+}
+
+/// R-RUSTPORT-P4-413 (D-413-4): plan zaplanowanego klocka w czasie bezwzględnym: odcinek `_raf` do `target`, liczony
+/// siatką `frame` od klatki `anchor` (chwila zaplanowania albo ostatniego przeliczenia), potem nominalne `then`.
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct RafPlanState {
+    target: f64,
+    then: f64,
+    frame: f64,
+    anchor: f64,
+}
+
+/// R-RUSTPORT-P4-413 (D-413-4): pierwsza klatka siatki `frame` startującej w klatce `anchor`, która jest `>= target`
+/// (`anchor`, gdy `target <= anchor`). Przy `target > anchor` = `anchor + frame_raf(frame, target - anchor)`.
+fn first_frame_at_or_after(anchor: f64, frame: f64, target: f64) -> f64 {
+    if target > anchor {
+        anchor + frame_raf(frame, target - anchor)
+    } else {
+        anchor
+    }
 }
 
 /// Stałe morale z pinu (`battleScene.ts:1129, 1141, 1144-1145`).
@@ -688,6 +740,9 @@ pub struct SiegeLoop<B: LoopBody> {
     /// `done()` zgłoszone wtedy przez ciało ([`LoopBody::take_march_done`] z czasem `0`) wykonuje się od razu, w tej
     /// samej fazie (pin: `done()` wołane z callbacku `_raf`).
     in_raf: bool,
+    /// R-RUSTPORT-P4-413 (D-413-4): plany odcinków `_raf` zaplanowanych klocków ciała `(id klocka zegara, plan)`,
+    /// przeliczane przy zmianie prędkości ([`Self::respeed`]).
+    raf_plans: Vec<(u64, RafPlanState)>,
 }
 
 /// Obserwator odpaleń zegara pętli (P4-1I2): dostaje stan pętli PO kroku (tylko odczyt), `vNow` i odpalony
@@ -718,6 +773,67 @@ impl<B: LoopBody> SiegeLoop<B> {
             body_done_raf: false,
             raf_pending: Vec::new(),
             in_raf: false,
+            raf_plans: Vec::new(),
+        }
+    }
+
+    /// R-RUSTPORT-P4-413 (D-413-4): `clock.schedule(ms, timer)` klocka ciała z odbiorem planu odcinka `_raf`
+    /// ([`LoopBody::take_raf_plan`]). Plan jest zapamiętany tylko dla klocka dopisanego do kolejki, gdy przy klatce, którą
+    /// ciało skwantyzowało czas, wyznacza DOKŁADNIE ten sam `due` (przy stałej prędkości przeliczenie jest tożsamością).
+    fn schedule_body(
+        &mut self,
+        clock: &mut VirtualClock<LoopTimer>,
+        ms: f64,
+        timer: LoopTimer,
+        key: RafPlanKey,
+        planning: bool,
+    ) -> ScheduleOutcome<LoopTimer> {
+        let id = clock.timer_seq;
+        let out = clock.schedule(ms, timer, planning);
+        let plan = self.env.body.take_raf_plan(key);
+        if let (ScheduleOutcome::Queued, Some(p)) = (&out, plan) {
+            let now = clock.v_now;
+            let due = clock.timers.last().filter(|t| t.id == id).map(|t| t.due);
+            let st = RafPlanState {
+                target: now + p.ms,
+                then: p.then,
+                frame: p.frame,
+                anchor: now,
+            };
+            let planned = first_frame_at_or_after(now, p.frame, st.target) + p.then;
+            if p.frame > 0.0 && due.is_some_and(|d| d.to_bits() == planned.to_bits()) {
+                self.raf_plans.push((id, st));
+            }
+        }
+        out
+    }
+
+    /// R-RUSTPORT-P4-413 (D-413-1, D-413-4): zmiana prędkości między klatkami (`_setSpeedIdx`, `battleScene.ts:9518-9527`;
+    /// sesja [`crate::domain::siege_battle_session::SiegeBattleSession::set_speed_idx`]) przy odcinkach `_raf` w toku.
+    /// Pin nie przelicza niczego w chwili zmiany: kolejne klatki przesuwają `vNow` o nową deltę (`_scaledWallDelta`
+    /// `:9512-9515`, `FF_STEP_MS` `:9419`), a pętla `_raf` (`_doMove` `:8746-8775`, lunge `_doMeleeAttack` `:9117-9172`)
+    /// kończy odcinek w pierwszej klatce z `_now() - t0 >= ms` — czyli w pierwszej klatce NOWEJ siatki `>= t0 + ms`.
+    /// Ciało policzyło `due` klocka siatką sprzed zmiany ([`frame_raf`]), więc dla każdego klocka z planem: odcinek
+    /// zakończony do bieżącej klatki `vNow` zostaje (koniec był na starej siatce, `due` = koniec + nominalne `then`),
+    /// w toku — koniec = pierwsza klatka `vNow + k * frame >= target`, `due` = koniec + `then`. Identyfikator klocka (kolejność
+    /// remisów `_drainTimers`) bez zmian. Klocki nominalne (`_schedule`: wieże, kroki sekwencji, przerwy marszu, lot
+    /// strzału) mają `due` nominalny jak w pinie i nie wymagają przeliczenia.
+    pub fn respeed(&mut self, clock: &mut VirtualClock<LoopTimer>, frame: f64) {
+        let now = clock.v_now;
+        let plans = std::mem::take(&mut self.raf_plans);
+        for (id, mut p) in plans {
+            let Some(t) = clock.timers.iter_mut().find(|t| t.id == id) else {
+                continue;
+            };
+            let end_old = first_frame_at_or_after(p.anchor, p.frame, p.target);
+            if end_old <= now || !(frame > 0.0) {
+                // Odcinek `_raf` już zakończony (zostaje nominalne `then`) albo brak siatki: bez przeliczenia.
+                continue;
+            }
+            t.due = first_frame_at_or_after(now, frame, p.target) + p.then;
+            p.anchor = now;
+            p.frame = frame;
+            self.raf_plans.push((id, p));
         }
     }
 
@@ -779,7 +895,13 @@ impl<B: LoopBody> SiegeLoop<B> {
     fn schedule_body_timers(&mut self, clock: &mut VirtualClock<LoopTimer>) {
         for (ms, id) in self.env.body.take_timers() {
             let planning = self.st.auto_batch_planning;
-            match clock.schedule(ms, LoopTimer::BodyTimer(id), planning) {
+            match self.schedule_body(
+                clock,
+                ms,
+                LoopTimer::BodyTimer(id),
+                RafPlanKey::Timer(id),
+                planning,
+            ) {
                 ScheduleOutcome::Queued | ScheduleOutcome::Dropped => {}
                 ScheduleOutcome::RunNow(t) => self.fire(clock, t),
             }
@@ -1051,7 +1173,13 @@ impl<B: LoopBody> SiegeLoop<B> {
                     // MARCH-INCREMENTAL-Q1 (D-MI-1): marsz krok po kroku zgłasza `done()` później
                     // ([`LoopBody::take_march_done`]).
                     if !self.env.body.march_pending(u) {
-                        let _ = clock.schedule(dur, LoopTimer::BodyDone(u), false);
+                        let _ = self.schedule_body(
+                            clock,
+                            dur,
+                            LoopTimer::BodyDone(u),
+                            RafPlanKey::Done(u),
+                            false,
+                        );
                     }
                 }
                 SeqEvent::Schedule { ms, step, planning } => {
@@ -1080,8 +1208,15 @@ impl<B: LoopBody> SiegeLoop<B> {
                 self.schedule_body_timers(clock);
                 let tail = self.env.body.take_tail(u);
                 if tail > 0.0 {
-                    let _ = clock.schedule(tail, LoopTimer::BodyTail(u), false);
+                    let _ = self.schedule_body(
+                        clock,
+                        tail,
+                        LoopTimer::BodyTail(u),
+                        RafPlanKey::Tail(u),
+                        false,
+                    );
                 } else {
+                    let _ = self.env.body.take_raf_plan(RafPlanKey::Tail(u));
                     activation_done(&mut self.st, &mut self.env, u, &mut out);
                 }
             }
@@ -1098,9 +1233,16 @@ impl<B: LoopBody> SiegeLoop<B> {
                 // `0` ms = ta sama klatka, odłożony do fazy kroków jak każdy skutek ciała, D-PIN3-3).
                 if let Some((u, ms)) = self.env.body.take_march_done() {
                     if self.in_raf && ms <= 0.0 {
+                        let _ = self.env.body.take_raf_plan(RafPlanKey::Done(u));
                         self.fire(clock, LoopTimer::BodyDone(u));
                     } else {
-                        let _ = clock.schedule(ms, LoopTimer::BodyDone(u), false);
+                        let _ = self.schedule_body(
+                            clock,
+                            ms,
+                            LoopTimer::BodyDone(u),
+                            RafPlanKey::Done(u),
+                            false,
+                        );
                     }
                 }
             }
@@ -1575,6 +1717,12 @@ pub struct ProdBody<R: RollSource> {
     /// ([`LoopBody::done_is_timer`]); ustawiane razem z nominalnym czasem do trafienia `RANGED_FLY_MS`, czyszczone w
     /// `start` i `complete`.
     shot_done_timer: [Vec<bool>; 2],
+    /// R-RUSTPORT-P4-413 (D-413-4): chwila `t0` startu lunge ciosu wręcz (`_doMeleeAttack` `:9115`, `t0 = _now()`) w toku,
+    /// ustawiana razem z ogonem ([`Self::tail`]): ogon liczony w chwili ciosu ([`LoopBody::take_tail`]) siatką klatki
+    /// obowiązującą wtedy (koniec lunge = pierwsza klatka `>= t0 + BLOW_LUNGE_MS`), nie siatką z chwili `start`.
+    lunge_t0: [Vec<Option<f64>>; 2],
+    /// R-RUSTPORT-P4-413 (D-413-4): plany odcinków `_raf` do odbioru przez sterownik ([`LoopBody::take_raf_plan`]).
+    raf_plans: Vec<(RafPlanKey, RafPlan)>,
     /// Stan `facing` każdej jednostki (`ru.facing`, liczba 0..3). Zmieniany przez `_updateFacing` i `_doMeleeAttack`.
     facing: [Vec<f64>; 2],
     /// `ru.moraleMax` każdej jednostki (`_gainMorale`, `_armyMoraleRatio`). Domyślnie morale startowe z `activate.morale`.
@@ -2496,6 +2644,8 @@ impl<R: RollSource> ProdBody<R> {
             counter_round,
             surround,
             pending,
+            lunge_t0: [vec![None; tail[0].len()], vec![None; tail[1].len()]],
+            raf_plans: Vec::new(),
             tail,
             shot_done_timer,
             facing,
@@ -3155,6 +3305,7 @@ impl<R: RollSource> ProdBody<R> {
         attack_pre: f64,
     ) -> f64 {
         let ix = side_ix(unit.side);
+        self.lunge_t0[ix][unit.idx] = None;
         // K5LOOP-CLOSE r4: `_doAttack` (`:8787-8797`): `if (canShoot(attacker)) this._doRangedAttack(...)`. Strzelec z
         // amunicją dochodzi tu tylko z `shootingEnabled = false` (inaczej `_rangedAction`, `:6241`; mur wykluczony
         // strażnikiem `oblezenie`): cios z U7.6 (sąsiad w zasięgu strzału), kawalerii, falangi albo U7.9 jest STRZAŁEM
@@ -3201,6 +3352,19 @@ impl<R: RollSource> ProdBody<R> {
                 // (`koniec lunge + 220`); ogon planuje zegar sterownika z klatki ciosu, więc odcinek settle zostaje
                 // nominalny, a klatkę odpalenia wyznacza zegar.
                 self.tail[ix][unit.idx] = melee_tail_ms(self.frame_ms, pu.body_ms);
+                // R-RUSTPORT-P4-413 (D-413-4): start lunge (`t0 = _now()`, `:9115`) dla ogona liczonego w chwili ciosu.
+                self.lunge_t0[ix][unit.idx] = Some(self.call_now + attack_pre);
+                if attack_pre == 0.0 && self.frame_ms > 0.0 {
+                    // Cios = pierwsza klatka z `localT >= BLOW_HIT_T` (`:9122`): odcinek `_raf` od chwili wywołania.
+                    self.put_raf_plan(
+                        RafPlanKey::Done(unit),
+                        RafPlan {
+                            ms: pu.body_ms,
+                            then: 0.0,
+                            frame: self.frame_ms,
+                        },
+                    );
+                }
             }
             attack_pre + hit
         } else {
@@ -3550,6 +3714,17 @@ impl<R: RollSource> ProdBody<R> {
             let id = self.next_timer;
             self.next_timer += 1;
             self.timers.push((ms, id));
+            if stage == MarchStage::StepEnd && self.frame_ms > 0.0 {
+                // R-RUSTPORT-P4-413 (D-413-4): koniec kroku `_doMove` = pierwsza klatka z `p >= 1` (`:8753-8768`).
+                self.put_raf_plan(
+                    RafPlanKey::Timer(id),
+                    RafPlan {
+                        ms: MOVE_STEP_MS,
+                        then: 0.0,
+                        frame: self.frame_ms,
+                    },
+                );
+            }
             c.stage = stage;
             c.id = id;
             self.march = Some(c);
@@ -5144,6 +5319,12 @@ impl<R: RollSource> ProdBody<R> {
     /// ku polu celu (`facingFromTo`, `:9182-9184`, zawsze `rotation.y`), potem pocisk (`:9218-9221`) z trafieniem po
     /// `RANGED_FLY_MS`. Brak szablonu strzału na cel (wejście adaptera [`Self::ranged_blows`]) = jawny tag
     /// `strzal-bez-szablonu` i brak strzału.
+    /// R-RUSTPORT-P4-413 (D-413-4): plan odcinka `_raf` klocka `key` (zastępuje wcześniejszy, nieodebrany plan tego klocka).
+    fn put_raf_plan(&mut self, key: RafPlanKey, plan: RafPlan) {
+        self.raf_plans.retain(|(k, _)| *k != key);
+        self.raf_plans.push((key, plan));
+    }
+
     fn begin_shot(&mut self, unit: UnitRef, target: usize, at: f64) -> Option<ProdShot> {
         let ix = side_ix(unit.side);
         if self.blow_composer.is_none() && !self.ranged_blows[ix][unit.idx].contains_key(&target) {
@@ -5204,7 +5385,14 @@ impl<R: RollSource> ProdBody<R> {
             return;
         };
         let saved = self.now;
-        self.now = shot.hit_at;
+        // R-RUSTPORT-P4-413 (D-413-4): w modelu czasu pinu trafienie wykonuje się w klatce odpalenia zegara
+        // `_schedule(RANGED_FLY_MS)` (`:9223`, `_now()` = czas tej klatki) = chwila wywołania `complete`; `hit_at` z chwili
+        // wystrzału zakładał siatkę sprzed ewentualnej zmiany prędkości (przy stałej prędkości obie wartości są równe).
+        self.now = if self.pin_blow_timing {
+            self.call_now
+        } else {
+            shot.hit_at
+        };
         let rec = self.strike(st, unit, tref, input, false);
         let tc = st.unit(tref).c;
         if rec.dmg > 0.0 && !tc.dead && !tc.fading_out {
@@ -5982,11 +6170,42 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
     }
 
     fn take_tail(&mut self, unit: UnitRef) -> f64 {
-        std::mem::take(&mut self.tail[side_ix(unit.side)][unit.idx])
+        let ix = side_ix(unit.side);
+        let tail = std::mem::take(&mut self.tail[ix][unit.idx]);
+        let lunge = self.lunge_t0[ix][unit.idx].take();
+        // R-RUSTPORT-P4-413 (D-413-4): ogon ciosu wręcz w chwili ciosu (`call_now`) siatką klatki obowiązującą TERAZ: koniec
+        // lunge = pierwsza klatka `>= t0 + BLOW_LUNGE_MS` (`:9149`, `localT` sprawdzane w każdej klatce), potem nominalne
+        // `_schedule(BLOW_SETTLE_MS)` (`:9154`). Przy stałej prędkości (`call_now = t0 + frame_raf(F, hit)`) równe
+        // [`melee_tail_ms`] z `start`.
+        match lunge {
+            Some(t0) if self.pin_blow_timing && self.frame_ms > 0.0 && tail > 0.0 => {
+                let rel = t0 + BLOW_LUNGE_MS - self.call_now;
+                let lunge_end = if rel > 0.0 {
+                    frame_raf(self.frame_ms, rel)
+                } else {
+                    0.0
+                };
+                self.put_raf_plan(
+                    RafPlanKey::Tail(unit),
+                    RafPlan {
+                        ms: rel,
+                        then: BLOW_SETTLE_MS,
+                        frame: self.frame_ms,
+                    },
+                );
+                lunge_end + BLOW_SETTLE_MS
+            }
+            _ => tail,
+        }
     }
 
     fn done_is_timer(&self, unit: UnitRef) -> bool {
         self.shot_done_timer[side_ix(unit.side)][unit.idx]
+    }
+
+    fn take_raf_plan(&mut self, key: RafPlanKey) -> Option<RafPlan> {
+        let i = self.raf_plans.iter().position(|(k, _)| *k == key)?;
+        Some(self.raf_plans.remove(i).1)
     }
 
     fn complete(&mut self, unit: UnitRef, st: &mut TurnSeqState) {
@@ -9761,5 +9980,475 @@ mod march_incremental_tests {
         b.march = Some(cont(MarchKind::FallBack, 1.0));
         let c = cont(MarchKind::Flee, 1.0);
         b.march_advance(c, MarchNext::StepEnd);
+    }
+
+    // ------------------------------------------------ R-RUSTPORT-P4-413 (FQ-SPEED-MIDCHANGE-DIV, D-413-4)
+
+    fn pend_empty() -> ProdPending {
+        ProdPending {
+            morale: 100.0,
+            morale_before: 100.0,
+            start_rout: false,
+            surround_applied: false,
+            attack: None,
+            move_left: None,
+            shot: None,
+            flee: false,
+            gate_breach: false,
+        }
+    }
+
+    /// Pin `_doMeleeAttack` (`:9115-9124`): cios = pierwsza klatka z `localT = _now() - t0 >= BLOW_HIT_T` (pętla `_raf`).
+    /// Ciało oddaje sterownikowi plan odcinka `_raf` (nominalne `BLOW_HIT_T` od chwili wywołania, klatka kwantyzacji), żeby
+    /// zmiana prędkości w trakcie wypadu przesunęła cios na NOWĄ siatkę ([`SiegeLoop::respeed`]).
+    #[test]
+    fn p413_cios_wreczny_ma_plan_raf_od_chwili_wywolania() {
+        let (mut b, _st) = setup(0.0);
+        b.frame_ms = 64.0;
+        b.units[0][0].body_ms = 160.0;
+        b.units[0][0].melee_target = Some(0);
+        b.units[0][0].blow = Some(neutral_tower_shot_template());
+        b.set_now(1000.0);
+        let pu = b.units[0][0].clone();
+        let mut pend = pend_empty();
+        pend.attack = Some(0);
+        let dur = b.attack_tail(A0, &pu, &mut pend, 0.0);
+        assert_eq!(dur, 192.0, "start: siatka 64 ms (ceil(160/64)*64)");
+        assert_eq!(
+            b.take_raf_plan(RafPlanKey::Done(A0)),
+            Some(RafPlan {
+                ms: 160.0,
+                then: 0.0,
+                frame: 64.0
+            })
+        );
+        assert_eq!(
+            b.lunge_t0[0][0],
+            Some(1000.0),
+            "t0 lunge = chwila wywołania"
+        );
+        assert_eq!(
+            b.take_raf_plan(RafPlanKey::Done(A0)),
+            None,
+            "plan odbierany raz"
+        );
+    }
+
+    /// Pin `_doMeleeAttack` (`:9149-9158`): koniec lunge = pierwsza klatka z `localT >= BLOW_LUNGE_MS`, potem
+    /// `_schedule(BLOW_SETTLE_MS)`. Zmiana x1 -> x2 przed ciosem (lunge od 1000, siatka 16 do 1016, potem 32): cios w klatce
+    /// 1176 (pierwsza `>= 1160`), koniec lunge w klatce 1272 (`1176 + 96`, pierwsza `>= 1000 + 260`), `due` settle = 1492,
+    /// czyli ogon od ciosu = 316. Ogon z `start` (siatka 16: `272 + 220 - 160 = 332`) dałby `due` 1508.
+    #[test]
+    fn p413_ogon_wypadu_liczony_siatka_z_chwili_ciosu() {
+        let (mut b, _st) = setup(0.0);
+        b.lunge_t0[0][0] = Some(1000.0);
+        b.tail[0][0] = melee_tail_ms(16.0, 160.0);
+        b.frame_ms = 32.0;
+        b.set_now(1176.0);
+        assert_eq!(b.take_tail(A0), 316.0);
+        assert_eq!(
+            b.take_raf_plan(RafPlanKey::Tail(A0)),
+            Some(RafPlan {
+                ms: 84.0,
+                then: BLOW_SETTLE_MS,
+                frame: 32.0
+            })
+        );
+        // Stała prędkość: ogon z chwili ciosu = ogon z `start` (tożsamość, brak regresji).
+        for frame in [16.0, 32.0, 64.0, 1024.0, 8192.0] {
+            let (mut c, _st) = setup(0.0);
+            c.lunge_t0[0][0] = Some(1000.0);
+            c.tail[0][0] = melee_tail_ms(frame, 160.0);
+            c.frame_ms = frame;
+            c.set_now(1000.0 + frame_raf(frame, 160.0));
+            assert_eq!(
+                c.take_tail(A0),
+                melee_tail_ms(frame, 160.0),
+                "frame {frame}"
+            );
+        }
+        // Lunge kończy się w klatce ciosu (`localT >= 260` już przy ciosie, siatka 1024): sam settle.
+        let (mut d, _st) = setup(0.0);
+        d.lunge_t0[0][0] = Some(1000.0);
+        d.tail[0][0] = melee_tail_ms(1024.0, 160.0);
+        d.frame_ms = 1024.0;
+        d.set_now(2024.0);
+        assert_eq!(d.take_tail(A0), BLOW_SETTLE_MS);
+        // Bez startu lunge (strzał: ogon nominalny `RANGED_GAP_MS`) ogon bez zmian, bez planu.
+        let (mut e, _st) = setup(0.0);
+        e.tail[0][0] = RANGED_GAP_MS;
+        e.set_now(5000.0);
+        assert_eq!(e.take_tail(A0), RANGED_GAP_MS);
+        assert_eq!(e.take_raf_plan(RafPlanKey::Tail(A0)), None);
+    }
+
+    /// Pin `_doMove` (`:8753-8768`): koniec kroku = pierwsza klatka z `p = (_now() - t0) / MOVE_STEP_MS >= 1`. Krok marszu
+    /// krok po kroku zgłasza plan odcinka `_raf` (`MOVE_STEP_MS` od chwili kroku); przerwa `_schedule(STEP_GAP_MS)` jest
+    /// zegarem nominalnym (bez planu).
+    #[test]
+    fn p413_koniec_kroku_marszu_ma_plan_raf() {
+        let (mut b, st) = setup(3.0);
+        b.frame_ms = 1024.0;
+        b.set_now(1000.0);
+        let mut c = MarchCont {
+            unit: A0,
+            kind: MarchKind::Advance,
+            stage: MarchStage::Gap,
+            id: 0,
+            move_left: 3.0,
+            moved: false,
+            prev: None,
+        };
+        let next = b.advance_enter(&st, &mut c);
+        assert_eq!(next, MarchNext::StepEnd, "krok wykonany");
+        b.march_advance(c, next);
+        let t = b.take_timers();
+        assert_eq!(t.len(), 1);
+        assert_eq!(t[0].0, 1024.0, "koniec kroku na siatce 1024");
+        assert_eq!(
+            b.take_raf_plan(RafPlanKey::Timer(t[0].1)),
+            Some(RafPlan {
+                ms: MOVE_STEP_MS,
+                then: 0.0,
+                frame: 1024.0
+            })
+        );
+        // Przerwa przed kolejnym krokiem: zegar nominalny, bez planu.
+        let mut g = b.march.take().unwrap();
+        g.stage = MarchStage::StepEnd;
+        b.march_advance(g, MarchNext::Gap);
+        let t2 = b.take_timers();
+        assert_eq!(t2[0].0, f64::from(STEP_GAP_MS));
+        assert_eq!(b.take_raf_plan(RafPlanKey::Timer(t2[0].1)), None);
+    }
+
+    /// Pin `_doRangedAttack` (`:9223-9228`): trafienie wykonuje callback zegara `_schedule(RANGED_FLY_MS)` w klatce
+    /// odpalenia, `_now()` = czas tej klatki. Strzał przy x4 (siatka 64, `hit_at` z wystrzału = 1384), zmiana na x1: zegar
+    /// nominalny (`due` 1380) odpala w klatce 1392 (siatka 16 od 1064) — skutki trafienia mają czas 1392, nie 1384.
+    #[test]
+    fn p413_trafienie_strzalu_w_klatce_odpalenia() {
+        let (mut b, mut st) = setup(2.0);
+        b.frame_ms = 64.0;
+        shooter(&mut b);
+        b.ranged_blows[0][0].insert(0, neutral_tower_shot_template());
+        place(&mut b, A0, 3);
+        place(&mut b, D0, 5);
+        b.set_now(1000.0);
+        b.pending[0][0] = Some(pend_empty());
+        let mut c = ranged_cont(MarchStage::Gap, 2.0);
+        c.moved = false;
+        let next = b.ranged_action_enter(&st, &mut c);
+        assert_eq!(next, MarchNext::Shot(0));
+        b.march_advance(c, next);
+        assert_eq!(
+            b.pending[0][0].and_then(|p| p.shot).map(|s| s.hit_at),
+            Some(1384.0)
+        );
+        let _ = b.take_actions();
+        b.frame_ms = 16.0;
+        b.set_now(1392.0);
+        b.rolls = SequenceRolls::new(vec![0.0; 8]);
+        b.complete(A0, &mut st);
+        let acts = b.take_actions();
+        assert!(!acts.is_empty(), "akcje trafienia");
+        assert!(
+            acts.iter().all(|a| a.t0 == 1392.0),
+            "czas akcji trafienia = klatka odpalenia: {acts:?}"
+        );
+    }
+}
+
+#[cfg(test)]
+mod respeed_tests {
+    //! R-RUSTPORT-P4-413 (FQ-SPEED-MIDCHANGE-DIV, D-413-4): przeliczenie odcinków `_raf` w toku przy zmianie prędkości
+    //! ([`SiegeLoop::respeed`]). Oczekiwania z pinu: `_setSpeedIdx` (`battleScene.ts:9518-9527`) zmienia tylko `speedMul`;
+    //! każda kolejna klatka przesuwa `vNow` o `16 * speedMul` (`_advanceVClock` `:9500-9511`); pętla `_raf` kończy odcinek
+    //! w pierwszej klatce z `_now() - t0 >= ms` (`_doMove` `:8746-8775`, `_doMeleeAttack` `:9117-9172`); `_schedule(ms)` ma
+    //! nominalny `due = _now() + ms` i odpala w pierwszej klatce `vNow >= due` (`:9595-9634`).
+    use super::*;
+    use crate::domain::siege_tactics_turnseq::SeqUnit;
+    use std::collections::BTreeSet;
+
+    /// Chwila ciosu atrapy (ms od startu lunge; liczby w oczekiwaniach poniżej liczone dla 160).
+    const HIT: f64 = 160.0;
+
+    const A0: UnitRef = UnitRef {
+        side: BattleSide::Attacker,
+        idx: 0,
+    };
+
+    /// Atrapa ciała: cios wręcz (`BodyDone` po `frame_raf(F, 160)` z planem `_raf`, ogon jak [`ProdBody::take_tail`]) albo
+    /// marsz z jednym końcem kroku (`BodyTimer` 1 w fazie kroków, plan `_raf` `MOVE_STEP_MS`).
+    #[derive(Default)]
+    struct RafMock {
+        frame: f64,
+        now: f64,
+        march: bool,
+        /// Zepsuty plan (klatka inna niż kwantyzacja `due`): sterownik nie może go przyjąć.
+        bad_plan: bool,
+        lunge_t0: Option<f64>,
+        plans: Vec<(RafPlanKey, RafPlan)>,
+        timers: Vec<(f64, u64)>,
+        pending: bool,
+        done: Option<(UnitRef, f64)>,
+        log: Vec<(&'static str, f64)>,
+    }
+
+    impl LoopBody for RafMock {
+        fn start(&mut self, unit: UnitRef, _st: &TurnSeqState) -> f64 {
+            if self.march {
+                self.pending = true;
+                self.timers = vec![(frame_raf(self.frame, MOVE_STEP_MS), 1)];
+                self.plans.push((
+                    RafPlanKey::Timer(1),
+                    RafPlan {
+                        ms: MOVE_STEP_MS,
+                        then: 0.0,
+                        frame: self.frame,
+                    },
+                ));
+                return 0.0;
+            }
+            self.lunge_t0 = Some(self.now);
+            let frame = if self.bad_plan { 16.0 } else { self.frame };
+            self.plans.push((
+                RafPlanKey::Done(unit),
+                RafPlan {
+                    ms: HIT,
+                    then: 0.0,
+                    frame,
+                },
+            ));
+            frame_raf(self.frame, HIT)
+        }
+        fn complete(&mut self, _unit: UnitRef, _st: &mut TurnSeqState) {
+            self.log.push(("cios", self.now));
+        }
+        fn set_now(&mut self, v_now: f64) {
+            self.now = v_now;
+        }
+        fn take_timers(&mut self) -> Vec<(f64, u64)> {
+            std::mem::take(&mut self.timers)
+        }
+        fn fire_timer(&mut self, _id: u64, _st: &mut TurnSeqState) {
+            self.log.push(("koniec-kroku", self.now));
+            self.pending = false;
+            self.done = Some((A0, 0.0));
+        }
+        fn march_pending(&self, _unit: UnitRef) -> bool {
+            self.pending
+        }
+        fn take_march_done(&mut self) -> Option<(UnitRef, f64)> {
+            self.done.take()
+        }
+        fn timer_raf(&self, id: u64) -> bool {
+            id == 1
+        }
+        fn take_tail(&mut self, unit: UnitRef) -> f64 {
+            let Some(t0) = self.lunge_t0.take() else {
+                return 0.0;
+            };
+            let rel = t0 + BLOW_LUNGE_MS - self.now;
+            self.plans.push((
+                RafPlanKey::Tail(unit),
+                RafPlan {
+                    ms: rel,
+                    then: BLOW_SETTLE_MS,
+                    frame: self.frame,
+                },
+            ));
+            let lunge_end = if rel > 0.0 {
+                frame_raf(self.frame, rel)
+            } else {
+                0.0
+            };
+            lunge_end + BLOW_SETTLE_MS
+        }
+        fn take_raf_plan(&mut self, key: RafPlanKey) -> Option<RafPlan> {
+            let i = self.plans.iter().position(|(k, _)| *k == key)?;
+            Some(self.plans.remove(i).1)
+        }
+    }
+
+    fn seq_cu() -> CombatUnit {
+        CombatUnit {
+            hp: 10.0,
+            morale: 100.0,
+            flee_morale: 0.0,
+            move_left: 1.0,
+            never_rout: false,
+            dead: false,
+            fading_out: false,
+            routed: false,
+            removed: false,
+            acted: false,
+        }
+    }
+
+    /// Pętla z jedną aktywacją `A0` startującą w `vNow = 1000` przy `speedMul = mul` (klatka `16 * mul`).
+    fn run_start(body: RafMock, mul: f64) -> (SiegeLoop<RafMock>, VirtualClock<LoopTimer>) {
+        let mut st = TurnSeqState {
+            atk: vec![SeqUnit { id: 0, c: seq_cu() }],
+            def: Vec::new(),
+            turn_order: Vec::new(),
+            turn_idx: 0,
+            round_no: 1,
+            siege_wall_col: -1,
+            manual_mode: false,
+            player_side: BattleSide::Attacker,
+            finished: false,
+            awaiting_orders: false,
+            auto_battle_suspended: false,
+            busy: false,
+            auto_batch_planning: false,
+            queued_order_ids: BTreeSet::new(),
+        };
+        st.busy = true;
+        let mut lp = SiegeLoop::new(
+            st,
+            SiegeEnv {
+                body,
+                tower_rows: Vec::new(),
+                pending_tower_shots: Vec::new(),
+                tower_range: 2.0,
+                tower_shot: None,
+                wall_tile_rows: Vec::new(),
+                wall_ever_breached: false,
+                no_breach_cap: 0,
+                move_points: [Vec::new(), Vec::new()],
+                morale_max: [Vec::new(), Vec::new()],
+            },
+        );
+        lp.body_done_raf = true;
+        lp.env.body.frame = 16.0 * mul;
+        let mut clock = VirtualClock::new();
+        clock.speed_mul = mul;
+        clock.v_now = 1000.0;
+        lp.apply(&mut clock, vec![SeqEvent::ActivateUnit(A0)]);
+        // Pierwsza klatka tylko ustawia `vLastWall` (`:9500-9511`).
+        lp.step_realtime(&mut clock, 5000.0);
+        (lp, clock)
+    }
+
+    /// `n` kolejnych klatek ściany po 16 ms.
+    fn frames(lp: &mut SiegeLoop<RafMock>, clock: &mut VirtualClock<LoopTimer>, n: u32) {
+        for _ in 0..n {
+            let wall = clock.v_last_wall + 16.0;
+            lp.step_realtime(clock, wall);
+        }
+    }
+
+    /// `_setSpeedIdx` między klatkami (sesja: `set_speed_idx` = `speedMul`, klatka ciała, [`SiegeLoop::respeed`]).
+    fn change(lp: &mut SiegeLoop<RafMock>, clock: &mut VirtualClock<LoopTimer>, mul: f64) {
+        clock.speed_mul = mul;
+        lp.env.body.frame = 16.0 * mul;
+        lp.respeed(clock, 16.0 * mul);
+    }
+
+    fn due_of(clock: &VirtualClock<LoopTimer>, f: impl Fn(&LoopTimer) -> bool) -> Option<f64> {
+        clock.timers.iter().find(|t| f(&t.payload)).map(|t| t.due)
+    }
+
+    fn is_done(t: &LoopTimer) -> bool {
+        matches!(t, LoopTimer::BodyDone(_))
+    }
+
+    fn is_tail(t: &LoopTimer) -> bool {
+        matches!(t, LoopTimer::BodyTail(_))
+    }
+
+    /// Wypad wręcz przy x4 (lunge od 1000, siatka 64: cios zaplanowany na 1192), po jednej klatce (1064) zmiana na x1:
+    /// pin uderza w pierwszej klatce siatki 16 od 1064 z `localT >= 160`, czyli 1160 (nie 1192).
+    #[test]
+    fn cios_w_trakcie_wypadu_na_nowej_siatce_w_dol() {
+        let (mut lp, mut clock) = run_start(RafMock::default(), 4.0);
+        assert_eq!(due_of(&clock, is_done), Some(1192.0));
+        frames(&mut lp, &mut clock, 1);
+        assert_eq!(clock.v_now, 1064.0);
+        change(&mut lp, &mut clock, 1.0);
+        assert_eq!(due_of(&clock, is_done), Some(1160.0));
+        frames(&mut lp, &mut clock, 6);
+        assert_eq!(lp.env.body.log, vec![("cios", 1160.0)]);
+    }
+
+    /// Zmiana w górę (x1 -> x2, lunge od 1000, zmiana po klatce 1016): cios w pierwszej klatce siatki 32 `>= 1160` = 1176,
+    /// koniec lunge w pierwszej `>= 1000 + 260` = 1272, `_schedule(220)` z tej klatki: `due` 1492, odpalenie w klatce 1496.
+    /// Ogon z siatki sprzed zmiany (`332` od ciosu) dałby `due` 1508 i klatkę 1528 (pomiar #412: klasa L, +1 klatka).
+    #[test]
+    fn ogon_wypadu_po_zmianie_przed_ciosem() {
+        let (mut lp, mut clock) = run_start(RafMock::default(), 1.0);
+        frames(&mut lp, &mut clock, 1);
+        change(&mut lp, &mut clock, 2.0);
+        frames(&mut lp, &mut clock, 5);
+        assert_eq!(clock.v_now, 1176.0);
+        assert_eq!(lp.env.body.log, vec![("cios", 1176.0)]);
+        assert_eq!(due_of(&clock, is_tail), Some(1492.0));
+        while due_of(&clock, is_tail).is_some() && clock.v_now < 2000.0 {
+            frames(&mut lp, &mut clock, 1);
+        }
+        assert_eq!(clock.v_now, 1496.0, "done() w klatce odpalenia settle");
+    }
+
+    /// Zmiana PO ciosie, przed końcem lunge (x2 -> x1): lunge od 1000 na siatce 32, cios 1160, koniec lunge zaplanowany na
+    /// 1288 (`due` settle 1508); pin kończy lunge w pierwszej klatce siatki 16 od 1160 z `localT >= 260` = 1272, `due` 1492.
+    #[test]
+    fn koniec_lunge_po_ciosie_na_nowej_siatce() {
+        let (mut lp, mut clock) = run_start(RafMock::default(), 2.0);
+        frames(&mut lp, &mut clock, 5);
+        assert_eq!(lp.env.body.log, vec![("cios", 1160.0)]);
+        assert_eq!(due_of(&clock, is_tail), Some(1508.0));
+        change(&mut lp, &mut clock, 1.0);
+        assert_eq!(due_of(&clock, is_tail), Some(1492.0));
+        // Odcinek zakończony przed zmianą (lunge skończony) zostaje: zmiana po końcu lunge nie rusza `due` settle.
+        while clock.v_now < 1272.0 {
+            frames(&mut lp, &mut clock, 1);
+        }
+        change(&mut lp, &mut clock, 4.0);
+        assert_eq!(due_of(&clock, is_tail), Some(1492.0));
+    }
+
+    /// Krok marszu przy x64 (start 1000, koniec kroku zaplanowany na 2024), zmiana na x1 w tej samej chwili: pin kończy
+    /// krok w pierwszej klatce siatki 16 z `p >= 1`, czyli 1240 (wektor #412 `sc_fq_las_mix_d8l_palisada_122_x64to1_round`).
+    #[test]
+    fn koniec_kroku_marszu_na_nowej_siatce() {
+        let body = RafMock {
+            march: true,
+            ..RafMock::default()
+        };
+        let (mut lp, mut clock) = run_start(body, 64.0);
+        let step = |t: &LoopTimer| matches!(t, LoopTimer::BodyTimer(1));
+        assert_eq!(due_of(&clock, step), Some(2024.0));
+        change(&mut lp, &mut clock, 1.0);
+        assert_eq!(due_of(&clock, step), Some(1240.0));
+        frames(&mut lp, &mut clock, 15);
+        assert_eq!(
+            lp.env.body.log,
+            vec![("koniec-kroku", 1240.0), ("cios", 1240.0)],
+            "koniec kroku i done() marszu w klatce 1240"
+        );
+    }
+
+    /// Strażnik planu: plan niezgodny z kwantyzacją `due` (inna klatka) nie jest przyjmowany — bez przeliczenia.
+    #[test]
+    fn plan_niezgodny_z_due_odrzucony() {
+        let body = RafMock {
+            bad_plan: true,
+            ..RafMock::default()
+        };
+        let (mut lp, mut clock) = run_start(body, 4.0);
+        frames(&mut lp, &mut clock, 1);
+        change(&mut lp, &mut clock, 1.0);
+        assert_eq!(due_of(&clock, is_done), Some(1192.0));
+    }
+
+    /// Stała prędkość: `respeed` z tą samą klatką nie zmienia żadnego `due` (tożsamość).
+    #[test]
+    fn respeed_przy_tej_samej_klatce_tozsamosc() {
+        for mul in [1.0, 2.0, 64.0, 512.0] {
+            let (mut lp, mut clock) = run_start(RafMock::default(), mul);
+            let before = clock.timers.clone();
+            lp.respeed(&mut clock, 16.0 * mul);
+            assert_eq!(clock.timers, before, "mul {mul}");
+        }
     }
 }
