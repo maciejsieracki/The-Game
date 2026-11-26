@@ -16,3 +16,17 @@ gra-robocza/, gra-kanon/, dyspozycje/WERSJE.md, manifest, rust-port/, npm run bu
 tsc 0; logic 213; tech-tree 20; research 33; unit-replace; combat 6; ai-test 297/0; mint-capital-only-test; mint-orphan-test; testy tematu z mutacją czerwoną. Zacommituj i zwróć SHA. Live w przeglądarce (zrzut panelu z przyciskiem i potwierdzeniem) jeśli Chromium stabilny; w przeciwnym razie NIE ZMIERZONO z wypisaniem.
 ## Binarne kryterium
 Wyburzenie działa na wszystkich zwykłych budynkach, zwraca 50% surowców, Mennica wg reguł właściciela, AI bez zmian, testy z mutacją czerwoną, bramki zielone.
+
+---
+# DODATEK RUNDA 2 (Operator HAIKU 5.5) — WERYFIKACJA NA ŻYWO przed deployem (granica §9 pkt 6a)
+BAZA: args.cand = b8d28d17fad563e90003370e743dc1f958cc6293 (FC tip r1; kod 3a00fd6ca43e0cb0c61693ed8e3740009b90f699; refs/keep/WYBURZ-fc).
+## Powód
+FC r1: PASS-WITH-NOTES; blokada: brak zrzutu z żywego Chromium (panel miasta z przyciskiem „Wyburz” i potwierdzeniem) — wymagany przed deployem; NIE ZMIERZONO.
+## Zadanie
+1. Zbuduj grę z kandydata poza repo (node ./node_modules/vite/bin/vite.js build --outDir /tmp/<unikalny> --emptyOutDir; NIE npm run build) i uruchom w pre-zainstalowanym Chromium (/opt/pw-browsers/chromium; playwright require z node_modules; NIE instaluj Playwright; Chromium bywa niestabilny — ponów start do 3 razy; headless, --no-sandbox).
+2. Przejdź: nowa gra → utwórz/otwórz miasto z budynkiem (użyj haka civTest, jeśli istnieje, do nadania budynku i surowców) → panel miasta → przycisk „Wyburz” → okno potwierdzenia z podglądem zwrotu → potwierdź → budynek znika z listy, surowce rosną o połowę kosztu (w dół). Zrzuty (deviceScaleFactor 1): panel z przyciskiem, okno potwierdzenia, panel po wyburzeniu; zapisz pod dyspozycje/autobot/runs/R-WEB-BUILDING-DEMOLISH-Q1/zrzuty/ + odczyt liczb przed/po (surowce, lista budynków) w JSON.
+3. Sprawdź Mennicę: wyburz Mennicę w stolicy → bonus Mennicy znika (odczyt z ekonomii) .
+4. Jeśli znajdziesz błąd UI/logiki — popraw minimalnie z testem; kosmetykę nie ruszaj. Błąd Chromium (SIGSEGV) ≠ błąd gry — opisz.
+5. Bramki ogólne uruchom po zmianie (tsc, logic, tech-tree, research, unit-replace, combat, ai-test, building-demolish-test, mint-*).
+## Decyzja właściciela o wyjątkach (Pałac/cuda/mury w oblężeniu) — JESZCZE NIE PODJĘTA; NIE blokuj niczego w kodzie, NIE rozstrzygaj.
+## Allowlista/zakazy jak r1 + katalog zrzuty/. Operator Haiku; nie pytaj właściciela.
