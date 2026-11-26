@@ -1,0 +1,17 @@
+{
+  "label": "zooms1",
+  "query": "&riverStage=1",
+  "errors": [],
+  "fps": [],
+  "steps": {
+    "outSteps": 40,
+    "inStepsFromOut": 6,
+    "inStepsTotal4x": 12,
+    "inStepsTotal8x": 18
+  },
+  "worldGenMs": 474,
+  "exitedFoundingBanner": true,
+  "overlayZalozMiasto": true,
+  "uiZoomPct": "100%",
+  "totalMs": 246504
+}
