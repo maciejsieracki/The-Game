@@ -1,3 +1,48 @@
+# RUNDA 2/5 — diagnoza przyczyny ujść (kandydat 7b75309011bdd91b01426d2bc953bd55f78d062f)
+
+STATUS: BLOCK
+DOMAIN: GAME
+TEMAT: R-WEB-MAP-RIVER-MOUTH-GAP-FIX-Q1
+GOAL: wymusić ujście głównej rzeki, gdy odstęp wzdłuż wybrzeża > limit (Standard 7, Mała 5); kontynenty 42 i pangea 7 do worstGap <= 7.
+ZMIANY/COMMIT: brak zmian w gra/src (kod gry wycofany do 7b7530901 po eksperymentach). Commit zawiera: ten raport oraz repro/diag-patch.diff (eksperymentalna instrumentacja i wariant awansu rzeki, NIEZASTOSOWANY w kodzie gry; do odtworzenia diagnozy).
+TESTY (surowe wyjścia, kontynenty seed 42, 168x120, Standard):
+- Baza 7b75309 + liczniki diagnostyczne (bez zmiany zachowania): worstGapAll=18, złe masy (rozmiar:worst) 265:15, 145:11, 12:12, 12:9, 10:10, 590:10, 1011:8, 19:18 (8 z 20 mas). Czas: total=113774 ms (riversMain 75319, riversFill 33527) oraz 111649 ms przy drugim biegu z instrumentacją (różnica szumu ~2%).
+- Wydajność PO naprawie: NIE ZMIERZONO (brak naprawy zgodnej z regułami).
+- Test gra/tools/river-mouth-gap-enforce-test.cjs: czerwony na bazie (wg rundy 1), nie zmieniany w tej rundzie.
+- Pangea 7, mała mapa, 3 dodatkowe mapy, bramki (tsc, logic, tech-tree, research, unit-replace, combat, ai-test, climate-band, river-sea-buffer, rodzina rzek), piny, earth-template: NIE ZMIERZONO (brak zmiany kodu do weryfikacji).
+
+DIAGNOZA (liczniki globalne z całej generacji kontynenty 42; NIE ZMIERZONO per masa — liczniki nie były rozbite na masy):
+1. Ścieżka dopinania: topUpMainRiverCoastMouthGaps (gra/src/map/gen-helpers.ts:9781) -> topUpMainRiverCoastMouthGapsOnce (:9708) -> tryPlaceMainRiverAtMouth (:9931) -> traceRiverFromCoast (:6453) -> growRiverFromCoastInland (:6401) -> collectCoastInlandGrowCandidates (:6318).
+2. Wywołania tryPlaceMainRiverAtMouth: 21763. Sukces (OK): 103. Porażki:
+   - trace pusta ścieżka (path.length=0): 19691 (90%)
+   - ścieżka zbyt krótka (<3 lub <6): 1266 + 379
+   - zbyt blisko głównych (isPathTooCloseToRiverHexes): 15
+   - growRiverFromCoastInland zwraca tylko ujście (length 1): 17750 (przyczyna dominująca); nie wychodzi nawet pierwszy krok w głąb lądu.
+   - pathEndsAtSea odrzuca: 1941 (przy długości ≥2).
+3. Powód pierwszego kroku (liczniki odrzuceń kandydatów sąsiednich ujścia, tylko pierwszy krok, suma po wszystkich wywołaniach): riverGrowStepPassesSep (sep 2 wobec rzek głównych, blockRiverKeys=mainKeys) 75879; canRiverFlowThrough z blockExisting (sąsiad ma już jakąkolwiek rzekę) 60215; seaDist<2 62731; flowOther (relief/Morze/nieprzepuszczalny) 32238.
+4. Eksperyment A (awans istniejącej rzeki nie-głównej dochodzącej do brzegu w luce na main, ta sama kontrola sep 2): próby 16, odrzucone przez bliskość głównych 16, sukcesów 0. Worst bez zmian (18). Wniosek: rzeki nie-główne wchodzące na brzeg w lukach leżą przy rzekach głównych (sep<2); awans nie jest wykonalny zgodnie z regułą sąsiedztwa.
+5. Eksperyment B (diagnostyczny, ŁAMIE regułę: gapPathSep 2 -> 1): worstGapAll 18 -> 16; złe masy 265, 145, 1011 naprawione; 19: 18 -> 9; nadal złe 12:12, 12:9, 10:10, 9:9, 590:10, 17:16, 19:9. Wniosek: sama reguła sep nie jest jedyną przeszkodą, a jej obniżenie nie domyka limitu i jest zakazane dispatchem.
+6. Wniosek ogólny: na tych mapach brzeg w lukach jest zablokowany przez główne rzeki (sep 2) i przez istniejące rzeki w pierwszym kroku w głąb lądu. Lokalne wymuszenie ujścia bez zmiany topologii rzek nie istnieje w obecnym algorytmie. Usuwanie rzek nie-głównych w promieniu 3 (runda 1 i 2) nie zmienia dominującego blokera (sep wobec głównych).
+
+NAJMNIEJ INWAZYJNE OPCJE DLA ORKIESTRATORA (żadna nie jest zrealizowana):
+- A: przebudowa wyboru tras rzek głównych przed top-up (kolejność etapów generatora) tak, by zostawić wolne pasy przy brzegu w lukach; zmienia układ rzek na wszystkich typach map; wymaga testów river-density, river-path-adjacency, river-loop, cluster-plan i pinów. Wielorundowe (ryzyko kolejnej BLOCK bez gwarancji).
+- B: zmiana reguły (limit 7/5 lub próg mas) — decyzja właściciela (pytanie ABC: wariant „dotrzymać 7” vs „zostawić obecne mapy i poluzować obietnicę”).
+- C (dispatch pkt 2c): wyjątek dla małych mas (10–12 heksów) — NIE przetestowany w tej rundzie; masy 9–12 w diagnozie (12:12, 12:9, 10:10, 9:9) są poza progiem ≥50 heksów z dispatchu, więc wyjątek nie usunie większości przypadków dla mas 19 i 265 (19 i 265 nadal wymagają A lub B).
+
+SKUTEK DLA GRY (do pytania ABC, sformułowany bez mechanizmu): na części wybrzeży kontynentów na mapie Standard odcinek bez ujścia rzeki ma do 18 pól, a obietnica to 7 pól. Naprawa zmieni rozmieszczenie rzek na wszystkich typach map (nowe mapy dla tych samych ustawień). Decyzja: czy dotrzymywać obietnicę kosztem układu rzek (A), czy zmienić obietnicę (B).
+Szczegóły: gra/src/map/gen-helpers.ts:5727 (stała), :9708, :9931, :6401, :6318; test gra/tools/river-mouth-gap-enforce-test.cjs.
+
+RUNDY: 2/5 (runda 1: BLOCK; runda 2: BLOCK z diagnozą per liczniki globalne). Ostatni werdykt Evaluatora: BLOCK/FAIL (r1). Decyzja wymagana: wybór A lub B (nie jest decyzją inżynierską bez wpływu na grę: zmienia układ rzek lub obietnicę).
+NASTĘPNY KROK: orkiestrator: pytanie ABC do właściciela (A vs B) wg skutku powyżej; przy wyborze A kolejna runda Operatora (Sonnet po 2 nieudanych rundach Haiku, z uzasadnieniem: przebudowa kolejności etapów rzek). Diagnozy per masa (rozbicie liczników po masach) — do zrobienia w rundzie, jeśli wybór A.
+DEPLOY/PUSH: NIE WYKONANO
+
+UWAGI-DLA-ORKIESTRATORA:
+- Poprzednie liczby z rundy 1 (424/299/254 — odrzucenia kandydatów) są potwierdzone tylko jakościowo tym pomiarem (tu: 75879/60215/62731 sumy po wszystkich wywołaniach, inne okno liczenia).
+- Node_modules w gra/ zainstalowano (npm ci --ignore-scripts) na potrzeby repro; usunięte po zapisie raportu.
+- Test czerwony nie został uruchomiony w tej rundzie (czas ~2 min); wynik rundy 1: 0 pass / 2 fail.
+
+---
+
 STATUS: BLOCK
 DOMAIN: GAME
 TEMAT: R-WEB-MAP-RIVER-MOUTH-GAP-FIX-Q1

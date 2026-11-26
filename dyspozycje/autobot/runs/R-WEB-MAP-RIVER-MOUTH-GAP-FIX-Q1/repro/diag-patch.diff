@@ -1,0 +1,108 @@
+diff --git a/gra/src/map/gen-helpers.ts b/gra/src/map/gen-helpers.ts
+index ac24feffc..4caab5657 100644
+--- a/gra/src/map/gen-helpers.ts
++++ b/gra/src/map/gen-helpers.ts
+@@ -6323,12 +6323,14 @@ function collectCoastInlandGrowCandidates(o: CoastInlandGrowOpts): Array<{ q: nu
+     const nq = o.cur.q + dq;
+     const nr = o.cur.r + dr;
+     const nk = hexKey(nq, nr);
+-    if (!isRiverWindowTurnAllowed(o.path, nq, nr)) continue;
+-    if (!canRiverFlowThrough(o.hexes[nk], nk, o.mouthKey, true, undefined, o.allowReliefTraversal)) continue;
+-    if (!riverGrowStepPassesSep(nq, nr, o.blockRiverKeys, o.minPathSep, o.sepIndex)) continue;
++    const __F = ((globalThis as any).__mouthDiag ??= {}) as Record<string, number>;
++    const __fi = (k: string) => { if (o.path.length === 1) __F['c1_' + k] = (__F['c1_' + k] ?? 0) + 1; };
++    if (!isRiverWindowTurnAllowed(o.path, nq, nr)) { __fi('turn'); continue; }
++    if (!canRiverFlowThrough(o.hexes[nk], nk, o.mouthKey, true, undefined, o.allowReliefTraversal)) { __fi(o.hexes[nk]?.rzeka?.obecna ? 'existingRiver' : (o.hexes[nk]?.terenBazowy === TerenBazowy.Morze ? 'sea' : 'flowOther')); continue; }
++    if (!riverGrowStepPassesSep(nq, nr, o.blockRiverKeys, o.minPathSep, o.sepIndex)) { __fi('sepMain'); continue; }
+     const nd = o.seaDist.get(nk) ?? 0;
+-    if (o.path.length >= 1 && nd < RIVER_MIN_INLAND_FROM_SEA) continue;
+-    if (o.hardMeander && !o.relaxHardMeander && nd < curD) continue;
++    if (o.path.length >= 1 && nd < RIVER_MIN_INLAND_FROM_SEA) { __fi('seaLt2'); continue; }
++    if (o.hardMeander && !o.relaxHardMeander && nd < curD) { __fi('hardMeander'); continue; }
+     const centerStep = scoreRiverStepTowardLandCenter(
+       o.cur.q, o.cur.r, nq, nr, o.landCenterSquare, o.landCentroid,
+     );
+@@ -6485,10 +6487,11 @@ function traceRiverFromCoast(
+     traceOpts.landCenterSquare ?? null,
+     traceOpts.riverSepIndex,
+   );
+-  if (mouthToInland.length < 2) return [];
++  const __E = ((globalThis as any).__mouthDiag ??= {}) as Record<string, number>;
++  if (mouthToInland.length < 2) { __E.growLt2 = (__E.growLt2 ?? 0) + 1; __E['growLt2_d' + (startD)] = (__E['growLt2_d' + startD] ?? 0) + 1; return []; }
+ 
+   const reversed = [...mouthToInland].reverse();
+-  if (!pathEndsAtSea(hexes, reversed, dims.width, dims.height, oceanConnected)) return [];
++  if (!pathEndsAtSea(hexes, reversed, dims.width, dims.height, oceanConnected)) { __E.notSea = (__E.notSea ?? 0) + 1; return []; }
+   return reversed;
+ }
+ 
+@@ -9721,7 +9724,7 @@ function topUpMainRiverCoastMouthGapsOnce(
+   let mainKeys = gapCtx.mainKeysCache
+     ?? collectPathHexKeysForKinds(gapCtx.riverPaths, gapCtx.riverKinds, ['main']);
+ 
+-  const gapPathSep = 2;
++  const gapPathSep = Number((globalThis as any).__SEP ?? 2);
+   const gapPushMain = (path: RiverCoord[], sq: number, sr: number): boolean => {
+     if (isPathTooCloseToRiverHexes(path, mainKeys, gapPathSep)) return false;
+     const finalized = finalizeMainRiverPath(
+@@ -9777,6 +9780,32 @@ function topUpMainRiverCoastMouthGapsOnce(
+         if (tryAtKey(k)) { okPlace = true; break; }
+       }
+     }
++    if (!okPlace) {
++      // EKSPERYMENT (diag): awans istniejącej rzeki nie-głównej dochodzącej do brzegu w luce na main.
++      const __U = ((globalThis as any).__mouthDiag ??= {}) as Record<string, number>;
++      const gapKeys = [...coastal]
++        .map((k) => ({ k, d: mouthDistNow.get(k) ?? coastal.size }))
++        .filter((x) => x.d > maxGap)
++        .sort((a, b) => b.d - a.d);
++      upgrade: for (const { k } of gapKeys) {
++        for (let i = 0; i < gapCtx.riverPaths.length; i++) {
++          if (gapCtx.riverKinds[i] === 'main') continue;
++          const path = gapCtx.riverPaths[i]!;
++          const tailStart = Math.max(0, path.length - RIVER_MOUTH_TAIL_LEN);
++          const touches = path.slice(tailStart).some((p) => hexKey(p.q, p.r) === k || [...HEX_DIRECTIONS].some(([dq, dr]) => hexKey(p.q + dq, p.r + dr) === k));
++          if (!touches) continue;
++          __U.upgradeTry = (__U.upgradeTry ?? 0) + 1;
++          if (path.length < 3) { __U.upgradeShort = (__U.upgradeShort ?? 0) + 1; continue; }
++          if (isPathTooCloseToRiverHexes(path, mainKeys, gapPathSep)) { __U.upgradeTooClose = (__U.upgradeTooClose ?? 0) + 1; continue; }
++          gapCtx.riverKinds[i] = 'main';
++          addPathKeysToSet(path, mainKeys);
++          if (gapCtx.mainKeysCache && gapCtx.mainKeysCache !== mainKeys) addPathKeysToSet(path, gapCtx.mainKeysCache);
++          __U.upgradeOK = (__U.upgradeOK ?? 0) + 1;
++          okPlace = true;
++          break upgrade;
++        }
++      }
++    }
+     if (!okPlace) break;
+     placed++;
+   }
+@@ -9942,7 +9971,7 @@ function tryPlaceMainRiverAtMouth(
+     : targetLen;
+   const mouthKey = hexKey(mq, mr);
+   const startD = ctx.seaDist.get(mouthKey);
+-  if (startD == null || startD < 1 || startD > 2) return false;
++  if (startD == null || startD < 1 || startD > 2) { ((globalThis as any).__mouthDiag ??= {}).startDbad = (((globalThis as any).__mouthDiag.startDbad) ?? 0) + 1; return false; }
+ 
+   const traceMax = riverTraceBudgetForSeaDist(startD, targetLen, ctx.maxLen, ctx.largeMapPerf);
+   const path = traceRiverFromCoast(
+@@ -9963,11 +9992,17 @@ function tryPlaceMainRiverAtMouth(
+       allowReliefTraversal: ctx.allowReliefTraversal,
+     },
+   );
++  const __D = ((globalThis as any).__mouthDiag ??= {}) as Record<string, number>;
++  const __inc = (k: string) => { __D[k] = (__D[k] ?? 0) + 1; };
++  __inc('calls');
++  if (path.length === 0) __inc('trace0');
++  if (path.length > 0 && path.length < acceptThreshold) __inc('shortLt' + acceptThreshold);
+   if (path.length < acceptThreshold) return false;
+-  if (isPathTooCloseToRiverHexes(path, mainKeys, pathSep)) return false;
++  if (isPathTooCloseToRiverHexes(path, mainKeys, pathSep)) { __inc('tooClose'); return false; }
+   const sq = path[0]!.q;
+   const sr = path[0]!.r;
+   if (ctx.pushMain(path, sq, sr)) {
++    __inc('OK');
+     addPathKeysToSet(path, mainKeys);
+     if (ctx.mainKeysCache && ctx.mainKeysCache !== mainKeys) {
+       addPathKeysToSet(path, ctx.mainKeysCache);
