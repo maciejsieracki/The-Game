@@ -15,3 +15,8 @@ gra/src/**, gra/data/**, gra-robocza/, gra-kanon/, dyspozycje/WERSJE.md, manifes
 tsc 0 (bez zmian src); testy tematu: runner uruchamia się, rekordy zawierają pole epoki; dane z SHA256SUMS. Zacommituj i zwróć SHA.
 ## Binarne kryterium
 Pomiar seed 4242 i 7 do t120 lub jawny powód przerwania; tabela z epoką i powodem końca; odpowiedzi na wszystkie pytania z GOAL albo NIE ZMIERZONO z przyczyną.
+
+---
+# DODATEK (wznowienie po wstrzymaniu; reguła właściciela „testuj na poziomie maksymalnym”)
+- Pomiar wykonaj przy MAKSYMALNYM dopuszczalnym poziomie ustawienia „Dyplomacja i wojna” (poziom najwyższy/„Trudna”; zapisz w raporcie, który to poziom i dlaczego), z „Wojna epoki z udziałem gracza” = ON; innych poziomów nie mierz.
+- Harness bramki „Zakończ turę”: istnieje gotowy pomocnik w commicie a8ada07d581a787c05e1723bee9b1036804a647e (refs/keep/NNSQ12-fc): `git show a8ada07d5:gra/tools/_live-ready.cjs` (prepareEndTurnGate) — możesz go użyć; runner war-duration-measure.cjs ma też własne obejście bramki.
