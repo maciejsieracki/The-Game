@@ -1030,6 +1030,8 @@ import {
 import { getWzrostSurowcowZEpoka, isEraRebalanceEnabled, normalizeWzrostSurowcowZEpoka, setEraRebalanceEnabledForTest, setWzrostSurowcowZEpoka } from './game/econ-era-rebalance';
 // R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1: poziom „Dyplomacja i wojna” (ustawienie nowej gry / zapis).
 import { setDiplomacyWarLevel } from './game/diplomacy-war-level';
+// R-WEB-CULT-REL-IMPL-Q1 (CULTIMPL): ustawienie „Kultura i religia” (nowa gra / zapis).
+import { getCulturaReligiaLevel, setCulturaReligiaLevel } from './game/culture-religion-level';
 import {
   resolveAutoBattleByPower,
   sumRosterFieldM,
@@ -34466,6 +34468,7 @@ async function boot(): Promise<void> {
         fortCount: (): number => fortNodes.length,
         getSettings: () => ({
           diplomacyWarLevel: getDiplomacyWarLevel(),
+          kulturaReligiaLevel: getCulturaReligiaLevel(),
           wzrostSurowcowZEpoka: getWzrostSurowcowZEpoka(),
           kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
           difficulty: _menuDifficulty,
@@ -50223,6 +50226,8 @@ async function boot(): Promise<void> {
       setWzrostSurowcowZEpoka(normalizeWzrostSurowcowZEpoka(params.advanced?.wzrostSurowcowZEpoka));
       // R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1: brak pola = Łatwa (dziś).
       setDiplomacyWarLevel(params.advanced?.diplomacyWarLevel);
+      // R-WEB-CULT-REL-IMPL-Q1: brak pola = tryb zgodności (dzisiejsze Szczęście, bez linii Prawa).
+      setCulturaReligiaLevel(params.advanced?.kulturaReligiaLevel);
       const VALID_TYP: TypSwiata[] = ['kontynenty', 'pangea', 'wyspy', 'ziemia'];
       const resolveTypSwiata = (): TypSwiata => {
         const raw = params.typSwiata || typSwiataFromMenuLabel(params.worldType || 'Kontynenty');
@@ -52147,6 +52152,8 @@ async function boot(): Promise<void> {
       ));
       // R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1: stary zapis bez pola -> Łatwa (zachowanie bez zmian).
       setDiplomacyWarLevel((saved.meta?.newGameParams as NewGameParams | undefined)?.advanced?.diplomacyWarLevel);
+      // R-WEB-CULT-REL-IMPL-Q1: stary zapis bez pola -> tryb zgodności (bit-w-bit jak dziś).
+      setCulturaReligiaLevel((saved.meta?.newGameParams as NewGameParams | undefined)?.advanced?.kulturaReligiaLevel);
       if (typeof saved.seed === 'number' && saved.seed > 0) {
         _gameSeed = saved.seed;
       }

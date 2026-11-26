@@ -6,6 +6,13 @@
 import type { City, CityPodzialHandlu } from './cities';
 import { LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14 } from './cities';
 import {
+  CULTURA_RELIGIA_BOUNDS_DEFAULT,
+  cultureReligionLineValue,
+  getCulturaReligiaLevel,
+  type CulturaReligiaBounds,
+  type CulturaReligiaLevel,
+} from './culture-religion-level';
+import {
   type Difficulty,
   type OrderEffects,
   type OrderParams,
@@ -187,6 +194,13 @@ export interface LawBreakdownInput {
    * dyspozycje/autobot/runs/R-PRAWO-PRZEBUDOWA-SKALI-Q1/00-dispatch.md.
    */
   hasGarnizonBudynek?: boolean;
+  /**
+   * R-WEB-CULT-REL-IMPL-Q1 (CULTIMPL): udział własnej kultury [0,1]; brak = 1. Podawane przez
+   * `evaluateOrderFromBreakdown` z tego samego wejścia co Szczęście (jedno źródło prawdy).
+   */
+  ownCultureShare?: number;
+  /** R-WEB-CULT-REL-IMPL-Q1: udział własnej religii [0,1]; brak = odtworzony z `haRel` (0,5 gdy brak). */
+  ownReligionShare?: number;
 }
 
 export const REVOLT_CRITICAL_POR_PCT = 12;
@@ -678,6 +692,43 @@ function udzialLineLabel(nazwa: string, share: number): string {
   return `${nazwa} (udział własnej ${Math.round(share * 100)}%)`;
 }
 
+/**
+ * R-WEB-CULT-REL-IMPL-Q1 (CULTIMPL): granice D/G per poziom. Nadpisanie z
+ * `society-params.json → kultura_religia_poziomy`; brak wiersza = domyślne z modułu.
+ */
+function culturaReligiaBoundsFor(
+  society: SocietyParamsLike | null | undefined,
+): Record<CulturaReligiaLevel, CulturaReligiaBounds> {
+  const raw = (society as unknown as { kultura_religia_poziomy?: Record<string, unknown> } | null | undefined)
+    ?.kultura_religia_poziomy;
+  const out = { ...CULTURA_RELIGIA_BOUNDS_DEFAULT } as Record<CulturaReligiaLevel, CulturaReligiaBounds>;
+  for (const lvl of ['latwy', 'normalny', 'trudny'] as const) {
+    const row = raw?.[lvl] as { D?: unknown; G?: unknown } | undefined;
+    if (row && typeof row.D === 'number' && typeof row.G === 'number'
+      && Number.isFinite(row.D) && Number.isFinite(row.G)) {
+      out[lvl] = { D: row.D, G: row.G };
+    }
+  }
+  return out;
+}
+
+/**
+ * R-WEB-CULT-REL-IMPL-Q1 (CULTIMPL): jedna linia Kultury albo Religii w punktach.
+ * `x` = skala epoki w punktach (10/16/23), `base` = x epoki 1. Poziom łatwy (lub brak pola =
+ * zgodność) idzie DOKŁADNIE dzisiejszym wzorem `proporcjonalneSzczescie` — bit-w-bit.
+ */
+function kultReligLinePoints(
+  level: CulturaReligiaLevel | null,
+  x: number,
+  share: number,
+  base: number,
+  bounds: Record<CulturaReligiaLevel, CulturaReligiaBounds>,
+): number {
+  if (level === null || level === 'latwy') return proporcjonalneSzczescie(x, share);
+  const k = base > 0 ? x / base : 1;
+  return cultureReligionLineValue(level, k, share, bounds);
+}
+
 // ---------------------------------------------------------------------------
 // Happiness breakdown
 // ---------------------------------------------------------------------------
@@ -724,7 +775,10 @@ export function computeHappinessBreakdown(
   const kultShare = Number.isFinite(input.ownCultureShare)
     ? Math.min(1, Math.max(0, input.ownCultureShare as number))
     : 1;                                   // brak mixu kulturowego = 100% własnej
-  const kultV = proporcjonalneSzczescie(x, kultShare);
+  const cLevel = getCulturaReligiaLevel();
+  const cBounds = culturaReligiaBoundsFor(society);
+  const cBase = scale.kultReligByEra[0] ?? x;
+  const kultV = kultReligLinePoints(cLevel, x, kultShare, cBase, cBounds);
   if (kultV) {
     lines.push({ id: 'kultura', label: udzialLineLabel('Kultura', kultShare), value: kultV });
   }
@@ -734,7 +788,7 @@ export function computeHappinessBreakdown(
   const relShare = Number.isFinite(input.ownReligionShare)
     ? Math.min(1, Math.max(0, input.ownReligionShare as number))
     : ownShareFromSignal(input.haRel);
-  const relV = proporcjonalneSzczescie(x, relShare);
+  const relV = kultReligLinePoints(cLevel, x, relShare, cBase, cBounds);
   if (relV) {
     lines.push({ id: 'religia', label: udzialLineLabel('Religia', relShare), value: relV });
   }
@@ -896,6 +950,26 @@ export function computeLawBreakdown(
   if (input.stolicaEasyBonus) {
     const v = pickSociety(prBlock, 'prawo_bonus_stolica_easy', diff, 1);
     if (v) lines.push({ id: 'stolica_easy', label: 'Stolica imperium (easy)', value: v });
+  }
+
+  // R-WEB-CULT-REL-IMPL-Q1 (CULTIMPL, decyzja właściciela 2026-11-26): Kultura i Religia liczą się
+  // TAKŻE do Prawa, tymi samymi punktami co w Szczęściu. Tylko gdy ustawienie „Kultura i religia”
+  // ma wartość (nowa gra); brak pola = tryb zgodności = dzisiejsze Prawo bit-w-bit.
+  const cLevel = getCulturaReligiaLevel();
+  if (cLevel !== null) {
+    const x = kultReligScaleForEra(era, scale);
+    const base = scale.kultReligByEra[0] ?? x;
+    const bounds = culturaReligiaBoundsFor(society);
+    const kultShare = Number.isFinite(input.ownCultureShare)
+      ? Math.min(1, Math.max(0, input.ownCultureShare as number))
+      : 1;
+    const relShare = Number.isFinite(input.ownReligionShare)
+      ? Math.min(1, Math.max(0, input.ownReligionShare as number))
+      : 0.5;
+    const kv = kultReligLinePoints(cLevel, x, kultShare, base, bounds);
+    if (kv) lines.push({ id: 'kultura_prawo', label: udzialLineLabel('Kultura', kultShare), value: kv });
+    const rv = kultReligLinePoints(cLevel, x, relShare, base, bounds);
+    if (rv) lines.push({ id: 'religia_prawo', label: udzialLineLabel('Religia', relShare), value: rv });
   }
 
   const netto = lines.reduce((s, l) => s + l.value, 0);
@@ -1070,7 +1144,14 @@ export function evaluateOrderFromBreakdown(
   const params = loadOrderParams(society, difficulty);
   const revolt = loadRevoltParams(society, difficulty);
   const sz = computeHappinessBreakdown(happinessInput, society);
-  const prawo = computeLawBreakdown(lawInput, society);
+  // R-WEB-CULT-REL-IMPL-Q1: udziały Kultury/Religii dla Prawa = te same, co dla Szczęścia.
+  const prawo = computeLawBreakdown({
+    ...lawInput,
+    ownCultureShare: lawInput.ownCultureShare ?? happinessInput.ownCultureShare,
+    ownReligionShare: lawInput.ownReligionShare
+      ?? happinessInput.ownReligionShare
+      ?? ownShareFromSignal(happinessInput.haRel),
+  }, society);
   return computeOrderPctBreakdown(sz, prawo, params, revolt);
 }
 

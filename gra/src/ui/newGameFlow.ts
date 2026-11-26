@@ -228,6 +228,9 @@ export type HitMode = 'losowe' | 'pewne';
  */
 export type DiplomacyWarLevelOption = 'latwa' | 'normalna' | 'trudna';
 
+/** R-WEB-CULT-REL-IMPL-Q1: ustawienie „Kultura i religia” (MUSI być zgodne z `game/culture-religion-level.ts`). */
+export type KulturaReligiaOption = 'latwy' | 'normalny' | 'trudny';
+
 export interface NewGameAdvancedOptions {
   barbariansLevel: BarbariansLevel;
   battleAlwaysManual: boolean;
@@ -248,6 +251,11 @@ export interface NewGameAdvancedOptions {
    * = 'latwa'. / EN: diplomacy war level; missing = 'latwa'.
    */
   diplomacyWarLevel?: DiplomacyWarLevelOption;
+  /**
+   * R-WEB-CULT-REL-IMPL-Q1 „Kultura i religia”: Mały wpływ (łatwy, domyślnie) / Neutralny (normalny)
+   * / Duży wpływ (trudny). Brak pola (zapisy sprzed zmiany) = tryb zgodności (bez linii Prawa).
+   */
+  kulturaReligiaLevel?: KulturaReligiaOption;
   victoryMode: VictoryMode;
   /** Koszty budynkow: niski x1 / normalny x2 / wysoki x4 (bazowy = niski). */
   buildingCostPace: BuildingCostPace;
@@ -291,6 +299,7 @@ const DEFAULT_ADVANCED: NewGameAdvancedOptions = {
   hitMode: 'pewne',
   wzrostSurowcowZEpoka: false,
   diplomacyWarLevel: 'latwa',
+  kulturaReligiaLevel: 'latwy',
   victoryMode: 'moc_i_dominacja',
   buildingCostPace: 'normalny',
   kosztJednostekPace: 'normalny',
@@ -394,6 +403,10 @@ function migrateAdvanced(raw: Record<string, unknown>): NewGameAdvancedOptions {
   base.diplomacyWarLevel = raw.diplomacyWarLevel === 'normalna' || raw.diplomacyWarLevel === 'trudna'
     ? raw.diplomacyWarLevel
     : 'latwa';
+  // R-WEB-CULT-REL-IMPL-Q1: brak/zła wartość = Mały wpływ (łatwy) — nowa gra domyślnie.
+  base.kulturaReligiaLevel = raw.kulturaReligiaLevel === 'normalny' || raw.kulturaReligiaLevel === 'trudny'
+    ? raw.kulturaReligiaLevel
+    : 'latwy';
   if (
     raw.barbariansLevel === 'latwy' || raw.barbariansLevel === 'normalny'
     || raw.barbariansLevel === 'trudny' || raw.barbariansLevel === 'brak'
@@ -1890,6 +1903,14 @@ function advancedSettingRows(): AdvSettingRow[] {
       getIdx: () => (advOpts.diplomacyWarLevel === 'trudna' ? 2 : advOpts.diplomacyWarLevel === 'normalna' ? 1 : 0),
       setIdx: (i) => { advOpts.diplomacyWarLevel = i === 2 ? 'trudna' : i === 1 ? 'normalna' : 'latwa'; },
     },
+    {
+      key: 'kulturaReligiaLevel',
+      lbl: 'Kultura i religia',
+      hint: 'Ile kultura i religia wpływają na Szczęście i Prawo miasta (każda linia osobno). Mały wpływ (łatwy, domyślnie): od −10 do +10 na linię. Neutralny (normalny): od −15 do +5. Duży wpływ (trudny): od −20 do 0 (bez plusów). Stawki rosną proporcjonalnie w kolejnych epokach.',
+      opts: ['Mały wpływ (łatwy)', 'Neutralny (normalny)', 'Duży wpływ (trudny)'],
+      getIdx: () => (advOpts.kulturaReligiaLevel === 'trudny' ? 2 : advOpts.kulturaReligiaLevel === 'normalny' ? 1 : 0),
+      setIdx: (i) => { advOpts.kulturaReligiaLevel = i === 2 ? 'trudny' : i === 1 ? 'normalny' : 'latwy'; },
+    },
     advRowFromSett(
       'deals_end_turn_gate',
       'Dopóki wisi oferta handlowa od AI, nie zakończysz tury — przyjmij, zmodyfikuj lub odrzuć. Wyłączone: oferty AI nie blokują końca tury.',
@@ -2363,6 +2384,7 @@ function renderGenStep(host: HTMLElement): void {
       ['Zasięg ruchu', ruchSwiataLabel],
       ['Trudność miast-państw', csLabel],
       ['Dyplomacja i wojna', p.advanced.diplomacyWarLevel === 'trudna' ? 'Trudna (kary ×3, bonusy ÷3)' : p.advanced.diplomacyWarLevel === 'normalna' ? 'Normalna (kary ×2, bonusy ÷2)' : 'Łatwa (jak dotąd)'],
+      ['Kultura i religia', p.advanced.kulturaReligiaLevel === 'trudny' ? 'Duży wpływ (trudny)' : p.advanced.kulturaReligiaLevel === 'normalny' ? 'Neutralny (normalny)' : 'Mały wpływ (łatwy)'],
       ['Limit miast zakładanych (baza)', cityLimitLabel],
     );
   }
