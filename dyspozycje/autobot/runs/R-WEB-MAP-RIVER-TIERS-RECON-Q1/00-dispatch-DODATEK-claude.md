@@ -18,3 +18,16 @@ Jakakolwiek zmiana gra/**, gra-robocza/, gra-kanon/, rust-port/, dyspozycje/WERS
 Brak bramek kodu (recon). git diff --name-only musi wskazywać wyłącznie allowlistę. Zacommituj i zwróć SHA.
 ## Binarne kryterium
 Dokument zawiera pkt 1–6 z cytatami i liczbami; zero zmian w gra/**.
+
+---
+# RUNDA 2/5 (Operator HAIKU 5.5; ten sam ID; BAZA = f341dd5f3918ef5c3e15d99fecd00bb9da62c112, czubek FC r1 — pliki dokumentu z r1 + obrona; FC r1: FAIL, raport e1643eea0 w RIVRECON-wip/fc)
+Zakres bez zmian (recon, zero zmian gra/**). POPRAW według FC/Evaluatora r1:
+1. Kluczowe ustalenia r1 do zachowania (zweryfikowane przez FC): domyślna faza generacji to 'main+medium' (riverGenSwitch.ts:73, generator.ts:498); dopływy (tributary) powstają przed bramką gen-helpers.ts:11971 (11861/11873), ale render domyślnie ich NIE pokazuje (scene.ts stage 2, ~1539–1546); 'short' = 0 w pomiarach r1. To jest prawdopodobna główna przyczyna „za mało rzek”: wygeneruje się 8–146 dopływów na mapę, których gracz domyślnie nie widzi.
+2. POMIAR WSZYSTKICH 15 MAP (dozwolone: npm ci --ignore-scripts w worktree, esbuild bundle; usuń node_modules po pomiarach; dysk >= 6 GB wolny — jest ~16 GB): doliczyć 240x168 seed 99 i 2026; dla każdej mapy liczba rzek per rodzaj (main/medium/short/tributary), długość w heksach, ile jest WIDOCZNE domyślnie, liczba źródeł głównych, czas generowania.
+3. LICZBY PO PODWOJENIU ŹRÓDEŁ (symulacja bez zmiany kodu: parametr N siatki/mainCell przez override w skrypcie pomiarowym w scratchpadzie): dla 15 map liczba rzek i czas generowania przy N/√2; osobno dla map stałych/Ziemia.
+4. ODCZYT bde050bcf (RIVMOUTH-wip/fc3): czy poprawka `nd<1` i tryForkMouthAtGap zmienia liczbę rzek; z czym koliduje podwojenie źródeł (reguła sąsiedztwa sep, bufor od morza).
+5. PRZESZUKAJ docs/archiwum/**, docs/decyzje/**, dyspozycje/REJESTR-PROSB-I-ZADAN.md pod kątem reguł „rzeki główne / boczne / trzeciego poziomu / średnie / krótkie / dopływy / AC-7 / FALA 170 / FALA 174 / monotonia”; zacytuj pliki i linie albo napisz NIE ZNALEZIONO z listą przeszukanych ścieżek; rozstrzygnij rozbieżność N=15 (siatka wody wg spec) vs mainCell 5/10 (kod, newGameMapDefaults.ts:281, 338).
+6. WARIANTY TRZECIEGO POZIOMU z liczbami z pkt 2–3: (A) trzeci poziom = 'short' (włączyć/ustawić generowanie i widoczność), (B) pokazać domyślnie dopływy (stage 2) bez nowego typu, (C) nowy typ — dla każdego: ile rzek na mapę, wygląd, koszt generowania, ryzyko dla pinów. Warianty różnią się SKUTKIEM dla wyglądu mapy (dla właściciela po polsku).
+7. PINY/PROGI testów rzek: uruchom lekkie testy rzek (river-path-adjacency, river-mouth-gap-enforce, medium-river-test, map-continents-rivers jeśli lekki) na bazie i podaj, które pliki-piny zawierają hashe/progi do przepięcia dla (a) poziom 3/dopływy widoczne, (b) 2× źródeł, (c) bde050bcf.
+8. STATUS raportu zgodny z kryterium: PASS tylko gdy pkt 1–7 spełnione; w przeciwnym razie BLOCK z powodem.
+Allowlista: bez zmian. Zakazy: bez zmian.
