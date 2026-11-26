@@ -11,7 +11,7 @@ wszystkie na typie `wyspy`, deterministycznie powtarzalne. Pozostałe 5 narusze�
 
 Liczba twardych naruszeń: baza = 5, kandydat = 11 (zgodne z raportem FC).
 
-Przyczyna (eksperyment ablacji, nie tylko domysł): nowy wywołanie `purgeOpenOceanLandSpecks(hexes)`
+Przyczyna (eksperyment ablacji, nie tylko domysł): nowe wywołanie `purgeOpenOceanLandSpecks(hexes)`
 w przebiegu 3e-final (`gra/src/map/generator.ts`, po `ensureRiverOutlets`, dla wszystkich typów)
 zamienia w morze suche heksy bez lądowego sąsiada. Wyłączenie tego jednego wywołania
 (na kopii kandydata, bez commita) zeruje osierocone heksy dla seed 777 / rivers=medium / wyspy
@@ -84,3 +84,44 @@ poprawka nie cofa efektu MAPFIX na „0 samotnych lądów”.
 - Pangea (sekcja C) nie jest regresją MAPFIX; to ISTNIEJĄCE naruszenie bazy (4/5 przypadków).
 - Pełne liczby surowe: `dyspozycje/analizy/map-regression-diag/base-results.tsv`,
   `cand-results.tsv`, `cand-repeat.tsv`, `trace-nopurge.tsv`.
+
+## Obrona (runda 1): pomiary dodatkowe i odpowiedzi na zarzuty Evaluatora
+
+Źródło liczb: `dyspozycje/analizy/map-regression-diag/def-results.tsv` (skrypt `measure-def.cjs`, kod z f781bbd0a
+w kopii poza repo; sekcja 2 — generator 3e-final, `riverPaths` jak w teście; rivers=high = poziom maksymalny).
+Miara „samotne lądy” = heks lądowy bez ŻADNEGO lądowego sąsiada (ta sama definicja co purge; woda wg `isWaterTerrain`).
+
+| Przypadek (seed / typ / rzeki) | MAPFIX f781: osierocone | MAPFIX: samotne lądy | MAPFIX: heksy rzeki zamienione w morze (klucze q,r) | Wariant V1 (purge pomija heksy rzek): osierocone | V1: samotne lądy |
+|---|---|---|---|---|---|
+| 777 / wyspy / high | 10 | 0 | 3 (50,16; 92,19; 35,32) | 0 | 3 |
+| 7 / wyspy / high | 18 | 0 | 1 (64,32) | 0 | 1 |
+
+- Osierocone 10 i 18 zgadzają się z pierwszym przebiegiem runnera (cand-results.tsv) — wynik deterministyczny.
+- Wariant V1 = proponowana poprawka z sekcji „Propozycja” (pominięcie heksów z `riverPaths` w purge). Zeruje osierocone,
+  ale ODSŁANIA samotne lądy (3 i 1). Cel MAPFIX „0 samotnych lądów” jest więc łamany — poprawka w tej postaci NIE spełnia celu.
+- NIE ZMIERZONO: wariant „purge przed ensureRiverOutlets” (zarzut 2, druga część propozycji); samotne lądy na mapach
+  rivers=medium i dla bazy 690947a2a (baza nie ma purge w 3e-final, więc miara bazy jest tu nieistotna).
+
+### Odpowiedzi na zarzuty Evaluatora (f0187548a → 37767b306)
+
+1. **Mechanizm na poziomie heksu — PRZYJMUJĘ, częściowo domknięte.** Purge zamienił 3 heksy rzeki (777/high) i 1 (7/high);
+   klucze w tabeli. Nie śledzono sąsiedztwa każdego osieroconego segmentu — NIE ZMIERZONO.
+2. **Propozycja poprawki nie zmierzona — PRZYJMUJĘ i zmierzone.** Pominięcie heksów rzek: osierocone 0, ale samotne lądy 3 i 1.
+   Poprawka w tej postaci odrzucona jako kandydat do wdrożenia. Wariant „purge przed ensureRiverOutlets” — NIE ZMIERZONO.
+3. **Brak metryki samotnych lądów w ablacji — PRZYJMUJĘ, uzupełnione** w tabeli powyżej (dla 2 przypadków high).
+   Dla przypadków medium — NIE ZMIERZONO.
+4. **Stan main — PRZYJMUJĘ jako fakt.** `git grep` na origin/main: `gra/src/map/generator.ts:743: purgeOpenOceanLandSpecks(hexes);`
+   (oraz linia 463). Wywołanie w 3e-final jest więc w main. Decyzja o MAPFIX (wycofanie / poprawka / akceptacja ryzyka)
+   należy do orkiestratora; ta diagnoza nie zmienia kodu.
+5. **Kandydat na bazie 1bb77a7a0 — PRZYJMUJĘ (wyjaśnione w wniosku powyżej).** Różnice w `gra/src/map` to 3 pliki MAPFIX.
+6. **Powtórzenie pomiarów — PRZYJMUJĘ jako ograniczenie.** Powtórzono 6 przypadków NOWYCH (`cand-repeat.tsv`, wynik identyczny);
+   w obronie dodatkowo powtórzono 777/high (10) i 7/high (18) — identycznie. Sekcje A, C, D, E nie były ponownie mierzone
+   w tej rundzie — NIE ZMIERZONO (wnioski o nich opierają się na pierwszym przebiegu).
+7. **Kosmetyka — PRZYJMUJĘ.** Literówka „nowy wywołanie” poprawiona na „nowe wywołanie”. Pliki `.entry-*`/`.bundle-*` runnera
+   nie są śledzone przez git i nie wchodzą do commita.
+
+### Wniosek po obronie
+
+MAPFIX nadal NIE jest bezpieczny w obecnej postaci: 6 NOWYCH naruszeń (wyspy, sieć rzek) i łamanie celu „0 samotnych lądów”
+przy najprostszej poprawce (pominięcie heksów rzek) — poprawka wymaga osobnego tematu z pomiarem sekcji B i metryki
+samotnych lądów łącznie, wariant „purge przed ensureRiverOutlets” do zmierzenia.

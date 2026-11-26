@@ -1,0 +1,5 @@
+label	seed	rivers	typ	orphanCount	riverHexCount	land	solitaryLand	purgedRiverHexes	purgedRiverKeys	sec
+v0-MAPFIX-f781bbd0a	777	high	wyspy	10	8996	10068	0	3	50,16;92,19;35,32	423
+v1-purge-skips-river-hexes	777	high	wyspy	0	8999	10071	3	0	-	414
+v0-MAPFIX-f781bbd0a	7	high	wyspy	18	8430	10070	0	1	64,32	333
+v1-purge-skips-river-hexes	7	high	wyspy	0	8431	10071	1	0	-	342
