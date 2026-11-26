@@ -1320,13 +1320,8 @@ export async function renderLandRiversFromPaths(
     if (landPath.length > 480) continue;
 
     const landLen = landPath.length;
-    let widthMul = kind === 'main'
-      ? Math.min(1.35, 0.85 + landLen * 0.008)
-      : landLen < 10
-        ? 0.4
-        : landLen < 18
-          ? 0.55
-          : 0.7;
+    // RIVERS3A: trzy różne grubości (main > medium > tributary/short).
+    const widthMul = riverWidthMulForKind(kind, landLen);
     const halfWidth = mainHalfWidth * widthMul;
 
     // Terminal edge na każdej trasie; środek last tylko ujście do morza (kotwica przybrzeża).
@@ -1507,11 +1502,21 @@ function reportSceneProgress(
 type RiverPathKind = 'main' | 'medium' | 'short' | 'tributary';
 
 /**
+ * Domyślny etap renderu rzek. RIVERS3A (2026-11-26, decyzja właściciela 14C): domyślnie
+ * widoczne są TRZY poziomy rzek (main + medium + dopływy tributary/short).
+ * Wcześniej domyślnie 2 (main+medium, FALA 174) — zmienione na 3.
+ */
+export const RIVER_RENDER_DEFAULT_STAGE = 3;
+
+/**
  * Kill-switch renderu rzek w buildScene (nie mapgen).
- * FALA 174/177 — domyślnie 2 (main+medium); tylko main ?riverStage=1 · pełny ?riverStage=5.
+ * RIVERS3A — domyślnie 3 (main+medium+dopływy); tylko main ?riverStage=1 · main+medium ?riverStage=2 ·
+ * pełny ?riverStage=5.
  * 0 = zero meshów · 1 = main · 2 = main+medium · 3 = +short/tributary ·
  * 4–5 = pełny tor (legacy; ujścia coastal są z main od FALA 177 — NIE dopiero od 4).
  * Wyłączenie: ?riverStage=0 lub localStorage civ-river-render-stage=0.
+ * Uwaga: kod NIE zapisuje klucza localStorage; wpis istnieje wyłącznie po jawnym wyborze gracza,
+ * więc zapisana wartość (np. 2) jest traktowana jako świadomy wybór i zostaje respektowana.
  */
 export function getRiverRenderStage(): number {
   if (typeof location !== 'undefined') {
@@ -1528,10 +1533,24 @@ export function getRiverRenderStage(): number {
       if (!Number.isNaN(n) && n >= 0 && n <= 5) return n;
     }
   } catch { /* private mode / SSR */ }
-  return 2; // FALA 174: główne + średnie (Maciej playtest)
+  return RIVER_RENDER_DEFAULT_STAGE; // RIVERS3A: główne + średnie + dopływy (było 2: FALA 174)
 }
 
-function filterRiverPathsForStage(
+/**
+ * RIVERS3A: półszerokość (mnożnik mainHalfWidth) per poziom rzeki.
+ * main: bez zmian (0,85–1,35 wg długości). medium: 0,7 × dotychczasowej reguły długości
+ * (0,4/0,55/0,7), nie mniej niż 0,35. tributary/short: stała 0,3 (czytelność; patrz raport).
+ */
+export function riverWidthMulForKind(kind: RiverPathKind, landLen: number): number {
+  if (kind === 'main') return Math.min(1.35, 0.85 + landLen * 0.008);
+  if (kind === 'medium') {
+    const legacy = landLen < 10 ? 0.4 : landLen < 18 ? 0.55 : 0.7;
+    return Math.max(0.35, 0.7 * legacy);
+  }
+  return 0.3;
+}
+
+export function filterRiverPathsForStage(
   paths: Array<Array<{ q: number; r: number }>>,
   pathKinds: Array<RiverPathKind | undefined>,
   stage: number,
