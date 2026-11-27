@@ -1,20 +1,31 @@
-STATUS: FAIL
-DOMAIN: GAME
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (pomiar; zero zmian gra/src)
 TEMAT: R-WEB-PLAYER-LASTCITY-REVOLT-Q1
-GOAL: pomiar, czy gracz moze stracic ostatnie miasto przez bunt i jak czesto; mechanizm utraty; skutek w UI (runda 3, FC r3).
-ZMIANY/COMMIT: kandydat 3bef0082b (nad e30c34405), baza 909a057fa480bef0b7f78f2d1f66f66ffa266df9. `git merge-base --is-ancestor baza kandydat`: OK. `git diff --stat baza..kandydat`: 66 plikow, +1687/-190; gra/src: tylko gra/src/main.ts +47 (0 usuniec); gra/data: 0. Reszta: dyspozycje/analizy/GRACZ-BUNT-*.md, runs/R-WEB-PLAYER-LASTCITY-REVOLT-Q1/** (dane-r3, raporty), gra/tools/plrrevolt-{run,r3-table}.cjs. Allowlista r3: zgodna. Przeglad diffu main.ts: 5 wywolan noteCityOwnerChangeForTest (po przypisaniu city.ownerId, bramka isCivTestEnabled na wejsciu, tylko push do tablicy) + obiekt window.__cityOwnerChangeLogDebug (odczyt). Nie widze wplywu na stan/RNG gry poza civTest.
-TESTY (wlasne, z surowego wyjscia, na 3bef0082b): tsc --noEmit exit 0 (0 bledow); logic-test 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat "All sanity checks passed"; unit-power 6/0; ai-test 297/0; society-breakdown 56/0; ai-city-rebellion-gate 37/0 (PASS=37 FAIL=0). Bramka "wiring 267/0": NIE URUCHOMIONO (brak jednoznacznego testu o tej nazwie w gra/tools; dispatch nie podaje komendy). Live Chromium: NIE URUCHOMIONO (zaufano danym w commicie; zob. nizej).
-OCENA ZARZUTOW (bez etykiet rol):
-1. Readback poza commitem: POTWIERDZONY WLASNYM POMIAREM. `git check-ignore` -> .gitignore:20 `*.log`; `git ls-files` runs/... | grep 'run.log|readback' = 0; zcat jsonl.gz pas-trudny-s7 | grep -ci 'barbariansLevel|readback' = 0. Runner (plrrevolt-run.cjs:614-618) loguje readback tylko do konsoli. Dispatch r3 pkt 4 wymagal go w commicie jako warunku weryfikowalnosci "maksimum ustawien" (barbarzyncy Trudny, Wysoki x4, dyplomacja trudna) - jawne kryterium niespelnione, a bez niego wiersze tabeli nie sa weryfikowalne z repo. Obrona uczciwie przyznaje i odsyla do ponownego biegu. Decyzja: NAPRAW (to jedyny zarzut powodujacy FAIL).
-2. Rozbieznosc z REALDEF4: dokument po obronie ma "NIE WYJASNIONA w pelni" (§0 pkt 3, §6) - uczciwie. ODDAL jako uwaga (nie blokuje; wniosek o mechanizmie nie zalezy od tury).
-3. Brak dowodu bit-w-bit hooka vs 909a057fa: ODDAL jako uwaga. Moje bramki (ai-test 297/0, logic 213, pozostale zielone) plus przeglad diffu (bramka civTest, tylko dopisywanie do tablicy) wystarczaja na brak zmiany logiki; A/B z baza NIE ZMIERZONO.
-4. Kosmetyka summary (sciezki naprawione w obronie; ownerChangesTail puste): ODDAL jako uwaga; dane zrodlowe sa w jsonl.
-5. Zakres wniosku "bunt nieosiagalny": dokument po obronie ogranicza wniosek do pop 1-4 i jawnie pisze NIE ZMIERZONO dla pop >= 5 oraz o odstepstwie kultury AI (normalny, nie maksimum trudny; regula maksimum wlasciciela z 2026-11-26 nie spelniona dla tego parametru, odstepstwo zapisane). ODDAL jako uwaga.
-CO JEST POPRAWNE I ZOSTAJE: brak ochrony ostatniego miasta gracza przed buntem (society-breakdown.ts:522-533 tylko AI); w 9 biegach pasywnego gracza utrata jedynego miasta = barbarzyncy (0 -> -1, applyCityCaptureToMap), 0 zmian na -99; skutek UI: karta KLESKA z "WCZYTAJ GRE"/"ROZPOCZNIJ OD NOWA", bez "Wroc na mape"; zrzuty w dane-r3.
-BLOKADY (minimalna naprawa do PASS):
- (a) dla KAZDEGO z 9 biegow (kultura x ziarno) zapisac readback ustawien (w tym barbariansLevel=trudny z hooka settings(), kosztJednostek=wysoki, kultura gracza/AI, dyplomacja=trudna, difficulty) do pliku w repo NIE o rozszerzeniu .log (np. *.txt albo pole w summary.json) i zacommitowac; wymaga ponownego biegu na maksimum (kultura AI = trudny jesli wykonalne, inaczej odstepstwo zostaje zapisane).
- (b) opcjonalnie (uwagi): uzupelnic why.ownerChangesTail w summary; A/B hooka vs 909a057fa.
-RUNDY: FC r3 (3/5 rund tematu; poprzednie FC r1, r2 FAIL).
-NASTEPNY KROK: runda 4 Operatora tylko na blokade (a), bez zmian gra/src; potem Evaluator -> FC.
-UWAGI-DLA-ORKIESTRATORA: wzorzec *.log w .gitignore blokuje commit logow runnera - naprawa po stronie runnera (zapis readback do .txt/summary), nie .gitignore. Bramka "wiring 267/0" z dispatchu nie ma przypisanej komendy w R-PROC-AUTOBOT §6; doprecyzowac.
+GOAL: pomiar, czy gracz moze stracic ostatnie miasto przez bunt; r4 = readback ustawien, A/B inertnosc haka civTest, ownerChangesTail, dokument.
+ZMIERZENIA FC (kandydat 6ab34c647, baza bf299e885):
+- `git merge-base --is-ancestor bf299e885 6ab34c647`: OK (ANCESTOR_OK). Commity bf299e885..6ab34c647: 3f6bae092 (operator r4), 6ab34c647 (obrona r4).
+- `git diff --stat bf299e885 6ab34c647 -- gra/src gra/data`: 0 linii. Poza run-dir zmienione tylko: dyspozycje/analizy/GRACZ-BUNT-OSTATNIE-MIASTO-2026-11-27.md i gra/tools/plrrevolt-run.cjs = allowlista r4. `git diff --check`: czysto.
+- Hak civTest: `git diff --stat 909a057fa bf299e885 -- gra/src` = main.ts +47, 0 usuniec (czysty dodatek); `git diff 3bef0082b bf299e885 -- gra/src` = pusty, co potwierdza twierdzenie dokumentu.
+ZMIANY/COMMIT: kandydat 6ab34c647 (integration_sha); raport FC w commicie raportu.
+TESTY (wlasne uruchomienie, worktree FC po npm ci --ignore-scripts, surowe wyjscie):
+- tsc --noEmit: exit 0, brak bledow
+- logic-test: 213/213
+- tech-tree-test: 20 pass, 0 fail
+- research-test: 33/33
+- unit-replace-test: 21/21
+- combat-test: 6/6
+- ai-test: 297 passed, 0 failed
+- society-breakdown-test: 56 OK, 0 FAIL
+Dane r4 (weryfikacja wlasna): readback 3 biegow (4242/7/778899) zawiera difficulty trudny, kosztJednostekPace wysoki, diplomacyWarLevel trudna, kulturaAI trudny, barbariansLevelGra trudny; ab-compare.txt: 15/15 tur zgodnosc stateHash i digestu; jsonl: zmiany wlasciciela miasta gracza 0->-1 path applyCityCaptureToMap (stos onAuto/showPreBattle), zmian na -99: 0 w kazdym z 3 biegow.
+OCENA ZARZUTOW EVALUATORA (bez etykiet rol):
+1. (brak roznic tur vs REALDEF4) ZALATANY: doc sekcja 00 pkt 5 podaje 4242 +6 tur, 778899 -1, seed 7 ok. +15; zweryfikowane w tekscie. Odrzucony jako blokada.
+2. (stare sekcje bez oznaczenia) ZALATANY: sekcja 0 ma adnotacje "Dokument historyczny r3" z odeslaniem do 00; poprawne. Uwaga kosmetyczna.
+3. (barbariansLevelGra null w A) ZALATANY: opisane wprost w pkt 6; w danych potwierdzone (jeden z 5 summary ma null, to ab-nohook). Wniosek poprawny, bo gra/src A i B roznia sie wylacznie +47 liniami haka a stateHash identyczny 15/15.
+4. (komentarz runnera) ZALATANY: obrona poprawila komentarz, zachowanie bez zmian (diff gra/tools: 1 wiersz).
+5. (brak GRACE15 w bazie) PRZYJETY JAKO OGRANICZENIE, nie blokada: wniosek dotyczy kodu sprzed FALI 935; GRACE15 jest juz na main (zadanie #217), wiec przed pytaniem ABC pomiar trzeba powtorzyc na aktualnym main.
+6. (1 ziarno A/B, 15 tur; pop >= 5 nie zmierzone) PRZYJETY jako jawne ograniczenie zgodne z dispatchem.
+BLOKADY: brak. Ograniczenia: A/B tylko ziarno 4242, t2-t16; bunt przy populacji >= 5 NIE ZMIERZONO; wynik dotyczy kodu bez GRACE15.
+RUNDY: 4/5 (FC r4).
+NASTEPNY KROK: integracja orkiestratora (dokument + dane + narzedzie, bez deployu; zero zmian gra/src wzgledem bf299e885). Pytanie ABC o ochrone ostatniego miasta gracza dopiero po pomiarze na bazie z GRACE15 (FALA 935).
+UWAGI-DLA-ORKIESTRATORA: (a) wynik merytoryczny: w tych biegach gracz traci jedyne miasto przez barbarzyncow (t16/t29/t12), nie przez bunt; ochrony ostatniego miasta gracza przed buntem w kodzie nie ma (society-breakdown.ts:522-533 tylko AI), ale przy pop 1-4 bunt jest wylaczony (immunitet osiedla); (b) powtorzyc krotki pomiar na main z GRACE15 (miasto dluzej zyje, pop >= 5 staje sie osiagalna); (c) ekran porazki po utracie: "TWOJE IMPERIUM UPADLO" z WCZYTAJ GRE / ROZPOCZNIJ OD NOWA.
 DEPLOY/PUSH: NIE WYKONANO
