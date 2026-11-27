@@ -1569,6 +1569,9 @@ fn run_midchange(
     if let Some(k) = sv["speedMul"].as_f64() {
         assert_eq!(s.set_speed_idx(speed_idx_of(k), false), k);
     }
+    // R-RUSTPORT-P4-414 (Obrona r1, Z1/Z3): doktryna jednostek z wektora przed pierwszą klatką (generator: `sc.doctrine`,
+    // pole `ru.unitDoctrine` ustawione przed `play()`, jak w [`run_move_order_vector`]).
+    apply_vector_doctrine(&mut s, sv, bv);
     let ids = s.roster_ids().clone();
     let key = |u: UnitRef| {
         let side = usize::from(u.side != BattleSide::Attacker);
@@ -1945,11 +1948,11 @@ const SPEED_CHANGE_VECTORS_2: &str =
 /// (`BLOW_HIT_T`, `:9122`) i wypad po ciosie przed końcem (`BLOW_LUNGE_MS`, `:9149`).
 const RAF_KLASY: [&str; 4] = ["movingPh", "movingAdv", "lungeShift", "lungeTail"];
 
-/// Klasy wymagane w pokryciu (≥ 2 bitwy każda). Krok falangi (`movingPh`) jest w AUTO oblężenia nieosiągany w pinie
-/// (sonda generatora #414: obrońcy kończą `_activateUnit` w `battleScene.ts:6225-6236`, atakujący z doktryną AUTO idą
-/// przez `_executeGroupDoctrineStep` `:6092-6098`; 0 wywołań `_phalanxStep` w 21 scenariuszach bazowych i 2 scenariuszach
-/// z 2–3 falangami atakującego) — liczony, nie wymagany.
-const RAF_KLASY_WYMAGANE: [&str; 3] = ["movingAdv", "lungeShift", "lungeTail"];
+/// Klasy wymagane w pokryciu (≥ 2 bitwy każda). Krok falangi (`movingPh`) osiąga w oblężeniu falanga atakującego z
+/// doktryną jednostki `'manual'`: `_isUnitDoctrineAuto` (`battleScene.ts:17621-17623`) = false, więc `_activateUnit`
+/// omija gałąź doktryny (`:6092-6098`) i dochodzi do `:6290` `_phalanxAction` → `_phalanxStep` `:6588` → `_doMove`
+/// `:6635` (scenariusze `EXTRA2_SCENARIOS` generatora, Obrona r1 Z1).
+const RAF_KLASY_WYMAGANE: [&str; 4] = ["movingPh", "movingAdv", "lungeShift", "lungeTail"];
 
 /// R-RUSTPORT-P4-414 (D-414-1): wektory `speed_change_vectors_2.json` (generator `WIRING_A_SPEED_CHANGE2_VECTORS=1`);
 /// nadpisanie ścieżką `WIRING_A_SPEED_CHANGE2_FILE` (tylko diagnostyka kandydatów).
@@ -1967,9 +1970,35 @@ fn speed_change_vectors_2() -> Value {
     doc
 }
 
+/// R-RUSTPORT-P4-414 (Obrona r1, Z1): doktryna jednostek wektora (`doctrine = { atk, def }`, wartość albo lista per
+/// indeks rosteru `a<i>`/`d<i>`, napis pinu `battleScene.ts:1938`) w polu `unit_doctrine` ciała przed pierwszą klatką —
+/// odpowiednik `ru.unitDoctrine = x` generatora przed `play()`. Brak pola `doctrine` = bez zmian (wektory bez doktryny).
+fn apply_vector_doctrine(s: &mut SiegeBattleSession, sv: &Value, bv: &Value) {
+    use civ_engine::domain::siege_tactics_doctrine_state::GroupDoctrine;
+    let ids = s.roster_ids().clone();
+    for (ix, side, pfx) in [(0usize, "atk", 'a'), (1, "def", 'd')] {
+        let d = &sv["doctrine"][side];
+        if d.is_null() {
+            continue;
+        }
+        let n = bv["input"][if ix == 0 { "attacker" } else { "defender" }]
+            .as_array()
+            .unwrap()
+            .len();
+        for i in 0..n {
+            let x = if d.is_array() { &d[i] } else { d };
+            let Some(name) = x.as_str() else { continue };
+            let doc = GroupDoctrine::parse(name).unwrap_or_else(|| panic!("doktryna wektora {name}"));
+            let id = format!("{pfx}{i}");
+            let idx = ids[ix].iter().position(|r| *r == id).expect("id rosteru");
+            s.battle_loop_mut().env.body.doctrine[ix][idx].unit_doctrine = Some(doc);
+        }
+    }
+}
+
 /// R-RUSTPORT-P4-414: scenariusz bazowy wektora klas `_raf`: wpis `vectors.json` (wejście wektora musi być z nim równe)
-/// albo — dla scenariuszy spoza `vectors.json` (`EXTRA2_SCENARIOS` generatora: ≥ 2 falangi atakującego) — wejście
-/// zapisane w samym wektorze (`input`, `seed`, `battleIndex`).
+/// albo — dla scenariuszy spoza `vectors.json` (`EXTRA2_SCENARIOS` generatora: falangi atakującego z doktryną
+/// `'manual'`) — wejście zapisane w samym wektorze (`input`, `seed`, `battleIndex`, doktryna w `doctrine`).
 fn base2(by_name: &BTreeMap<String, Value>, sv: &Value) -> Value {
     let name = sv["name"].as_str().unwrap();
     match by_name.get(sv["base"].as_str().unwrap()) {
@@ -2008,9 +2037,13 @@ fn zmiana_predkosci_w_trakcie_klasy_raf_wektory_pinu_bajt_w_bajt() {
     let mut rozbiezne = Vec::new();
     let mut cov = BTreeMap::<&str, std::collections::BTreeSet<String>>::new();
     let mut n_events = 0;
+    let mut n_extra = 0;
     for sv in list {
         let name = sv["name"].as_str().unwrap();
         let bv = &base2(&by_name, sv);
+        if !by_name.contains_key(sv["base"].as_str().unwrap()) {
+            n_extra += 1;
+        }
         assert!(bv["frameMs"].is_null(), "{name}: tylko klatka produkcyjna");
         assert_eq!(sv["mode"], "realtime");
         assert_eq!(sv["expect"]["otherRandom"], 0, "{name}");
@@ -2066,9 +2099,11 @@ fn zmiana_predkosci_w_trakcie_klasy_raf_wektory_pinu_bajt_w_bajt() {
             );
         }
         assert!(n_events > 0, "brak zdarzeń");
+        // Obrona r1 (Z3): gałąź `base2` dla scenariuszy spoza `vectors.json` (falangi z doktryną `'manual'`) w użyciu.
+        assert!(n_extra >= 2, "wektorów spoza vectors.json {n_extra}");
     }
     eprintln!(
-        "FQ-SPEED-MIDCHANGE-2: przypadków {}, zdarzeń {n_events}, klasy (bitwy): {:?}",
+        "FQ-SPEED-MIDCHANGE-2: przypadków {}, spoza vectors.json {n_extra}, zdarzeń {n_events}, klasy (bitwy): {:?}",
         list.len(),
         cov.iter().map(|(k, s)| (*k, s.len())).collect::<Vec<_>>()
     );

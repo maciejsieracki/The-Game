@@ -953,12 +953,20 @@ if (process.env.WIRING_A_SPEED_CHANGE_VECTORS) {
   process.exit(0);
 }
 
-// R-RUSTPORT-P4-414 (sonda, kryterium 1): krok falangi `_phalanxStep` (`:6588-6636`) NIE jest osiagany w AUTO oblezenia:
-// obroncy oblezenia koncza `_activateUnit` w `:6225-6236` (przed `:6290`), a atakujacy z doktryna AUTO (`unitDoctrine`
-// null + `autoPlay` grupy domyslnie true, `_isUnitDoctrineAuto` `:17621-17628`) wykonuja `_executeGroupDoctrineStep`
-// (`:6092-6098`) przed galezia taktyczna. Zmierzone: 0 wywolan `_phalanxStep` w 21 scenariuszach bazowych i w 2
-// scenariuszach z 2-3 falangami atakujacego (palisada / mury z taranem, x1 do konca bitwy).
-const EXTRA2_SCENARIOS = [];
+// R-RUSTPORT-P4-414 (Obrona r1, Z1/Z3): krok falangi `_phalanxStep` (`:6588-6636`) w oblezeniu. Obroncy oblezenia
+// koncza `_activateUnit` w `:6225-6236` (przed `:6290`), a atakujacy z doktryna AUTO (`unitDoctrine` null, `autoPlay`
+// grupy domyslnie true) ida przez `_executeGroupDoctrineStep` (`:6092-6098`) - stad 0 wywolan `_phalanxStep` w
+// scenariuszach bazowych. Doktryna jednostki `'manual'` (`GroupDoctrine` `:1938`) daje `_isUnitDoctrineAuto` = false
+// (`:17621-17623`), wiec falanga atakujacego omija galaz doktryny i dochodzi do `:6290` `_phalanxAction` -> `_phalanxStep`
+// `:6588` -> `_doMove` `:6635`. Doktryna ustawiana przed `play()` mechanizmem `sc.doctrine` (#404, pole `ru.unitDoctrine`)
+// i zapisywana w wektorze (`doctrine`). Scenariusze spoza `vectors.json`: wejscie sceny zapisane w samym wektorze.
+const F = ['Falanga', 'falanga'];
+const EXTRA2_SCENARIOS = [
+  // mury, rzeka; dwie falangi atakujacego z doktryna `manual` (sonda: 78 wywolan `_phalanxStep`, tury 1-32).
+  { name: 'ev_falangi_manual_mur', mode: 'skip', seed: 409, built: ['mury'], world: { baza: 'Równina', las: false, rzeka: true }, atk: [F, F, W, W, L, L], def: [W, F, L, L], doctrine: { atk: ['manual', 'manual'] } },
+  // palisada z taranem; trzy falangi atakujacego z doktryna `manual` (sonda: 228 wywolan `_phalanxStep`, tury 1-12).
+  { name: 'ev_falangi_manual_pal', mode: 'skip', seed: 414, built: ['palisada'], atk: [F, F, F, W, W, ['Taran', 'obleznicza']], def: [W, L, L], doctrine: { atk: ['manual', 'manual', 'manual'] } },
+];
 // R-RUSTPORT-P4-414 (FQ-SPEED-MIDCHANGE-VEC-2, D-414-2): SONDA (`WIRING_A_SPEED_CHANGE2_SONDA=1`, podzial
 // `WIRING_A_SPEED_CHANGE2_SHARD=k/n`, wynik JSON do `WIRING_A_OUT`): kazdy scenariusz bazowy `SCENARIOS` z klatka
 // produkcyjna w czasie rzeczywistym x1 z obserwatorami `probe2` (bez zmian predkosci): kroki falangi / `_advanceToward`
@@ -1010,6 +1018,9 @@ const SPEED_CHANGE2_CASES = (() => {
     ['fq_wzg_lucz2_d8l_palisada_162', 2, [[{ when: 'lungeTail', afterRound: 2 }, 16]]],
     ['p3_rown_mix_d8l_palisada_218', 4, [[{ when: 'lungeTail', afterRound: 2 }, 1]]],
     ['mi_las_mix_d3l_palisada_118', 1, [[{ when: 'lungeTail', afterRound: 2 }, 64]]],
+    // Krok falangi (`_phalanxStep` `:6635`) atakujacego z doktryna `manual` (`EXTRA2_SCENARIOS`, Obrona r1 Z1).
+    ['ev_falangi_manual_pal', 1, [[{ when: 'movingPh', afterRound: 2 }, 4]]],
+    ['ev_falangi_manual_mur', 2, [[{ when: 'movingPh', afterRound: 3 }, 1]]],
   ];
   return list.map(([b, s0, ch]) => {
     if (!base.some((s) => s.name === b)) throw new Error('brak scenariusza bazowego ' + b);
@@ -1057,6 +1068,8 @@ if (process.env.WIRING_A_SPEED_CHANGE2_VECTORS) {
       // Wejscie sceny w wektorze (scenariusze `EXTRA2_SCENARIOS` nie maja wpisu w `vectors.json`; dla pozostalych test
       // sprawdza rownosc z `vectors.json`).
       seed: v.seed, battleIndex: v.battleIndex, input: v.input,
+      // Doktryna jednostek przed `play()` (`sc.doctrine`, Obrona r1 Z1): test Rust ustawia ja przed pierwsza klatka.
+      ...(v.doctrine ? { doctrine: v.doctrine } : {}),
     });
     console.error(`${c.name}: ${v.expect.winner} tura ${v.expect.roundNo} klatek ${v.frames} zdarzen ${v.events.length} zmiany ${JSON.stringify(v.speedChanges.map((a) => [a.frame, a.from, a.speedMul, a.roundNo, a.movingPh, a.movingAdv, a.lungeShift, a.lungeTail]))} (${Date.now() - tS} ms)`);
   }
