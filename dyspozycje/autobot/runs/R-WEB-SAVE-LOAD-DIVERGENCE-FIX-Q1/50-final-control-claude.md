@@ -1,33 +1,32 @@
-# R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1 (SAVEFIX) — Final Control, runda 2/5
-
 STATUS: FAIL
-DOMAIN: GAME (integralnosc zapisu, priorytet 1)
+DOMAIN: GAME (integralność zapisu)
 TEMAT: R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1
-GOAL: znalezc przyczyne B != A po wczytaniu zapisu i naprawic (B == A przez 6 tur). NIE OSIAGNIETE.
-ZMIANY/COMMIT: kandydat 9f7e7f6cd; baza 9d6750a73 jest przodkiem (git merge-base --is-ancestor: OK). git diff --stat baza..kandydat: 2 pliki, 117 wstawien, oba w dyspozycje/autobot/runs/R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1/ (10-operator-claude.md, 30-obrona-claude.md). Zero zmian w gra/ (git diff --name-only baza..kandydat -- gra = 0 plikow). Allowlista zachowana, ale poprawki kodu brak.
+GOAL: Po wczytaniu zapisu stan B ma być równy stanowi A (ciągłość zapis-wczytanie). NIE OSIĄGNIĘTE.
 
-## Ocena zarzutow (bez etykiet rol)
-1. Brak poprawki kodu, B != A trwa: SLUSZNY. Kandydat to wylacznie raport; cel nieosiagniety. NAPRAW.
-2. Brak potwierdzonej diagnozy: SLUSZNY. Eksperyment r2 odrzucil hipoteze "tylko hexy" (B nadal != A od t4); przyczyna nieznana. NAPRAW (bisekcja stanu poza zapisem).
-3. Brak testu continuity, zgodnosci wstecznej, mutacji czerwonej, istniejacych testow zapisu: SLUSZNY. NAPRAW (po znalezieniu przyczyny).
-4. Brak dokumentu analizy: SLUSZNY. NAPRAW.
-5. Bramki nieuruchomione: formalnie sluszny; dla commita bez zmian gra/ wynik bramek = wynik bazy (brak regresji kodu), ale wymog dispatchu niespelniony. ODDAL (uwaga); wymog wraca w rundzie z kodem.
-6. Artefakt harnessu vs realny blad: SLUSZNY i dobrze rozpoznany przez obrone (restoreJson omija mapSnapshot; wczytanie z pauzy w tej samej grze nie odbudowuje mapy). Wymaga testu przed zmiana zachowania. ODDAL jako osobny kandydat BLAD-GRY.
+ZMIANY-COMMIT: kandydat cbeddd1fdab6379abc9550ddfcfab417e049fbb9, baza 31a1ad39d93e2f8b64ef37fc6cca974fb2849e63.
+- `git merge-base --is-ancestor` baza -> kandydat: ANC_OK.
+- `git diff --stat` baza..kandydat: 4 pliki (dokument stanu ZAPIS-WCZYTANIE-ROZBIEZNOSC-NAPRAWA-2026-11-27.md, 10-operator-claude.md, 30-obrona-claude.md, diag-savefix-r2-main.patch), 220+/91-. Wszystko dokumentacja/run-dir; w allowliście.
+- `git diff --name-only baza..kandydat -- gra` = 0 plików. Zero zmian w kodzie gry.
+- savedigest-run.cjs: zgodny z bazą (zarzut 7 naprawiony). `grep -c __savefixDiag gra/src/main.ts` = 0.
+- Brak plików `gra/tools/save-load-continuity-*` (0).
 
-## Odpowiedzi obrony
-Obrona przyjela zarzuty 1-6 i uczciwie oznaczyla NIE ZMIERZONO. Wartosc dodana: pomiar r2 (cfg max, seed 4242, zapis po t3, K=6: B != A w t4-t9; nUnits zgodne 49/60/65/74/74/91; przyrost lenNoPP t3->t4 identyczny 1834; stala roznica 2730 to reprezentacja) i odrzucenie hipotezy hexow. To postep diagnostyczny, nie spelnienie celu.
+OCENA ZARZUTÓW (bez etykiet ról):
+1 (brak poprawki): POTWIERDZONY, git diff -- gra = 0. Obrona przyjęła.
+2 (przyczyna nieznana): POTWIERDZONY, dokument stanu sam to deklaruje.
+3 (brak testu ciągłości, zgodności wstecznej, mutacji czerwonej): POTWIERDZONY.
+4 (brak dokumentu): ODDALONY formalnie (dokument istnieje), ale to dokument stanu bez przyczyny, nie naprawy.
+5 (pokrycie 1/16): POTWIERDZONY, reszta NIE ZMIERZONO.
+6 (ścieżka harnessu): obrona częściowo słuszna (restoreJson przechodzi przez restoreGameFromSave z mapSnapshot); pozostaje niezmierzona ścieżka UI (loadNeedsMapRebuild, regenerateWorldForLoad, wczytanie z pauzy). Zarzut w części o niemierzonej ścieżce UI utrzymany.
+7 (higiena): NAPRAWIONY w kandydacie (potwierdzone diffem i grep-em).
 
-## TESTY (wlasne)
-tsc, 5 bramek referencyjnych i testy tematu NIE URUCHOMIONE: kandydat nie zmienia gra/ (kod identyczny z baza 9d6750a73), a test tematu nie powstal. Pomiary obrony przyjete jako deklaracja, nie powtorzone przeze mnie (NIE ZMIERZONO niezaleznie).
+TESTY: Bramki (tsc, 5 referencyjnych, testy tematu) NIE URUCHOMIONE przeze mnie: kandydat nie zmienia gra/, więc nie ma czego bramkować, a testu tematu nie ma. Wyniki liczbowe: NIE ZMIERZONO. Poziom maks. wg zasady testowania: nie dotyczy (brak pomiarów w tej rundzie).
 
-## BLOKADY
-Przyczyna B != A nieznana; wymaga bisekcji stanu poza zapisem: zrzut map per wlasciciel i cache (aiSkarbiecByOwner, aiPracaPoolByOwner, aiNaukaPoolByOwner, aiBadanaByOwner, ownerDefaultPodzialPracy, citizenUpkeepByOwner, empireFoodStates, goldDeficitStates, territoryHexCountMemo, aiDiploRatesCache, aiDiploTyAll, lastCityKulturaTick, aiWonderPracaTickByCity) w A po t3 vs B po restore, albo ustawianie podzbiorow w B hakiem testowym. Mozliwy JEDEN hak read-only w bloku civTest.
+BLOKADY: brak poprawki w gra/src; przyczyna B != A nieznana; brak testu regresji i mutacji; pomiar tylko dla cfg max/seed 4242/t3; ścieżka UI niezmierzona.
 
-## UWAGI-DLA-ORKIESTRATORA
-- Runda 3: Operator ma robic bisekcje zrzutem stanu, nie kolejne hipotezy z odczytu kodu. Warunek Sonneta (2 nieudane rundy Haiku tego samego tematu) jest spelniony po r2, wymaga pisemnego uzasadnienia w dispatchu.
-- Osobny kandydat BLAD-GRY: wczytanie z pauzy w tej samej grze (loadNeedsMapRebuild=false) nie odbudowuje mapy; do potwierdzenia testem.
-- Przyczyna moze byc niedeterminizmem swiezej sesji, a nie brakiem pol zapisu (dispatch to przewiduje).
+RUNDY: 2/5 zużyte po FC; ten werdykt = FAIL, wraca do Operatora tego samego ID (runda 3). Decyzja właściciela: niewymagana.
 
-RUNDY: 2/5 (FC: FAIL; ostatni Evaluator FAIL, obrona BLOCK; decyzja wymagana: NIE)
-NASTEPNY KROK: runda 3 do TEGO SAMEGO ID, baza = kandydat 9f7e7f6cd (lub main), Operator -> Evaluator -> Obrona -> FC.
+NASTĘPNY KROK: runda 3 (Operator): zrzut ownerBonusy/ownerCivKey/mpMults i pól miasta 26 w A@t3 vs B po restore; bisekcja po kolejności Map i zmiennych let; pomiar ścieżki UI (regenerateWorldForLoad, wczytanie z pauzy); potem poprawka + test save-load-continuity + zgodność wsteczna + mutacja czerwona. Patch diag-savefix-r2-main.patch NIE integrować (poza main.ts zależny od __savefixDiag).
+
+UWAGI-DLA-ORKIESTRATORA: kandydat nadaje się do integracji WYŁĄCZNIE jako dokumentacja stanu (bez gra/), ale nie jest READY_FOR_DEPLOY. Kandydat BŁĄD-GRY (z obrony): wczytanie z pauzy nie odbudowuje mapy, do potwierdzenia testem.
+
 DEPLOY/PUSH: NIE WYKONANO
