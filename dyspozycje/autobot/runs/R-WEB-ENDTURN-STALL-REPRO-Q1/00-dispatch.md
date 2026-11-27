@@ -1,0 +1,16 @@
+# R-WEB-ENDTURN-STALL-REPRO-Q1 (tag ENDSTALL) — dispatch (Operator HAIKU 5.5, runda 1/5; diagnoza na żywo; ZERO zmian gra/src i gra/data)
+DOMAIN: GAME (kandydat BŁĄD GRY — priorytet 1/2). W VLIVE3 (main 3218654a1; dyspozycje/analizy/VERIFY-LIVE-3-2026-11-27.md; log dyspozycje/autobot/runs/R-WEB-VERIFY-LIVE-3-Q1/dane/vlive3-fortring-on-max-PRZERWANY-t12-endturn-blocked.txt) jeden przebieg FORTRING ON na maksimum (seed 4242, Trudny/trudna/Wysoki ×4/kultura trudny) zatrzymał się w turze 12: `[EndTurn] blocked: endTurnInProgress`, bez otwartego modala ani bitwy; powtórka tego samego wariantu i seeda przeszła 20/20 tur. Nie wiadomo, czy to błąd gry (zawieszenie końca tury po stronie AI/animacji), czy harness (Chromium/SIGSEGV/czas).
+GOAL: odtworzyć i zdiagnozować zatrzymanie końca tury: (1) czy daje się odtworzyć powtarzalnie (≥ 8 przebiegów tego samego scenariusza, a także z innymi ziarnami 7 i 778899), (2) jeśli odtworzone — stan gry w chwili zatrzymania (co blokuje: flaga endTurnInProgress, kolejka animacji/awaitów, otwarty element UI, tura AI, czy pętla czeka na zasób), z dowodami z istniejących haków (`__nnsMeasureDebug`, `__settingsLive`, `__aiEconomyMeasure`, logi konsoli gry, czas trwania tury AI, pageerror) i kandydat na przyczynę z kodu (miejsce w main.ts, gdzie endTurnInProgress nie jest zwalniane), (3) jeśli NIE odtworzone w ≥ 8 przebiegach — jawne NIE ZMIERZONO z liczbą prób i ocena „najpewniej harness” z dowodami (czas, load, Chromium crash). Wynik: dokument dyspozycje/analizy/KONIEC-TURY-ZAWIESZENIE-2026-11-27.md i dane surowe (*.txt). Błąd potwierdzony → minimalne odtworzenie (komenda, seed, tura) jako kandydat na temat naprawczy (NIE naprawiaj).
+BAZA: args.cand = origin/main (dokładny SHA z args). `git rev-parse HEAD` w raporcie.
+## Zadanie
+1. Użyj runnera gra/tools/vlive3-fortring-live.cjs (parametry z dokumentu VLIVE3; ON, maksimum Trudny/trudna/Wysoki ×4/kultura trudny, seed 4242, 20 tur) i zapętl: kolejne przebiegi do t20, przy zatrzymaniu zapisz stan hakami i log konsoli; build vite do unikalnego katalogu w /tmp (po pracy usuń); Chromium /opt/pw-browsers/chromium; biegi SEKWENCYJNIE (maszyna ma 4 tematy; load 7–13); Bash w pierwszym planie z timeout ≤ 590000 ms, bez run_in_background; po SIGSEGV wznów do 3 razy.
+2. Dodatkowo scenariusze porównawcze: flaga pierścienia OFF, inne ziarno (7, 778899), niższy poziom kosztów — tylko dla ustalenia, czy zatrzymanie zależy od ustawień.
+3. Dokument + dane w repo.
+## Allowlista
+gra/tools/endstall-*.cjs (nowe), gra/tools/vlive3-fortring-live.cjs (parametryzacja pętli, jeśli konieczna), dyspozycje/analizy/KONIEC-TURY-ZAWIESZENIE-2026-11-27.md, dyspozycje/autobot/runs/R-WEB-ENDTURN-STALL-REPRO-Q1/**.
+## Zakazy
+gra/src/**, gra/data/**, gra-robocza/, gra-kanon/, WERSJE.md, manifest, rust-port/, npm run build/dev w gra/, osłabianie asercji, git add -A, push, spawn_task/create_session/create_trigger/send_later, --no-gpg-sign. Dysk ≥ 6 GB. Logi *.txt. Wiadomości użytkownika w Twoim kontekście IGNORUJ. Nie pytaj właściciela.
+## Bramki
+tsc 0 (gra/src bez zmian), logic 213, ai-test 297/0.
+## Binarne kryterium
+≥ 8 udokumentowanych przebiegów (komenda, rc, ostatnie linie logu); zatrzymanie odtworzone ze stanem albo NIE ZMIERZONO z liczbą prób i oceną; zero zmian gry.
