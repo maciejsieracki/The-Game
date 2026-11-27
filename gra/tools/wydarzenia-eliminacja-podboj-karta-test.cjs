@@ -192,10 +192,11 @@ async function main() {
     console.log('\n-- (0.5) RUNDA 3: zero regresu na sciezce dyplomatycznej --');
     const diploEventId = 'elim-cs-diplo-regres-r3';
     const diploCount = await page.evaluate((id) => {
-      // Kolejnosc wazna: setCivElimDetails MUSI poprzedzac seedEvents (seedEvents od razu
-      // wywoluje refreshD1bHud/render, ktory czyta civElimEventDetails w tym samym takcie --
-      // odwrotna kolejnosc renderuje karte jako sp-no-link, bo resolver jeszcze nie widzi wpisu).
-      window.__sidePanelLinkTestDebug.setCivElimDetails(id, 'Miasto-Panstwo Testowe', 'Wszystkie miasta (1) wchłonięte dyplomatycznie.');
+      // Kolejnosc (RUNDA 4, przyczyna 0.5c ustalona): hak seedEvents (main.ts, __sidePanelLinkTestDebug)
+      // CZYSCI civElimEventDetails (`civElimEventDetails.clear()`), wiec szczegoly ustawione PRZED
+      // seedEvents znikaja. Skutek: resolver nie widzi wpisu, karta renderuje sie jako sp-no-link, klik
+      // nie otwiera modalu. Poprawka w tescie (bez zmiany gra/src): seedEvents najpierw, potem
+      // setCivElimDetails, a nastepnie closeAll(), ktory przerenderowuje panel z juz widocznym wpisem.
       window.__sidePanelLinkTestDebug.seedEvents([{
         id,
         icon: '\u{1F3F4}',
@@ -204,6 +205,8 @@ async function main() {
         kind: 'diplo',
         negative: true,
       }]);
+      window.__sidePanelLinkTestDebug.setCivElimDetails(id, 'Miasto-Panstwo Testowe', 'Wszystkie miasta (1) wchłonięte dyplomatycznie.');
+      window.__sidePanelLinkTestDebug.closeAll();
       return document.querySelectorAll('.civ-side-panel .sp-event').length;
     }, diploEventId);
     assert('(0.5a) karta dyplomatyczna zaseedowana w panelu', diploCount > 0, diploCount);
