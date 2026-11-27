@@ -1,0 +1,14 @@
+[tmpdir] TMPDIR_RUN_ID=20394-198e698f DIST=/tmp/aibal2-dist PROFILE=/tmp/aibal2-prof/V3-latwy-trudny-s4242 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[readback] {"diplomacyWarLevel":"trudna","kulturaReligiaLevel":"latwy","kulturaReligiaLevelAI":"trudny","wzrostSurowcowZEpoka":false,"kosztJednostekPace":"wysoki","difficulty":"hard"} pace=wysoki resume=false
+[econ] seed=4242 tura=6 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=14s
+[econ] seed=4242 tura=11 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=26s
+[econ] seed=4242 tura=16 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=39s
+[econ] seed=4242 tura=21 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=53s
+[econ] seed=4242 tura=26 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=68s
+[econ] seed=4242 tura=31 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=86s
+[econ] seed=4242 tura=36 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=113s
+[econ] seed=4242 tura=41 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=147s
+[econ] seed=4242 tura=46 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=186s
+[econ] seed=4242 tura=51 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=257s
+[econ] seed=4242 tura=56 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=331s
+[econ] PODSUMOWANIE {"seed":4242,"startTurn":1,"endTurn":60,"stop":null,"counters":{"gateActiveTurns":0,"bypassApplied":0,"stuckQueueHeals":0,"battlesAuto":0,"diploAudienceClosed":0,"armyMergeClosed":0,"techNoticeClosed":0,"aiOffersRejected":1,"aiOffersRejectAttempts":1,"forcedPeaceAccepted":0},"wallSec":410,"resumed":false,"rebalance":null,"unitCostPace":"wysoki"}

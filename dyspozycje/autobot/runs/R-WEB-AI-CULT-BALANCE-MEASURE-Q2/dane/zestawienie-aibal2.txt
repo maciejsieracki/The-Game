@@ -1,0 +1,60 @@
+== V1-trudny-trudny-s4242 seed4242 ostatnia tura 80
+  t20: {"turn":20,"aiCities":52,"aiUnits":77,"emptyAiCities":23,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":75,"aiCitiesInBunt":0,"wars":0,"playerCities":1,"playerPorAvgPct":37.4}
+  t40: {"turn":40,"aiCities":146,"aiUnits":242,"emptyAiCities":18,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":63.7,"aiCitiesInBunt":1,"wars":6,"playerCities":1,"playerPorAvgPct":33.5}
+  t60: {"turn":60,"aiCities":174,"aiUnits":173,"emptyAiCities":55,"aiCivsNoCity":0,"aiBelowPorThr":1,"aiPorAvgPct":54.4,"aiCitiesInBunt":0,"wars":6,"playerCities":1,"playerPorAvgPct":27.7}
+  t90: brak
+  skumulowane do t80: straty jednostek AI wg przyczyn {"rozwiazanie-ai":94}; zmiany wlasciciela miast (wszystkie przyczyny) 32
+== V1-trudny-trudny-s7 seed7 ostatnia tura 84
+  t20: {"turn":20,"aiCities":49,"aiUnits":77,"emptyAiCities":16,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":71.7,"aiCitiesInBunt":0,"wars":0,"playerCities":1,"playerPorAvgPct":43.1}
+  t40: {"turn":40,"aiCities":124,"aiUnits":213,"emptyAiCities":23,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":59.6,"aiCitiesInBunt":1,"wars":7,"playerCities":1,"playerPorAvgPct":39.2}
+  t60: {"turn":60,"aiCities":173,"aiUnits":167,"emptyAiCities":80,"aiCivsNoCity":0,"aiBelowPorThr":3,"aiPorAvgPct":50.9,"aiCitiesInBunt":0,"wars":5,"playerCities":1,"playerPorAvgPct":26.1}
+  t90: brak
+  skumulowane do t84: straty jednostek AI wg przyczyn {"eliminacja-wlasciciela":4,"rozwiazanie-ai":78}; zmiany wlasciciela miast (wszystkie przyczyny) 48
+== V2-trudny-latwy-s4242 seed4242 ostatnia tura 60
+  t20: {"turn":20,"aiCities":53,"aiUnits":72,"emptyAiCities":24,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":74.9,"aiCitiesInBunt":0,"wars":0,"playerCities":1,"playerPorAvgPct":37.4}
+  t40: {"turn":40,"aiCities":152,"aiUnits":240,"emptyAiCities":25,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":63.5,"aiCitiesInBunt":1,"wars":8,"playerCities":1,"playerPorAvgPct":36.8}
+  t60: {"turn":60,"aiCities":175,"aiUnits":190,"emptyAiCities":61,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":56.6,"aiCitiesInBunt":0,"wars":7,"playerCities":1,"playerPorAvgPct":30.8}
+  t90: brak
+  skumulowane do t60: straty jednostek AI wg przyczyn {"rozwiazanie-ai":75}; zmiany wlasciciela miast (wszystkie przyczyny) 22
+== V2-trudny-latwy-s7 seed7 ostatnia tura 60
+  t20: {"turn":20,"aiCities":50,"aiUnits":75,"emptyAiCities":18,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":72.2,"aiCitiesInBunt":0,"wars":0,"playerCities":1,"playerPorAvgPct":43.1}
+  t40: {"turn":40,"aiCities":130,"aiUnits":222,"emptyAiCities":22,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":61.8,"aiCitiesInBunt":1,"wars":7,"playerCities":1,"playerPorAvgPct":39.2}
+  t60: {"turn":60,"aiCities":168,"aiUnits":189,"emptyAiCities":61,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":54,"aiCitiesInBunt":0,"wars":5,"playerCities":1,"playerPorAvgPct":26.1}
+  t90: brak
+  skumulowane do t60: straty jednostek AI wg przyczyn {"eliminacja-wlasciciela":4,"rozwiazanie-ai":68}; zmiany wlasciciela miast (wszystkie przyczyny) 38
+== V3-latwy-trudny-s4242 seed4242 ostatnia tura 60
+  t20: {"turn":20,"aiCities":52,"aiUnits":77,"emptyAiCities":23,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":75,"aiCitiesInBunt":0,"wars":0,"playerCities":1,"playerPorAvgPct":64.5}
+  t40: {"turn":40,"aiCities":146,"aiUnits":242,"emptyAiCities":18,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":63.7,"aiCitiesInBunt":1,"wars":7,"playerCities":1,"playerPorAvgPct":55.4}
+  t60: {"turn":60,"aiCities":174,"aiUnits":173,"emptyAiCities":56,"aiCivsNoCity":0,"aiBelowPorThr":1,"aiPorAvgPct":54.6,"aiCitiesInBunt":0,"wars":6,"playerCities":1,"playerPorAvgPct":44.8}
+  t90: brak
+  skumulowane do t60: straty jednostek AI wg przyczyn {"rozwiazanie-ai":92}; zmiany wlasciciela miast (wszystkie przyczyny) 26
+== V3-latwy-trudny-s7 seed7 ostatnia tura 60
+  t20: {"turn":20,"aiCities":49,"aiUnits":77,"emptyAiCities":16,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":71.7,"aiCitiesInBunt":0,"wars":0,"playerCities":1,"playerPorAvgPct":70.2}
+  t40: {"turn":40,"aiCities":124,"aiUnits":213,"emptyAiCities":23,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":59.6,"aiCitiesInBunt":1,"wars":7,"playerCities":1,"playerPorAvgPct":54.7}
+  t60: {"turn":60,"aiCities":173,"aiUnits":167,"emptyAiCities":80,"aiCivsNoCity":0,"aiBelowPorThr":3,"aiPorAvgPct":50.9,"aiCitiesInBunt":0,"wars":5,"playerCities":1,"playerPorAvgPct":44.8}
+  t90: brak
+  skumulowane do t60: straty jednostek AI wg przyczyn {"eliminacja-wlasciciela":4,"rozwiazanie-ai":75}; zmiany wlasciciela miast (wszystkie przyczyny) 40
+== V4-normalny-normalny-s4242 seed4242 ostatnia tura 60
+  t20: {"turn":20,"aiCities":52,"aiUnits":74,"emptyAiCities":22,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":75.4,"aiCitiesInBunt":0,"wars":0,"playerCities":1,"playerPorAvgPct":49}
+  t40: {"turn":40,"aiCities":151,"aiUnits":264,"emptyAiCities":32,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":62.4,"aiCitiesInBunt":1,"wars":6,"playerCities":0,"playerPorAvgPct":null}
+  t60: {"turn":60,"aiCities":176,"aiUnits":174,"emptyAiCities":82,"aiCivsNoCity":0,"aiBelowPorThr":1,"aiPorAvgPct":53.7,"aiCitiesInBunt":0,"wars":4,"playerCities":0,"playerPorAvgPct":null}
+  t90: brak
+  skumulowane do t60: straty jednostek AI wg przyczyn {"rozwiazanie-ai":113}; zmiany wlasciciela miast (wszystkie przyczyny) 24
+== V4-normalny-normalny-s7 seed7 ostatnia tura 60
+  t20: {"turn":20,"aiCities":49,"aiUnits":75,"emptyAiCities":17,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":72.7,"aiCitiesInBunt":0,"wars":0,"playerCities":1,"playerPorAvgPct":54.7}
+  t40: {"turn":40,"aiCities":128,"aiUnits":226,"emptyAiCities":16,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":61.1,"aiCitiesInBunt":1,"wars":7,"playerCities":1,"playerPorAvgPct":44.9}
+  t60: {"turn":60,"aiCities":168,"aiUnits":180,"emptyAiCities":70,"aiCivsNoCity":0,"aiBelowPorThr":1,"aiPorAvgPct":52.5,"aiCitiesInBunt":0,"wars":5,"playerCities":1,"playerPorAvgPct":37.2}
+  t90: brak
+  skumulowane do t60: straty jednostek AI wg przyczyn {"eliminacja-wlasciciela":4,"rozwiazanie-ai":83}; zmiany wlasciciela miast (wszystkie przyczyny) 40
+== V5-latwy-latwy-s4242 seed4242 ostatnia tura 90
+  t20: {"turn":20,"aiCities":53,"aiUnits":72,"emptyAiCities":24,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":74.9,"aiCitiesInBunt":0,"wars":0,"playerCities":1,"playerPorAvgPct":64.5}
+  t40: {"turn":40,"aiCities":152,"aiUnits":240,"emptyAiCities":25,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":63.5,"aiCitiesInBunt":1,"wars":8,"playerCities":1,"playerPorAvgPct":51.4}
+  t60: {"turn":60,"aiCities":175,"aiUnits":189,"emptyAiCities":63,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":56.4,"aiCitiesInBunt":0,"wars":7,"playerCities":1,"playerPorAvgPct":45.7}
+  t90: {"turn":90,"aiCities":200,"aiUnits":260,"emptyAiCities":60,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":56.8,"aiCitiesInBunt":3,"wars":6,"playerCities":1,"playerPorAvgPct":47.1}
+  skumulowane do t90: straty jednostek AI wg przyczyn {"rozwiazanie-ai":85}; zmiany wlasciciela miast (wszystkie przyczyny) 31
+== V5-latwy-latwy-s7 seed7 ostatnia tura 60
+  t20: {"turn":20,"aiCities":50,"aiUnits":75,"emptyAiCities":18,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":72.2,"aiCitiesInBunt":0,"wars":0,"playerCities":1,"playerPorAvgPct":70.2}
+  t40: {"turn":40,"aiCities":130,"aiUnits":222,"emptyAiCities":22,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":61.8,"aiCitiesInBunt":1,"wars":7,"playerCities":1,"playerPorAvgPct":54.7}
+  t60: {"turn":60,"aiCities":168,"aiUnits":190,"emptyAiCities":60,"aiCivsNoCity":0,"aiBelowPorThr":0,"aiPorAvgPct":54,"aiCitiesInBunt":0,"wars":5,"playerCities":1,"playerPorAvgPct":44.8}
+  t90: brak
+  skumulowane do t60: straty jednostek AI wg przyczyn {"eliminacja-wlasciciela":4,"rozwiazanie-ai":68}; zmiany wlasciciela miast (wszystkie przyczyny) 38

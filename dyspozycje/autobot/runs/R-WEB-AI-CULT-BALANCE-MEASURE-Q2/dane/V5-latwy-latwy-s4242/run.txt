@@ -1,0 +1,137 @@
+[tmpdir] TMPDIR_RUN_ID=577-4da30a0c DIST=/tmp/aibal2-dist PROFILE=/tmp/aibal2-prof/V5-latwy-latwy-s4242 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[readback] {"diplomacyWarLevel":"trudna","kulturaReligiaLevel":"latwy","kulturaReligiaLevelAI":"latwy","wzrostSurowcowZEpoka":false,"kosztJednostekPace":"wysoki","difficulty":"hard"} pace=wysoki resume=false
+[econ] seed=4242 tura=6 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=14s
+[econ] seed=4242 tura=11 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=25s
+[econ] seed=4242 tura=16 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=39s
+[econ] seed=4242 tura=21 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=51s
+[econ] seed=4242 tura=26 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=66s
+[econ] seed=4242 tura=31 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=88s
+[econ] seed=4242 tura=36 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=120s
+[econ] seed=4242 tura=41 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=163s
+[econ] seed=4242 tura=46 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=206s
+[econ] seed=4242 tura=51 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=290s
+[econ] seed=4242 tura=56 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=378s
+[econ] PODSUMOWANIE {"seed":4242,"startTurn":1,"endTurn":58,"stop":{"reason":"endturn-timeout","tura":58,"why":{"modal":"niedostepne: page.evaluate: Target page, context or browser has been closed","gra":{"blad":"page.evaluate: Target page, context or browser has been closed","opis":"strona niedostepna: page.evaluate: Target page, context or browser has been closed"}}},"counters":{"gateActiveTurns":0,"bypassApplied":0,"stuckQueueHeals":0,"battlesAuto":0,"diploAudienceClosed":0,"armyMergeClosed":0,"techNoticeClosed":0,"aiOffersRejected":0,"aiOffersRejectAttempts":0,"forcedPeaceAccepted":0},"wallSec":420,"resumed":false,"rebalance":null,"unitCostPace":"wysoki"}
+[tmpdir] TMPDIR_RUN_ID=1894-4e2fcc2d DIST=/tmp/aibal2-dist PROFILE=/tmp/aibal2-prof/V5-latwy-latwy-s4242 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[econ] BLAD: page.waitForFunction: Target page, context or browser has been closed
+Browser logs:
+
+<launching> /usr/bin/google-chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --no-sandbox --use-gl=swiftshader --enable-unsafe-swiftshader --disable-dev-shm-usage --user-data-dir=/tmp/aibal2-prof/V5-latwy-latwy-s4242 --remote-debugging-pipe about:blank
+<launched> pid=1905
+[pid=1905][err] [1905:1924:1127/161106.664019:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[pid=1905][err] [1905:1924:1127/161106.664071:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1924:1127/161106.664158:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[pid=1905][err] [1905:1924:1127/161106.664179:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[pid=1905][err] [1905:1924:1127/161106.664185:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1924:1127/161106.664188:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1905:1127/161106.729168:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[pid=1905][err] [1905:1905:1127/161106.729557:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[pid=1905][err] [1905:1905:1127/161106.729582:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[pid=1905][err] [1905:1924:1127/161106.731382:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1924:1127/161106.731422:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1924:1127/161106.731428:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1905:1127/161106.768089:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[pid=1905][err] [1905:1905:1127/161106.768528:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[pid=1905][err] [1905:1905:1127/161106.768712:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[pid=1905][err] [1905:1924:1127/161106.773094:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[pid=1905][err] [1905:1924:1127/161106.773118:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[pid=1905][err] [1905:1924:1127/161106.773124:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1905:1127/161106.836712:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: unknown error type: 
+[pid=1905][err] [1905:1905:1127/161106.844012:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[pid=1905][err] [1905:1924:1127/161106.844080:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1905:1127/161106.851353:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[pid=1905][err] [1905:1924:1127/161106.852111:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1905:1127/161106.861263:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[pid=1905][err] [1938:1938:1127/161110.774683:ERROR:gpu/command_buffer/service/gl_utils.cc:427] [.WebGL-0x1e4c0016e200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[pid=1905][err] [1938:1938:1127/161111.646806:ERROR:gpu/command_buffer/service/gl_utils.cc:427] [.WebGL-0x1e4c0016e200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[pid=1905][err] [1905:1924:1127/161114.058373:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1924:1127/161114.059988:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1924:1127/161114.060005:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1924:1127/161114.060013:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1924:1127/161114.060018:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1924:1127/161114.060023:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1924:1127/161114.060030:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1924:1127/161114.060034:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1924:1127/161114.060039:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1924:1127/161114.060044:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1924:1127/161114.060048:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1924:1127/161114.060053:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1924:1127/161114.060057:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] [1905:1924:1127/161114.060062:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=1905][err] ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+[pid=1905][err] ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+[pid=1905][err] ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+[pid=1905][err] ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+[pid=1905][err] ALSA lib confmisc.c:1342:(snd_func_refer) error evaluating name
+[pid=1905][err] ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+[pid=1905][err] ALSA lib conf.c:5731:(snd_config_expand) Evaluate error: No such file or directory
+[pid=1905][err] ALSA lib pcm.c:2721:(snd_pcm_open_noupdate) Unknown PCM default
+[pid=1905][err] [2019:2019:1127/161114.070170:ERROR:media/audio/alsa/alsa_util.cc:204] PcmOpen: default,No such file or directory
+[pid=1905][err] ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+[pid=1905][err] ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+[pid=1905][err] ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+[pid=1905][err] ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+[pid=1905][err] ALSA lib confmisc.c:1342:(snd_func_refer) error evaluating name
+[pid=1905][err] ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+[pid=1905][err] ALSA lib conf.c:5731:(snd_config_expand) Evaluate error: No such file or directory
+[pid=1905][err] ALSA lib pcm.c:2721:(snd_pcm_open_noupdate) Unknown PCM default
+[pid=1905][err] [2019:2019:1127/161114.070263:ERROR:media/audio/alsa/alsa_util.cc:204] PcmOpen: plug:default,No such file or directory
+[pid=1905][err] [1127/161250.929568:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq: No such file or directory (2)
+[pid=1905][err] [1127/161250.929626:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq: No such file or directory (2)
+[pid=1905][err] Received signal 11 SEGV_MAPERR 000000000001
+[pid=1905][err] #0 0x5623df8d8bc3 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x6a9abc2)
+[pid=1905][err] #1 0x5623e459e494 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0xb760493)
+[pid=1905][err] #2 0x7f2cccc45330 (/usr/lib/x86_64-linux-gnu/libc.so.6+0x4532f)
+[pid=1905][err] #3 0x5623e3aa73d3 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0xac693d2)
+[pid=1905][err] #4 0x5623e3aa7b02 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0xac69b01)
+[pid=1905][err] #5 0x5623e3aa68c5 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0xac688c4)
+[pid=1905][err] #6 0x5623e3aa730a (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0xac69309)
+[pid=1905][err] #7 0x5623e3aa8963 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0xac6a962)
+[pid=1905][err] #8 0x5623dd2a7070 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x446906f)
+[pid=1905][err] #9 0x5623deaa5f14 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x5c67f13)
+[pid=1905][err] #10 0x5623debf8d96 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x5dbad95)
+[pid=1905][err] #11 0x5623debfa4e1 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x5dbc4e0)
+[pid=1905][err] #12 0x5623dc3cf16a (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x3591169)
+[pid=1905][err] #13 0x5623dcbb9ee1 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x3d7bee0)
+[pid=1905][err] #14 0x7f2ccda6a635 (/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8000.0+0x5d634)
+[pid=1905][err] #15 0x7f2ccdac9bf7 (/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8000.0+0xbcbf6)
+[pid=1905][err] #16 0x7f2ccda69ad3 (/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8000.0+0x5cad2)
+[pid=1905][err] #17 0x5623dc3d427a (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x3596279)
+[pid=1905][err] #18 0x5623dcbf424d (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x3db624c)
+[pid=1905][err] #19 0x5623dcbf3936 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x3db5935)
+[pid=1905][err] #20 0x5623df136d22 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x62f8d21)
+[pid=1905][err] #21 0x5623df1370c3 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x62f90c2)
+[pid=1905][err] #22 0x5623dee0ce20 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x5fcee1f)
+[pid=1905][err] #23 0x5623ddc51bf4 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x4e13bf3)
+[pid=1905][err] #24 0x5623dee0d106 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x5fcf105)
+[pid=1905][err] #25 0x5623dee0c7a9 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x5fce7a8)
+[pid=1905][err] #26 0x5623dee0bb00 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x5fcdaff)
+[pid=1905][err] #27 0x7f2cccc2a1ca (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a1c9)
+[pid=1905][err] #28 0x7f2cccc2a28b (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a28a)
+[pid=1905][err] #29 0x5623dfb9b35a (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x6d5d359)
+[pid=1905][err]   r8: 0000000000000000  r9: 00005623e3aa7360 r10: 0000000000000020 r11: 0000000000000000
+[pid=1905][err]  r12: 00007ffd1a90c120 r13: 00007ffd1a90bfe0 r14: 00007ffd1a90c0b0 r15: 000007b400189900
+[pid=1905][err]   di: 000007b400189c48  si: 00007ffd1a90c010  bp: 00007ffd1a90bfd0  bx: 000007b400189c48
+[pid=1905][err]   dx: 0000000000000011  ax: 0000000000000001  cx: 0000000000000010  sp: 00007ffd1a90bf90
+[pid=1905][err]   ip: 00005623dd2ab86b efl: 0000000000010202 cgf: 002b000000000033 erf: 0000000000000004
+[pid=1905][err]  trp: 000000000000000e msk: 0000000000000000 cr2: 0000000000000001
+[pid=1905][err] [end of stack trace]
+    at openGame (/home/user/The-Game/.claude/worktrees/wf_f4d041a0-d7c-1/gra/tools/aibal2-measure-run.cjs:326:16)
+    at async runSeries (/home/user/The-Game/.claude/worktrees/wf_f4d041a0-d7c-1/gra/tools/aibal2-measure-run.cjs:555:16)
+    at async main (/home/user/The-Game/.claude/worktrees/wf_f4d041a0-d7c-1/gra/tools/aibal2-measure-run.cjs:644:15)
+[tmpdir] TMPDIR_RUN_ID=2329-56275995 DIST=/tmp/aibal2-dist PROFILE=/tmp/aibal2-prof/V5-latwy-latwy-s4242 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[readback] {"diplomacyWarLevel":"trudna","kulturaReligiaLevel":"latwy","kulturaReligiaLevelAI":"latwy","wzrostSurowcowZEpoka":false,"kosztJednostekPace":"wysoki","difficulty":"hard"} pace=wysoki resume=true
+[econ] seed=4242 tura=60 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=69s
+[econ] PODSUMOWANIE {"seed":4242,"startTurn":55,"endTurn":60,"stop":null,"counters":{"gateActiveTurns":0,"bypassApplied":0,"stuckQueueHeals":0,"battlesAuto":0,"diploAudienceClosed":0,"armyMergeClosed":0,"techNoticeClosed":0,"aiOffersRejected":0,"aiOffersRejectAttempts":0,"forcedPeaceAccepted":0},"wallSec":69,"resumed":true,"rebalance":null,"unitCostPace":"wysoki"}
+[tmpdir] TMPDIR_RUN_ID=17166-bccc8814 DIST=/tmp/aibal2-dist PROFILE=/tmp/aibal2-prof/V5-latwy-latwy-s4242 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[readback] {"diplomacyWarLevel":"trudna","kulturaReligiaLevel":"latwy","kulturaReligiaLevelAI":"latwy","wzrostSurowcowZEpoka":false,"kosztJednostekPace":"wysoki","difficulty":"hard"} pace=wysoki resume=true
+[econ] seed=4242 tura=65 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=76s
+[econ] seed=4242 tura=70 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=153s
+[econ] seed=4242 tura=75 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=243s
+[econ] seed=4242 tura=80 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=352s
+[econ] PODSUMOWANIE {"seed":4242,"startTurn":60,"endTurn":84,"stop":{"reason":"endturn-timeout","tura":84,"why":{"modal":"niedostepne: page.evaluate: Target page, context or browser has been closed","gra":{"blad":"page.evaluate: Target page, context or browser has been closed","opis":"strona niedostepna: page.evaluate: Target page, context or browser has been closed"}}},"counters":{"gateActiveTurns":0,"bypassApplied":0,"stuckQueueHeals":0,"battlesAuto":0,"diploAudienceClosed":0,"armyMergeClosed":0,"techNoticeClosed":0,"aiOffersRejected":0,"aiOffersRejectAttempts":0,"forcedPeaceAccepted":1},"wallSec":448,"resumed":true,"rebalance":null,"unitCostPace":"wysoki"}
+[tmpdir] TMPDIR_RUN_ID=20021-adfd6234 DIST=/tmp/aibal2-dist PROFILE=/tmp/aibal2-prof/V5-latwy-latwy-s4242 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[readback] {"diplomacyWarLevel":"trudna","kulturaReligiaLevel":"latwy","kulturaReligiaLevelAI":"latwy","wzrostSurowcowZEpoka":false,"kosztJednostekPace":"wysoki","difficulty":"hard"} pace=wysoki resume=true
+[econ] seed=4242 tura=85 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=111s
+[econ] seed=4242 tura=90 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=244s
+[econ] PODSUMOWANIE {"seed":4242,"startTurn":80,"endTurn":90,"stop":null,"counters":{"gateActiveTurns":0,"bypassApplied":0,"stuckQueueHeals":0,"battlesAuto":0,"diploAudienceClosed":0,"armyMergeClosed":0,"techNoticeClosed":0,"aiOffersRejected":0,"aiOffersRejectAttempts":0,"forcedPeaceAccepted":1},"wallSec":244,"resumed":true,"rebalance":null,"unitCostPace":"wysoki"}
