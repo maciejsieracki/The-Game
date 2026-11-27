@@ -11421,3 +11421,6 @@ R-WEB-MAP-ISLANDS-ORPHAN-FIX-Q1 (wf_d7ad9b86-4bd; Operator Haiku → Evaluator S
 - Pomiar max (Trudny/Trudny/Wysoki ×4, 60 tur): jednostki AI 142→214 (seed 4242) i 133→259 (seed 7); miasta AI poniżej 14% Porządku 67/75→1; Porządek AI ~19%→~52–55%. UWAGA balansowa dla właściciela: AI na trudnej kulturze przestaje być osłabione (zmiana celowa wg tabeli 38b, ale skala efektu jest duża) — do obserwacji w grze.
 - NIE ZMIERZONO: odczyt D/G miast w żywej grze dla epok 1–3 (brak haka; pokrywają testy jednostkowe 108/72/190), seed 7 tylko do t58, PRZED dla wariantu AI łatwy/gracz trudny.
 - Sprzątanie: worktree AIPLUS10 usunięte, refs/keep/AIPLUS10-r2-*, AIPLUS10-r3-{op,eval,obrona,fc}, /tmp/civ-deploy-out usunięty.
+
+### 2026-11-27 · AIBAL start (R-WEB-AI-CULT-BALANCE-MEASURE-Q1) · zegar maszyny `date -u` 10:56 UTC
+- Wolny slot po FALI 930. Priorytet 2 (pomiar potrzebny do decyzji o balansie): jak zmieniła się rozgrywka AI po FALACH 926–930 w wariantach poziomów kultury i religii gracza/AI na maksimum reszty ustawień (jednostki, miasta, Porządek, bunty, puste miasta, wojny). Zero zmian gry. cand = origin/main c0a55450945535a0680b569b0cf5c650314c86f9; Operator HAIKU.

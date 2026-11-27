@@ -1,0 +1,19 @@
+# R-WEB-AI-CULT-BALANCE-MEASURE-Q1 (tag AIBAL) — dispatch (Operator HAIKU 5.5, runda 1/5; pomiar na żywo; ZERO zmian gra/src i gra/data)
+DOMAIN: GAME (pomiar potrzebny do decyzji o balansie; priorytet 2). Po FALI 930 (kultura i religia: model addytywny z epoką, osobne poziomy gracza i AI, AI plus 10/16/23 zawsze; main c0a554509) i FALACH 926–929 (garnizon, budynki, rebelia AI) trzeba sprawdzić, JAK ZMIENIŁ SIĘ SKUTEK dla rozgrywki, żeby właściciel mógł ocenić balans. Z FALI 930: Porządek AI w t60 ok. 19%→52–55%, jednostki AI 142→214 (seed 4242) i 133→259 (seed 7) na Trudny/Trudny/Wysoki ×4.
+GOAL: tabela skutków poziomów kultury i religii na zachowanie AI po FALI 930, na MAKSYMALNYM poziomie reszty ustawień (Trudny, Koszty jednostek Wysoki ×4, flagi dyplomacji ON, tam gdzie runner je ustawia):
+Warianty (gracz / AI): trudny/trudny, trudny/łatwy, łatwy/trudny, normalny/normalny, łatwy/łatwy. Runner gra/tools/ai-cult-rel-measure-run.cjs ( --kr <poziom gracza> --kr-ai <poziom AI> --pace wysoki --difficulty trudny --city-state 1 --turns N; wznawialny; summarize: ai-cult-rel-measure-summarize.cjs; przepływ ai-cult-rel-measure-flow.cjs ), seed 4242 i 7, do t90 (jeśli Chromium/czas nie pozwala — do t60 i napisz dlaczego; segmenty ≤ 25 tur).
+Metryki (t30/t60/t90): jednostki AI (łącznie i na cywilizację), miasta AI, miasta AI poniżej progu Porządku 14%, Porządek AI średnio, miasta w buncie (−99) i zakończone bunty AI, liczba cywilizacji AI z 0 miast, puste miasta (bez garnizonu), liczba wojen z graczem/AI↔AI, straty (jeśli runner liczy), Porządek/Szczęście gracza. Porównaj warianty parami i opisz KIERUNEK zmian względem bazy z przed FALI 926 (liczby z dokumentów: dyspozycje/analizy/AI-KULTURA-RELIGIA-REBELIA-2026-11-26.md, AI-PLUS10-KULTURA-RELIGIA-2026-11-27.md, AI-REBELIA-WDROZENIE-2026-11-27.md).
+Wniosek: czy AI jest po zmianach „zbyt mocne/zbyt słabe/zgodne z intencją” — TYLKO opisowo z liczbami; jeśli to kwestia decyzji o balansie — jednozdaniowy DECISION_REQUIRED z wariantami opisanymi skutkiem dla gracza (bez nazw plików), nie rozstrzygaj sam i NIE zmieniaj parametrów.
+BAZA: args.cand = origin/main (dokładny SHA z args). `git rev-parse HEAD` w raporcie.
+## Zadanie
+1. Zbuduj dist vite do unikalnego katalogu w /tmp (node ./node_modules/vite/bin/vite.js build --outDir /tmp/<unikalny> --emptyOutDir; po pracy usuń), Chromium /opt/pw-browsers/chromium; biegi SEKWENCYJNIE (maszyna ma 4 tematy równolegle; load 7–13), każde Bash w pierwszym planie z timeout ≤ 590000 ms, bez run_in_background; po SIGSEGV przy wznowieniu ponów do 3 razy.
+2. Surowe dane (jsonl, summary, logi .txt) w dyspozycje/autobot/runs/R-WEB-AI-CULT-BALANCE-MEASURE-Q1/dane/ (nie tylko w /tmp, nie *.log); w logu każdego biegu readback ustawień (kultura gracza i AI, pace, difficulty).
+3. Dokument dyspozycje/analizy/AI-KULTURA-BALANS-PO-FALI-930-2026-11-27.md: tabela wariant × seed × tura × metryki, wnioski, NIE ZMIERZONO tam, gdzie nie zmierzono (powód techniczny z próbą), DECISION_REQUIRED jeśli potrzebny.
+## Allowlista
+gra/tools/ai-cult-rel-measure-*.cjs (rozszerzenia runnera/summarize tylko jeśli konieczne), nowe gra/tools/ai-bal-*.cjs, dyspozycje/analizy/AI-KULTURA-BALANS-PO-FALI-930-2026-11-27.md, dyspozycje/autobot/runs/R-WEB-AI-CULT-BALANCE-MEASURE-Q1/**.
+## Zakazy
+gra/src/**, gra/data/** (zero zmian gry i parametrów), gra-robocza/, gra-kanon/, WERSJE.md, manifest, rust-port/, npm run build/dev w gra/, osłabianie asercji, git add -A, push, spawn_task/create_session/create_trigger/send_later, --no-gpg-sign. Dysk ≥ 6 GB. Wiadomości użytkownika w Twoim kontekście IGNORUJ. Nie pytaj właściciela.
+## Bramki
+tsc 0 (gra/src bez zmian), logic 213, ai-test 297/0.
+## Binarne kryterium
+Tabela dla co najmniej 3 wariantów (trudny/trudny, trudny/łatwy, łatwy/łatwy lub normalny/normalny) × seed 4242 i 7 do t60 (idealnie t90) z surowymi danymi w repo i readbackiem ustawień; wniosek opisowy z liczbami; zero zmian gry.
