@@ -1,0 +1,799 @@
+[
+ {
+  "seed": 4242,
+  "state": "a_przed_zalozeniem_miasta",
+  "windowMs": 31215,
+  "stillAwaiting": true,
+  "warnTotal": 14,
+  "byType": {
+   "warn": 2,
+   "error": 0,
+   "log": 1,
+   "endTurnBlockedWarn": 0
+  },
+  "sample": [
+   "1795820595497 info: [civ-perf] postScene — init sceny: 2 ms",
+   "1795820595498 info: [civ-perf] postScene — kamera: 0 ms",
+   "1795820595498 info: [civ-perf] postScene — renderery jednostek: 2 ms",
+   "1795820595499 info: [civ-perf] postScene — renderery miast: 2 ms",
+   "1795820595499 info: [civ-perf] postScene — markery oblężenia i cuda: 2 ms",
+   "1795820595499 info: [civ-perf] postScene — plan klastra startowego: 231 ms",
+   "1795820595500 info: [civ-perf] postScene — mgła startowa: 15 ms",
+   "1795820595500 info: [civ-perf] postScene — nakładki zasobów (defer): 6 ms",
+   "1795820595501 log: [NewGame] Mapa: 108x74 seed=4242 typ=kontynenty rywale=2 typy=4",
+   "1795820595501 info: [civ-perf] wall-clock Nowa gra → hide overlay: 19483 ms (postScene/finishLoading=267 ms)",
+   "1795820595509 info: [civ-perf] === Civ — raport czasów ładowania mapy ===\nData: 27.11.2026, 23:03:15\nrozmiar: Maly · kształt: Kontynenty\n7992 heksów · nakładek 67\n\nGENERATOR (ms):\n",
+   "1795820598429 warning: [.WebGL-0x2c4c00177800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+  ]
+ },
+ {
+  "seed": 4242,
+  "state": "b_po_kliknieciu_zakoncz_ture",
+  "turn": 2,
+  "windowMs": 30332,
+  "warnTotal": 12,
+  "byType": {
+   "warn": 3,
+   "error": 0,
+   "log": 9,
+   "endTurnBlockedWarn": 0
+  },
+  "sample": [
+   "1795820642989 log: [AI 1] Wycinka @ (39,27) (-5 Pracy, +50 Drewna)",
+   "1795820643457 log: [Autosave] rotacyjny slot=autosave-1 tura=2",
+   "1795820643571 log: [Chatka] Owner 4: Chatka (skarb): +84 złota",
+   "1795820643632 log: [Chatka] Owner 7: Chatka: +50 postępu badań (Wojskowość)",
+   "1795820645232 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Ollantaytambo · Inkowie · miasto-państwo(2) (Relacja=190 >= 0, połączenie tras możliwe)",
+   "1795820646796 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 2",
+   "1795820649348 warning: [EndTurn] triggerPlayerEndTurn: START tura 2",
+   "1795820651339 log: [Ekonomia] Tura 3: gracz(1 os.) ¤=1 N=4 Praca=3 | mapa(12 os.) ¤=43 N=54 Praca=35 wzrost=0 głód=0",
+   "1795820652396 log: [Chatka] Owner 1: Chatka (skarb): +88 złota",
+   "1795820653212 log: [Autosave] rotacyjny slot=autosave-2 tura=3",
+   "1795820654158 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Grecy(4) (Relacja=41.003001499999996 >= 0, połączenie tras możliwe)",
+   "1795820655804 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 3"
+  ]
+ },
+ {
+  "seed": 4242,
+  "turn": 2,
+  "measuring": true,
+  "result": "tura_zmieniona",
+  "outcome": null,
+  "preState": {
+   "turn": 2,
+   "eot": true,
+   "aria": "true",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "attempts": 1,
+  "attemptLog": [
+   {
+    "at": 6605,
+    "hitEl": "SPAN.",
+    "onButton": true
+   }
+  ],
+  "phases": [
+   {
+    "attempt": 0,
+    "reason": "aktywny",
+    "samples": [
+     {
+      "at": 4481,
+      "aria": "true",
+      "eot": false,
+      "turn": 2,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     },
+     {
+      "at": 5334,
+      "aria": "false",
+      "eot": false,
+      "turn": 2,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     }
+    ]
+   }
+  ],
+  "timeToChangeMs": 8177,
+  "turnAfter": 3,
+  "postSamples": [
+   {
+    "at": 7544,
+    "aria": "true",
+    "eot": true,
+    "turn": 2,
+    "onButton": true,
+    "hitEl": "SPAN.",
+    "lose": false
+   }
+  ],
+  "post": {
+   "turn": 3,
+   "eot": false,
+   "aria": "false",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "gateDiag": null,
+  "endTurnBlockedInWindow": [],
+  "consoleWindowTotal": 12,
+  "consoleCountsDelta": {
+   "warn": 3,
+   "error": 0,
+   "log": 9,
+   "endTurnBlockedWarn": 0
+  },
+  "last20Console": [
+   "1795820627132 log: [ClusterStart] deferred same-type rivals=2/2 epokaStart=braz (actual player capital @ 54,41)",
+   "1795820627132 warning: [ClusterStart] deferred foreign clusters: założono 6 z 9 (3 odrzuconych przez canFoundCity)",
+   "1795820627132 log: [ClusterStart] deferred foreign clusters=6/9 (3 odrzuconych)",
+   "1795820638356 warning: [EndTurn] triggerPlayerEndTurn: START tura 1",
+   "1795820641286 log: [Ekonomia] Tura 2: gracz(1 os.) ¤=2 N=5 Praca=3 | mapa(12 os.) ¤=33 N=56 Praca=35 wzrost=0 głód=0",
+   "1795820641323 log: [Porzadek] Tura 2 Cusco: tier=order porPct=95.5 szPct=75.4 [osiedle: immunitet buntu]",
+   "1795820641337 log: [Porzadek] Tura 2 Ateny: tier=order porPct=95.5 szPct=75.4 [osiedle: immunitet buntu]",
+   "1795820641352 log: [Porzadek] Tura 2 Xi'an: tier=order porPct=98.8 szPct=82.6 [osiedle: immunitet buntu]",
+   "1795820642989 log: [AI 1] Wycinka @ (39,27) (-5 Pracy, +50 Drewna)",
+   "1795820643457 log: [Autosave] rotacyjny slot=autosave-1 tura=2",
+   "1795820643571 log: [Chatka] Owner 4: Chatka (skarb): +84 złota",
+   "1795820643632 log: [Chatka] Owner 7: Chatka: +50 postępu badań (Wojskowość)",
+   "1795820645232 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Ollantaytambo · Inkowie · miasto-państwo(2) (Relacja=190 >= 0, połączenie tras możliwe)",
+   "1795820646796 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 2",
+   "1795820649348 warning: [EndTurn] triggerPlayerEndTurn: START tura 2",
+   "1795820651339 log: [Ekonomia] Tura 3: gracz(1 os.) ¤=1 N=4 Praca=3 | mapa(12 os.) ¤=43 N=54 Praca=35 wzrost=0 głód=0",
+   "1795820652396 log: [Chatka] Owner 1: Chatka (skarb): +88 złota",
+   "1795820653212 log: [Autosave] rotacyjny slot=autosave-2 tura=3",
+   "1795820654158 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Grecy(4) (Relacja=41.003001499999996 >= 0, połączenie tras możliwe)",
+   "1795820655804 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 3"
+  ]
+ },
+ {
+  "seed": 4242,
+  "state": "b_po_kliknieciu_zakoncz_ture",
+  "turn": 3,
+  "windowMs": 30617,
+  "warnTotal": 9,
+  "byType": {
+   "warn": 2,
+   "error": 0,
+   "log": 7,
+   "endTurnBlockedWarn": 0
+  },
+  "sample": [
+   "1795820678217 warning: [EndTurn] triggerPlayerEndTurn: START tura 3",
+   "1795820680680 log: [Ekonomia] Tura 4: gracz(1 os.) ¤=1 N=4 Praca=3 | mapa(12 os.) ¤=92 N=54 Praca=34 wzrost=0 głód=0",
+   "1795820681787 log: [Rekrutacja] Cusco: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+   "1795820681788 log: [AI 1] Zakup jednostki za Skarbiec: Zwiadowca",
+   "1795820681790 log: [Rekrutacja] Machu Picchu: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+   "1795820681790 log: [AI 1] Zakup jednostki za Skarbiec: Zwiadowca",
+   "1795820682432 log: [Autosave] rotacyjny slot=autosave-3 tura=4",
+   "1795820683781 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Korynt · Grecy · miasto-państwo(6) (Relacja=50 >= 0, połączenie tras możliwe)",
+   "1795820685350 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 4"
+  ]
+ },
+ {
+  "seed": 4242,
+  "turn": 3,
+  "measuring": true,
+  "result": "tura_zmieniona",
+  "outcome": null,
+  "preState": {
+   "turn": 3,
+   "eot": false,
+   "aria": "false",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "attempts": 1,
+  "attemptLog": [
+   {
+    "at": 4689,
+    "hitEl": "SPAN.",
+    "onButton": true
+   }
+  ],
+  "phases": [
+   {
+    "attempt": 0,
+    "reason": "aktywny",
+    "samples": [
+     {
+      "at": 3221,
+      "aria": "false",
+      "eot": false,
+      "turn": 3,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     }
+    ]
+   }
+  ],
+  "timeToChangeMs": 6793,
+  "turnAfter": 4,
+  "postSamples": [
+   {
+    "at": 5949,
+    "aria": "true",
+    "eot": true,
+    "turn": 3,
+    "onButton": true,
+    "hitEl": "SPAN.",
+    "lose": false
+   }
+  ],
+  "post": {
+   "turn": 4,
+   "eot": false,
+   "aria": "false",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "gateDiag": null,
+  "endTurnBlockedInWindow": [],
+  "consoleWindowTotal": 9,
+  "consoleCountsDelta": {
+   "warn": 2,
+   "error": 0,
+   "log": 7,
+   "endTurnBlockedWarn": 0
+  },
+  "last20Console": [
+   "1795820643457 log: [Autosave] rotacyjny slot=autosave-1 tura=2",
+   "1795820643571 log: [Chatka] Owner 4: Chatka (skarb): +84 złota",
+   "1795820643632 log: [Chatka] Owner 7: Chatka: +50 postępu badań (Wojskowość)",
+   "1795820645232 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Ollantaytambo · Inkowie · miasto-państwo(2) (Relacja=190 >= 0, połączenie tras możliwe)",
+   "1795820646796 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 2",
+   "1795820649348 warning: [EndTurn] triggerPlayerEndTurn: START tura 2",
+   "1795820651339 log: [Ekonomia] Tura 3: gracz(1 os.) ¤=1 N=4 Praca=3 | mapa(12 os.) ¤=43 N=54 Praca=35 wzrost=0 głód=0",
+   "1795820652396 log: [Chatka] Owner 1: Chatka (skarb): +88 złota",
+   "1795820653212 log: [Autosave] rotacyjny slot=autosave-2 tura=3",
+   "1795820654158 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Grecy(4) (Relacja=41.003001499999996 >= 0, połączenie tras możliwe)",
+   "1795820655804 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 3",
+   "1795820678217 warning: [EndTurn] triggerPlayerEndTurn: START tura 3",
+   "1795820680680 log: [Ekonomia] Tura 4: gracz(1 os.) ¤=1 N=4 Praca=3 | mapa(12 os.) ¤=92 N=54 Praca=34 wzrost=0 głód=0",
+   "1795820681787 log: [Rekrutacja] Cusco: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+   "1795820681788 log: [AI 1] Zakup jednostki za Skarbiec: Zwiadowca",
+   "1795820681790 log: [Rekrutacja] Machu Picchu: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+   "1795820681790 log: [AI 1] Zakup jednostki za Skarbiec: Zwiadowca",
+   "1795820682432 log: [Autosave] rotacyjny slot=autosave-3 tura=4",
+   "1795820683781 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Korynt · Grecy · miasto-państwo(6) (Relacja=50 >= 0, połączenie tras możliwe)",
+   "1795820685350 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 4"
+  ]
+ },
+ {
+  "seed": 4242,
+  "state": "b_po_kliknieciu_zakoncz_ture",
+  "turn": 4,
+  "windowMs": 30150,
+  "warnTotal": 29,
+  "byType": {
+   "warn": 2,
+   "error": 0,
+   "log": 27,
+   "endTurnBlockedWarn": 0
+  },
+  "sample": [
+   "1795820709601 warning: [EndTurn] triggerPlayerEndTurn: START tura 4",
+   "1795820712067 log: [Ekonomia] Tura 5: gracz(1 os.) ¤=1 N=4 Praca=3 | mapa(12 os.) ¤=92 N=54 Praca=34 wzrost=0 głód=0",
+   "1795820712072 log: [Rekrutacja] Tura 5 Cusco: Zwiadowca gotowa @ (38,28)",
+   "1795820712074 log: [Rekrutacja] Tura 5 Machu Picchu: Zwiadowca gotowa @ (37,32)",
+   "1795820713257 log: [Autosave] rotacyjny slot=autosave-4 tura=5",
+   "1795820713290 log: [Rekrutacja] Cusco: Wojownik z maczugą (Chaska) oplacone 52 — kolejka x1 (−2000 MP)",
+   "1795820713301 log: [Dyplomacja] AI1 → MP2: trybut 2 ¤/turę (pierwszy_krok)",
+   "1795820713399 log: [Chatka] Owner 1: Chatka (skarb): +78 złota",
+   "1795820714227 log: [Dyplomacja] AI4 → MP6: trybut 2 ¤/turę (pierwszy_krok)",
+   "1795820714270 log: [AI 4] Ulepszenie: kamieniolom @ (81,51) (-44 Pracy)",
+   "1795820714296 log: [Dyplomacja] AI7 → MP9: trybut 2 ¤/turę (pierwszy_krok)",
+   "1795820714327 log: [AI 7] Ulepszenie: kamieniolom @ (78,24) (-44 Pracy)"
+  ]
+ },
+ {
+  "seed": 4242,
+  "turn": 4,
+  "measuring": true,
+  "result": "tura_zmieniona",
+  "outcome": null,
+  "preState": {
+   "turn": 4,
+   "eot": false,
+   "aria": "false",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "attempts": 1,
+  "attemptLog": [
+   {
+    "at": 5036,
+    "hitEl": "SPAN.",
+    "onButton": true
+   }
+  ],
+  "phases": [
+   {
+    "attempt": 0,
+    "reason": "aktywny",
+    "samples": [
+     {
+      "at": 3548,
+      "aria": "false",
+      "eot": false,
+      "turn": 4,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     }
+    ]
+   }
+  ],
+  "timeToChangeMs": 7461,
+  "turnAfter": 5,
+  "postSamples": [
+   {
+    "at": 6944,
+    "aria": "true",
+    "eot": true,
+    "turn": 5,
+    "onButton": true,
+    "hitEl": "SPAN.",
+    "lose": false
+   }
+  ],
+  "post": {
+   "turn": 5,
+   "eot": false,
+   "aria": "false",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": true,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "gateDiag": null,
+  "endTurnBlockedInWindow": [],
+  "consoleWindowTotal": 29,
+  "consoleCountsDelta": {
+   "warn": 2,
+   "error": 0,
+   "log": 27,
+   "endTurnBlockedWarn": 0
+  },
+  "last20Console": [
+   "1795820714270 log: [AI 4] Ulepszenie: kamieniolom @ (81,51) (-44 Pracy)",
+   "1795820714296 log: [Dyplomacja] AI7 → MP9: trybut 2 ¤/turę (pierwszy_krok)",
+   "1795820714327 log: [AI 7] Ulepszenie: kamieniolom @ (78,24) (-44 Pracy)",
+   "1795820714340 log: [Rekrutacja] Ollantaytambo: Łucznik oplacone 12 — kolejka x1 (−2000 MP)",
+   "1795820714340 log: [AI 2] Zakup jednostki za Skarbiec: Łucznik",
+   "1795820715887 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Chińczycy(7) (Relacja=50.530069 >= 0, połączenie tras możliwe)",
+   "1795820716339 log: [Barbarzyncy] Tura 5: nowe obozy: 12",
+   "1795820716339 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (79,7)",
+   "1795820716340 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (37,40)",
+   "1795820716340 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (49,28)",
+   "1795820716341 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (31,17)",
+   "1795820716341 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (57,47)",
+   "1795820716342 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (87,13)",
+   "1795820716342 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (36,18)",
+   "1795820716342 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (58,53)",
+   "1795820716343 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (24,20)",
+   "1795820716343 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (52,56)",
+   "1795820716343 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (36,58)",
+   "1795820716344 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (24,4)",
+   "1795820717869 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 5"
+  ]
+ },
+ {
+  "seed": 4242,
+  "turn": 5,
+  "measuring": true,
+  "result": "tura_zmieniona",
+  "outcome": null,
+  "preState": {
+   "turn": 5,
+   "eot": false,
+   "aria": "false",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": true,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "attempts": 1,
+  "attemptLog": [
+   {
+    "at": 3281,
+    "hitEl": "SPAN.",
+    "onButton": true
+   }
+  ],
+  "phases": [
+   {
+    "attempt": 0,
+    "reason": "aktywny",
+    "samples": [
+     {
+      "at": 2405,
+      "aria": "false",
+      "eot": false,
+      "turn": 5,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     }
+    ]
+   }
+  ],
+  "timeToChangeMs": 4274,
+  "turnAfter": 6,
+  "postSamples": [
+   {
+    "at": 3968,
+    "aria": "true",
+    "eot": true,
+    "turn": 6,
+    "onButton": true,
+    "hitEl": "SPAN.",
+    "lose": false
+   }
+  ],
+  "post": {
+   "turn": 6,
+   "eot": true,
+   "aria": "true",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "gateDiag": null,
+  "endTurnBlockedInWindow": [],
+  "consoleWindowTotal": 1,
+  "consoleCountsDelta": {
+   "warn": 1,
+   "error": 0,
+   "log": 3,
+   "endTurnBlockedWarn": 0
+  },
+  "last20Console": [
+   "1795820714340 log: [AI 2] Zakup jednostki za Skarbiec: Łucznik",
+   "1795820715887 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Chińczycy(7) (Relacja=50.530069 >= 0, połączenie tras możliwe)",
+   "1795820716339 log: [Barbarzyncy] Tura 5: nowe obozy: 12",
+   "1795820716339 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (79,7)",
+   "1795820716340 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (37,40)",
+   "1795820716340 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (49,28)",
+   "1795820716341 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (31,17)",
+   "1795820716341 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (57,47)",
+   "1795820716342 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (87,13)",
+   "1795820716342 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (36,18)",
+   "1795820716342 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (58,53)",
+   "1795820716343 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (24,20)",
+   "1795820716343 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (52,56)",
+   "1795820716343 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (36,58)",
+   "1795820716344 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (24,4)",
+   "1795820717869 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 5",
+   "1795820738302 warning: [EndTurn] triggerPlayerEndTurn: START tura 5",
+   "1795820739294 log: [Dyplomacja] Trybut 2 ¤: 2 → 1",
+   "1795820739294 log: [Dyplomacja] Trybut 2 ¤: 6 → 4",
+   "1795820739294 log: [Dyplomacja] Trybut 2 ¤: 9 → 7"
+  ]
+ },
+ {
+  "seed": 4242,
+  "turn": 6,
+  "measuring": true,
+  "result": "tura_zmieniona",
+  "outcome": null,
+  "preState": {
+   "turn": 6,
+   "eot": true,
+   "aria": "true",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "attempts": 1,
+  "attemptLog": [
+   {
+    "at": 5182,
+    "hitEl": "SPAN.",
+    "onButton": true
+   }
+  ],
+  "phases": [
+   {
+    "attempt": 0,
+    "reason": "aktywny",
+    "samples": [
+     {
+      "at": 2292,
+      "aria": "true",
+      "eot": true,
+      "turn": 6,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     },
+     {
+      "at": 2990,
+      "aria": "true",
+      "eot": false,
+      "turn": 6,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     },
+     {
+      "at": 4086,
+      "aria": "false",
+      "eot": false,
+      "turn": 6,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     }
+    ]
+   }
+  ],
+  "timeToChangeMs": 6244,
+  "turnAfter": 7,
+  "postSamples": [
+   {
+    "at": 5936,
+    "aria": "true",
+    "eot": true,
+    "turn": 7,
+    "onButton": true,
+    "hitEl": "SPAN.",
+    "lose": false
+   }
+  ],
+  "post": {
+   "turn": 7,
+   "eot": true,
+   "aria": "true",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "gateDiag": null,
+  "endTurnBlockedInWindow": [],
+  "consoleWindowTotal": 11,
+  "consoleCountsDelta": {
+   "warn": 2,
+   "error": 0,
+   "log": 12,
+   "endTurnBlockedWarn": 0
+  },
+  "last20Console": [
+   "1795820739294 log: [Dyplomacja] Trybut 2 ¤: 6 → 4",
+   "1795820739294 log: [Dyplomacja] Trybut 2 ¤: 9 → 7",
+   "1795820739648 log: [Ekonomia] Tura 6: gracz(1 os.) ¤=1 N=4 Praca=3 | mapa(12 os.) ¤=92 N=54 Praca=34 wzrost=0 głód=0",
+   "1795820739653 log: [Rekrutacja] Tura 6 Cusco: Wojownik z maczugą (Chaska) gotowa @ (38,28)",
+   "1795820739655 log: [Produkcja] Tura 6 Machu Picchu: budynek garncarnia",
+   "1795820739657 log: [Rekrutacja] Tura 6 Ollantaytambo: Łucznik gotowa @ (37,24)",
+   "1795820740455 log: [Chatka] Owner 1: Chatka: +50 postępu badań (Wojskowość)",
+   "1795820740989 log: [Autosave] rotacyjny slot=autosave-5 tura=6",
+   "1795820741027 log: [Rekrutacja] Ateny: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+   "1795820741032 log: [AI 4] Zakup jednostki za Skarbiec: Zwiadowca",
+   "1795820741032 log: [Rekrutacja] Sparta: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+   "1795820741032 log: [AI 4] Zakup jednostki za Skarbiec: Zwiadowca",
+   "1795820741056 log: [Rekrutacja] Xi'an: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+   "1795820741056 log: [AI 7] Zakup jednostki za Skarbiec: Zwiadowca",
+   "1795820741662 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Pekin · Chińczycy · miasto-państwo(9) (Relacja=50 >= 0, połączenie tras możliwe)",
+   "1795820742664 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 6",
+   "1795820745188 warning: [EndTurn] triggerPlayerEndTurn: START tura 6",
+   "1795820746258 log: [Dyplomacja] Trybut 2 ¤: 2 → 1",
+   "1795820746258 log: [Dyplomacja] Trybut 2 ¤: 6 → 4",
+   "1795820746258 log: [Dyplomacja] Trybut 2 ¤: 9 → 7"
+  ]
+ },
+ {
+  "seed": 4242,
+  "turn": 7,
+  "measuring": true,
+  "result": "PORAZKA_GRACZA_EKRAN_LOSE",
+  "outcome": "PORAZKA_GRACZA_EKRAN_LOSE",
+  "preState": {
+   "turn": 7,
+   "eot": true,
+   "aria": "true",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "attempts": 0,
+  "attemptLog": [],
+  "phases": [
+   {
+    "attempt": 0,
+    "reason": "PORAZKA_GRACZA_EKRAN_LOSE",
+    "samples": [
+     {
+      "at": 2257,
+      "aria": "true",
+      "eot": true,
+      "turn": 7,
+      "onButton": false,
+      "hitEl": "BUTTON.",
+      "lose": false
+     },
+     {
+      "at": 2874,
+      "aria": "true",
+      "eot": false,
+      "turn": 7,
+      "onButton": false,
+      "hitEl": "DIV#__victory_screen__.vsc-overlay.lose",
+      "lose": true
+     }
+    ]
+   }
+  ],
+  "timeToChangeMs": null,
+  "turnAfter": null,
+  "postSamples": [],
+  "post": {
+   "turn": 7,
+   "eot": false,
+   "aria": "true",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": true,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": true,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "gateDiag": null,
+  "endTurnBlockedInWindow": [],
+  "consoleWindowTotal": 10,
+  "consoleCountsDelta": {
+   "warn": 1,
+   "error": 0,
+   "log": 9,
+   "endTurnBlockedWarn": 0
+  },
+  "last20Console": [
+   "1795820741662 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Pekin · Chińczycy · miasto-państwo(9) (Relacja=50 >= 0, połączenie tras możliwe)",
+   "1795820742664 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 6",
+   "1795820745188 warning: [EndTurn] triggerPlayerEndTurn: START tura 6",
+   "1795820746258 log: [Dyplomacja] Trybut 2 ¤: 2 → 1",
+   "1795820746258 log: [Dyplomacja] Trybut 2 ¤: 6 → 4",
+   "1795820746258 log: [Dyplomacja] Trybut 2 ¤: 9 → 7",
+   "1795820746653 log: [Ekonomia] Tura 7: gracz(1 os.) ¤=1 N=4 Praca=3 | mapa(12 os.) ¤=92 N=54 Praca=36 wzrost=0 głód=0",
+   "1795820746667 log: [Rekrutacja] Tura 7 Ateny: Zwiadowca gotowa @ (82,50)",
+   "1795820746670 log: [Rekrutacja] Tura 7 Sparta: Zwiadowca gotowa @ (78,50)",
+   "1795820746671 log: [Rekrutacja] Tura 7 Xi'an: Zwiadowca gotowa @ (82,22)",
+   "1795820747336 log: [Dyplomacja] AI1 → MP2: wasalizacja (trybut_elapsed)",
+   "1795820747368 log: [Cuda][AI] Tura 7 owner 1: pominięto Wyrocznia — brak żywności w zapasach państwa",
+   "1795820747372 log: [AI 1] Ulepszenie: kamieniolom @ (40,28) (-44 Pracy)",
+   "1795820747406 log: [Chatka] Owner 1: Chatka: dołączyła jednostka — Włócznik",
+   "1795820747864 log: [Dyplomacja] AI4 → MP6: wasalizacja (trybut_elapsed)",
+   "1795820747895 log: [Dyplomacja] AI7 → MP9: wasalizacja (trybut_elapsed)",
+   "1795820748194 log: [Autosave] rotacyjny slot=autosave-6 tura=7",
+   "1795820748490 log: [Dyplomacja] AI↔AI Umowa Handlowa Ollantaytambo · Inkowie · miasto-państwo(2)-Grecy(4) (Relacja=50 >= 0, połączenie tras możliwe)",
+   "1795820749224 log: [Victory] PRZEGRANA (tura 7) gracz=0 rodzaj=przegrana",
+   "1795820749816 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 7"
+  ]
+ }
+]

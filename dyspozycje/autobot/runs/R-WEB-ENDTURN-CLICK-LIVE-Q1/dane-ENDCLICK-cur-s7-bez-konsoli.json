@@ -1,0 +1,921 @@
+[
+ {
+  "seed": 7,
+  "turn": 2,
+  "measuring": true,
+  "result": "tura_zmieniona",
+  "outcome": null,
+  "preState": {
+   "turn": 2,
+   "eot": true,
+   "aria": "true",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "attempts": 1,
+  "attemptLog": [
+   {
+    "at": 8946,
+    "hitEl": "SPAN.",
+    "onButton": true
+   }
+  ],
+  "phases": [
+   {
+    "attempt": 0,
+    "reason": "aktywny",
+    "samples": [
+     {
+      "at": 17,
+      "aria": "true",
+      "eot": true,
+      "turn": 2,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     },
+     {
+      "at": 536,
+      "aria": "true",
+      "eot": true,
+      "turn": 2,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     },
+     {
+      "at": 1994,
+      "aria": "true",
+      "eot": true,
+      "turn": 2,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     },
+     {
+      "at": 3279,
+      "aria": "true",
+      "eot": true,
+      "turn": 2,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     },
+     {
+      "at": 4232,
+      "aria": "true",
+      "eot": true,
+      "turn": 2,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     },
+     {
+      "at": 5495,
+      "aria": "true",
+      "eot": true,
+      "turn": 2,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     },
+     {
+      "at": 6208,
+      "aria": "true",
+      "eot": false,
+      "turn": 2,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     },
+     {
+      "at": 7047,
+      "aria": "false",
+      "eot": false,
+      "turn": 2,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     }
+    ]
+   }
+  ],
+  "timeToChangeMs": 11675,
+  "turnAfter": 3,
+  "postSamples": [
+   {
+    "at": 10190,
+    "aria": "true",
+    "eot": true,
+    "turn": 3,
+    "onButton": true,
+    "hitEl": "SPAN.",
+    "lose": false
+   }
+  ],
+  "post": {
+   "turn": 3,
+   "eot": true,
+   "aria": "true",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "gateDiag": null,
+  "endTurnBlockedInWindow": [],
+  "consoleWindowTotal": 10,
+  "consoleCountsDelta": {
+   "warn": 2,
+   "error": 0,
+   "log": 9,
+   "endTurnBlockedWarn": 0
+  },
+  "last20Console": [
+   "1795819843125 info: [civ-perf] === Civ — raport czasów ładowania mapy ===\nData: 27.11.2026, 22:50:43\nrozmiar: Maly · kształt: Kontynenty\n7992 heksów · nakładek 49\n\nGENERATOR (ms):\n",
+   "1795819845486 warning: [.WebGL-0x14fc001c0a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+   "1795819846608 info: [civ-perf] deferred resourceOverlays (post-hide): 855 meshes in 703 ms",
+   "1795819847501 warning: [.WebGL-0x14fc001c0a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)",
+   "1795819848050 log: [ClusterStart] deferred same-type rivals=2/2 epokaStart=braz (actual player capital @ 83,52)",
+   "1795819848050 warning: [ClusterStart] deferred foreign clusters: założono 6 z 9 (3 odrzuconych przez canFoundCity)",
+   "1795819848050 log: [ClusterStart] deferred foreign clusters=6/9 (3 odrzuconych)",
+   "1795819853638 warning: [EndTurn] triggerPlayerEndTurn: START tura 1",
+   "1795819854752 log: [Autosave] rotacyjny slot=autosave-1 tura=2",
+   "1795819855920 log: [Ekonomia] Tura 2: gracz(1 os.) ¤=2 N=3 Praca=2 | mapa(12 os.) ¤=34 N=58 Praca=36 wzrost=0 głód=0",
+   "1795819855920 log: [Porzadek] Tura 2 Ateny: tier=order porPct=98.8 szPct=82.6 [osiedle: immunitet buntu]",
+   "1795819855920 log: [Porzadek] Tura 2 Xi'an: tier=order porPct=98.8 szPct=82.6 [osiedle: immunitet buntu]",
+   "1795819855931 log: [Porzadek] Tura 2 Cusco: tier=order porPct=92.2 szPct=68.1 [osiedle: immunitet buntu]",
+   "1795819857243 log: [Chatka] Owner 1: Chatka: +50 postępu badań (Wojskowość)",
+   "1795819858131 log: [Chatka] Owner 4: Chatka: dołączyła jednostka — Włócznik",
+   "1795819858214 log: [Chatka] Owner 7: Chatka (skarb): +100 złota",
+   "1795819859496 log: [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Korynt · Grecy · miasto-państwo(3) (Relacja=190 >= 0, połączenie tras możliwe)",
+   "1795819860962 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 2",
+   "1795819863684 warning: [EndTurn] triggerPlayerEndTurn: START tura 2",
+   "1795819866911 log: [Ekonomia] Tura 3: gracz(1 os.) ¤=1 N=3 Praca=2 | mapa(12 os.) ¤=37 N=58 Praca=37 wzrost=0 głód=0"
+  ]
+ },
+ {
+  "seed": 7,
+  "turn": 3,
+  "measuring": true,
+  "result": "tura_zmieniona",
+  "outcome": null,
+  "preState": {
+   "turn": 3,
+   "eot": true,
+   "aria": "true",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "attempts": 1,
+  "attemptLog": [
+   {
+    "at": 6520,
+    "hitEl": "SPAN.",
+    "onButton": true
+   }
+  ],
+  "phases": [
+   {
+    "attempt": 0,
+    "reason": "aktywny",
+    "samples": [
+     {
+      "at": 4266,
+      "aria": "true",
+      "eot": false,
+      "turn": 3,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     },
+     {
+      "at": 5156,
+      "aria": "false",
+      "eot": false,
+      "turn": 3,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     }
+    ]
+   }
+  ],
+  "timeToChangeMs": 7909,
+  "turnAfter": 4,
+  "postSamples": [
+   {
+    "at": 7417,
+    "aria": "true",
+    "eot": true,
+    "turn": 4,
+    "onButton": true,
+    "hitEl": "SPAN.",
+    "lose": false
+   }
+  ],
+  "post": {
+   "turn": 4,
+   "eot": true,
+   "aria": "true",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "gateDiag": null,
+  "endTurnBlockedInWindow": [],
+  "consoleWindowTotal": 12,
+  "consoleCountsDelta": {
+   "warn": 2,
+   "error": 0,
+   "log": 15,
+   "endTurnBlockedWarn": 0
+  },
+  "last20Console": [
+   "1795819860962 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 2",
+   "1795819863684 warning: [EndTurn] triggerPlayerEndTurn: START tura 2",
+   "1795819866911 log: [Ekonomia] Tura 3: gracz(1 os.) ¤=1 N=3 Praca=2 | mapa(12 os.) ¤=37 N=58 Praca=37 wzrost=0 głód=0",
+   "1795819867979 log: [Autosave] rotacyjny slot=autosave-2 tura=3",
+   "1795819867979 log: [Rekrutacja] Sparta: Oszczepnik oplacone 12 — kolejka x1 (−2000 MP)",
+   "1795819867979 log: [AI 1] Zakup jednostki za Skarbiec: Oszczepnik",
+   "1795819868737 log: [Chatka] Owner 4: Chatka (skarb): +86 złota",
+   "1795819868737 log: [Rekrutacja] Cusco: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+   "1795819868737 log: [AI 7] Zakup jednostki za Skarbiec: Zwiadowca",
+   "1795819868737 log: [Rekrutacja] Machu Picchu: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+   "1795819868737 log: [AI 7] Zakup jednostki za Skarbiec: Zwiadowca",
+   "1795819868753 log: [Chatka] Owner 7: Chatka: +50 postępu badań (Wojskowość)",
+   "1795819869920 log: [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Chińczycy(4) (Relacja=51.503001499999996 >= 0, połączenie tras możliwe)",
+   "1795819871718 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 3",
+   "1795819873972 warning: [EndTurn] triggerPlayerEndTurn: START tura 3",
+   "1795819875916 log: [Ekonomia] Tura 4: gracz(1 os.) ¤=1 N=3 Praca=2 | mapa(12 os.) ¤=94 N=58 Praca=36 wzrost=0 głód=0",
+   "1795819875917 log: [Rekrutacja] Tura 4 Sparta: Oszczepnik gotowa @ (60,33)",
+   "1795819875917 log: [Porzadek] Tura 4 Xi'an: tier=order porPct=98.8 szPct=82.6 [osiedle: immunitet buntu]",
+   "1795819875917 log: [Rekrutacja] Tura 4 Cusco: Zwiadowca gotowa @ (31,49)",
+   "1795819875917 log: [Rekrutacja] Tura 4 Machu Picchu: Zwiadowca gotowa @ (27,49)"
+  ]
+ },
+ {
+  "seed": 7,
+  "turn": 4,
+  "measuring": true,
+  "result": "tura_zmieniona",
+  "outcome": null,
+  "preState": {
+   "turn": 4,
+   "eot": true,
+   "aria": "true",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "attempts": 1,
+  "attemptLog": [
+   {
+    "at": 6916,
+    "hitEl": "SPAN.",
+    "onButton": true
+   }
+  ],
+  "phases": [
+   {
+    "attempt": 0,
+    "reason": "aktywny",
+    "samples": [
+     {
+      "at": 4022,
+      "aria": "true",
+      "eot": true,
+      "turn": 4,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     },
+     {
+      "at": 4792,
+      "aria": "true",
+      "eot": false,
+      "turn": 4,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     },
+     {
+      "at": 5345,
+      "aria": "false",
+      "eot": false,
+      "turn": 4,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     }
+    ]
+   }
+  ],
+  "timeToChangeMs": 8748,
+  "turnAfter": 5,
+  "postSamples": [
+   {
+    "at": 8304,
+    "aria": "true",
+    "eot": true,
+    "turn": 5,
+    "onButton": true,
+    "hitEl": "SPAN.",
+    "lose": false
+   }
+  ],
+  "post": {
+   "turn": 5,
+   "eot": true,
+   "aria": "true",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "gateDiag": null,
+  "endTurnBlockedInWindow": [],
+  "consoleWindowTotal": 10,
+  "consoleCountsDelta": {
+   "warn": 2,
+   "error": 0,
+   "log": 12,
+   "endTurnBlockedWarn": 0
+  },
+  "last20Console": [
+   "1795819873972 warning: [EndTurn] triggerPlayerEndTurn: START tura 3",
+   "1795819875916 log: [Ekonomia] Tura 4: gracz(1 os.) ¤=1 N=3 Praca=2 | mapa(12 os.) ¤=94 N=58 Praca=36 wzrost=0 głód=0",
+   "1795819875917 log: [Rekrutacja] Tura 4 Sparta: Oszczepnik gotowa @ (60,33)",
+   "1795819875917 log: [Porzadek] Tura 4 Xi'an: tier=order porPct=98.8 szPct=82.6 [osiedle: immunitet buntu]",
+   "1795819875917 log: [Rekrutacja] Tura 4 Cusco: Zwiadowca gotowa @ (31,49)",
+   "1795819875917 log: [Rekrutacja] Tura 4 Machu Picchu: Zwiadowca gotowa @ (27,49)",
+   "1795819877016 log: [Autosave] rotacyjny slot=autosave-3 tura=4",
+   "1795819877069 log: [Rekrutacja] Ateny: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+   "1795819877069 log: [AI 1] Zakup jednostki za Skarbiec: Zwiadowca",
+   "1795819877069 log: [Rekrutacja] Sparta: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+   "1795819877069 log: [AI 1] Zakup jednostki za Skarbiec: Zwiadowca",
+   "1795819877069 log: [Chatka] Owner 1: Chatka (skarb): +96 złota",
+   "1795819877997 log: [Chatka] Owner 7: Chatka (skarb): +80 złota",
+   "1795819879380 log: [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Pekin · Chińczycy · miasto-państwo(6) (Relacja=50 >= 0, połączenie tras możliwe)",
+   "1795819880831 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 4",
+   "1795819883341 warning: [EndTurn] triggerPlayerEndTurn: START tura 4",
+   "1795819885751 log: [Ekonomia] Tura 5: gracz(1 os.) ¤=1 N=3 Praca=2 | mapa(12 os.) ¤=94 N=58 Praca=36 wzrost=0 głód=0",
+   "1795819885759 log: [Rekrutacja] Tura 5 Ateny: Zwiadowca gotowa @ (64,33)",
+   "1795819885763 log: [Rekrutacja] Tura 5 Sparta: Zwiadowca gotowa @ (60,33)",
+   "1795819885764 log: [Porzadek] Tura 5 Xi'an: tier=order porPct=98.8 szPct=82.6 [osiedle: immunitet buntu]"
+  ]
+ },
+ {
+  "seed": 7,
+  "turn": 5,
+  "measuring": true,
+  "result": "tura_zmieniona",
+  "outcome": null,
+  "preState": {
+   "turn": 5,
+   "eot": true,
+   "aria": "true",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "attempts": 1,
+  "attemptLog": [
+   {
+    "at": 10149,
+    "hitEl": "SPAN.",
+    "onButton": true
+   }
+  ],
+  "phases": [
+   {
+    "attempt": 0,
+    "reason": "aktywny",
+    "samples": [
+     {
+      "at": 6091,
+      "aria": "true",
+      "eot": false,
+      "turn": 5,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     },
+     {
+      "at": 8296,
+      "aria": "false",
+      "eot": false,
+      "turn": 5,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     }
+    ]
+   }
+  ],
+  "timeToChangeMs": 11546,
+  "turnAfter": 6,
+  "postSamples": [
+   {
+    "at": 11125,
+    "aria": "true",
+    "eot": true,
+    "turn": 6,
+    "onButton": true,
+    "hitEl": "SPAN.",
+    "lose": false
+   }
+  ],
+  "post": {
+   "turn": 6,
+   "eot": true,
+   "aria": "true",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "gateDiag": null,
+  "endTurnBlockedInWindow": [],
+  "consoleWindowTotal": 30,
+  "consoleCountsDelta": {
+   "warn": 2,
+   "error": 0,
+   "log": 32,
+   "endTurnBlockedWarn": 0
+  },
+  "last20Console": [
+   "1795819890215 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (25,13)",
+   "1795819890215 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (94,59)",
+   "1795819890215 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (24,67)",
+   "1795819890215 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (83,17)",
+   "1795819890215 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (54,37)",
+   "1795819890215 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (85,34)",
+   "1795819890217 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (58,50)",
+   "1795819890217 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (34,66)",
+   "1795819890217 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (46,4)",
+   "1795819890217 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (25,61)",
+   "1795819890217 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (34,13)",
+   "1795819892014 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 5",
+   "1795819896545 warning: [EndTurn] triggerPlayerEndTurn: START tura 5",
+   "1795819897942 log: [Dyplomacja] Trybut zerwany (ai_cs_trybut_1_3_5): brak 2 ¤ u gracza 3",
+   "1795819897942 log: [Dyplomacja] Trybut 2 ¤: 6 → 4",
+   "1795819897942 log: [Dyplomacja] Trybut 2 ¤: 9 → 7",
+   "1795819898489 log: [Ekonomia] Tura 6: gracz(1 os.) ¤=1 N=3 Praca=2 | mapa(12 os.) ¤=94 N=58 Praca=36 wzrost=0 głód=0",
+   "1795819898494 log: [Rekrutacja] Tura 6 Ateny: Wojownik gotowa @ (64,33)",
+   "1795819898496 log: [Rekrutacja] Tura 6 Korynt: Oszczepnik gotowa @ (59,38)",
+   "1795819898496 log: [Porzadek] Tura 6 Xi'an: tier=order porPct=98.8 szPct=82.6 [osiedle: immunitet buntu]"
+  ]
+ },
+ {
+  "seed": 7,
+  "turn": 6,
+  "measuring": true,
+  "result": "tura_zmieniona",
+  "outcome": null,
+  "preState": {
+   "turn": 6,
+   "eot": true,
+   "aria": "true",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "attempts": 1,
+  "attemptLog": [
+   {
+    "at": 6981,
+    "hitEl": "SPAN.",
+    "onButton": true
+   }
+  ],
+  "phases": [
+   {
+    "attempt": 0,
+    "reason": "aktywny",
+    "samples": [
+     {
+      "at": 4075,
+      "aria": "true",
+      "eot": false,
+      "turn": 6,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     },
+     {
+      "at": 5599,
+      "aria": "false",
+      "eot": false,
+      "turn": 6,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     }
+    ]
+   }
+  ],
+  "timeToChangeMs": 8277,
+  "turnAfter": 7,
+  "postSamples": [
+   {
+    "at": 7881,
+    "aria": "true",
+    "eot": true,
+    "turn": 7,
+    "onButton": true,
+    "hitEl": "SPAN.",
+    "lose": false
+   }
+  ],
+  "post": {
+   "turn": 7,
+   "eot": true,
+   "aria": "true",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "gateDiag": null,
+  "endTurnBlockedInWindow": [],
+  "consoleWindowTotal": 11,
+  "consoleCountsDelta": {
+   "warn": 2,
+   "error": 0,
+   "log": 14,
+   "endTurnBlockedWarn": 0
+  },
+  "last20Console": [
+   "1795819898489 log: [Ekonomia] Tura 6: gracz(1 os.) ¤=1 N=3 Praca=2 | mapa(12 os.) ¤=94 N=58 Praca=36 wzrost=0 głód=0",
+   "1795819898494 log: [Rekrutacja] Tura 6 Ateny: Wojownik gotowa @ (64,33)",
+   "1795819898496 log: [Rekrutacja] Tura 6 Korynt: Oszczepnik gotowa @ (59,38)",
+   "1795819898496 log: [Porzadek] Tura 6 Xi'an: tier=order porPct=98.8 szPct=82.6 [osiedle: immunitet buntu]",
+   "1795819899317 log: [Autosave] rotacyjny slot=autosave-5 tura=6",
+   "1795819899860 log: [Rekrutacja] Xi'an: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+   "1795819899860 log: [AI 4] Zakup jednostki za Skarbiec: Zwiadowca",
+   "1795819899864 log: [Rekrutacja] Luoyang: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+   "1795819899864 log: [AI 4] Zakup jednostki za Skarbiec: Zwiadowca",
+   "1795819899864 log: [Barbarzyncy] Obóz zniszczony (najechany): bc_156685_11",
+   "1795819901274 log: [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Ollantaytambo · Inkowie · miasto-państwo(9) (Relacja=50 >= 0, połączenie tras możliwe)",
+   "1795819901760 log: [Barbarzyncy] Tura 6: nowe obozy: 1",
+   "1795819901760 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (37,57)",
+   "1795819903006 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 6",
+   "1795819905913 warning: [EndTurn] triggerPlayerEndTurn: START tura 6",
+   "1795819907209 log: [Dyplomacja] Trybut 2 ¤: 6 → 4",
+   "1795819907209 log: [Dyplomacja] Trybut 2 ¤: 9 → 7",
+   "1795819907743 log: [Ekonomia] Tura 7: gracz(1 os.) ¤=1 N=3 Praca=2 | mapa(12 os.) ¤=94 N=58 Praca=36 wzrost=0 głód=0",
+   "1795819907764 log: [Rekrutacja] Tura 7 Xi'an: Zwiadowca gotowa @ (27,18)",
+   "1795819907764 log: [Rekrutacja] Tura 7 Luoyang: Zwiadowca gotowa @ (23,18)"
+  ]
+ },
+ {
+  "seed": 7,
+  "turn": 7,
+  "measuring": true,
+  "result": "tura_zmieniona",
+  "outcome": null,
+  "preState": {
+   "turn": 7,
+   "eot": true,
+   "aria": "true",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "attempts": 1,
+  "attemptLog": [
+   {
+    "at": 6159,
+    "hitEl": "SPAN.",
+    "onButton": true
+   }
+  ],
+  "phases": [
+   {
+    "attempt": 0,
+    "reason": "aktywny",
+    "samples": [
+     {
+      "at": 3421,
+      "aria": "true",
+      "eot": true,
+      "turn": 7,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     },
+     {
+      "at": 4594,
+      "aria": "false",
+      "eot": false,
+      "turn": 7,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     }
+    ]
+   }
+  ],
+  "timeToChangeMs": 7829,
+  "turnAfter": 8,
+  "postSamples": [
+   {
+    "at": 7236,
+    "aria": "true",
+    "eot": true,
+    "turn": 7,
+    "onButton": true,
+    "hitEl": "SPAN.",
+    "lose": false
+   }
+  ],
+  "post": {
+   "turn": 8,
+   "eot": true,
+   "aria": "true",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "gateDiag": null,
+  "endTurnBlockedInWindow": [],
+  "consoleWindowTotal": 8,
+  "consoleCountsDelta": {
+   "warn": 2,
+   "error": 0,
+   "log": 9,
+   "endTurnBlockedWarn": 0
+  },
+  "last20Console": [
+   "1795819901760 log: [Barbarzyncy] Tura 6: nowe obozy: 1",
+   "1795819901760 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (37,57)",
+   "1795819903006 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 6",
+   "1795819905913 warning: [EndTurn] triggerPlayerEndTurn: START tura 6",
+   "1795819907209 log: [Dyplomacja] Trybut 2 ¤: 6 → 4",
+   "1795819907209 log: [Dyplomacja] Trybut 2 ¤: 9 → 7",
+   "1795819907743 log: [Ekonomia] Tura 7: gracz(1 os.) ¤=1 N=3 Praca=2 | mapa(12 os.) ¤=94 N=58 Praca=36 wzrost=0 głód=0",
+   "1795819907764 log: [Rekrutacja] Tura 7 Xi'an: Zwiadowca gotowa @ (27,18)",
+   "1795819907764 log: [Rekrutacja] Tura 7 Luoyang: Zwiadowca gotowa @ (23,18)",
+   "1795819908830 log: [Dyplomacja] AI1 → MP3: wasalizacja (trybut_elapsed)",
+   "1795819908876 log: [Cuda][AI] Tura 7 owner 1: pominięto Wyrocznia — brak żywności w zapasach państwa",
+   "1795819909478 log: [Autosave] rotacyjny slot=autosave-6 tura=7",
+   "1795819909484 log: [Dyplomacja] AI4 → MP6: wasalizacja (trybut_elapsed)",
+   "1795819909642 log: [Dyplomacja] AI7 → MP9: wasalizacja (trybut_elapsed)",
+   "1795819910833 log: [Dyplomacja] AI↔AI Umowa Handlowa Korynt · Grecy · miasto-państwo(3)-Chińczycy(4) (Relacja=50 >= 0, połączenie tras możliwe)",
+   "1795819912200 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 7",
+   "1795819914935 warning: [EndTurn] triggerPlayerEndTurn: START tura 7",
+   "1795819916607 log: [Dyplomacja] Trybut 2 ¤: 6 → 4",
+   "1795819916607 log: [Dyplomacja] Trybut 2 ¤: 9 → 7",
+   "1795819916607 log: [Dyplomacja] Trybut 2 ¤: 3 → 1"
+  ]
+ },
+ {
+  "seed": 7,
+  "turn": 8,
+  "measuring": true,
+  "result": "tura_zmieniona",
+  "outcome": null,
+  "preState": {
+   "turn": 8,
+   "eot": true,
+   "aria": "true",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "attempts": 1,
+  "attemptLog": [
+   {
+    "at": 5706,
+    "hitEl": "SPAN.",
+    "onButton": true
+   }
+  ],
+  "phases": [
+   {
+    "attempt": 0,
+    "reason": "aktywny",
+    "samples": [
+     {
+      "at": 4023,
+      "aria": "true",
+      "eot": true,
+      "turn": 8,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     },
+     {
+      "at": 4753,
+      "aria": "false",
+      "eot": false,
+      "turn": 8,
+      "onButton": true,
+      "hitEl": "SPAN.",
+      "lose": false
+     }
+    ]
+   }
+  ],
+  "timeToChangeMs": 8175,
+  "turnAfter": 9,
+  "postSamples": [
+   {
+    "at": 6470,
+    "aria": "true",
+    "eot": true,
+    "turn": 8,
+    "onButton": true,
+    "hitEl": "SPAN.",
+    "lose": false
+   },
+   {
+    "at": 7610,
+    "aria": "true",
+    "eot": true,
+    "turn": 9,
+    "onButton": true,
+    "hitEl": "SPAN.",
+    "lose": false
+   }
+  ],
+  "post": {
+   "turn": 9,
+   "eot": true,
+   "aria": "true",
+   "modalDiplo": false,
+   "modalAmp": false,
+   "welcome": false,
+   "techNotice": false,
+   "battleOpen": false,
+   "battle": {
+    "preBattleOpen": false,
+    "pendingAuto": false,
+    "sceneOpen": false,
+    "summaryOpen": false,
+    "resolving": false
+   },
+   "pbOverlay": false
+  },
+  "gateDiag": null,
+  "endTurnBlockedInWindow": [],
+  "consoleWindowTotal": 38,
+  "consoleCountsDelta": {
+   "warn": 2,
+   "error": 0,
+   "log": 36,
+   "endTurnBlockedWarn": 0
+  },
+  "last20Console": [
+   "1795819920035 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (25,13)",
+   "1795819920035 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (94,59)",
+   "1795819920036 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (22,67)",
+   "1795819920036 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (81,17)",
+   "1795819920036 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (52,37)",
+   "1795819920037 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (83,34)",
+   "1795819920038 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (58,50)",
+   "1795819920038 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (35,66)",
+   "1795819920039 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (44,4)",
+   "1795819920039 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (25,61)",
+   "1795819920039 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (55,63) [na wodzie]",
+   "1795819920181 log: [Eliminacja] Cywilizacja ownerId=11 skasowana (utrata ostatniego miasta).",
+   "1795819921633 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 8",
+   "1795819923316 warning: [EndTurn] triggerPlayerEndTurn: START tura 8",
+   "1795819925755 log: [Ekonomia] Tura 9: gracz(1 os.) ¤=1 N=3 Praca=2 | mapa(12 os.) ¤=160 N=66 Praca=41 wzrost=0 głód=0",
+   "1795819925768 log: [Porzadek] Tura 9 Kapua: tier=unrest porPct=0.0 szPct=0.0 [osiedle: immunitet buntu]",
+   "1795819925768 log: [Produkcja] Tura 9 Ateny: budynek palac",
+   "1795819925785 log: [Rekrutacja] Tura 9 Cusco: Łucznik gotowa @ (31,49)",
+   "1795819925785 log: [Rekrutacja] Tura 9 Machu Picchu: Łucznik gotowa @ (27,49)",
+   "1795819925785 log: [Produkcja] Tura 9 Ollantaytambo: budynek palac"
+  ]
+ }
+]

@@ -1,0 +1,709 @@
+{
+ "meta": {
+  "build": "3b23b2d4f (ENDQUIET, main)",
+  "seed": 4242,
+  "consoleWindows": true
+ },
+ "rows": [
+  {
+   "seed": 4242,
+   "state": "a_przed_zalozeniem_miasta",
+   "windowMs": 31172,
+   "stillAwaiting": true,
+   "warnTotal": 1,
+   "byType": {
+    "warn": 1,
+    "error": 0,
+    "log": 0,
+    "endTurnBlockedWarn": 0
+   },
+   "sample": [
+    "1795817677160 warning: [.WebGL-0x1694001cc400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+   ]
+  },
+  {
+   "seed": 4242,
+   "state": "b_po_kliknieciu_zakoncz_ture",
+   "turn": 2,
+   "windowMs": 30057,
+   "warnTotal": 7,
+   "byType": {
+    "warn": 4,
+    "error": 0,
+    "log": 3,
+    "endTurnBlockedWarn": 1
+   },
+   "sample": [
+    "1795817729232 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 2",
+    "1795817730258 warning: [EndTurn] triggerPlayerEndTurn: START tura 2",
+    "1795817731285 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817732131 log: [Ekonomia] Tura 3: gracz(1 os.) ¤=1 N=4 Praca=3 | mapa(12 os.) ¤=43 N=54 Praca=35 wzrost=0 głód=0",
+    "1795817733484 log: [Autosave] rotacyjny slot=autosave-2 tura=3",
+    "1795817734387 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Grecy(4) (Relacja=41.003001499999996 >= 0, połączenie tras możliwe)",
+    "1795817735882 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 3"
+   ]
+  },
+  {
+   "seed": 4242,
+   "turn": 2,
+   "measuring": true,
+   "pre": {
+    "turn": 2,
+    "canEnd": false,
+    "gateBlokada": false,
+    "aria": "true",
+    "modalDiplo": false,
+    "modalAmp": false,
+    "welcome": false,
+    "techNotice": false,
+    "battleOpen": false,
+    "battle": {
+     "preBattleOpen": false,
+     "pendingAuto": false,
+     "sceneOpen": false,
+     "summaryOpen": false,
+     "resolving": false
+    },
+    "pbOverlay": false,
+    "gallery": false
+   },
+   "hit": "SPAN. [data-end]",
+   "result": "tura_zmieniona",
+   "attempts": 1,
+   "attemptLog": [
+    {
+     "at": 0,
+     "hit": "SPAN. [data-end]"
+    }
+   ],
+   "timeToChangeMs": 2575,
+   "turnAfter": 3,
+   "windowWaitMs": 30252,
+   "post": {
+    "turn": 3,
+    "canEnd": true,
+    "gateBlokada": false,
+    "aria": "false",
+    "modalDiplo": false,
+    "modalAmp": false,
+    "welcome": false,
+    "techNotice": false,
+    "battleOpen": false,
+    "battle": {
+     "preBattleOpen": false,
+     "pendingAuto": false,
+     "sceneOpen": false,
+     "summaryOpen": false,
+     "resolving": false
+    },
+    "pbOverlay": false,
+    "gallery": false
+   },
+   "endTurnBlockedInWindow": [
+    "1795817731285 warning: [EndTurn] blocked: endTurnInProgress"
+   ],
+   "consoleWindowTotal": 7,
+   "consoleCountsDelta": {
+    "warn": 4,
+    "error": 0,
+    "log": 3,
+    "endTurnBlockedWarn": 1
+   },
+   "last20Console": [
+    "1795817708913 log: [ClusterStart] deferred foreign clusters=6/9 (3 odrzuconych)",
+    "1795817721992 warning: [EndTurn] triggerPlayerEndTurn: START tura 1",
+    "1795817723026 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817723617 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817724327 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817724496 log: [Ekonomia] Tura 2: gracz(1 os.) ¤=2 N=5 Praca=3 | mapa(12 os.) ¤=33 N=56 Praca=35 wzrost=0 głód=0",
+    "1795817724496 log: [Porzadek] Tura 2 Cusco: tier=order porPct=95.5 szPct=75.4 [osiedle: immunitet buntu]",
+    "1795817724496 log: [Porzadek] Tura 2 Ateny: tier=order porPct=95.5 szPct=75.4 [osiedle: immunitet buntu]",
+    "1795817724496 log: [Porzadek] Tura 2 Xi'an: tier=order porPct=98.8 szPct=82.6 [osiedle: immunitet buntu]",
+    "1795817725522 log: [Autosave] rotacyjny slot=autosave-1 tura=2",
+    "1795817725713 log: [AI 1] Wycinka @ (39,27) (-5 Pracy, +50 Drewna)",
+    "1795817727792 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817727799 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Ollantaytambo · Inkowie · miasto-państwo(2) (Relacja=190 >= 0, połączenie tras możliwe)",
+    "1795817729232 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 2",
+    "1795817730258 warning: [EndTurn] triggerPlayerEndTurn: START tura 2",
+    "1795817731285 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817732131 log: [Ekonomia] Tura 3: gracz(1 os.) ¤=1 N=4 Praca=3 | mapa(12 os.) ¤=43 N=54 Praca=35 wzrost=0 głód=0",
+    "1795817733484 log: [Autosave] rotacyjny slot=autosave-2 tura=3",
+    "1795817734387 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Grecy(4) (Relacja=41.003001499999996 >= 0, połączenie tras możliwe)",
+    "1795817735882 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 3"
+   ]
+  },
+  {
+   "seed": 4242,
+   "state": "b_po_kliknieciu_zakoncz_ture",
+   "turn": 3,
+   "windowMs": 30023,
+   "warnTotal": 11,
+   "byType": {
+    "warn": 4,
+    "error": 0,
+    "log": 7,
+    "endTurnBlockedWarn": 2
+   },
+   "sample": [
+    "1795817763691 warning: [EndTurn] triggerPlayerEndTurn: START tura 3",
+    "1795817764271 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817764843 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817765992 log: [Ekonomia] Tura 4: gracz(1 os.) ¤=1 N=4 Praca=3 | mapa(12 os.) ¤=92 N=54 Praca=34 wzrost=0 głód=0",
+    "1795817767017 log: [Rekrutacja] Cusco: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+    "1795817767018 log: [AI 1] Zakup jednostki za Skarbiec: Zwiadowca",
+    "1795817767020 log: [Rekrutacja] Machu Picchu: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+    "1795817767021 log: [AI 1] Zakup jednostki za Skarbiec: Zwiadowca",
+    "1795817767509 log: [Autosave] rotacyjny slot=autosave-3 tura=4",
+    "1795817768748 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Korynt · Grecy · miasto-państwo(6) (Relacja=50 >= 0, połączenie tras możliwe)",
+    "1795817770483 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 4"
+   ]
+  },
+  {
+   "seed": 4242,
+   "turn": 3,
+   "measuring": true,
+   "pre": {
+    "turn": 3,
+    "canEnd": true,
+    "gateBlokada": false,
+    "aria": "false",
+    "modalDiplo": false,
+    "modalAmp": false,
+    "welcome": false,
+    "techNotice": false,
+    "battleOpen": false,
+    "battle": {
+     "preBattleOpen": false,
+     "pendingAuto": false,
+     "sceneOpen": false,
+     "summaryOpen": false,
+     "resolving": false
+    },
+    "pbOverlay": false,
+    "gallery": false
+   },
+   "hit": "SPAN. [data-end]",
+   "result": "tura_zmieniona",
+   "attempts": 1,
+   "attemptLog": [
+    {
+     "at": 0,
+     "hit": "SPAN. [data-end]"
+    }
+   ],
+   "timeToChangeMs": 2563,
+   "turnAfter": 4,
+   "windowWaitMs": 30680,
+   "post": {
+    "turn": 4,
+    "canEnd": true,
+    "gateBlokada": false,
+    "aria": "false",
+    "modalDiplo": false,
+    "modalAmp": false,
+    "welcome": false,
+    "techNotice": false,
+    "battleOpen": false,
+    "battle": {
+     "preBattleOpen": false,
+     "pendingAuto": false,
+     "sceneOpen": false,
+     "summaryOpen": false,
+     "resolving": false
+    },
+    "pbOverlay": false,
+    "gallery": false
+   },
+   "endTurnBlockedInWindow": [
+    "1795817764271 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817764843 warning: [EndTurn] blocked: endTurnInProgress"
+   ],
+   "consoleWindowTotal": 11,
+   "consoleCountsDelta": {
+    "warn": 4,
+    "error": 0,
+    "log": 7,
+    "endTurnBlockedWarn": 2
+   },
+   "last20Console": [
+    "1795817727792 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817727799 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Ollantaytambo · Inkowie · miasto-państwo(2) (Relacja=190 >= 0, połączenie tras możliwe)",
+    "1795817729232 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 2",
+    "1795817730258 warning: [EndTurn] triggerPlayerEndTurn: START tura 2",
+    "1795817731285 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817732131 log: [Ekonomia] Tura 3: gracz(1 os.) ¤=1 N=4 Praca=3 | mapa(12 os.) ¤=43 N=54 Praca=35 wzrost=0 głód=0",
+    "1795817733484 log: [Autosave] rotacyjny slot=autosave-2 tura=3",
+    "1795817734387 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Grecy(4) (Relacja=41.003001499999996 >= 0, połączenie tras możliwe)",
+    "1795817735882 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 3",
+    "1795817763691 warning: [EndTurn] triggerPlayerEndTurn: START tura 3",
+    "1795817764271 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817764843 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817765992 log: [Ekonomia] Tura 4: gracz(1 os.) ¤=1 N=4 Praca=3 | mapa(12 os.) ¤=92 N=54 Praca=34 wzrost=0 głód=0",
+    "1795817767017 log: [Rekrutacja] Cusco: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+    "1795817767018 log: [AI 1] Zakup jednostki za Skarbiec: Zwiadowca",
+    "1795817767020 log: [Rekrutacja] Machu Picchu: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+    "1795817767021 log: [AI 1] Zakup jednostki za Skarbiec: Zwiadowca",
+    "1795817767509 log: [Autosave] rotacyjny slot=autosave-3 tura=4",
+    "1795817768748 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Korynt · Grecy · miasto-państwo(6) (Relacja=50 >= 0, połączenie tras możliwe)",
+    "1795817770483 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 4"
+   ]
+  },
+  {
+   "seed": 4242,
+   "turn": 4,
+   "measuring": true,
+   "pre": {
+    "turn": 4,
+    "canEnd": true,
+    "gateBlokada": false,
+    "aria": "false",
+    "modalDiplo": false,
+    "modalAmp": false,
+    "welcome": false,
+    "techNotice": false,
+    "battleOpen": false,
+    "battle": {
+     "preBattleOpen": false,
+     "pendingAuto": false,
+     "sceneOpen": false,
+     "summaryOpen": false,
+     "resolving": false
+    },
+    "pbOverlay": false,
+    "gallery": false
+   },
+   "hit": "SPAN. [data-end]",
+   "result": "tura_zmieniona",
+   "attempts": 1,
+   "attemptLog": [
+    {
+     "at": 0,
+     "hit": "SPAN. [data-end]"
+    }
+   ],
+   "timeToChangeMs": 3968,
+   "turnAfter": 5,
+   "windowWaitMs": 4592,
+   "post": {
+    "turn": 5,
+    "canEnd": false,
+    "gateBlokada": false,
+    "aria": "true",
+    "modalDiplo": false,
+    "modalAmp": false,
+    "welcome": false,
+    "techNotice": false,
+    "battleOpen": false,
+    "battle": {
+     "preBattleOpen": false,
+     "pendingAuto": false,
+     "sceneOpen": false,
+     "summaryOpen": false,
+     "resolving": false
+    },
+    "pbOverlay": false,
+    "gallery": false
+   },
+   "endTurnBlockedInWindow": [
+    "1795817799944 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817800932 warning: [EndTurn] blocked: endTurnInProgress"
+   ],
+   "consoleWindowTotal": 6,
+   "consoleCountsDelta": {
+    "warn": 4,
+    "error": 0,
+    "log": 3,
+    "endTurnBlockedWarn": 3
+   },
+   "last20Console": [
+    "1795817734387 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Grecy(4) (Relacja=41.003001499999996 >= 0, połączenie tras możliwe)",
+    "1795817735882 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 3",
+    "1795817763691 warning: [EndTurn] triggerPlayerEndTurn: START tura 3",
+    "1795817764271 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817764843 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817765992 log: [Ekonomia] Tura 4: gracz(1 os.) ¤=1 N=4 Praca=3 | mapa(12 os.) ¤=92 N=54 Praca=34 wzrost=0 głód=0",
+    "1795817767017 log: [Rekrutacja] Cusco: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+    "1795817767018 log: [AI 1] Zakup jednostki za Skarbiec: Zwiadowca",
+    "1795817767020 log: [Rekrutacja] Machu Picchu: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+    "1795817767021 log: [AI 1] Zakup jednostki za Skarbiec: Zwiadowca",
+    "1795817767509 log: [Autosave] rotacyjny slot=autosave-3 tura=4",
+    "1795817768748 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Korynt · Grecy · miasto-państwo(6) (Relacja=50 >= 0, połączenie tras możliwe)",
+    "1795817770483 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 4",
+    "1795817798680 warning: [EndTurn] triggerPlayerEndTurn: START tura 4",
+    "1795817799944 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817800932 log: [Ekonomia] Tura 5: gracz(1 os.) ¤=1 N=4 Praca=3 | mapa(12 os.) ¤=92 N=54 Praca=34 wzrost=0 głód=0",
+    "1795817800932 log: [Rekrutacja] Tura 5 Cusco: Zwiadowca gotowa @ (38,28)",
+    "1795817800932 log: [Rekrutacja] Tura 5 Machu Picchu: Zwiadowca gotowa @ (37,32)",
+    "1795817800932 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817801556 warning: [EndTurn] blocked: endTurnInProgress"
+   ]
+  },
+  {
+   "seed": 4242,
+   "turn": 5,
+   "measuring": true,
+   "pre": {
+    "turn": 5,
+    "canEnd": false,
+    "gateBlokada": false,
+    "aria": "true",
+    "modalDiplo": false,
+    "modalAmp": false,
+    "welcome": false,
+    "techNotice": false,
+    "battleOpen": false,
+    "battle": {
+     "preBattleOpen": false,
+     "pendingAuto": false,
+     "sceneOpen": false,
+     "summaryOpen": false,
+     "resolving": false
+    },
+    "pbOverlay": false,
+    "gallery": false
+   },
+   "hit": "SPAN. [data-end]",
+   "result": "tura_zmieniona",
+   "attempts": 1,
+   "attemptLog": [
+    {
+     "at": 0,
+     "hit": "SPAN. [data-end]"
+    }
+   ],
+   "timeToChangeMs": 2403,
+   "turnAfter": 6,
+   "windowWaitMs": 2894,
+   "post": {
+    "turn": 6,
+    "canEnd": false,
+    "gateBlokada": false,
+    "aria": "true",
+    "modalDiplo": false,
+    "modalAmp": false,
+    "welcome": false,
+    "techNotice": false,
+    "battleOpen": false,
+    "battle": {
+     "preBattleOpen": false,
+     "pendingAuto": false,
+     "sceneOpen": false,
+     "summaryOpen": false,
+     "resolving": false
+    },
+    "pbOverlay": false,
+    "gallery": false
+   },
+   "endTurnBlockedInWindow": [
+    "1795817809489 warning: [EndTurn] blocked: endTurnInProgress"
+   ],
+   "consoleWindowTotal": 2,
+   "consoleCountsDelta": {
+    "warn": 3,
+    "error": 0,
+    "log": 0,
+    "endTurnBlockedWarn": 2
+   },
+   "last20Console": [
+    "1795817803036 log: [AI 2] Zakup jednostki za Skarbiec: Łucznik",
+    "1795817804529 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Chińczycy(7) (Relacja=50.530069 >= 0, połączenie tras możliwe)",
+    "1795817805229 log: [Barbarzyncy] Tura 5: nowe obozy: 12",
+    "1795817805229 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (79,7)",
+    "1795817805229 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (37,40)",
+    "1795817805229 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (49,28)",
+    "1795817805229 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (31,17)",
+    "1795817805229 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (57,47)",
+    "1795817805229 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (87,13)",
+    "1795817805229 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (36,18)",
+    "1795817805229 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (58,53)",
+    "1795817805229 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (24,20)",
+    "1795817805229 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (52,56)",
+    "1795817805229 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (36,58)",
+    "1795817805229 log: [Barbarzyncy] Spawn: Wojownik szekelesz @ (24,4)",
+    "1795817805229 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817806539 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 5",
+    "1795817808484 warning: [EndTurn] triggerPlayerEndTurn: START tura 5",
+    "1795817809489 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817809981 warning: [EndTurn] blocked: endTurnInProgress"
+   ]
+  },
+  {
+   "seed": 4242,
+   "turn": 6,
+   "measuring": true,
+   "pre": {
+    "turn": 6,
+    "canEnd": false,
+    "gateBlokada": false,
+    "aria": "true",
+    "modalDiplo": false,
+    "modalAmp": false,
+    "welcome": false,
+    "techNotice": false,
+    "battleOpen": false,
+    "battle": {
+     "preBattleOpen": false,
+     "pendingAuto": false,
+     "sceneOpen": false,
+     "summaryOpen": false,
+     "resolving": false
+    },
+    "pbOverlay": false,
+    "gallery": false
+   },
+   "hit": "SPAN. [data-end]",
+   "result": "tura_zmieniona",
+   "attempts": 1,
+   "attemptLog": [
+    {
+     "at": 0,
+     "hit": "SPAN. [data-end]"
+    }
+   ],
+   "timeToChangeMs": 3334,
+   "turnAfter": 7,
+   "windowWaitMs": 3971,
+   "post": {
+    "turn": 7,
+    "canEnd": false,
+    "gateBlokada": false,
+    "aria": "true",
+    "modalDiplo": false,
+    "modalAmp": false,
+    "welcome": false,
+    "techNotice": false,
+    "battleOpen": false,
+    "battle": {
+     "preBattleOpen": false,
+     "pendingAuto": false,
+     "sceneOpen": false,
+     "summaryOpen": false,
+     "resolving": false
+    },
+    "pbOverlay": false,
+    "gallery": false
+   },
+   "endTurnBlockedInWindow": [
+    "1795817817464 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817818066 warning: [EndTurn] blocked: endTurnInProgress"
+   ],
+   "consoleWindowTotal": 7,
+   "consoleCountsDelta": {
+    "warn": 5,
+    "error": 0,
+    "log": 7,
+    "endTurnBlockedWarn": 3
+   },
+   "last20Console": [
+    "1795817812245 log: [AI 4] Zakup jednostki za Skarbiec: Zwiadowca",
+    "1795817812245 log: [Rekrutacja] Sparta: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+    "1795817812245 log: [AI 4] Zakup jednostki za Skarbiec: Zwiadowca",
+    "1795817812251 log: [Rekrutacja] Xi'an: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)",
+    "1795817812251 log: [AI 7] Zakup jednostki za Skarbiec: Zwiadowca",
+    "1795817812298 log: [Chatka] Owner 7: Chatka (skarb): +100 złota",
+    "1795817813566 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817813584 log: [Dyplomacja] AI↔AI Umowa Handlowa Inkowie(1)-Pekin · Chińczycy · miasto-państwo(9) (Relacja=50 >= 0, połączenie tras możliwe)",
+    "1795817815301 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 6",
+    "1795817816386 warning: [EndTurn] triggerPlayerEndTurn: START tura 6",
+    "1795817817464 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817818066 log: [Dyplomacja] Trybut 2 ¤: 2 → 1",
+    "1795817818066 log: [Dyplomacja] Trybut 2 ¤: 6 → 4",
+    "1795817818066 log: [Dyplomacja] Trybut 2 ¤: 9 → 7",
+    "1795817818066 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817818676 log: [Ekonomia] Tura 7: gracz(1 os.) ¤=1 N=4 Praca=3 | mapa(12 os.) ¤=92 N=54 Praca=36 wzrost=0 głód=0",
+    "1795817818688 log: [Rekrutacja] Tura 7 Ateny: Zwiadowca gotowa @ (82,50)",
+    "1795817818688 log: [Rekrutacja] Tura 7 Sparta: Zwiadowca gotowa @ (78,50)",
+    "1795817818695 log: [Rekrutacja] Tura 7 Xi'an: Zwiadowca gotowa @ (82,22)",
+    "1795817818702 warning: [EndTurn] blocked: endTurnInProgress"
+   ]
+  },
+  {
+   "seed": 4242,
+   "turn": 7,
+   "measuring": true,
+   "pre": {
+    "turn": 7,
+    "canEnd": false,
+    "gateBlokada": false,
+    "aria": "true",
+    "modalDiplo": false,
+    "modalAmp": false,
+    "welcome": false,
+    "techNotice": false,
+    "battleOpen": false,
+    "battle": {
+     "preBattleOpen": false,
+     "pendingAuto": false,
+     "sceneOpen": false,
+     "summaryOpen": false,
+     "resolving": false
+    },
+    "pbOverlay": false,
+    "gallery": false
+   },
+   "hit": "SPAN. [data-end]",
+   "result": "tura_zmieniona",
+   "attempts": 2,
+   "attemptLog": [
+    {
+     "at": 0,
+     "hit": "SPAN. [data-end]"
+    },
+    {
+     "at": 20412,
+     "hit": "SPAN. [data-end]"
+    }
+   ],
+   "timeToChangeMs": 27302,
+   "turnAfter": 8,
+   "windowWaitMs": 27942,
+   "post": {
+    "turn": 8,
+    "canEnd": false,
+    "gateBlokada": false,
+    "aria": "true",
+    "modalDiplo": false,
+    "modalAmp": false,
+    "welcome": false,
+    "techNotice": false,
+    "battleOpen": false,
+    "battle": {
+     "preBattleOpen": false,
+     "pendingAuto": false,
+     "sceneOpen": false,
+     "summaryOpen": false,
+     "resolving": false
+    },
+    "pbOverlay": false,
+    "gallery": false
+   },
+   "endTurnBlockedInWindow": [
+    "1795817820026 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817821342 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817822488 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817823112 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817824410 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817847280 warning: [EndTurn] blocked: endTurnInProgress"
+   ],
+   "consoleWindowTotal": 14,
+   "consoleCountsDelta": {
+    "warn": 9,
+    "error": 0,
+    "log": 9,
+    "endTurnBlockedWarn": 7
+   },
+   "last20Console": [
+    "1795817819969 log: [Autosave] rotacyjny slot=autosave-6 tura=7",
+    "1795817819974 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817820026 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817820580 log: [Dyplomacja] AI1 → MP2: wasalizacja (trybut_elapsed)",
+    "1795817820586 log: [Cuda][AI] Tura 7 owner 1: pominięto Wyrocznia — brak żywności w zapasach państwa",
+    "1795817820800 log: [AI 1] Ulepszenie: kamieniolom @ (40,28) (-44 Pracy)",
+    "1795817821277 log: [Dyplomacja] AI4 → MP6: wasalizacja (trybut_elapsed)",
+    "1795817821300 log: [Dyplomacja] AI7 → MP9: wasalizacja (trybut_elapsed)",
+    "1795817821342 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817822488 log: [Dyplomacja] AI↔AI Umowa Handlowa Ollantaytambo · Inkowie · miasto-państwo(2)-Grecy(4) (Relacja=50 >= 0, połączenie tras możliwe)",
+    "1795817822488 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817823112 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817824410 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817824412 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 7",
+    "1795817845244 warning: [EndTurn] triggerPlayerEndTurn: START tura 7",
+    "1795817847280 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817847283 log: [Dyplomacja] Trybut 2 ¤: 2 → 1",
+    "1795817847283 log: [Dyplomacja] Trybut 2 ¤: 6 → 4",
+    "1795817847283 log: [Dyplomacja] Trybut 2 ¤: 9 → 7",
+    "1795817847920 warning: [EndTurn] blocked: endTurnInProgress"
+   ]
+  },
+  {
+   "seed": 4242,
+   "turn": 8,
+   "measuring": true,
+   "pre": {
+    "turn": 8,
+    "canEnd": false,
+    "gateBlokada": false,
+    "aria": "true",
+    "modalDiplo": false,
+    "modalAmp": false,
+    "welcome": false,
+    "techNotice": false,
+    "battleOpen": false,
+    "battle": {
+     "preBattleOpen": false,
+     "pendingAuto": false,
+     "sceneOpen": false,
+     "summaryOpen": false,
+     "resolving": false
+    },
+    "pbOverlay": false,
+    "gallery": false
+   },
+   "hit": "SPAN. [data-end]",
+   "result": "tura_zmieniona",
+   "attempts": 1,
+   "attemptLog": [
+    {
+     "at": 0,
+     "hit": "SPAN. [data-end]"
+    }
+   ],
+   "timeToChangeMs": 3906,
+   "turnAfter": 9,
+   "windowWaitMs": 4407,
+   "post": {
+    "turn": 9,
+    "canEnd": false,
+    "gateBlokada": false,
+    "aria": "true",
+    "modalDiplo": false,
+    "modalAmp": false,
+    "welcome": false,
+    "techNotice": false,
+    "battleOpen": false,
+    "battle": {
+     "preBattleOpen": false,
+     "pendingAuto": false,
+     "sceneOpen": false,
+     "summaryOpen": false,
+     "resolving": false
+    },
+    "pbOverlay": false,
+    "gallery": false
+   },
+   "endTurnBlockedInWindow": [
+    "1795817855680 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817856744 warning: [EndTurn] blocked: endTurnInProgress"
+   ],
+   "consoleWindowTotal": 7,
+   "consoleCountsDelta": {
+    "warn": 4,
+    "error": 0,
+    "log": 4,
+    "endTurnBlockedWarn": 3
+   },
+   "last20Console": [
+    "1795817850664 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (31,17)",
+    "1795817850664 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (57,47)",
+    "1795817850664 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (88,13)",
+    "1795817850664 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (35,19)",
+    "1795817850664 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (58,53)",
+    "1795817850664 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (24,20)",
+    "1795817850664 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (52,56)",
+    "1795817850664 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (36,58)",
+    "1795817850664 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (22,4)",
+    "1795817850664 log: [Barbarzyncy] Spawn: Wojownik Sherden @ (14,42) [na wodzie]",
+    "1795817851849 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817851852 warning: [EndTurn] triggerPlayerEndTurn: DONE tura 8",
+    "1795817854455 warning: [EndTurn] triggerPlayerEndTurn: START tura 8",
+    "1795817855680 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817856706 log: [Ekonomia] Tura 9: gracz(1 os.) ¤=1 N=4 Praca=3 | mapa(12 os.) ¤=157 N=62 Praca=39 wzrost=0 głód=0",
+    "1795817856710 log: [Rekrutacja] Tura 9 Cusco: Łucznik gotowa @ (38,28)",
+    "1795817856713 log: [Produkcja] Tura 9 Ateny: budynek palac",
+    "1795817856714 log: [Rekrutacja] Tura 9 Ateny: Wojownik gotowa @ (82,50)",
+    "1795817856744 warning: [EndTurn] blocked: endTurnInProgress",
+    "1795817857245 warning: [EndTurn] blocked: endTurnInProgress"
+   ]
+  }
+ ]
+}
