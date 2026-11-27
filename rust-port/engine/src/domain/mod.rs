@@ -121,6 +121,7 @@ pub mod siege_engine_build;
 pub mod siege_enter_city;
 pub mod siege_nearby_lock;
 pub mod siege_no_breach;
+pub mod siege_prod_manual;
 pub mod siege_sortie;
 pub mod siege_starvation;
 pub mod siege_surrender;

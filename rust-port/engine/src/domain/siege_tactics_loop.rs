@@ -29,18 +29,30 @@ use crate::domain::army_leadership::{army_morale_ratio_without_commander, ArmyLe
 use crate::domain::city_towers::{strongest_ranged_unit_for_era, tower_range_for, UnitRow};
 use crate::domain::formation_rules::CompactSide;
 use crate::domain::js_math::js_max0;
+use crate::domain::player_order_attack::{
+    attack_move_order_step, attack_order_step, AttackEnemy, AttackOrderEnv, AttackOrderInput,
+    AttackPathGrid, Occupant,
+};
 use crate::domain::player_order_move::{
-    firing_tiles, move_order_step, perform_player_order_returns, FiringEnemy, FiringShooter,
-    MoveGrid, MoveOrderGates, MoveOrderInput, MoveOrderStep, PlayerOrder,
+    firing_tiles, move_order_step, perform_player_order, perform_player_order_returns, FiringEnemy,
+    FiringShooter, MoveGrid, MoveOrderGates, MoveOrderInput, MoveOrderStep, OrderDoctrine,
+    PerformOrder, PlayerOrder,
 };
 use crate::domain::player_order_move_gate::{
     compact_attack_allows_step, dest_allowed_by_blockade, should_avoid_auto_backtrack,
     BacktrackUnit, BlockadeSettings, CompactStepUnit, GroupDoctrine as GateDoctrine, GroupMeta,
     LineMember,
 };
+use crate::domain::player_order_queue::{OrderOutcome, PlayerOrderExec, PlayerUnitFlags};
+use crate::domain::player_order_siege_manual::{
+    siege_manual_order_step, SiegeEnemy, SiegeManualEnv, SiegeManualScene, SiegeManualUnit,
+};
 use crate::domain::siege_battle_adapter_body::{apply_terrain_range, TerrainRangeUnit};
 use crate::domain::siege_city_fortification::{melee_blocked_by_wall, MeleeWallContext};
 use crate::domain::siege_no_breach::RoundCapVerdict;
+use crate::domain::siege_prod_manual::{
+    run_of_attack, run_of_move, run_of_siege, ManualRecord, ManualRun, ManualState,
+};
 use crate::domain::siege_tactics_actions::{
     actions_to_dto, arc_tag, check_end_logs, clash_line, eliminated_log, ff_round_cap_logs,
     hit_log, miss_log, rout_log, tower_shooter_name, tower_shot_log, ActionError, Actor,
@@ -53,8 +65,8 @@ use crate::domain::siege_tactics_advance::{
     advance_after_move, advance_step_decide, AdvanceDecision, AdvanceUnit, AdvanceWorld, AfterStep,
 };
 use crate::domain::siege_tactics_approach::{
-    siege_approach_restricted, siege_move_refused, siege_shooter_threats, ApproachUnit,
-    ApproachWallState, ShooterDefender, SiegeTowerRef, BF_COLS, BF_ROWS,
+    siege_approach_restricted, siege_move_refused, siege_safe_approach_goal, siege_shooter_threats,
+    ApproachUnit, ApproachWallState, ShooterDefender, SiegeTowerRef, Threat, BF_COLS, BF_ROWS,
 };
 use crate::domain::siege_tactics_atk::{
     advance_toward_pick, attacker_wall_entry_is_breach, goal_holds, infantry_to_tower_plan,
@@ -83,14 +95,17 @@ use crate::domain::siege_tactics_cavalry::{
     cavalry_target, first_step_toward_directed_attack, CavTerrain, Tile as CavTile,
 };
 use crate::domain::siege_tactics_clock::{ScheduleOutcome, VirtualClock};
-use crate::domain::siege_tactics_doctrine_state::{GroupDoctrine, ProdDoctrineState};
+use crate::domain::siege_tactics_doctrine_state::{
+    BattleUnitClass, GroupDoctrine, ProdDoctrineState,
+};
 use crate::domain::siege_tactics_doctrine_step::{
     effective_doctrine, execute_group_doctrine_step, is_unit_doctrine_auto, DoctrineAction,
     DoctrineStep, DoctrineStepUnit,
 };
 use crate::domain::siege_tactics_doctrine_target::{
     desired_hit_for_direction, enemies_of as enemies_of_cmb, pick_adjacent_target_by_priority,
-    pick_target_by_priority, ranged_target_in_range as ranged_target_cmb,
+    pick_target_by_priority, prefs_for_unit as prefs_for_unit_cmb,
+    priority_score as priority_score_cmb, ranged_target_in_range as ranged_target_cmb,
     target_in_range as target_in_range_cmb, AttackDirection, Combatant, TargetPriorities,
     TargetScene,
 };
@@ -112,7 +127,7 @@ use crate::domain::siege_tactics_kite::{
 use crate::domain::siege_tactics_move_effects::{
     do_move_effects, MoveOutcome, MoveTerrain, MoveUnit, MoveWorld,
 };
-use crate::domain::siege_tactics_pathstep::Tile as PathTile;
+use crate::domain::siege_tactics_pathstep::{first_step_along_path_to_attack, Tile as PathTile};
 use crate::domain::siege_tactics_phalanx::{
     phalanx_action_decide, PhalanxDecision, PhalanxEnemy, PhalanxUnit, PhalanxWorld,
 };
@@ -133,6 +148,11 @@ use crate::domain::siege_tactics_walk::{
 
 /// Wejście ciała jednostki (web `_activateUnit`): czas trwania i zakończenie.
 pub trait LoopBody {
+    /// R-RUSTPORT-P4-417A: `u.playerOrder.type === 'none' && !this._isUnitDoctrineAuto(u)` (`battleScene.ts:6027-6028`,
+    /// bezczynna jednostka gracza nie zużywa tury). Domyślnie `false` (ciało bez trybu ręcznego).
+    fn player_unit_idle(&self, _unit: UnitRef) -> bool {
+        false
+    }
     /// Start ciała jednostki. Zwraca czas trwania (ms), po którym sterownik planuje zakończenie.
     fn start(&mut self, unit: UnitRef, st: &TurnSeqState) -> f64;
     /// Zakończenie ciała jednostki: efekt na stanie, przed callbackiem `_activateUnit`.
@@ -688,9 +708,9 @@ impl<B: LoopBody> TurnSeqEnv for SiegeEnv<B> {
         self.plan_tower_shots(st);
     }
 
-    fn player_unit_idle(&mut self, _unit: UnitRef, _st: &TurnSeqState) -> bool {
-        // Tryb reczny poza zakresem sterownika: w AUTO warunek `_manualMode &&` jest fałszywy.
-        false
+    fn player_unit_idle(&mut self, unit: UnitRef, _st: &TurnSeqState) -> bool {
+        // AUTO: warunek `_manualMode &&` jest fałszywy i do tej metody nie dochodzi; tryb ręczny: stan rozkazów ciała.
+        self.body.player_unit_idle(unit)
     }
 }
 
@@ -2053,6 +2073,12 @@ pub struct ProdBody<R: RollSource> {
     /// MARCH-RESZTA-Q1 (D-MR-1): marsz `_siegeWalkTo` po pierwszym wejściu, przekazywany przez `start` do
     /// [`Self::march_advance`] po zapisie `pending` (gałęzie atakującego przy murze zwracają [`AtkRun`]).
     walk_deferred: Option<(MarchCont, MarchNext)>,
+    /// R-RUSTPORT-P4-417A (H4, część A): stan trybu ręcznego gracza (flaga wykonania, strona gracza, `ru.playerOrder`).
+    /// Domyślnie wyłączony ([`ManualState::exec`] = `false`): tag `tryb-reczny` jak dotąd.
+    pub manual: ManualState,
+    /// R-RUSTPORT-P4-417A: wywołanie `_performPlayerOrder` poza aktywacją (`_executeUnitsImmediate`, `:18608`): bez
+    /// `_applyTerrainRange` i bez bramki `scene.manual_mode` ([`Self::perform_order_direct`]).
+    direct_order: bool,
 }
 
 /// K5LOOP-WIRING-A (#369): miejsce jednego ciosu `_singleBlow(attacker, defender, ranged)` w chwili ciosu.
@@ -2741,6 +2767,8 @@ impl<R: RollSource> ProdBody<R> {
             march: None,
             march_done: None,
             walk_deferred: None,
+            manual: ManualState::new([units[0].len(), units[1].len()]),
+            direct_order: false,
             terrain: None,
             units,
             scene,
@@ -3103,10 +3131,25 @@ impl<R: RollSource> ProdBody<R> {
         };
         let here = (a.q as f64, a.r as f64);
         let wall = self.approach_wall(wall_col);
-        let other = side_ix(opposite(unit.side));
         // Obrona r2 (E2-1a): `_siegeShooterThreats` (`:7929`) woła `_applyTerrainRange(d)` (MUTACJA `d.range`) dla każdego
         // obrońcy po strażach, ale tylko gdy `_siegeApproachRestricted(ru)` przepuści (`_siegeMoveRefused` `:7964`).
-        if self.terrain_range_delta.is_some() && siege_approach_restricted(&approach, &wall) {
+        let restricted = siege_approach_restricted(&approach, &wall);
+        let threats = self.siege_threats_now(unit, wall_col, enemies, restricted);
+        siege_move_refused(&approach, &wall, &threats, here, (col as f64, row as f64))
+    }
+
+    /// R-RUSTPORT-P4-417A (D-417A-2): `_siegeShooterThreats()` (`battleScene.ts:7924-7937`) z obrońców ciała; `refresh`
+    /// = wywołanie `_applyTerrainRange(d)` dla strzelców (mutacja `d.range`, tylko gdy bramka podejścia przepuściła).
+    /// Wspólne dla `_siegeMoveRefused` ([`Self::siege_move_refused_now`]) i `_siegeSafeApproach` (tryb ręczny).
+    fn siege_threats_now(
+        &mut self,
+        unit: UnitRef,
+        wall_col: i64,
+        enemies: &[EnemyRef],
+        refresh: bool,
+    ) -> Vec<Threat> {
+        let other = side_ix(opposite(unit.side));
+        if self.terrain_range_delta.is_some() && refresh {
             for (i, e) in enemies.iter().enumerate() {
                 if e.dead || e.fading_out || e.routed {
                     continue;
@@ -3131,7 +3174,7 @@ impl<R: RollSource> ProdBody<R> {
                 range_base: self.range_base[other][i],
             })
             .collect();
-        let threats = siege_shooter_threats(
+        siege_shooter_threats(
             &defenders,
             &self.siege_towers,
             wall_col as f64,
@@ -3142,8 +3185,7 @@ impl<R: RollSource> ProdBody<R> {
                     .position(|x| std::ptr::eq(x, d))
                     .map_or(f64::NAN, |i| self.units[other][i].activate.range)
             },
-        );
-        siege_move_refused(&approach, &wall, &threats, here, (col as f64, row as f64))
+        )
     }
 
     /// K5LOOP-SIEGE-ATK-B: stan muru ciała dla `_siegeApproachRestricted` (`:7951-7960`).
@@ -3610,17 +3652,15 @@ impl<R: RollSource> ProdBody<R> {
         }
     }
 
-    /// R-RUSTPORT-P4-404 (K5EXEC-T3): decyzja `_performPlayerOrder` `'move'` (`battleScene.ts:18297-18352`) z
-    /// bieżącego stanu ciała w chwili `self.now` ([`move_order_step`]): `_adjacentEnemy` (`:17481-17484` =
-    /// `_pickAdjacentTargetByPriority`, K5DOC-T2), `_passableForUnit` / `occByKey`, `_shouldAvoidAutoBacktrack` i
-    /// `_compactAttackAllowsStep` (K5EXEC-T2 przez [`ProdAdvanceWorld`]), bramka `steady` BFS (`:18509`), `firingTiles`
-    /// strzelca (`:18484-18498`). Zapis w [`Self::move_orders`].
-    fn move_order_start(
-        &mut self,
+    /// R-RUSTPORT-P4-417A (D-417A-2): wejście gałęzi `move` `_performPlayerOrder` (`battleScene.ts:18297-18352`) z
+    /// bieżącego stanu ciała; wspólne dla rozkazu ruchu doktryny ([`Self::move_order_start`]) i rozkazu gracza
+    /// ([`Self::plan_manual_order`]).
+    fn move_order_input(
+        &self,
         unit: UnitRef,
         st: &TurnSeqState,
         target: (i64, i64),
-    ) -> MoveOrderRun {
+    ) -> MoveOrderInput {
         let ix = side_ix(unit.side);
         let pu = self.units[ix][unit.idx].activate.clone();
         let from = (pu.q, pu.r);
@@ -3663,7 +3703,7 @@ impl<R: RollSource> ProdBody<R> {
         );
         let world = self.advance_world(unit, st);
         let avoid = world.avoid_auto_backtrack("");
-        let input = MoveOrderInput {
+        MoveOrderInput {
             pos: from,
             target,
             adjacent_enemy: adjacent,
@@ -3671,7 +3711,25 @@ impl<R: RollSource> ProdBody<R> {
             last_auto_move_from: ds.last_auto_move_from,
             bfs_steady,
             firing,
-        };
+        }
+    }
+
+    /// R-RUSTPORT-P4-404 (K5EXEC-T3): decyzja `_performPlayerOrder` `'move'` (`battleScene.ts:18297-18352`) z
+    /// bieżącego stanu ciała w chwili `self.now` ([`move_order_step`]): `_adjacentEnemy` (`:17481-17484` =
+    /// `_pickAdjacentTargetByPriority`, K5DOC-T2), `_passableForUnit` / `occByKey`, `_shouldAvoidAutoBacktrack` i
+    /// `_compactAttackAllowsStep` (K5EXEC-T2 przez [`ProdAdvanceWorld`]), bramka `steady` BFS (`:18509`), `firingTiles`
+    /// strzelca (`:18484-18498`). Zapis w [`Self::move_orders`].
+    fn move_order_start(
+        &mut self,
+        unit: UnitRef,
+        st: &TurnSeqState,
+        target: (i64, i64),
+    ) -> MoveOrderRun {
+        let ix = side_ix(unit.side);
+        let pu = self.units[ix][unit.idx].activate.clone();
+        let from = (pu.q, pu.r);
+        let input = self.move_order_input(unit, st, target);
+        let world = self.advance_world(unit, st);
         let grid = ProdMoveGrid {
             terrain: self.terrain.as_deref(),
             mounted: pu.mounted,
@@ -3707,6 +3765,54 @@ impl<R: RollSource> ProdBody<R> {
             | MoveOrderStep::CompactBlocked { .. }
             | MoveOrderStep::BlockadeBlocked { .. } => MoveOrderRun::Done,
         }
+    }
+
+    /// R-RUSTPORT-P4-417A (D-417A-2): wykonanie `_doMove(ru, col, row, cb)` rozkazu ruchu (callback: `lastAutoMoveFrom =
+    /// prev`, `done()`); wspólne dla kroku doktryny (`_performPlayerOrder` `'move'`, T3) i rozkazów gracza (H4). Zwraca
+    /// czas aktywacji (jak `start`); `pend` trafia do `pending`.
+    fn exec_order_move(
+        &mut self,
+        unit: UnitRef,
+        st: &TurnSeqState,
+        mut pend: ProdPending,
+        tile: (i64, i64),
+        prev: Option<(i64, i64)>,
+    ) -> f64 {
+        let ix = side_ix(unit.side);
+        let enemies = self.enemies_of(unit.side, st);
+        // `_siegeApproachRestricted` (`:7953`) w bramce `_doMove` czyta `ru.routed` w chwili kroku.
+        self.mover_routed = st.unit(unit).c.routed;
+        let mut c = MarchCont {
+            unit,
+            kind: MarchKind::MoveOrder,
+            stage: MarchStage::Gap,
+            id: 0,
+            move_left: st.unit(unit).c.move_left,
+            moved: false,
+            prev,
+        };
+        if self.march_incremental {
+            self.pending[ix][unit.idx] = Some(pend);
+            let next = self.march_move(&mut c, tile, &enemies, "rozkaz-ruchu-brak-terenu");
+            self.march_advance(c, next);
+            return self.march_start_dur();
+        }
+        // Marsz atomowy (bez [`Self::march_incremental`]): krok i callback od razu.
+        let res = self.move_step_core(unit, tile.0, tile.1, false, c.move_left, None, &enemies);
+        let Ok(res) = res else {
+            self.unported.push((unit, "rozkaz-ruchu-brak-terenu"));
+            self.pending[ix][unit.idx] = Some(pend);
+            return 0.0;
+        };
+        pend.move_left = Some(res.move_left);
+        // Odmowa bramki muru (`:8689-8692`): `done()` bez callbacku kroku.
+        if !res.outcome.done {
+            if let Some(p) = prev {
+                self.doctrine[ix][unit.idx].last_auto_move_from = Some(p);
+            }
+        }
+        self.pending[ix][unit.idx] = Some(pend);
+        step_ms(&res, self.frame_ms)
     }
 
     /// R-RUSTPORT-P4-404 (K5EXEC-T3): callback kroku rozkazu ruchu (`:18350-18352`): `lastAutoMoveFrom =
@@ -5648,6 +5754,9 @@ impl<R: RollSource> ProdBody<R> {
 }
 
 impl<R: RollSource> LoopBody for ProdBody<R> {
+    fn player_unit_idle(&self, unit: UnitRef) -> bool {
+        self.manual_unit_idle(unit)
+    }
     fn tower_blow(&mut self, tmpl: &FullBlowInput, target: usize, st: &mut TurnSeqState) {
         let tref = UnitRef {
             side: BattleSide::Attacker,
@@ -5881,7 +5990,10 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         }
         // Obrona r2 (E2-1a): `_applyTerrainRange(ru)` na początku aktywacji (`_activateUnit` `:6064`), po strażach
         // `finished`/`dead`/`routed`, PRZED każdą gałęzią czytającą `ru.range` (cele, strzelec, marsz).
-        self.refresh_terrain_range(unit.side, unit.idx);
+        // R-RUSTPORT-P4-417A: `_executeUnitsImmediate` woła `_performPlayerOrder` bez `_applyTerrainRange` (`:18608`).
+        if !self.direct_order {
+            self.refresh_terrain_range(unit.side, unit.idx);
+        }
         let pu = self.units[ix][unit.idx].clone();
         // Gałęzie spoza zakresu sprawdzane PRZED maszyną (żeby maszyna nie wybrała ścieżki strzelca/doktryny).
         // K5LOOP-SIEGE-DEF (T1): przy murze ciało wykonuje stronę `def` (`_activateUnit` `:6087`, `:6129-6172`,
@@ -5894,7 +6006,12 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         let siege = self.scene.wall_col >= 0 || st.siege_wall_col >= 0;
         let siege_atk = siege && unit.side == BattleSide::Attacker;
         let wall_col = self.scene.wall_col.max(st.siege_wall_col);
-        let out_of_scope = if self.scene.manual_mode {
+        // R-RUSTPORT-P4-417A (H4): bez [`ManualState::exec`] tryb ręczny to jawny tag jak dotąd; z nim ciało wykonuje
+        // rozkazy gracza ([`Self::plan_manual_order`]), a jednostki drugiej strony przechodzą przez maszynę z
+        // `manual_mode` (bez doktryny, `:6089`).
+        let manual_active = self.manual.exec && (self.scene.manual_mode || self.direct_order);
+        let is_player = manual_active && unit.side == self.manual.player_side;
+        let out_of_scope = if self.scene.manual_mode && !self.manual.exec {
             Some("tryb-reczny")
         } else if self.scene.wall_col >= 0
             && st.siege_wall_col >= 0
@@ -5926,6 +6043,11 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         // port: [`crate::domain::siege_tactics_doctrine_step::is_unit_doctrine_auto`]).
         let doctrine_now = self.effective_doctrine_of(unit);
         au.doctrine_manual = doctrine_now == GroupDoctrine::Manual;
+        // R-RUSTPORT-P4-417A: `ru.playerOrder.type === 'none'` (`:6093`) ze stanu ciała (AUTO zeruje rozkaz).
+        if self.manual.exec {
+            au.player_order_none =
+                self.manual.settle(unit, (pu.activate.q, pu.activate.r)) == PlayerOrder::None;
+        }
 
         let enemies = self.enemies_of(unit.side, st);
         let scene = ActivateScene {
@@ -5935,6 +6057,8 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             // K5LOOP-SIEGE-ATK-A: `_siegeMachineRange(ru)` (`:7530-7534`) tej jednostki, gdy adapter go podał.
             siege_machine_range: self.siege_machine_range[ix][unit.idx]
                 .unwrap_or(self.scene.siege_machine_range),
+            manual_mode: manual_active,
+            is_player_side: is_player,
             ..self.scene.clone()
         };
         // `_targetInRange` czyta `_enemiesOf`: cel martwy / znikający / uciekający nie jest celem (battleScene.ts:8291-8294).
@@ -6027,7 +6151,11 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             ram_tower_step: atk_plan
                 .as_ref()
                 .is_some_and(|p| p.ram_missing || p.ram != RamTowerPlan::NotHandled),
-            player_order: PlayerOrder::None,
+            player_order: if self.manual.exec {
+                self.manual.raw_order(unit)
+            } else {
+                PlayerOrder::None
+            },
         };
         let res = activate_unit(&mut au, &scene, &enemies, &mut ops);
         self.trace.push((unit, res.events.clone()));
@@ -6069,10 +6197,15 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 ActivateEvent::Done
                 | ActivateEvent::ApplyTerrainRange
                 | ActivateEvent::PerformPlayerOrder
-                | ActivateEvent::ResetPlayerOrder
                 | ActivateEvent::UpdateMoraleBar
                 | ActivateEvent::StartRout => {}
                 ActivateEvent::UpdateFacing => self.update_facing(unit, &enemies),
+                // `if (ru.playerOrder.type !== 'none') ru.playerOrder = { type: 'none' }` (`:6094`, AUTO).
+                ActivateEvent::ResetPlayerOrder => {
+                    if self.manual.exec {
+                        self.manual.set_order(unit, PlayerOrder::None);
+                    }
+                }
                 // Wywołania wież i taranu są w pinie bezczynne bez muru (`siegeWallCol < 0` -> `return false`,
                 // battleScene.ts:8023, :8057, :8088) i dla obrońcy (`ru.side !== 'atk'` -> `return false`, `:8057`,
                 // `:8088`; `_siegeRamTowerStep` woła tylko gałąź `isSiegeUnit && side === 'atk'`, `:6187`).
@@ -6159,6 +6292,72 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
             }
             return dur;
         }
+        // R-RUSTPORT-P4-417A (H4): `_performPlayerOrder(ru, done)` (`:6067-6069`, ciało `:18280-18428`) w trybie ręcznym.
+        // Maszyna zwraca `U7.0-manual` (pin: każda gałąź `return true`); decyzję liczą porty z predykatami ciała.
+        let mut doctrine_plan = doctrine_plan;
+        let mut doctrine = doctrine;
+        let mut manual_doctrine = false;
+        if is_player && res.branches.contains(&"U7.0-manual") && skipped.is_empty() {
+            match self.plan_manual_order(unit, st, wall_col, atk_plan.as_ref()) {
+                ManualRun::Done => {
+                    self.pending[ix][unit.idx] = Some(pend);
+                    return 0.0;
+                }
+                ManualRun::MissingTerrain => {
+                    self.unported.push((unit, "rozkaz-gracza-brak-terenu"));
+                    self.pending[ix][unit.idx] = Some(pend);
+                    return 0.0;
+                }
+                ManualRun::Attack(t) => pend.attack = Some(t),
+                ManualRun::Move { tile, prev } => {
+                    if !self.move_order_exec {
+                        self.unported.push((unit, "rozkaz-ruchu-bez-wykonania"));
+                        self.pending[ix][unit.idx] = Some(pend);
+                        return 0.0;
+                    }
+                    return self.exec_order_move(unit, st, pend, tile, prev);
+                }
+                ManualRun::Doctrine(meta) => {
+                    doctrine_plan = Some(self.plan_doctrine_step(unit, st, meta));
+                    doctrine = true;
+                    manual_doctrine = true;
+                }
+                ManualRun::SiegeSafeApproach { stepped } => {
+                    // `_siegeSafeApproach` bez celu = `done()`; z celem marsz `_siegeWalkTo(..., safe)` (część B).
+                    if stepped {
+                        self.unported
+                            .push((unit, "reczny-oblezenie-bezpieczne-podejscie"));
+                    }
+                    self.pending[ix][unit.idx] = Some(pend);
+                    return 0.0;
+                }
+                run @ (ManualRun::SiegeRamTower
+                | ManualRun::SiegeClimb
+                | ManualRun::SiegeInfantry) => {
+                    let run = match (run, atk_plan.as_ref()) {
+                        (ManualRun::SiegeClimb, _) => self.siege_atk_climb(unit, wall_col),
+                        (ManualRun::SiegeInfantry, Some(plan)) => {
+                            self.siege_atk_infantry(unit, st, wall_col, plan, &enemies)
+                        }
+                        (ManualRun::SiegeRamTower, Some(plan)) => {
+                            self.siege_atk_ram_tower(unit, st, wall_col, plan, &enemies)
+                        }
+                        _ => AtkRun::tagged("reczny-oblezenie-bez-planu"),
+                    };
+                    if let Some(tag) = run.tag {
+                        self.unported.push((unit, tag));
+                    }
+                    pend.move_left = run.move_left;
+                    pend.gate_breach = std::mem::take(&mut self.pending_gate_breach);
+                    self.pending[ix][unit.idx] = Some(pend);
+                    if let Some((c, next)) = self.walk_deferred.take() {
+                        self.march_advance(c, next);
+                        return self.march_start_dur();
+                    }
+                    return run.dur;
+                }
+            }
+        }
         // K5DOC-T8: krok doktryny (`:6092-6099`). Maszyna kończy aktywację po `DoctrineStep` (`return`), więc nie ma
         // tu okrążenia, `_updateFacing` ani innych gałęzi. Treść kroku = te same klocki co gałęzie `_activateUnit`.
         if let Some(plan) = doctrine_plan.filter(|_| doctrine && skipped.is_empty()) {
@@ -6185,6 +6384,10 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                 // (`:18286`) zwraca `false` dla `move` (`:18436`), więc nie uczestniczy. Callback `finish` ustawia tylko
                 // `ru.playerOrder` (w AUTO zerowany na starcie kolejnej aktywacji, `:6093-6095`) i woła `done()`.
                 DoctrineAction::MoveOrder { col, row } if self.move_order_exec => {
+                    // `ru.playerOrder = move(dest)` + callback `finish` (`:18072-18079`): w trybie ręcznym rozkaz trwa.
+                    if manual_doctrine {
+                        self.manual.begin_doctrine_move(unit, (col, row));
+                    }
                     match self.move_order_start(unit, st, (col, row)) {
                         MoveOrderRun::Attack(t) => pend.attack = Some(t),
                         MoveOrderRun::Done => {
@@ -6197,53 +6400,7 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
                             return 0.0;
                         }
                         MoveOrderRun::Move { tile, prev } => {
-                            let enemies = self.enemies_of(unit.side, st);
-                            // `_siegeApproachRestricted` (`:7953`) w bramce `_doMove` czyta `ru.routed` w chwili kroku.
-                            self.mover_routed = st.unit(unit).c.routed;
-                            let mut c = MarchCont {
-                                unit,
-                                kind: MarchKind::MoveOrder,
-                                stage: MarchStage::Gap,
-                                id: 0,
-                                move_left: st.unit(unit).c.move_left,
-                                moved: false,
-                                prev,
-                            };
-                            if self.march_incremental {
-                                self.pending[ix][unit.idx] = Some(pend);
-                                let next = self.march_move(
-                                    &mut c,
-                                    tile,
-                                    &enemies,
-                                    "rozkaz-ruchu-brak-terenu",
-                                );
-                                self.march_advance(c, next);
-                                return self.march_start_dur();
-                            }
-                            // Marsz atomowy (bez [`Self::march_incremental`]): krok i callback od razu.
-                            let res = self.move_step_core(
-                                unit,
-                                tile.0,
-                                tile.1,
-                                false,
-                                c.move_left,
-                                None,
-                                &enemies,
-                            );
-                            let Ok(res) = res else {
-                                self.unported.push((unit, "rozkaz-ruchu-brak-terenu"));
-                                self.pending[ix][unit.idx] = Some(pend);
-                                return 0.0;
-                            };
-                            pend.move_left = Some(res.move_left);
-                            // Odmowa bramki muru (`:8689-8692`): `done()` bez callbacku kroku.
-                            if !res.outcome.done {
-                                if let Some(p) = prev {
-                                    self.doctrine[ix][unit.idx].last_auto_move_from = Some(p);
-                                }
-                            }
-                            self.pending[ix][unit.idx] = Some(pend);
-                            return step_ms(&res, self.frame_ms);
+                            return self.exec_order_move(unit, st, pend, tile, prev);
                         }
                     }
                 }
@@ -8059,6 +8216,557 @@ impl<R: RollSource> ProdBody<R> {
             });
         }
         self.def_breach_morale(st, MORALE_WALL_BREACH);
+    }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// R-RUSTPORT-P4-417A (K5EXEC-H4, część A): tryb ręczny gracza w ciele. Stan: [`ProdBody::manual`]
+// ([`ManualState`]). Decyzje liczą porty T3/T4/H3 z predykatami ciała ([`ProdBody::plan_manual_order`]), a wykonanie
+// idzie tymi samymi klockami co krok doktryny (`_doAttack` = `pend.attack`, `_doMove` = [`ProdBody::exec_order_move`],
+// oblężenie = gałęzie `siege_atk_*`). Poza zakresem (część B, #422): wektory bitew w czasie rzeczywistym z rozkazem
+// gracza, wołający produkcyjny (API sesji dla UI), wykonanie celu `_siegeSafeApproach` (tag
+// `reczny-oblezenie-bezpieczne-podejscie`), ustawienia blokady generała (`_generalSettings`, stale nieaktywne).
+// ---------------------------------------------------------------------------------------------------------------
+
+/// Plansza i predykaty rozkazów `attack` / `attackMove` ([`AttackOrderEnv`]) z bieżącego stanu ciała.
+struct ProdAttackEnv<'a> {
+    terrain: Option<&'a dyn MoveTerrain>,
+    mounted: bool,
+    missing: &'a Cell<bool>,
+    occ: &'a HashMap<CellKey, String>,
+    own_tag: String,
+    player_atk: bool,
+    world: ProdAdvanceWorld<'a>,
+    me: Combatant,
+    en: Vec<Combatant>,
+    prefs: Vec<BattleUnitClass>,
+    enemy_pos: Vec<(i64, i64)>,
+    batch: BatchState,
+    start: (i64, i64),
+}
+
+impl AttackPathGrid for ProdAttackEnv<'_> {
+    fn passable(&self, col: i64, row: i64) -> bool {
+        match self.terrain {
+            Some(t) => unit_move_cost(t, self.mounted, col as f64, row as f64).is_finite(),
+            None => {
+                self.missing.set(true);
+                false
+            }
+        }
+    }
+    fn occupant(&self, col: i64, row: i64) -> Occupant {
+        match self.occ.get(&cell_key(col as f64, row as f64)) {
+            None => Occupant::Empty,
+            Some(t) if *t == self.own_tag => Occupant::SelfUnit,
+            Some(t) if t.starts_with("atk") == self.player_atk => Occupant::PlayerSide,
+            Some(_) => Occupant::OtherSide,
+        }
+    }
+    fn blockade_allows(&self, col: i64) -> bool {
+        dest_allowed_by_blockade(
+            BlockadeSettings {
+                active: false,
+                col: None,
+            },
+            CompactSide::Atk,
+            col as f64,
+        )
+    }
+}
+
+impl AttackOrderEnv for ProdAttackEnv<'_> {
+    fn compact_allows(&self, col: i64) -> bool {
+        self.world.compact_attack_allows_step("", col as f64)
+    }
+    /// `_canStrikeTargetFrom(ru, col, row, enemy)` (`:8487-8494`): `_meleeBlockedByWall`, potem `1 <= dd <= reach`.
+    fn can_strike_from(&self, col: i64, row: i64, enemy: usize) -> bool {
+        let Some(&(eq, er)) = self.enemy_pos.get(enemy) else {
+            return false;
+        };
+        let dd = (col - eq).abs() + (row - er).abs();
+        !self.world.blocked.get(enemy).copied().unwrap_or(false)
+            && dd >= 1
+            && dd <= self.world.reach
+    }
+    fn priority_score(&self, enemy: usize) -> f64 {
+        priority_score_cmb(&self.me, &self.en[enemy], &self.prefs)
+    }
+    fn first_step_along_path_to_attack(
+        &self,
+        allow: Option<&dyn Fn(i64, i64) -> bool>,
+        enemy: usize,
+    ) -> Option<(i64, i64)> {
+        let mut penv = ProdPathEnv {
+            terrain: self.terrain,
+            mounted: self.mounted,
+            missing: false,
+        };
+        let is_goal = |c: f64, r: f64| self.can_strike_from(c as i64, r as i64, enemy);
+        let allow_f = |c: f64, r: f64| allow.is_none_or(|a| a(c as i64, r as i64));
+        let allow_dyn: Option<&dyn Fn(f64, f64) -> bool> = allow.map(|_| &allow_f as _);
+        let step = first_step_along_path_to_attack(
+            &mut penv,
+            &self.batch,
+            "",
+            (self.start.0 as f64, self.start.1 as f64),
+            &is_goal,
+            allow_dyn,
+        );
+        if penv.missing {
+            self.missing.set(true);
+        }
+        step.map(|(c, r)| (c as i64, r as i64))
+    }
+}
+
+/// Wejścia `_performSiegeManualOrder` policzone przez ciało (zapytania pinu są czyste, skutki ma wykonanie po decyzji).
+struct ProdSiegeManualEnv {
+    ram: bool,
+    climb: bool,
+    infantry: bool,
+    ranged_target: Option<u64>,
+    melee_target: Option<u64>,
+    restricted: bool,
+    safe: bool,
+    /// Cel `_siegeSafeApproach` zgłoszony przez decyzję (przebieg 1 liczy go ciało i powtarza decyzję).
+    safe_requested: Option<(i64, i64)>,
+}
+
+impl SiegeManualEnv for ProdSiegeManualEnv {
+    fn ram_tower_step(&mut self) -> bool {
+        self.ram
+    }
+    fn ranged_target_in_range(&mut self) -> Option<u64> {
+        self.ranged_target
+    }
+    fn target_in_range(&mut self) -> Option<u64> {
+        self.melee_target
+    }
+    fn tower_climb(&mut self) -> bool {
+        self.climb
+    }
+    fn infantry_to_tower_step(&mut self) -> bool {
+        self.infantry
+    }
+    fn approach_restricted(&mut self) -> bool {
+        self.restricted
+    }
+    fn safe_approach(&mut self, col: i64, row: i64) -> bool {
+        self.safe_requested = Some((col, row));
+        self.safe
+    }
+}
+
+/// Wynik wywołania rozkazu poza aktywacją ([`ProdBody::perform_order_direct`]).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectOrder {
+    /// Czas aktywacji zwrócony przez `start` (ms).
+    pub dur: f64,
+    /// `done()` wywołane synchronicznie: wynik zastosowano ([`LoopBody::complete`]).
+    pub completed: bool,
+}
+
+fn pos_of(a: &ActivateUnit) -> (i64, i64) {
+    (a.q, a.r)
+}
+
+impl<R: RollSource> ProdBody<R> {
+    /// Włącza wykonanie rozkazów gracza (tryb ręczny, `_manualMode`): strona gracza i flaga ([`ManualState::exec`]).
+    /// Dalej `scene.manual_mode` steruje bramką `_activateUnit` `:6067`. Domyślnie wyłączone.
+    pub fn enable_manual_exec(&mut self, player_side: BattleSide) {
+        self.manual.exec = true;
+        self.manual.player_side = player_side;
+    }
+
+    /// Zapis `ru.playerOrder = order` (UI gracza: `:11509`, `:18641`, `:18692`, `:18904`).
+    pub fn set_player_order(&mut self, unit: UnitRef, order: PlayerOrder) {
+        self.manual.set_order(unit, order);
+    }
+
+    /// `ru.playerOrder` jednostki (z rozstrzygniętym `finish` kroku doktryny, [`ManualState::order_at`]).
+    #[must_use]
+    pub fn player_order(&self, unit: UnitRef) -> PlayerOrder {
+        let a = &self.units[side_ix(unit.side)][unit.idx].activate;
+        self.manual.order_at(unit, (a.q, a.r))
+    }
+
+    /// Doktryna jednostki w typie wejścia gałęzi `none` (`:18287-18293`).
+    fn order_doctrine_of(&self, unit: UnitRef) -> OrderDoctrine {
+        let ds = &self.doctrine[side_ix(unit.side)][unit.idx];
+        let has_group = ds.group_id.as_deref().is_some_and(|g| !g.is_empty());
+        let group = ds
+            .group_id
+            .as_deref()
+            .filter(|g| !g.is_empty())
+            .and_then(|g| self.group_meta.get(g).copied())
+            .map(|m| (doctrine_of_gate(m.doctrine), m.auto_play));
+        OrderDoctrine {
+            unit_doctrine: ds.unit_doctrine,
+            has_group,
+            group,
+        }
+    }
+
+    /// `_performPlayerOrder(ru, done)` (`battleScene.ts:18280-18428`) z predykatami ciała: decyzja portów
+    /// ([`perform_player_order`], [`siege_manual_order_step`]) przetłumaczona na [`ManualRun`], z zapisem skutku
+    /// ubocznego na `ru.playerOrder` (`:18301`, `:18340`, `:18384`, `:18399`, `:18467`, `:18470`). Wykonanie robi `start`.
+    fn plan_manual_order(
+        &mut self,
+        unit: UnitRef,
+        st: &TurnSeqState,
+        wall_col: i64,
+        atk_plan: Option<&ProdAtkPlan>,
+    ) -> ManualRun {
+        let ix = side_ix(unit.side);
+        let pu = self.units[ix][unit.idx].activate.clone();
+        let order = self.manual.settle(unit, pos_of(&pu));
+        let od = self.order_doctrine_of(unit);
+        let (run, new_order) = self.decide_manual(unit, st, wall_col, atk_plan, order, od, &pu);
+        if let Some(o) = new_order {
+            self.manual.set_order(unit, o);
+        }
+        let order_after = self.manual.raw_order(unit);
+        self.manual.records.push(ManualRecord {
+            t: self.now,
+            unit,
+            order_before: order,
+            order_after,
+            run,
+        });
+        debug_assert!(perform_player_order_returns(order));
+        run
+    }
+
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+    fn decide_manual(
+        &mut self,
+        unit: UnitRef,
+        st: &TurnSeqState,
+        wall_col: i64,
+        atk_plan: Option<&ProdAtkPlan>,
+        order: PlayerOrder,
+        od: OrderDoctrine,
+        pu: &ActivateUnit,
+    ) -> (ManualRun, Option<PlayerOrder>) {
+        let ix = side_ix(unit.side);
+        let opp = opposite(unit.side);
+        if order == PlayerOrder::Hold {
+            return (ManualRun::Done, None);
+        }
+        // `_effectiveMetaForUnit` (`:17633-17636`) dopisuje wpis grupy: `none` + AUTO (gałąź `none` i `doctrineAuto`).
+        if order == PlayerOrder::None
+            && is_unit_doctrine_auto(od.unit_doctrine, od.has_group, od.group)
+        {
+            self.ensure_group_meta_of(unit);
+        }
+        let enemy_ids: Vec<u64> = (0..self.units[side_ix(opp)].len())
+            .map(|i| st.unit(UnitRef { side: opp, idx: i }).id)
+            .collect();
+        let missing = Cell::new(false);
+        // --- `_performSiegeManualOrder` (`:18286`, `:18435-18475`).
+        let mut siege_out: Option<(ManualRun, Option<PlayerOrder>)> = None;
+        let gate = wall_col >= 0
+            && unit.side == BattleSide::Attacker
+            && !matches!(order, PlayerOrder::Move { .. });
+        if gate {
+            let su = SiegeManualUnit {
+                side_atk: true,
+                q: pu.q,
+                r: pu.r,
+                is_siege_unit: pu.is_siege_unit,
+                is_ram: pu.is_ram,
+                is_siege_tower: pu.is_siege_tower,
+                can_shoot: pu.can_shoot,
+                shooting_disabled: !self.doctrine[ix][unit.idx].shooting_enabled
+                    || pu.shooting_disabled,
+                on_wall_walkway: pu.on_wall_walkway,
+            };
+            let scene = SiegeManualScene {
+                wall_col_ge0: true,
+                gate_open: self.scene.gate_open,
+            };
+            let enemies: Vec<SiegeEnemy> = (0..enemy_ids.len())
+                .map(|i| {
+                    let c = st.unit(UnitRef { side: opp, idx: i }).c;
+                    let e = &self.units[side_ix(opp)][i].activate;
+                    SiegeEnemy {
+                        id: enemy_ids[i],
+                        q: e.q,
+                        r: e.r,
+                        dead: c.dead,
+                        fading_out: c.fading_out,
+                        routed: c.routed,
+                    }
+                })
+                .collect();
+            let me = self.combatant(unit, st);
+            let en = self.combatants(opp, st);
+            let ranged_target = self
+                .ranged_target_in_range_js(unit, st)
+                .map(|i| enemy_ids[i]);
+            let melee_target = target_in_range_cmb(
+                &me,
+                &en,
+                &TargetScene {
+                    siege_wall_col: wall_col,
+                    wall_ever_breached: self.wall_ever_breached,
+                },
+            )
+            .map(|i| enemy_ids[i]);
+            let approach = ApproachUnit {
+                side_atk: true,
+                routed: st.unit(unit).c.routed,
+                on_wall_walkway: pu.on_wall_walkway,
+                is_siege_unit: pu.is_siege_unit,
+                primary_ranged: pu.primary_ranged,
+                can_shoot: pu.can_shoot,
+                shooting_disabled: su.shooting_disabled,
+                mounted: pu.mounted,
+            };
+            let wall = self.approach_wall(wall_col);
+            let restricted = siege_approach_restricted(&approach, &wall);
+            let mut env = ProdSiegeManualEnv {
+                ram: atk_plan.is_some_and(|p| p.ram_missing || p.ram != RamTowerPlan::NotHandled),
+                climb: atk_plan.is_some_and(|p| p.climb),
+                infantry: atk_plan
+                    .is_some_and(|p| p.infantry_missing || p.infantry != InfantryPlan::NotHandled),
+                ranged_target,
+                melee_target,
+                restricted,
+                safe: false,
+                safe_requested: None,
+            };
+            let mut step = siege_manual_order_step(&su, scene, order, od, &enemies, &mut env);
+            if let Some((tc, tr)) = env.safe_requested {
+                // Przebieg 2: wynik `_siegeSafeApproach` (`:8107-8136`) liczony portem [`siege_safe_approach_goal`]
+                // z zagrożeniami `_siegeShooterThreats` (`:7924-7937`); decyzja jest czysta, więc powtórka jest 1:1.
+                let en_refs = self.enemies_of(unit.side, st);
+                let threats = self.siege_threats_now(unit, wall_col, &en_refs, restricted);
+                let terrain = self.terrain.as_deref();
+                let mounted = pu.mounted;
+                let occ = &self.occ_by_key;
+                let goal = siege_safe_approach_goal(
+                    pos_of(pu),
+                    (tc as f64, tr as f64),
+                    &threats,
+                    |c, r| {
+                        if occ.contains_key(&cell_key(c as f64, r as f64)) {
+                            return false;
+                        }
+                        match terrain {
+                            Some(t) => unit_move_cost(t, mounted, c as f64, r as f64).is_finite(),
+                            None => {
+                                missing.set(true);
+                                false
+                            }
+                        }
+                    },
+                );
+                env.safe = goal.is_some();
+                env.safe_requested = None;
+                step = siege_manual_order_step(&su, scene, order, od, &enemies, &mut env);
+            }
+            if missing.get() {
+                return (ManualRun::MissingTerrain, None);
+            }
+            if step.handled() {
+                siege_out = run_of_siege(&step, |id| enemy_ids.iter().position(|e| *e == id));
+            }
+        }
+        if let Some(out) = siege_out {
+            return out;
+        }
+        // --- gałęzie `none` / `move` / `attackMove` / `attack` (`:18287-18428`).
+        let target = match order {
+            PlayerOrder::Move { col, row } => (col, row),
+            _ => (0, 0),
+        };
+        let move_input = || self.move_order_input(unit, st, target);
+        let mounted = pu.mounted;
+        let grid = ProdMoveGrid {
+            terrain: self.terrain.as_deref(),
+            mounted,
+            occ: &self.occ_by_key,
+            missing: Cell::new(false),
+        };
+        let gates = ProdMoveGates {
+            world: self.advance_world(unit, st),
+        };
+        let attack = || {
+            let me = self.combatant(unit, st);
+            let en = self.combatants(opp, st);
+            let prefs = prefs_for_unit_cmb(&me, &self.target_priorities, None);
+            let enemy_pos: Vec<(i64, i64)> = self.units[side_ix(opp)]
+                .iter()
+                .map(|e| (e.activate.q, e.activate.r))
+                .collect();
+            let roster: Vec<AttackEnemy> = (0..enemy_ids.len())
+                .map(|i| {
+                    let c = st.unit(UnitRef { side: opp, idx: i }).c;
+                    AttackEnemy {
+                        id: enemy_ids[i],
+                        q: enemy_pos[i].0,
+                        r: enemy_pos[i].1,
+                        dead: c.dead,
+                        fading_out: c.fading_out,
+                        routed: c.routed,
+                        removed: c.removed,
+                    }
+                })
+                .collect();
+            let w = self.advance_world(unit, st);
+            let avoid = w.avoid_auto_backtrack("");
+            let env = ProdAttackEnv {
+                terrain: self.terrain.as_deref(),
+                mounted,
+                missing: &missing,
+                occ: &self.occ_by_key,
+                own_tag: unit_tag(unit),
+                player_atk: self.manual.player_side == BattleSide::Attacker,
+                world: w,
+                me,
+                en,
+                prefs,
+                enemy_pos,
+                batch: BatchState::new(BatchBoard {
+                    atk: Vec::new(),
+                    def: Vec::new(),
+                    occ: self.occ_by_key.clone(),
+                }),
+                start: pos_of(pu),
+            };
+            let inp = AttackOrderInput {
+                pos: pos_of(pu),
+                enemies: &roster,
+                avoid_auto_backtrack: avoid,
+                last_auto_move_from: self.doctrine[ix][unit.idx].last_auto_move_from,
+            };
+            match order {
+                PlayerOrder::AttackMove { col, row } => {
+                    attack_move_order_step(&inp, (col, row), &env)
+                }
+                PlayerOrder::Attack { target_id } => attack_order_step(&inp, target_id, &env),
+                _ => unreachable!("gałąź attack wołana tylko dla attack/attackMove"),
+            }
+        };
+        let res = perform_player_order(order, false, od, move_input, &grid, &gates, attack);
+        let grid_missing = grid.missing.get();
+        if grid_missing || missing.get() {
+            return (ManualRun::MissingTerrain, None);
+        }
+        match res {
+            PerformOrder::Hold | PerformOrder::NoneDone | PerformOrder::SiegeManual => {
+                (ManualRun::Done, None)
+            }
+            PerformOrder::Doctrine(meta) => (ManualRun::Doctrine(meta), None),
+            PerformOrder::Move(step) => {
+                self.move_orders.push(MoveOrderRecord {
+                    t: self.now,
+                    unit,
+                    from: pos_of(pu),
+                    to: target,
+                    step: Some(step),
+                    route: step.bfs_result(),
+                });
+                run_of_move(step)
+            }
+            PerformOrder::Attack(step) => run_of_attack(step),
+        }
+    }
+
+    /// `u.playerOrder.type === 'none' && !this._isUnitDoctrineAuto(u)` (`:6027-6028`).
+    fn manual_unit_idle(&self, unit: UnitRef) -> bool {
+        if !self.manual.exec || self.player_order(unit) != PlayerOrder::None {
+            return false;
+        }
+        let od = self.order_doctrine_of(unit);
+        !is_unit_doctrine_auto(od.unit_doctrine, od.has_group, od.group)
+    }
+
+    /// `_performPlayerOrder(u, done)` wołane poza aktywacją przez `_executeUnitsImmediate` (`:18608`): bez
+    /// `_applyTerrainRange` i bez bramki `_manualMode`. `completed` = `done()` wywołane synchronicznie (wynik
+    /// zastosowano); inaczej wołający domyka jednostkę po `dur` ([`LoopBody::complete`]) i woła
+    /// [`crate::domain::player_order_queue::on_order_done`] (część B).
+    pub fn perform_order_direct(&mut self, unit: UnitRef, st: &mut TurnSeqState) -> DirectOrder {
+        self.direct_order = true;
+        let dur = LoopBody::start(self, unit, &*st);
+        self.direct_order = false;
+        let completed = dur <= 0.0 && !self.march_pending(unit);
+        if completed {
+            LoopBody::complete(self, unit, st);
+        }
+        DirectOrder { dur, completed }
+    }
+}
+
+/// Kolejka rozkazów gracza `_executeUnitsImmediate` (`battleScene.ts:18578-18614`) na ciele: implementacja
+/// [`PlayerOrderExec`] dla [`crate::domain::player_order_queue::execute_units_immediate`]. Id jednostki = `bu.id` jako
+/// napis (`_findPlayerUnit`, `:7115-7135`). `_refreshQueuedOrderVisuals` jest wyłącznie renderem (zdarzenie kolejki).
+pub struct ManualQueue<'a, R: RollSource> {
+    pub body: &'a mut ProdBody<R>,
+    pub st: &'a mut TurnSeqState,
+}
+
+impl<R: RollSource> ManualQueue<'_, R> {
+    fn unit_ref(&self, id: &str) -> Option<UnitRef> {
+        let want: u64 = id.parse().ok()?;
+        let side = self.body.manual.player_side;
+        let list = match side {
+            BattleSide::Attacker => &self.st.atk,
+            BattleSide::Defender => &self.st.def,
+        };
+        list.iter()
+            .position(|u| u.id == want)
+            .map(|idx| UnitRef { side, idx })
+    }
+}
+
+impl<R: RollSource> PlayerOrderExec for ManualQueue<'_, R> {
+    type Event = ManualRecord;
+
+    fn find_player_unit(&self, id: &str) -> Option<PlayerUnitFlags> {
+        let u = self.unit_ref(id)?;
+        let c = self.st.unit(u).c;
+        Some(PlayerUnitFlags {
+            dead: c.dead,
+            removed: c.removed,
+            routed: c.routed,
+            acted: c.acted,
+        })
+    }
+
+    fn is_queued_order(&self, id: &str) -> bool {
+        id.parse::<u64>()
+            .is_ok_and(|v| self.st.queued_order_ids.contains(&v))
+    }
+
+    fn is_busy(&mut self) -> bool {
+        self.st.busy
+    }
+
+    fn perform_player_order(&mut self, id: &str) -> OrderOutcome<ManualRecord> {
+        let Some(unit) = self.unit_ref(id) else {
+            return OrderOutcome {
+                events: Vec::new(),
+                completed: true,
+            };
+        };
+        let before = self.body.manual.records.len();
+        let res = self.body.perform_order_direct(unit, self.st);
+        OrderOutcome {
+            events: self.body.manual.records[before..].to_vec(),
+            completed: res.completed,
+        }
+    }
+
+    fn mark_acted(&mut self, id: &str) {
+        if let Some(u) = self.unit_ref(id) {
+            match u.side {
+                BattleSide::Attacker => self.st.atk[u.idx].c.acted = true,
+                BattleSide::Defender => self.st.def[u.idx].c.acted = true,
+            }
+        }
     }
 }
 
