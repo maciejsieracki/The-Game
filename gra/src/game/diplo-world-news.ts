@@ -94,7 +94,7 @@ export interface WorldDiploNewsEntry {
   a: number;
   b: number;
   /** Rodzaj do wyświetlenia w liście; 'rozejm' = pokój z truceUntilTurn w silniku. */
-  newsKind: 'wojna' | 'pokoj' | 'rozejm' | 'sojusz';
+  newsKind: 'wojna' | 'pokoj' | 'rozejm' | 'sojusz' | 'rebelia';
   /** Polski opis powodu (R-WEB-WAR-END-REASON-LOG-Q1); brak = wpis bez powodu (stare zapisy). */
   powod?: string;
 }
@@ -159,6 +159,35 @@ export function worldDiploNewsEntry(p: WorldDiploNewsInput): WorldDiploNewsEntry
 }
 
 /**
+ * R-WEB-AI-REBEL-WORLD-NEWS-Q1 — wpis trwałej listy „Wydarzenia na świecie” o buncie miasta AI
+ * (tylko gry nowe; wołane z recordAiCityRebellionNews w main.ts). Widoczność: ten sam predykat co dla
+ * wojen/pokojów (`worldDiploNewsVisible`) — właściciel miasta musi być odkryty; stąd strony pary = właściciel
+ * (a === b), bo bunt nie tworzy drugiej cywilizacji. Null = brak wpisu (właściciel nieodkryty).
+ * EN: permanent-list entry for an AI city rebellion; visible only when the former owner is discovered.
+ */
+export function worldDiploNewsRebellionEntry(p: {
+  cityName: string;
+  cityId: string;
+  ownerId: number;
+  ownerLabel: string;
+  turn: number;
+  discovered: ReadonlySet<number>;
+}): WorldDiploNewsEntry | null {
+  if (!worldDiploNewsVisible(p.ownerId, p.ownerId, p.discovered)) return null;
+  return {
+    id: `ai-city-rebel-world-${p.turn}-${p.cityId}`,
+    icon: '⚑',
+    title: `Bunt miasta: ${p.cityName}`,
+    subtitle: `Miasto ${p.ownerLabel} zbuntowało się i ogłosiło niepodległość`,
+    kind: 'diplo',
+    turnCreated: p.turn,
+    a: p.ownerId,
+    b: p.ownerId,
+    newsKind: 'rebelia',
+  };
+}
+
+/**
  * Trwała lista: dopisuje wpis na POCZĄTEK (najnowszy pierwszy), bez duplikatu id, przycina do
  * WORLD_DIPLO_NEWS_MAX. Nie modyfikuje `list` — zwraca nową tablicę.
  */
@@ -183,7 +212,7 @@ export function worldDiploNewsSanitize(raw: unknown): WorldDiploNewsEntry[] {
     if (typeof e.id !== 'string' || typeof e.title !== 'string' || typeof e.subtitle !== 'string') continue;
     if (typeof e.turnCreated !== 'number' || typeof e.a !== 'number' || typeof e.b !== 'number') continue;
     const nk = e.newsKind;
-    if (nk !== 'wojna' && nk !== 'pokoj' && nk !== 'rozejm' && nk !== 'sojusz') continue;
+    if (nk !== 'wojna' && nk !== 'pokoj' && nk !== 'rozejm' && nk !== 'sojusz' && nk !== 'rebelia') continue;
     out.push({
       id: e.id,
       icon: typeof e.icon === 'string' ? e.icon : '',
