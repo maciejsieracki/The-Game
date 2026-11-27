@@ -65,6 +65,20 @@ const MAX_PARAMS = {
   advanced: ADV,
   villageRewardsEnabled: true,
 };
+// REALDEF4 (R-WEB-EARLY-DEFENSE-VERIFY-Q1): konfiguracje pomiaru, wybierane zmienna REALDEF_CFG (domyslnie 'max').
+//  max          = maksimum jak wyzej (Trudny, barbarzyncy Trudny, kultura trudna, dyplomacja trudna, Wysoki x4 ludnosc/koszt jednostek).
+//  domyslna     = domyslna gra: Normalny, barbarzyncy Normalni, dyplomacja Latwa, kultura Latwa, tempa Normalne.
+//  wysoki-latwi = maksimum z barbarzyncami Latwymi (reszta jak w max).
+const CFG = process.env.REALDEF_CFG || 'max';
+if (CFG === 'domyslna') {
+  MAX_PARAMS.difficulty = 'Normalny';
+  Object.assign(ADV, { barbariansLevel: 'normalny', diplomacyWarLevel: 'latwa', kulturaReligiaLevel: 'latwy',
+    kosztJednostekPace: 'normalny', wzrostLudnosciPace: 'normalny', buildingCostPace: 'normalny', ruchSwiataPace: 'normalny' });
+} else if (CFG === 'wysoki-latwi') {
+  Object.assign(ADV, { barbariansLevel: 'latwy' });
+} else if (CFG !== 'max') {
+  console.error('REALDEF_CFG: nieznana konfiguracja ' + CFG); process.exit(2);
+}
 const UNITS = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'units.json'), 'utf8'));
 const UNIT_NAMES = UNITS.map(u => u.Jednostka).filter(Boolean).sort((a, b) => b.length - a.length);
 const MILITARY_EXCL = new Set(['zwiadowca', 'osadnik', 'robotnik']);
