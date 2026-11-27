@@ -79,16 +79,22 @@ check('nie-AI + null => false', M.aiCityRebellionEnabled(null, false) === false)
 // Bramka startu buntu (ta sama funkcja, którą woła main.ts) — zachowanie, nie tekst.
 const SC = M.shouldStartCityRebellion;
 for (const lvl of ['latwy', 'normalny', 'trudny']) {
-  check(`start: AI + ${lvl} + bunt skrajny => START`, SC(true, false, false, true, lvl) === true);
-  check(`start: gracz + ${lvl} + bunt skrajny => START (zachowanie sprzed zmiany)`, SC(true, false, true, false, lvl) === true);
+  check(`start: AI + ${lvl} + bunt skrajny + 2 inne miasta => START`, SC(true, false, false, true, lvl, 2) === true);
+  check(`start: gracz + ${lvl} + bunt skrajny => START (zachowanie sprzed zmiany)`, SC(true, false, true, false, lvl, 0) === true);
 }
-check('start: AI + null (zgodnosc) => BRAK startu', SC(true, false, false, true, null) === false);
-check('start: gracz + null => START (zgodnosc dla gracza bez zmian)', SC(true, false, true, false, null) === true);
-check('start: brak bunt skrajny => brak startu (AI, trudny)', SC(false, false, false, true, 'trudny') === false);
-check('start: brak bunt skrajny => brak startu (gracz)', SC(false, false, true, false, 'trudny') === false);
-check('start: miasto juz w buncie => brak drugiego startu (AI)', SC(true, true, false, true, 'trudny') === false);
-check('start: miasto juz w buncie => brak drugiego startu (gracz)', SC(true, true, true, false, 'trudny') === false);
-check('start: barbarzynca/rebeliant (ani gracz, ani AI) => brak startu', SC(true, false, false, false, 'trudny') === false);
+check('start: AI + null (zgodnosc) => BRAK startu', SC(true, false, false, true, null, 2) === false);
+check('start: gracz + null => START (zgodnosc dla gracza bez zmian)', SC(true, false, true, false, null, 0) === true);
+check('start: brak bunt skrajny => brak startu (AI, trudny)', SC(false, false, false, true, 'trudny', 2) === false);
+check('start: brak bunt skrajny => brak startu (gracz)', SC(false, false, true, false, 'trudny', 2) === false);
+check('start: miasto juz w buncie => brak drugiego startu (AI)', SC(true, true, false, true, 'trudny', 2) === false);
+check('start: miasto juz w buncie => brak drugiego startu (gracz)', SC(true, true, true, false, 'trudny', 2) === false);
+// AIREBEL-R3: ostatnie miasto AI nie buntuje się; gracz bez zmian.
+check('R3: AI ostatnie miasto (0 innych) + trudny => BRAK startu', SC(true, false, false, true, 'trudny', 0) === false);
+check('R3: AI ostatnie miasto (0 innych) + latwy => BRAK startu', SC(true, false, false, true, 'latwy', 0) === false);
+check('R3: AI z 2 miastami (1 inne) => START (pierwsze miasto moze sie zbuntowac)', SC(true, false, false, true, 'trudny', 1) === true);
+check('R3: gracz ostatnie miasto (0 innych) => START (regula tylko dla AI)', SC(true, false, true, false, 'trudny', 0) === true);
+check('R3: AI ostatnie miasto przy null (zgodnosc) => brak startu (bez zmian)', SC(true, false, false, true, null, 0) === false);
+check('start: barbarzynca/rebeliant (ani gracz, ani AI) => brak startu', SC(true, false, false, false, 'trudny', 2) === false);
 
 console.log('B. laska i bunt skrajny (poziom trudny = maksimum)');
 const revolt = M.loadRevoltParams(null, 'trudny');
@@ -112,8 +118,10 @@ check('pop 5 bez immunitetu', M.isOsiedleRevoltImmune(5, null, 'trudny') === fal
 
 console.log('D. okablowanie main.ts');
 const mainSrc = fs.readFileSync(path.join(GRA, 'src', 'main.ts'), 'utf8');
-check('bramka wola shouldStartCityRebellion(..., isAiOwner(humanSeats, rebelOwnerPrev), getCulturaReligiaLevel())',
-  /shouldStartCityRebellion\(\s*graceUpd\.shouldTriggerRebellion,\s*city\.rebelState === true,\s*rebelByPlayer,\s*isAiOwner\(humanSeats, rebelOwnerPrev\),\s*getCulturaReligiaLevel\(\),?\s*\)/.test(mainSrc));
+check('bramka wola shouldStartCityRebellion(..., getCulturaReligiaLevel(), rebelOwnerOtherCities)',
+  /shouldStartCityRebellion\(\s*graceUpd\.shouldTriggerRebellion,\s*city\.rebelState === true,\s*rebelByPlayer,\s*isAiOwner\(humanSeats, rebelOwnerPrev\),\s*getCulturaReligiaLevel\(\),\s*rebelOwnerOtherCities,?\s*\)/.test(mainSrc));
+check('R3: liczba innych miast wlasciciela liczona na zywo z cities (bez miasta rozpatrywanego)',
+  /rebelOwnerOtherCities = cities\.reduce\(\s*\(n, c\) => \(c\.ownerId === rebelOwnerPrev && c\.id !== city\.id \? n \+ 1 : n\), 0,?\s*\)/.test(mainSrc));
 check('stary warunek tylko-czlowiek nie wystepuje',
   !mainSrc.includes('graceUpd.shouldTriggerRebellion && isHuman(city.ownerId) && !city.rebelState'));
 check('bunt AI: wpis w dzienniku bez modala (recordAiCityRebellionNews)',

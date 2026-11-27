@@ -45154,12 +45154,18 @@ async function boot(): Promise<void> {
                 // Bramka jest jedna (aiCityRebellionEnabled); ścieżka wspólna — bez duplikacji.
                 const rebelOwnerPrev = city.ownerId;
                 const rebelByPlayer = isHuman(rebelOwnerPrev);
+                // AIREBEL-R3: ostatnie miasto AI nie buntuje się (bez zombie-cywilizacji bez miast).
+                // Liczone na żywo: po buncie poprzedniego miasta tego AI kolejne staje się ostatnim.
+                const rebelOwnerOtherCities = cities.reduce(
+                  (n, c) => (c.ownerId === rebelOwnerPrev && c.id !== city.id ? n + 1 : n), 0,
+                );
                 if (shouldStartCityRebellion(
                   graceUpd.shouldTriggerRebellion,
                   city.rebelState === true,
                   rebelByPlayer,
                   isAiOwner(humanSeats, rebelOwnerPrev),
                   getCulturaReligiaLevel(),
+                  rebelOwnerOtherCities,
                 )) {
                   const wonderWatchRebel = beginWonderTransferWatch(); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
                   markCityRebellionStarted(city);

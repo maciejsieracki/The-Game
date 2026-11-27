@@ -80,3 +80,26 @@ Uwaga o runnerze: wznowienie z zapisu slotu w Chromium padło raz (SIGSEGV / „
 - Round-trip zapisu miasta w buncie AI, hotseat i skutki buntu ostatniego/stołecznego miasta AI dla eliminacji cywilizacji: NIE ZMIERZONO. Kod (ścieżka `transferCityToRebelFactionWithLedger`, main.ts) tylko przepisuje `ownerId` na frakcję −99 i nie wywołuje `eliminateOwner`; czy cywilizacja AI bez miast jest dalej traktowana jako żywa, nie zbadano.
 - Wpis „Wydarzenia na świecie” w oknie dyplomacji — świadomie tylko dziennik Wydarzeń (patrz pkt 3 wyżej); ewentualne przeniesienie do trwałej listy to osobna decyzja.
 - Nie zmieniano progów ani łaski; dalsze pytanie o balans buntów AI (ile miast AI powinno się buntować) zostaje dla właściciela po obejrzeniu wyników.
+
+## Ostatnie miasto AI (AIREBEL-R3)
+
+Problem: `transferCityToRebelFactionWithLedger` zmienia tylko `ownerId` na −99 i nie wywołuje `eliminateOwner`. Gdyby AI traciła w buncie OSTATNIE miasto, zostawałaby „cywilizacja bez miast” z jednostkami (zombie). Sprawdzenie kodu: w `gra/src/main.ts` jedyne wywołania `eliminateOwner` (ok. linii 40383 — aneksja państwa-miasta, ok. 9410 — zdobycie stolicy) NIE wykrywają „AI bez miast”; nie istnieje ścieżka „AI bez miast → eliminateOwner”. Wybrano wariant OCHRONNY.
+
+Wariant (zrobiony): miasto AI będące OSTATNIM miastem swojego właściciela NIE buntuje się (zostaje w niepokoju). Gracz bez zmian. Eliminacja AI nadal wyłącznie przez podbój/przejęcie stolicy.
+- Gdzie: `shouldStartCityRebellion` (gra/src/game/society-breakdown.ts) dostaje szósty argument `ownerOtherCities` (liczba POZOSTAŁYCH miast właściciela); main.ts liczy go na żywo z `cities` tuż przed bramką (bez miasta rozpatrywanego), więc drugie miasto staje się ostatnim po buncie pierwszego.
+- Test: gra/tools/ai-city-rebellion-gate-test.cjs, sekcja R3 (AI 0 innych miast → brak startu na trudnym i latwym; AI 1 inne → start; gracz 0 innych → start; null → brak startu bez zmian). Mutacja czerwona: zdjęcie warunku `!aiKeepsLastCity` → FAIL 2/2 (przywrócone, PASS=37/0).
+
+Pomiar (maksimum: Trudny, Kultura i religia trudny, Koszty jednostek Wysoki ×4 = `--pace wysoki`, 60 tur, `--city-state 1`, runner z gra/tools, bundle live zbudowany poza repo):
+- PRZED = a3ffe64a7 (poprzednia runda, bramka rebelii bez ochrony ostatniego miasta), bundle `dist-pre`.
+- PO = ten commit (ochrona ostatniego miasta), bundle `dist-aicult`.
+
+| Ziarno | Stan | Miasta AI t60 | AI krytyczne t60 | Miasta w buncie (−99) t60 | Jednostki wojskowe AI t60 | AI z 0 miast (żadna tura) |
+|---|---|---|---|---|---|---|
+| 4242 | PRZED | 148 | 59 | 10 | 148 | 0 |
+| 4242 | PO | 148 | 59 | 10 | 148 | 0 |
+| 7 | PRZED | 137 | 55 | 16 | 134 | 0 |
+| 7 | PO | 137 | 55 | 16 | 134 | 0 |
+
+Wniosek ostrożny: w obu ziarnach (60 tur, maksimum) żadna cywilizacja AI nie straciła wszystkich miast, więc ochrona nie zmieniła żadnego wyniku; zombie-AI w t60 = 0 zarówno PRZED, jak i PO. Ochrona jest zabezpieczeniem na przypadki, których pomiar nie wywołał (np. AI z jednym miastem na początku buntu). NIE ZMIERZONO: dłuższe biegi (>60 tur), ziarna inne niż 4242 i 7, scenariusz wymuszony (AI z 1 miastem w buncie skrajnym) — zachowanie ochrony potwierdza tylko test zachowaniem na wejściach bramki. Liczby PRZED/PO są identyczne co do miasta i jednostki; to ta sama symulacja, więc nie jest to szum runnera.
+
+Decyzja o wpisie „Wydarzenia na świecie” dla buntu AI: poza zakresem tej rundy (zostaje warEventLog). Informacja dla właściciela: do decyzji, czy bunt AI ma trafiać do trwałej listy Wydarzeń.

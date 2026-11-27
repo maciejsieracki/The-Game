@@ -505,6 +505,9 @@ export function aiCityRebellionEnabled(level: string | null, isAiOwnerCity: bool
  * AI-REBEL (39B): czysta bramka startu buntu miasta w pętli Porządku — jedno miejsce prawdy dla
  * main.ts. Bunt startuje, gdy: wyzwolił go bunt skrajny po wyczerpaniu łaski, miasto nie jest już
  * w buncie, i właściciel to CZŁOWIEK (zachowanie sprzed zmiany) albo AI przy ustawieniu ≠ null.
+ * AIREBEL-R3 (ochrona ostatniego miasta AI): AI NIE buntuje się, gdy `ownerOtherCities` (liczba
+ * POZOSTAŁYCH miast tego właściciela, bez miasta rozpatrywanego) wynosi 0 — eliminacja AI nadal
+ * wyłącznie przez podbój/przejęcie stolicy. Gracz (ownerIsHuman) nie jest objęty tą regułą.
  */
 export function shouldStartCityRebellion(
   shouldTriggerRebellion: boolean,
@@ -512,9 +515,11 @@ export function shouldStartCityRebellion(
   ownerIsHuman: boolean,
   ownerIsAi: boolean,
   level: string | null,
+  ownerOtherCities: number,
 ): boolean {
+  const aiKeepsLastCity = ownerIsAi && ownerOtherCities < 1;
   return shouldTriggerRebellion && !hasRebelState
-    && (ownerIsHuman || aiCityRebellionEnabled(level, ownerIsAi));
+    && (ownerIsHuman || (aiCityRebellionEnabled(level, ownerIsAi) && !aiKeepsLastCity));
 }
 
 export function loadRevoltParams(

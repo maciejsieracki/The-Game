@@ -1,33 +1,42 @@
 STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
-TEMAT: R-WEB-AI-CULT-REL-REBEL-IMPL-Q1 (tag AIREBEL)
-GOAL: miasta AI w buncie skrajnym po wyczerpaniu łaski buntują się tak samo jak miasta gracza (decyzja 39B), tylko przy ustawieniu „Kultura i religia” ≠ null; tryb zgodności (null) bez zmian.
-ZMIANY/COMMIT: allowlista: gra/src/main.ts (bramka rebelii + wpis dziennika buntu AI), gra/src/game/society-breakdown.ts (helper aiCityRebellionEnabled), gra/tools/ai-city-rebellion-gate-test.cjs (nowy), dyspozycje/analizy/AI-REBELIA-WDROZENIE-2026-11-27.md, dyspozycje/autobot/runs/R-WEB-AI-CULT-REL-REBEL-IMPL-Q1/10-operator-claude.md. Commit: patrz sekcja SHA niżej (czubek pracy). Baza: 44649038c (origin/main). Runner pomiaru NIE zmieniany.
+TEMAT: R-WEB-AI-CULT-REL-REBEL-IMPL-Q1 (tag AIREBEL), runda 3/5 (DODATEK orkiestratora: ochrona ostatniego miasta AI)
+GOAL: miasto AI będące OSTATNIM miastem swojego właściciela nie buntuje się (wariant OCHRONNY, bo nie istnieje ścieżka „AI bez miast → eliminateOwner”); gracz i tryb zgodności (null) bez zmian
+BAZA: a3ffe64a7a8916a247e65eb8a95fd57293a5accb (origin/main, FC PASS-WITH-NOTES, runda 2)
+ZMIANY/COMMIT: allowlista. gra/src/game/society-breakdown.ts (`shouldStartCityRebellion` + szósty argument `ownerOtherCities`), gra/src/main.ts (liczenie na żywo `rebelOwnerOtherCities` przed bramką, wywołanie z 6 argumentami), gra/tools/ai-city-rebellion-gate-test.cjs (sekcja R3 + asercje okablowania), dyspozycje/analizy/AI-REBELIA-WDROZENIE-2026-11-27.md (sekcja „Ostatnie miasto AI (AIREBEL-R3)"), dyspozycje/autobot/runs/R-WEB-AI-CULT-REL-REBEL-IMPL-Q1/10-operator-claude.md. SHA: patrz pole sha w wyniku (commit tej rundy). Pliki poza allowlistą: brak. Zmieniono przy okazji tylko kod z dispatchu; `gra/node_modules` (npm ci) usunięty po pracy.
 TESTY:
 - tsc --noEmit: exit 0
 - logic-test: LOGIC OK (213/213)
 - tech-tree-test: 20 pass, 0 fail
-- research-test: 33/0 ALL GREEN
-- unit-replace-test: exit 0
+- research-test: 33/0 (PASSED 33 / FAILED 0)
+- unit-replace-test: WSZYSTKIE TESTY ZIELONE (21/21)
 - combat-test: All sanity checks passed (exit 0)
 - ai-test: 297 passed, 0 failed
 - society-breakdown-test: 56 OK, 0 FAIL
 - culture-religion-level-test: 59 pass / 0 fail
 - culture-religion-test: 65 passed, 0 failed
-- ai-city-order-need-wiring-test: 231 passed, 0 failed
-- ai-city-rebellion-gate-test (nowy): PASS=18 FAIL=0
-- Mutacja M1 (bramka wraca do samego isHuman w main.ts): FAIL (2 asercje). Mutacja M2 (helper ignoruje poziom): FAIL (1 asercja). Obie cofnięte; plik po cofnięciu PASS=18.
-- Pomiar (60 tur, Trudny, Kultura i religia trudny, Koszty jednostek Wysoki ×4, runner --city-state 1 --pace wysoki): seed 4242 PO: AI miasta 148, AI krytyczne 59, miasta w buncie (frakcja −99) 10, AI jednostki wojskowe 148; seed 7 PO: AI miasta 138, krytyczne 56, w buncie 16, jednostki 134. PRZED (z dokumentu AICULTREBEL, nie ponowione): s4242 149/57, s7 149/75; buntów AI 0.
-- Round-trip zapisu, hotseat, wygląd wpisu w przeglądarce: NIE ZMIERZONO.
-BLOKADY: brak dla kodu. Pomiar: wznowienie z zapisu slotu padało w Chromium dwa razy (SIGSEGV przy ładowaniu); pełne przebiegi jednym wywołaniem przeszły. PRZED nie ponowione w tej rundzie.
-RUNDY: 1/5
-NASTĘPNY KROK: FC (Final Control) przeciwko SHA czubka; orkiestrator decyduje o integracji i ewentualnym deployu (Operator nie deployuje).
+- ai-city-order-need-wiring-test: 231 passed, 0 failed (of 231)
+- ai-city-rebellion-gate-test: WYNIK PASS=37 FAIL=0 (w tym R3: AI 0 innych miast → brak startu na trudnym i łatwym; AI 1 inne → start; gracz 0 innych → start; null → brak startu; wiring 6 argumentów i liczenie na żywo)
+- Mutacja czerwona R3 (zdjęcie `!aiKeepsLastCity` z bramki): FAIL 2/2 (przypadki „AI ostatnie miasto + trudny/łatwy → BRAK startu”); plik przywrócony, PASS=37/0 potwierdzone po przywróceniu.
+- Pomiar MAKSIMUM (Trudny, Kultura i religia trudny, Koszty jednostek Wysoki ×4 = `--pace wysoki`, 60 tur, `--city-state 1`, seed 4242 i 7; bundle live zbudowany poza repo przez vite, scratchpad):
+  PRZED = a3ffe64 (bundle z git archive tej bazy), PO = ten commit.
+  | Ziarno | Stan | Miasta AI t60 | AI krytyczne t60 | Miasta w buncie (−99) t60 | Jednostki wojskowe AI t60 | AI z 0 miast w dowolnej turze |
+  |---|---|---|---|---|---|---|
+  | 4242 | PRZED | 148 | 59 | 10 | 148 | 0 |
+  | 4242 | PO | 148 | 59 | 10 | 148 | 0 |
+  | 7 | PRZED | 137 | 55 | 16 | 134 | 0 |
+  | 7 | PO | 137 | 55 | 16 | 134 | 0 |
+  Wynik: zombie-AI (cywilizacja AI bez miast) = 0 w PRZED i w PO; PO nie zmienia żadnego wyniku w tych dwóch ziarnach (ochrona nie została wywołana przez symulację).
+- Round-trip zapisu, hotseat, wygląd wpisu w przeglądarce: NIE ZMIERZONO (bez zmian w tej rundzie).
+- Dłuższe biegi (>60 tur), inne ziarna, wymuszony scenariusz AI z 1 miastem w buncie skrajnym: NIE ZMIERZONO.
+BLOKADY: brak dla kodu. Pomiar działa w pełnych przebiegach jednym wywołaniem (Chromium, ~5 min na ziarno), bez wznowień.
+RUNDY: 3/5
+NASTĘPNY KROK: FC (Final Control) przeciwko SHA czubka tej rundy; integracja i ewentualny deploy wyłącznie po READY_FOR_DEPLOY przez orkiestratora (Operator nie integruje, nie deployuje, nie pushuje).
 DEPLOY/PUSH: NIE WYKONANO
 
 UWAGI-DLA-ORKIESTRATORA:
-- Wpis buntu AI idzie do dziennika Wydarzeń (warEventLog), nie do trwałej listy „Wydarzenia na świecie” w oknie dyplomacji: tamta lista jest typowana pod wojny/pokoje par AI (newsKind), a zmiana wymagałaby zmiany typu zapisu i UI. Do rozstrzygnięcia, jeśli właściciel chce dokładnie „Wydarzenia na świecie”.
-- Miasta w buncie AI są rozpoznawane w pomiarze jako owner −99 (brak haka „poprzedni właściciel”); przypisanie do AI to wniosek, nie bezpośredni pomiar.
-- Suma miast AI + miast w buncie po rozejściu symulacji (158 / 154) jest wyższa niż PRZED (149); porównanie PRZED/PO jest przybliżone.
-- Zmienione pliki poza dispatchem: brak. Dodano node_modules w gra/ (npm ci, ignorowane przez git) — usunięte po pracy.
-
-SHA: patrz wiadomość końcowa Operatora (commit z kodem i raportem).
+- Ochrona ostatniego miasta: sprawdzono, że nie istnieje ścieżka „AI bez miast → eliminateOwner”. Jedyne wywołania eliminateOwner w gra/src/main.ts: aneksja państwa-miasta (ok. linii 40383) i zdobycie stolicy (ok. 9410). Dowód: grep `eliminateOwner(` w main.ts; wariant OCHRONNY wybrany zgodnie z DODATKIEM.
+- Wpis „Wydarzenia na świecie” dla buntu AI: poza zakresem tej rundy (zostaje warEventLog), zgodnie z DODATKIEM pkt 4. Do decyzji właściciela, czy bunt AI ma trafiać do trwałej listy Wydarzeń.
+- Miasta w buncie AI są w pomiarze rozpoznawane jako owner −99 (brak haka „poprzedni właściciel”); przypisanie do AI pozostaje wnioskiem, NIE ZMIERZONO bezpośrednio.
+- Pomiar PRZED/PO na tej samej bazie daje identyczne liczby: runner jest deterministyczny w tych dwóch ziarnach przy tym samym bundle'u logiki, więc różnice rzędu 1–2 miast z rundy 2 (PRZED 59 vs 57) dotyczyły raczej różnic między bundlami/przebiegami niż tej zmiany.
+- Procesowo: podczas pracy wywołano `git checkout -- gra/src/game/society-breakdown.ts` przez pomyłkę w mutacji — NIE wykonano (polecenie odrzucone przez bramkę worktree); plik zweryfikowano (aiKeepsLastCity obecne, PASS=37/0).
