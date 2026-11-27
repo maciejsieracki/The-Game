@@ -1,17 +1,33 @@
-READBACK USTAWIEN (WEJSCIE pomiaru, nie odczyt z ekranu gry)
+READBACK USTAWIEN (WEJSCIE pomiaru, nie odczyt z ekranu gry) — runda obrony r2 (poprawka po zarzutach 4 i 6)
 Zrodlo: gra/tools/endturn-click-live.cjs, MAX_PARAMS, przekazane do window.__settingsLive.startNewGame(); seed podstawiany 4242 lub 7.
 Uwaga: odczytu z interfejsu gry NIE ZMIERZONO (brak zrzutu ekranu ustawien).
-Maksimum uznane: Trudny (poziom gry), barbarzyncy trudny, dyplomacja i wojna trudna, kultura i religia trudny, Wysoki x4 (koszt jednostek, wzrost ludnosci, jakosc mapy, jakosc renderu/szczegolow). buildingCostPace=niski i ruchSwiataPace=krotki zostaly z sondy ENDPERF (nie wymienione w dispatchu; niejednoznaczne, zapisane tu).
 
+Poziomy uznane za maksymalne (etykiety z gra/src/ui/newGameFlow.ts):
+- Poziom gry Trudny; barbarzyncy Trudny; dyplomacja i wojna Trudna; kultura i religia Trudny.
+- Koszty budynkow: Wysoki (x4); opcje: Niski (x1) / Normalny (x2) / Wysoki (x4). ZMIENIONE z Niski (runda 1).
+- Zasieg ruchu: Dlugi (x6); opcje: Krotki (x1) / Normalny (x3) / Dlugi (x6). ZMIENIONE z Krotki (runda 1).
+  Uzasadnienie: w etykietach gry Krotki i Niski to bazowe wartosci (x1), a hint mowi "Bazowy = Krotki (x1)".
+- Koszty jednostek: Wysoki (x4); opcje: Niski / Normalny / Wysoki.
+- Wzrost ludnosci: 'wysoki' (etykieta w grze: Wysoki x1 prog = najszybszy wzrost). Zostawione jak w dispatchu.
+  NIEJEDNOZNACZNE: dispatch opisuje to jako "Wysoki x4", etykieta gry mowi "x1 prog"; maksimum "szybkosci" to
+  wysoki, maksimum "trudnosci" moglaby byc wolny (x4 prog). NIE ZMIERZONO w drugim wariancie.
+- Jakosc mapy, jakosc renderu, szczegoly mapy: Wysoka (x4).
+- Limit miast (baza): 10 (opcje 10/15/20); NIE zmieniany; NIEJEDNOZNACZNE, czy maksimum = 20; NIE ZMIERZONO.
+- Rozmiar mapy: Maly; liczba rywali: 2; predkosc: Normalna. NIE zweryfikowano jako maksimum w tej rundzie
+  (nie sprawdzono pelnej listy opcji). Najwieksza mapa zmienia koszt generacji i ryzyko Chromium; decyzja dla orkiestratora.
+
+Ziarna: 4242 i 7. Swiat nowej gry, czekanie na [ClusterStart].
+
+MAX_PARAMS (zrodlo prawdy: gra/tools/endturn-click-live.cjs):
 {
-  civId: 'rzymianie', civName: 'Rzymianie', epoch: 'Epoka Brązu', epochId: 'braz', difficulty: 'Trudny',
+  civId: 'rzymianie', civName: 'Rzymianie', epoch: 'Epoka Brazu', epochId: 'braz', difficulty: 'Trudny',
   mapSize: 'Maly', rivals: '2', speed: 'Normalna', worldType: 'Kontynenty', typSwiata: 'kontynenty', seed: SEED,
   mapQualityLabel: 'Wysoka', mapQuality: 'high', renderQualityLabel: 'Wysoka', mapDetailQualityLabel: 'Wysoka',
   renderQuality: 'high', mapDetailQuality: 'high', civTypesCount: 4, cityStatesCount: 2,
   worldDensityLabels: { resources: 'Normalnie', rivers: 'Normalnie', desert: 'Normalnie', forest: 'Normalnie', relief: 'Normalnie' },
   advanced: {
-    barbariansLevel: 'trudny', battleAlwaysManual: false, victoryMode: 'moc_i_dominacja', buildingCostPace: 'niski',
-    kosztJednostekPace: 'wysoki', wzrostLudnosciPace: 'wysoki', ruchSwiataPace: 'krotki', landFractionPercent: 30,
+    barbariansLevel: 'trudny', battleAlwaysManual: false, victoryMode: 'moc_i_dominacja', buildingCostPace: 'wysoki',
+    kosztJednostekPace: 'wysoki', wzrostLudnosciPace: 'wysoki', ruchSwiataPace: 'dlugi', landFractionPercent: 30,
     landFractionCustom: false, cityStateDifficultyOverride: 'normal', cityLimitBase: 10,
     diplomacyWarLevel: 'trudna', kulturaReligiaLevel: 'trudny',
   },
