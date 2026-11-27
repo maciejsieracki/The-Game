@@ -40,10 +40,10 @@ Wojny epoki wymuszone (etykieta `forced` z hooka):
 | 0-7 (gracz/hetyci) | brąz (gracz) | t40 | 2/2 | zniknęła z migawek w t81 — brak wpisu w logu | pokój po 40 turach |
 | 0-10 (gracz/germanie) | bez etykiety | t40 | 2/2 | zniknęła w t81 — brak wpisu | pokój po 40 turach |
 | 1-16 (fenicjanie/chińczycy) | żelazo | t71 | 3/3 | t91 pokój (oferta_zmeczenia, tury 20) | |
-| 28-37 (zulusi/inkowie) | żelazo | t77 | 2/2 | t99 pokój (auto_pokój_dwa_miasta) | start PRZED wejściem obu stron w Żelazo |
+| 28-37 (zulusi/inkowie) | naturalna t77–t95, potem żelazo t96 | t77 (naturalna), t96 (wojna epoki) | t77: 2/2 (naturalna); t96: 3/3 (wejścia 94 i 86) | t95 pokój (prośba AI, 18 tur), t99 pokój (auto_pokój_dwa_miasta, 3 tury) | wojna z t77 jest naturalna (powód None w logu); wojna epoki od t96, po wejściu obu stron w Żelazo, zgodnie z 16A |
 | 22-34 (babilonia/grecy) | żelazo | t79 | 3/3 | t95 pokój (oferta_zmeczenia) | |
-| 13-31 (harappa/sumer) | żelazo | t80 | 2/3 | t100 pokój (oferta_zmeczenia) | start 1 turę przed wejściem harappy |
-| 7-10 (hetyci/germanie) | żelazo | t89 | 3/2 | t109 pokój (oferta_zmeczenia) | start 8 tur przed wejściem germanów |
+| 13-31 (harappa/sumer) | żelazo | t80 | 2/3 | t100 pokój (oferta_zmeczenia) | start t80 po wejściu sumeru (31: t79), harappa wchodzi t81; zgodnie z 16A |
+| 7-10 (hetyci/germanie) | żelazo | t89 | 3/2 | t109 pokój (oferta_zmeczenia) | start w turze wejścia hetytów (7: t89), germanie (10) wchodzą t97; zgodnie z 16A |
 
 Pozostałe pary AI–AI (natural, bez etykiety): 4-7, 16-22, 19-31, 13-37, 1-7, 4-31, 13-34, 4-16, 1-22, 31-34, 4-13, 34-37, 16-28 (w sumie 13 par). Łącznie 20 par w migawkach (część par wraca do wojny po pokoju).
 
@@ -52,7 +52,7 @@ Zakończenia zalogowane (`__diploWarEndLog`, bez par z graczem): **20** przejś�
 - `prosba_o_pokoj_ai`: 4
 - `auto_pokoj_dwa_miasta`: 2
 
-Czas trwania zalogowanych wojen (pole `turyWojny`): od 3 do 20 tur; większość 10–20 tur. Zmęczenie w chwili końca `oferta_zmeczenia`: 0,275–0,50 (pole `zmeczenie`). Wpis `auto_pokoj_dwa_miasta` z 3 turami (28-37, t99) jest sprzeczny ze startem pary w t77, więc para musiała wrócić do wojny w międzyczasie — NIE ZMIERZONO, który moment.
+Czas trwania zalogowanych wojen (pole `turyWojny`): od 3 do 20 tur; większość 10–20 tur. Zmęczenie w chwili końca `oferta_zmeczenia`: 0,275–0,50 (pole `zmeczenie`). Wpis `auto_pokoj_dwa_miasta` z 3 turami (28-37, t99) jest zgodny z logiem: wojna naturalna t77 zakończona prośbą AI o pokój w t95 (18 tur), wojna epoki od t96 (obie strony w Żelazie), pokój t99 (3 tury).
 
 ### 4.2 Seed 7 (t2–t84): 12 par
 
@@ -79,14 +79,14 @@ Zakończenia zalogowane: **6** (oferta_zmeczenia 5, prosba_o_pokoj_ai 1). Gracz:
 
 | Reguła | Werdykt | Dowód |
 |---|---|---|
-| FALA 906: wojna epoki (żelazo) od pierwszej tury wejścia w epokę | **NIEZGODNE / do weryfikacji** (3 zgodne, 4 rozbieżne) | 3 z 7 wojen żelaznych startują w turze, w której obie strony już są w Żelazu (1-16 t71, 22-34 t79, 28-34 t74). 4 z 7 startują, gdy jedna lub obie strony jeszcze nie weszły: 28-37 (start t77, wejścia 94/86, −17 tur), 7-10 (t89, wejścia 89/97, −8), 13-31 (t80, wejścia 81/79, −1), 22-37 (t80, wejścia 78/nigdy do t84). Hipotezy do sprawdzenia w kodzie: (a) rozbieżność definicji „wejścia” (pole `ep` vs stan wewnętrzny), (b) start wojny po wejściu tylko jednej strony (np. AI po własnym wejściu, gracz/partner wg legacy). |
+| FALA 906: wojna epoki (żelazo) startuje po wejściu w epokę strony, która ją zaczyna (reguła 16A, task #161: AI po własnym wejściu w epokę) | **ZGODNE** (7 z 7 wojen epoki żelaznej) | Seed 4242: 1-16 (t71; wejścia 1: t69, 16: t71), 22-34 (t79; 22: t79, 34: t74), 28-37 (t96, obie strony w Żelazie: 94 i 86), 13-31 (t80; 31: t79), 7-10 (t89; 7: t89). Seed 7: 28-34 (t74; 28: t74), 22-37 (t80; 22: t78). Kto wypowiedział wojnę, nie ma w rekordzie; wnioskowane: strona wcześniej w epoce. Wojna naturalna 28-37 (t77) nie jest wojną epoki. |
 | FALA 906: wojna brązowa gracza od tury 40 (zapisy legacy +40 tur) | ZGODNE (start t40 w obu seedach) | 0-7 i 0-10 (4242), 0-1 i 0-7 (seed 7) |
 | FALA 908: wojny epoki AI–AI kończą się jak klasyczne | ZGODNE co do powodów | Zalogowane zakończenia to wyłącznie `oferta_zmeczenia`, `prosba_o_pokoj_ai`, `auto_pokoj_dwa_miasta`; brak wymuszonego pokoju dla par AI. Zgodność progów zmęczenia NIE ZMIERZONO. |
 | Gracz: koniec wojny epoki | NIE ZMIERZONO | brak wpisu powodu dla par z graczem (patrz 4.4) |
 
 ## 6. Znaleziska do zgłoszenia (kandydaci BŁĄD-GRY — do weryfikacji, bez poprawek)
 
-1. **Wojny żelazne przed wejściem stron w Żelazo** (4 z 7 par, patrz tabela 5). Wymaga odtworzenia na krótkim scenariuszu (seed 4242, pary 28-37 i 7-10) przed decyzją.
+1. Kandydat „wojny żelazne przed wejściem stron w Żelazo” ODRZUCONY w obronie (runda 2): wszystkie 7 wojen epoki zgodne z regułą 16A (§5). Wojna 28-37 z t77 to wojna naturalna (powód None), nie wojna epoki.
 2. **Brak logu powodu końca wojny z graczem** (`skipPair`): wojny gracza kończą się bez wpisu. Decyzja inżynierska: rozszerzyć dziennik o pary z graczem (tylko tryb civTest).
 3. **Gracz nie wchodzi w Żelazo w 120 turach** (obie serie). Przyczyna NIE ZMIERZONO: czy autopilot prowadzi badania.
 
@@ -96,3 +96,4 @@ Zakończenia zalogowane: **6** (oferta_zmeczenia 5, prosba_o_pokoj_ai 1). Gracz:
 - Wznowienia: seed 4242 — 17 wpisów błędu w `run.log` (awarie Chromium „Target page … closed”), większość w fazie odtwarzania świata przed `loadSlot`; seed 7 — 34 wpisy błędu, z ostatnią serią bez postępu po t84.
 - Pomiar statystyczny, jeden bieg na seed. Nie wnioskować o rozkładzie długości wojen na podstawie dwóch seedów.
 - Dziennik końca wojny nie obejmuje par z graczem (patrz 4.4 i 6.2), więc przyczyny końca wojen gracza nie ma w danych.
+- Wnioski o czasie końca wojen i sojuszach po turze 84 opierają się wyłącznie na seedzie 4242; seed 7 nie ma danych po t84 (przerwanie Chromium, nie błąd gry).

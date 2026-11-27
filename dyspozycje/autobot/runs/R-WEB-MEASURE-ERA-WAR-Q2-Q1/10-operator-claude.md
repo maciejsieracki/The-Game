@@ -35,3 +35,9 @@ DEPLOY/PUSH: NIE WYKONANO
 4. Gracz pozostaje w epoce Brązu przez 120 tur (oba seedy). Jeśli to nie jest zamierzone, warto ustalić, czy autopilot gracza prowadzi badania (pytanie techniczne, nie do właściciela).
 5. Higiena: w scratchpadzie zostają kopia gry i profile Chromium tematu (poza repo, nie commitowane); profile usunięte po analizie. Link node_modules do cudzego worktree został zastąpiony kopią playwright.
 6. Operatorzy innych tematów: `gra/tools/era-war-q2-measure.cjs` jest nowym plikiem i nie zmienia `war-duration-measure.cjs`.
+
+## KOREKTA (obrona, runda 2 — zob. 30-obrona-claude.md)
+
+- Zarzut 1 PRZYJĘTY: wojna 28-37 z t77 jest naturalna (powód None w warend.json); wojna epoki 28-37 startuje w t96, gdy obie strony są w Żelazie (wejścia t94 i t86). Rozbieżność „−17 tur” nie istnieje. Pozycja w odpowiedziach i UWAGACH pkt 1 jest nieaktualna.
+- Zarzut 2 PRZYJĘTY: werdykt FALA 906 to ZGODNE wg reguły 16A (task #161): wojna epoki startuje po wejściu strony, która ją zaczyna. Wszystkie 7 wojen epoki żelaznej zgodne (4242: 5, seed 7: 2). Kandydat BŁĄD-GRY „wojny przed wejściem” odrzucony.
+- Werdykt „NIEZGODNE / do weryfikacji (3 zgodne, 4 rozbieżne)” z odpowiedzi FALA 906 jest nieaktualny. Autorytatywna wersja: dyspozycje/analizy/WOJNY-EPOKI-Q2-2026-11-26.md §5–§6.
