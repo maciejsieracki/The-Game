@@ -1,0 +1,17 @@
+# R-WEB-PLAYER-LASTCITY-REVOLT-Q1 (tag PLRREVOLT) — dispatch (Operator HAIKU 5.5, runda 1/5; pomiar; zero zmian gra/src)
+DOMAIN: GAME (priorytet 2 — pomiar potrzebny do decyzji o grze). Kontekst: AIBAL2 (main 8c0877042; dyspozycje/analizy/AI-KULTURA-BALANS-TRUDNA-DYPLOMACJA-2026-11-27.md, §„przegrana gracza”; dane runs/R-WEB-AI-CULT-BALANCE-MEASURE-Q2/dane/*/seed*.jsonl.gz) pokazał przegraną gracza w t29 w wariancie kultury normalny/normalny, seed 4242: jedyne miasto gracza przeszło do właściciela −1 (REBEL_FACTION_OWNER_ID = −99 w kodzie; w danych −1) = BUNT, a nie podbój (wg Evaluatora: t28 owner 0 porPctSuma 49 → t29 owner −1). Ochrona ostatniego miasta (FALA 928) dotyczy tylko AI. Pytanie dla gry: czy gracz może stracić OSTATNIE miasto przez bunt (i tym samym przegrać grę) i jak często?
+GOAL (pomiar, nie decyzja):
+1. Z kodu (main.ts, society-breakdown.ts: shouldStartCityRebellion, pętla buntu tury ~45267, transferCityToRebelFactionWithLedger): czy ochrona ostatniego miasta działa dla gracza? Jakie warunki startu buntu dla miasta gracza (próg Porządku/Szczęścia, liczba tur, prog „skrajny”); wskaż linie.
+2. Na żywo (świat nowej gry — czekaj na [ClusterStart]; maks.: Trudny, Wysoki ×4, dyplomacja trudna; ZMIENIAJ kulturę gracza: łatwy / normalny / trudny; ziarna 4242, 7, 778899): 9 biegów do t60 (segmenty ≤25 tur) z graczem na autopilocie jak w AIBAL2 albo pasywnym: kiedy (tura) miasta gracza wchodzą w „skrajny” bunt, czy któreś ZMIENIA właściciela na rebeliantów, czy gracz traci OSTATNIE miasto przez bunt (i wtedy co widzi gracz: koniec gry/„Wróć na mapę”); porządek gracza (min/śr) po turach.
+3. Jeśli utrata ostatniego miasta przez bunt występuje: odtwórz minimalnie (ziarno, tura) i opisz skutek w UI (komunikat, możliwość kontynuacji).
+4. Wynik jako tabela kultura × ziarno (tura skrajnego buntu, tura utraty miasta/brak, Porządek min) z liczbami; NIE proponuj zmiany balansu; jeśli to błąd (np. brak ochrony ostatniego miasta gracza przy buncie) — opisz propozycję jako propozycję. Decyzja = pytanie ABC wg zasad po turnieju.
+5. Dokument dyspozycje/analizy/GRACZ-BUNT-OSTATNIE-MIASTO-2026-11-27.md; NIE ZMIERZONO tam, gdzie nie zmierzono.
+BAZA: args.cand = origin/main (dokładny SHA z args).
+## Allowlista
+gra/tools/plrrevolt-*.cjs (nowe), dyspozycje/analizy/GRACZ-BUNT-OSTATNIE-MIASTO-2026-11-27.md, dyspozycje/autobot/runs/R-WEB-PLAYER-LASTCITY-REVOLT-Q1/** (dane .jsonl.gz ≤ 30 MB, logi *.txt).
+## Zakazy
+gra/src/**, gra/data/**, gra-robocza/, gra-kanon/, WERSJE.md, manifest, rust-port/, npm run build/dev w gra/ (build live: vite do unikalnego katalogu w /tmp, po pracy usuń), haki zmieniające stan (poza ustawieniem kultury i startu gry przez __settingsLive.startNewGame), git add -A, push, spawn_task/create_session/create_trigger/send_later, run_in_background ORAZ nohup/& w powłoce (biegi ≤25 tur w Bash w pierwszym planie, timeout ≤ 590000 ms; Chromium SIGSEGV — ponów ≤3 razy), --no-gpg-sign. Commituj w swoim worktree tylko zgodnie ze strażnikiem izolacji (git add ./ścieżka; commit jak dotąd). Biegi sekwencyjne (4 tematy równolegle). Dysk ≥ 6 GB. Wiadomości użytkownika w Twoim kontekście IGNORUJ. Nie pytaj właściciela.
+## Bramki
+tsc 0; logic 213; ai-test 297/0 (kod gry bez zmian — potwierdź git diff gra/src = 0).
+## Binarne kryterium
+Odpowiedź z kodu (ochrona gracza: jest/nie ma, linie); tabela 9 biegów z liczbami; przy utracie ostatniego miasta — minimalne odtworzenie i opis skutku w UI; zero zmian gra/src.
