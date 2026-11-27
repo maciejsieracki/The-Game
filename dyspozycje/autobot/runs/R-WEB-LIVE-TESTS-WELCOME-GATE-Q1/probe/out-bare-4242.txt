@@ -1,0 +1,6 @@
+{"mode":"bare","label":"start","welcomeOpen":true,"canEnd":false,"gate":true,"turn":1}
+{"mode":"bare","step":"click-end-turn","result":"CLICK-FAIL page.click: Timeout 4000ms exceeded. Call log: \u001b[2m - waiting for locator('.civ-bottom-bar .end-turn')\u001b[22m \u001b[2m - locator resolved to <button data-end=\"\" type=\"button\" aria-disabled=\"true\"","label":"after-click","welcomeOpen":true,"canEnd":false,"gate":true,"turn":1}
+{"mode":"bare","step":"endTurn-bare-1","label":"after","welcomeOpen":true,"canEnd":false,"gate":true,"turn":1}
+{"mode":"bare","step":"endTurn-bare-2","label":"after","welcomeOpen":true,"canEnd":false,"gate":true,"turn":1}
+{"mode":"bare","step":"endTurn-bare-3","label":"after","welcomeOpen":true,"canEnd":false,"gate":true,"turn":1}
+{"mode":"bare","done":true,"pageerrors":0}

@@ -1,4 +1,5 @@
 'use strict';
+const { closeCivWelcome } = require('./_live-ready.cjs');
 /**
  * forced-war-iron-player-target-live-test.cjs — R-WOJNA-ZELAZO-DOWOD-ROZGRYWKA-Q1
  * (Operator Sonnet 5, effort=medium, 2026-08-31, worktree izolowany).
@@ -147,6 +148,7 @@ async function advanceTurnBySettledEndTurn(page) {
 async function gotoPlaytestMapa(page) {
   await page.goto(OUT_HTML, { waitUntil: 'load', timeout: 120000 });
   await page.waitForSelector('.civ-hud, .civ-ux-frame, .civ-cs', { timeout: 120000 });
+  await closeCivWelcome(page);
   for (let i = 0; i < 90; i++) {
     const overlayCount = await page.locator('text=Tworzenie świata').count();
     if (overlayCount === 0) break;

@@ -1,4 +1,5 @@
 'use strict';
+const { closeCivWelcome } = require('./_live-ready.cjs');
 /**
  * end-turn-block-event-live-test.cjs — R-WEB-UI-END-TURN-BLOCK-EVENT-Q1 (runda 2).
  *
@@ -58,6 +59,7 @@ async function main() {
     if (await page.evaluate(() => window.__nnsMeasureDebug.awaitingFirstCity())) {
       await page.evaluate(() => window.__nnsMeasureDebug.refoundPlayerAnywhere());
     }
+    await closeCivWelcome(page);
     await wait(800);
     const D = fn => page.evaluate(fn);
     const api = {

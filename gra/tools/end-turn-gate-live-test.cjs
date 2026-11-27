@@ -1,4 +1,5 @@
 'use strict';
+const { closeCivWelcome } = require('./_live-ready.cjs');
 /**
  * end-turn-gate-live-test.cjs — R-WEB-ECON-END-TURN-GATE-PROJECTION-ONLY-FROM-TURN1-Q1 (runda 3).
  *
@@ -60,6 +61,7 @@ async function openGame(browser, seed, errors) {
   if (await page.evaluate(() => window.__nnsMeasureDebug.awaitingFirstCity())) {
     await page.evaluate(() => window.__nnsMeasureDebug.refoundPlayerAnywhere());
   }
+  await closeCivWelcome(page);
   await wait(800);
   return page;
 }

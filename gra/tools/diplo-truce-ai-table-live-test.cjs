@@ -1,4 +1,5 @@
 'use strict';
+const { closeCivWelcome } = require('./_live-ready.cjs');
 /**
  * diplo-truce-ai-table-live-test.cjs — R-WEB-TRUCE-E2E-SAVELOAD-MEASURE-Q1, CZĘŚĆ A.
  *
@@ -90,6 +91,7 @@ async function main() {
       undefined,
       { timeout: 300000 },
     );
+    await closeCivWelcome(page);
     tWorld = Date.now();
     console.log(`[ai-table] świat gotowy po ${elapsed()} (tryb ${MODE}); start przeglądarki ${tLaunch}s`);
 

@@ -1,4 +1,5 @@
 'use strict';
+const { closeCivWelcome } = require('./_live-ready.cjs');
 /**
  * forced-war-r9-no-auto-end-live-test.cjs -- R-WEB-PEACE-RULES-R8R9-Q1 R9 (kryteria 2 i 4).
  *
@@ -63,6 +64,7 @@ async function launchBrowser(chromium) {
 async function gotoPlaytestMapa(page) {
   await page.goto(OUT_HTML, { waitUntil: 'load', timeout: 120000 });
   await page.waitForSelector('.civ-hud, .civ-ux-frame, .civ-cs', { timeout: 120000 });
+  await closeCivWelcome(page);
   for (let i = 0; i < 900; i++) {
     if ((await page.locator('text=Tworzenie świata').count()) === 0) break;
     await wait(1000);
