@@ -30,3 +30,20 @@ Zadanie rundy 2:
 6. Jeśli czas/obciążenie nie pozwala dobiec do t150 — zapisz dokładnie do której tury, i które pozycje NIE ZMIERZONO z powodem; nie zgaduj. Maszyna ma 4 równoległe tematy — biegi rób sekwencyjnie.
 Kryteria FC (NAPRAW): seed 4242 t2–150 i seed 7 t2–150 (lub jawne NIE ZMIERZONO z numerem tury i powodem technicznym), kultura trudny w logach każdego segmentu, porównanie Łatwa/Normalna do t100 z wnioskiem, pole deklarującego wojnę.
 KOREKTA BAZY rundy 2 (orkiestrator): kandydat 522f5cb92 pochodzi z linii 01795c329 (PRZED FALAMI 926–928: garnizon/budynki AI, osierocone heksy rzek, rebelia AI) — pomiar na nim nie opisuje dzisiejszej gry. args.cand = origin/main e6f3fd4b6d98799a2d622546a1863af77541552a; z kandydata obrony/FC przenieś na tę bazę tylko pliki pracy: `git checkout 522f5cb929f121cfc5b680d7305591f6c3fea1b3 -- gra/tools/diplomacy-harder-measure-run.cjs dyspozycje/analizy/VERIFY-LIVE-MAX-Q2-2026-11-27.md dyspozycje/autobot/runs/R-WEB-VERIFY-LIVE-MAX-Q2` (sprawdź `git diff --stat`, brak zmian w gra/src), potem nowe biegi (stare dane t2–120/seed 7 t2–40 były na starej grze — oznacz je „stara baza 01795c329”, nowe biegi na e6f3fd4b6 liczą się jako wynik rundy 2; nie wznawiaj starych state.json na nowej grze).
+
+## DODATEK runda 3/5 (orkiestrator) — BAZA: FC r2 FAIL, kandydat 1c6794a5d2626ba37c4431e08da61577b920cd85 (raport FC c22f7740a36baa6c049580e18b157450f61de002); args.cand = 1c6794a5d2626ba37c4431e08da61577b920cd85
+Operator tej rundy: SONNET (uzasadnienie w args.sonnetWhy: dwie nieudane rundy Haiku tego samego ID — r1 FAIL, r2 FAIL; obie nie dobiegły do pomiaru).
+Ustalenia z FC r2 (obowiązują):
+- Praca jest na kandydacie: runner z --unit-pace/--culture, dokument, dane starej bazy (oznaczone). Zero zmian gra/src — ZOSTAJE.
+- Load maszyny 7–9 przy 4 równoległych tematach NIE jest blokadą techniczną. Wymagane jest FAKTYCZNE uruchomienie segmentów; „NIE ZMIERZONO” wolno wpisać dopiero po udokumentowanej nieudanej próbie (komenda, czas, rc, ostatnie linie logu) w runs/…/dane/*.txt.
+- Pole „kto wypowiedział wojnę” (deklarujący) wymaga zmiany gra/src — decyzja orkiestratora: POZA zakresem tej rundy i tematu (nie dodawaj); w dokumencie wpisz „odroczone, wymaga zmiany gry” — 41 tur >1 wojny naturalnej z graczem t40–80 zostaje jako obserwacja do analizy z istniejących pól (typWojny, wojnaOdTury), bez nowego pola.
+- Pozycje 3–5 → VLIVE3 (osobny temat), bez zmian.
+ZADANIE rundy 3 (pomiar; kolejność):
+1. Środowisko: build vite do UNIKALNEGO katalogu w /tmp (po pracy usuń); `--profile`/out w nowych katalogach (stare state.json ze starej bazy NIE wznawiaj). Każde wywołanie Bash w pierwszym planie z timeout ≤ 590000 ms (NIGDY run_in_background — w r2 bieg w tle został przeniesiony i niedokończony).
+2. Seed 4242, Dyplomacja Trudna + Koszty jednostek Wysoki ×4 + Kultura i religia trudny + 6 flag ON, tury 2–150 segmentami ≤ 25 tur (--stop-at, ten sam --out i --profile); readback unit-pace/culture/diploLevel w logu KAŻDEGO segmentu (.txt). Po każdym segmencie sprawdź plik jsonl. Chromium SIGSEGV przy wznowieniu — ponów do 3 razy na segment.
+3. Seed 7 tak samo t2–150 (po zakończeniu 4242 albo przeplatając segmenty).
+4. Dyplomacja Łatwa i Normalna do t100 (seed 4242, reszta maksimum): ile tur z sojuszami AI↔AI, max sojuszy/cywilizację; wniosek (zamierzone czy błąd).
+5. Analiza limitów (python3 -I dane/analiza-limitow-q2.py na nowych jsonl): wojny z graczem (max 1 naturalna + 1 epoki), sojusze AI↔AI (max 2/cywilizację); zapisz wynik .txt.
+6. Bramki: tsc 0, logic 213, tech-tree 20, research 33, unit-replace, combat 6, ai-test 297/0. Commit: tylko pliki tematu (git add <ścieżka>), podpisany normalnie.
+7. Jeśli któryś bieg NIE dobiegnie do t150 — zapisz do której tury i faktyczną przyczynę techniczną (nie „obciążenie”); wynik cząstkowy też commituj.
+Kryteria FC (NAPRAW): seed 4242 i 7 t2–150 (lub udokumentowana próba z przyczyną), kultura trudny w logach każdego segmentu, porównanie Łatwa/Normalna z wnioskiem, wynik analizy limitów na nowej bazie.

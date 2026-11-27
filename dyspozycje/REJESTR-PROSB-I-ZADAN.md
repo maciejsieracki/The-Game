@@ -11385,3 +11385,7 @@ R-WEB-MAP-ISLANDS-ORPHAN-FIX-Q1 (wf_d7ad9b86-4bd; Operator Haiku → Evaluator S
 
 ### 2026-11-27 · AIREBELVER start (R-WEB-AI-REBEL-VERIFY-LIVE-Q1) · zegar maszyny `date -u` 08:13 UTC
 - Wolny slot po FALI 929. Priorytet 2 (pomiary): domknięcie NIE ZMIERZONO z FAL 928–929 na maksimum (ochrona ostatniego miasta, stolica AI w buncie, round-trip zapisu, render wpisu „rebelia”, bieg 60+ tur). Operator HAIKU, cand = origin/main 99375f77e4924a09d518e0833fe38a08863f0a27, bez zmian gra/src.
+
+### 2026-11-27 · VLIVE2 r2 FC FAIL → runda 3 (Operator SONNET) · zegar maszyny `date -u` 08:15 UTC
+- r2: Operator BLOCK (bieg w tle przeniesiony i niedokończony; load 8–12), Obrona przeniosła pliki pracy na e6f3fd4b6 (1c6794a5d, 25 plików, zero gra/src), FC FAIL: na bieżącej bazie zero pomiarów pozycji 1–2 — load 7–9 nie jest blokadą techniczną. Pole „deklarujący wojnę” wymaga zmiany gra/src → poza zakresem (decyzja inżynierska). Pozycje 3–5 → VLIVE3.
+- Dwie kolejne rundy Haiku (r1 FAIL, r2 FAIL) tego samego ID → runda 3 z Operatorem SONNET (args.haikuFailures=2, args.sonnetWhy), cand = 1c6794a5d. refs/keep/VLIVE2-r2-{op,eval,obrona,fc}.
