@@ -1,61 +1,60 @@
-# R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1 (SAVEFIX) — obrona Operatora, runda 2/5 (odpowiedź na zarzuty FC r2)
+# R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1 (SAVEFIX) — obrona Operatora (odpowiedź na zarzuty Evaluatora r3 i FC r3)
 
-STATUS: BLOCK
+STATUS: PASS-WITH-NOTES
 DOMAIN: GAME (integralność zapisu, priorytet 1)
 TEMAT: R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1
-GOAL: znaleźć przyczynę B != A po wczytaniu i naprawić (B == A co najmniej 6 tur). NIE OSIĄGNIĘTE w tej rundzie.
-BAZA: kandydat 4d651a3de (raport Evaluatora d387649b4). Obrona wykonana na `git checkout --detach 4d651a3de`.
-ZMIANY-COMMIT: tylko dokumenty i przywrócenie narzędzia do stanu bazy (szczegóły niżej). Zero zmian w `gra/src/`.
+GOAL: po wczytaniu zapisu z pauzy przebieg identyczny z ciągłym (B == A, co najmniej 6 tur); zgodność wsteczna; mutacja czerwona.
+BAZA: kandydat 84444886d (baza 87a8d6e81, origin/main). Obrona na drzewie z 84444886d.
+ZMIANY-COMMIT: patrz sekcja „Co zmieniono” niżej (SHA w polu sha odpowiedzi).
 
-## Odpowiedź na zarzuty
+## Zarzuty Evaluatora r3 — odpowiedzi
+1. Macierz 4/16 — PRZYJĘTE CZĘŚCIOWO. Na nowej ścieżce produkcyjnej zmierzone: max/4242/t3, max/4242/t10, aionly/7/t3 (wszystkie PASS 6/6) oraz mutant max/4242/t3. Pozostałe komórki (default, bunt, seed 7 t10, aionly 4242, default 7) NIE ZMIERZONO.
+2. Hak powtarzał warunek; mutacja w loadGameFromSlot nie czerwieniła testu — PRZYJĘTE I NAPRAWIONE. Hak `__detHarness.loadJsonAsPauseLoad(json, slot)` zapisuje JSON do slotu i woła produkcyjne `loadGameFromSlot(slot, true)`; nie zawiera warunku decyzji. Mutant (w `loadGameFromSlot` usunięta klauzula `fromInGamePause && liveMapDiffersFromSave`): 6/6 tur ROZJAZD (`dane/r4-bmut-max-4242-3-bez-klauzuli.json`).
+3. Brak opcjonalnego pola w serializacji — ODRZUCONE Z DOWODEM. Dispatch r3 pkt 3 dopuszcza „albo deterministyczne odtworzenie po wczytaniu”. Przyczyną jest żywa mapa, a `mapSnapshot` już jest w zapisie (`buildSaveGameSnapshot`, ok. linii 42946 w main.ts), więc brakującego pola nie ma. Zgodność wsteczna (zapis bez `mapSnapshot`) testowana: `--legacy 1` PASS.
+4. „wiring 267/0” nieznane — ROZSTRZYGNIĘTE. To `gra/tools/ai-city-order-need-wiring-test.cjs`: uruchomione na r4, wynik `267 passed, 0 failed (of 267)`.
+5. Test live niewpięty w bramkę — PRZYJĘTE, nie zmieniane (R-PROC-AUTOBOT poza allowlistą). Propozycja dla orkiestratora: bramka live = `save-load-continuity-live.cjs --mode A` i `--mode B` (dwa wywołania, ok. 7 min każde).
+6. A==A' i „ai-test bit-w-bit” tylko pośrednio — PRZYJĘTE jako NIE ZMIERZONE osobno. ai-test 297/0 zmierzono na r4; A==A' nie uruchomiono.
 
-1. **PRZYJMUJĘ.** Brak poprawki kodu gry. `git diff 31a1ad39d -- gra/` przed obroną = tylko `gra/tools/savedigest-run.cjs` (opcje diagnostyczne); po obronie = 0 linii. B == A nie jest spełnione.
+## Pomiary r4 (cfg max = maksymalne ustawienia nowej gry: Trudny, dyplomacja trudna, Wysoki x4, kultura trudny/AI trudny; K=6)
+| Przebieg | Zapis | mapDiffers | rebuild z loadNeedsMapRebuild | Tury po wczytaniu | Wynik |
+|---|---|---|---|---|---|
+| max / 4242 | t3 | true | false | t4–t9: 6/6 OK | PASS |
+| max / 4242 | t10 | true | false | t11–t16: 6/6 OK | PASS |
+| aionly / 7 | t3 | true | false | t4–t9: 6/6 OK | PASS |
+| max / 4242, mutant | t3 | true | false | 6/6 ROZJAZD | wykryte (expect diff PASS) |
+| max / 4242, legacy (bez mapSnapshot) | t3 | false (brak mapSnapshot) | false | t4 wykonana, pageErrors 0 | PASS |
 
-2. **PRZYJMUJĘ.** Przyczyna nie wskazana. Bisekcja P1 (mapy cudów AI jako pola zapisu) i P2 (17 map poziomu modułu z A do B) negatywne. Hipoteza hexów odrzucona w r2. Hipotezy (a) manpower/ownerBonusy, (b) kolejność iteracji Map, (c) zmienne `let` poza mapami: NIE ZBADANE. Zapisane w `dyspozycje/analizy/ZAPIS-WCZYTANIE-ROZBIEZNOSC-NAPRAWA-2026-11-27.md`.
+Uwaga: `rebuild` = false jest poprawne, bo wczytanie z pauzy tej samej gry nie zmienia ziarna ani rozmiaru. Odbudowę mapy wymusza klauzula `liveMapDiffersFromSave` w `loadGameFromSlot`, a mutant potwierdza, że bez niej test czerwieni się.
+Pliki surowe: `dyspozycje/autobot/runs/R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1/dane/r4-*.json`.
 
-3. **PRZYJMUJĘ.** Brak `save-load-continuity-*.cjs`, testu zgodności wstecznej i mutacji czerwonej. Nie napisano, bo nie ma naprawy, do której test by się odnosił.
+## Bramki na drzewie r4
+- tsc --noEmit: 0 błędów (exit 0).
+- ai-test: 297 passed, 0 failed.
+- ai-city-order-need-wiring-test: 267 passed, 0 failed.
+- logic-test: 213/213; tech-tree-test: 20 pass / 0 fail; research-test: 33/0; combat-test: sanity OK.
+- society-breakdown-test: 56 OK / 0 FAIL.
+- save-load-sort-test: 4/4; save-load-ledger-history-test: 4/0; save-load-budowa-priorytet-on-load-test: 6/0; save-load-player-owned-city-test: PASS; determinism-save-load-resume-test: PASS.
+- Nie uruchomione na r4 (wynik z 84444886d przez Evaluatora): ai-plus10-live-roundtrip, culture-religion-level, ai-plus10-culture/matrix, ai-city-rebellion-gate/news, diplo-world-news. Kod gry poza hakiem testowym jest identyczny z 84444886d.
 
-4. **PRZYJMUJĘ, ZREALIZOWANE CZĘŚCIOWO.** Dokument `dyspozycje/analizy/ZAPIS-WCZYTANIE-ROZBIEZNOSC-NAPRAWA-2026-11-27.md` został utworzony w tej rundzie jako dokument STANU (przyczyna nieznana, lista prób, NIE ZMIERZONO). Nie zawiera przyczyny ani poprawki, bo ich nie ma.
-
-5. **PRZYJMUJĘ.** Bramki dispatchu (tsc, logic 213, ai-test 297/0, wiring 267/0 itd.) NIE URUCHOMIONE w tej rundzie. Uzasadnienie „brak zmian w grze" nie zwalnia z bramek w rundzie z kodem; dla tej rundy zmiana `gra/` względem bazy = 0 linii (sprawdzone `git diff 31a1ad39d -- gra/ | wc -l` = 0), więc wynik bramek = wynik bazy, ale nie został zmierzony tutaj. NIE ZMIERZONO.
-
-6. **CZĘŚCIOWO ODRZUCAM Z DOWODEM, CZĘŚCIOWO PRZYJMUJĘ.**
-   - ODRZUCAM tezę „`__detHarness.restoreJson` omija `mapSnapshot`". Dowód z kodu `gra/src/main.ts`:
-     - ~33714: `snapshotJson: () => JSON.stringify(buildSaveGameSnapshot('det-harness'))`;
-     - ~42946: `buildSaveGameSnapshot` zawiera `mapSnapshot: serializeMapForSave(map)`;
-     - ~33723: `restoreJson: (s) => { restoreGameFromSave(JSON.parse(s)); }` — przekazuje cały zapis, w tym `mapSnapshot`.
-     Harness więc NIE omija `mapSnapshot` na poziomie danych. Poprzednie zdanie w raporcie r1/r2 było błędne i zostaje sprostowane w analizie.
-   - PRZYJMUJĘ: nie zmierzono, czy `restoreGameFromSave` używa `mapSnapshot` tak samo jak ścieżka UI (`loadNeedsMapRebuild` ~10580, `regenerateWorldForLoad` ~50905). Ścieżka UI w świeżej sesji i wczytanie z pauzy: NIE ZMIERZONO.
-
-7. **PRZYJMUJĘ (weryfikacja):** `grep -rn __savefixDiag gra/src gra/tools` daje trafienie tylko w `gra/tools/savedigest-run.cjs` (linie opcji `--dumpmod`/`--inject`), zero w `gra/src/main.ts`. Opcje zależały od haka nieobecnego w grze, więc były martwe. **Wykonano:** `git checkout 31a1ad39d -- gra/tools/savedigest-run.cjs` (przywrócenie do bazy). Patch `diag-savefix-r2-main.patch` zostaje w katalogu runu jako EKSPERYMENT, NIE DO INTEGRACJI.
-
-## Pomiar w tej rundzie
-
-NIE WYKONANO nowego pomiaru live. Powód: runda obrony dotyczy zarzutów formalnych i higieny; ponowny bieg Chromium (~6 min na parę A/B) nie wnosi nowej przyczyny bez bisekcji, której nie zaplanowano w tej rundzie. Wyniki r2 (cfg max, seed 4242, t3, K=6: B != A t4–t9; nUnits zgodne 49/60/65/74/74/91) pochodzą z poprzedniego raportu Operatora i NIE zostały powtórzone niezależnie.
-
-## Co zmieniono w commicie tej obrony
-
-- `gra/tools/savedigest-run.cjs` — przywrócony do bazy 31a1ad39d (usunięte martwe opcje `--dumpmod`/`--inject`).
-- `dyspozycje/analizy/ZAPIS-WCZYTANIE-ROZBIEZNOSC-NAPRAWA-2026-11-27.md` — nowy dokument stanu.
-- `dyspozycje/autobot/runs/R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1/30-obrona-claude.md` — ten raport.
+## Co zmieniono w tej obronie (diff względem 84444886d)
+- `gra/src/main.ts`: import bez `buildGameMapFromSnapshot`; stary hak `restoreJsonAsPauseLoad` zastąpiony hakiem `loadJsonAsPauseLoad` (tylko civTest). Logika `loadGameFromSlot` bez zmian.
+- `gra/tools/save-load-continuity-live.cjs`: tryby pause i legacy wołają `loadJsonAsPauseLoad` z slotem `civtest-savefix-pause-load`.
+- `dyspozycje/analizy/ZAPIS-WCZYTANIE-ROZBIEZNOSC-NAPRAWA-2026-11-27.md`: sekcja 7 (runda 4).
+- `dane/r4-*.json` (5 plików) i ten raport.
 
 ## TESTY
-
-NIE ZMIERZONO w tej rundzie. Dowody użyte w odpowiedziach: odczyt kodu (grep, sed na `gra/src/main.ts`) i `git diff`. Brak uruchomionych bramek, brak testów live.
+Patrz sekcje powyżej. Liczby z surowych wyjść narzędzi (JSON z pomiarów, `passed/failed` z konsoli).
 
 ## BLOKADY
-
-- Przyczyna B != A nieznana. Brak poprawki = brak spełnienia GOAL.
-- Pomiary poza jednym punktem (cfg max, seed 4242, t3): NIE ZMIERZONO (cfg default/aionly/max+bunt, seed 7, t10).
-- Ścieżka UI (menu / pauza) niezmierzona.
-- Bramki dispatchu niezmierzone.
+- Pokrycie macierzy: 3 z 16 komórek na nowej ścieżce (+ mutant); reszta NIE ZMIERZONO (koszt ok. 7–9 min na komórkę przy obciążeniu maszyny).
+- Ścieżka UI (klik w menu pauzy, render sceny 3D po odbudowie): NIE ZMIERZONO.
+- Brak blokad technicznych. Chromium nie padł w 8 przebiegach tej rundy.
 
 ## UWAGI-DLA-ORKIESTRATORA
+- Kandydat BŁĄD-GRY (potwierdzony pomiarem, wymaga FALI po FC): wczytanie z pauzy po dłuższej grze zostawiało żywą mapę ze zmianami z tur po zapisie (`loadNeedsMapRebuild` = false). Poprawka to klauzula `liveMapDiffersFromSave` w `loadGameFromSlot` (zmiana dotyka tylko ścieżki wczytania).
+- Bramka live (zarzut 5): propozycja dodania `save-load-continuity-live.cjs --mode A/B` do bramek R-PROC §6.
+- Pliki robocze poza repo (dist vite w scratchpad, skopiowany node_modules) zostały usunięte po pracy.
 
-- Warunek Sonneta (2 nieudane rundy Haiku tego samego tematu) jest spełniony po r2 (FC FAIL, obrona BLOCK). Następna runda: bisekcja zrzutem stanu (zgodnie z zaleceniem FC), nie kolejne hipotezy z odczytu kodu.
-- Kandydat BŁĄD-GRY (do potwierdzenia testem): wczytanie z pauzy w tej samej grze (`loadNeedsMapRebuild` = false) nie odbudowuje mapy z zapisu.
-- Patch `diag-savefix-r2-main.patch` NIE integrować.
-
-RUNDY: 2/5 (FC r2: FAIL; obrona r2: BLOCK; decyzja wymagana: NIE)
-NASTĘPNY KROK: runda 3 do TEGO SAMEGO ID — zrzut `ownerBonusy`/`ownerCivKey`/`mpMults` i pól miasta 26 w A@t3 vs B po restore; potem bisekcja po kolejności Map i zmiennych `let`.
+RUNDY: 3/5 (obrona po FC r3 FAIL; kod zmieniony w tej obronie)
+NASTĘPNY KROK: Final Control do TEGO SAMEGO ID na sha obrony (pomiary r4 i bramki wyżej); FC ma sprawdzić sekcję 7 dokumentu i pliki dane/r4-*.json.
 DEPLOY/PUSH: NIE WYKONANO

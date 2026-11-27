@@ -1,0 +1,249 @@
+{
+ "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/savefix-r4/dist-mut",
+ "cfg": "max",
+ "seed": 4242,
+ "saves": [
+  3
+ ],
+ "k": 6,
+ "restore": "pause",
+ "expect": "diff",
+ "mode": "B",
+ "pageErrors": [],
+ "segments": [
+  {
+   "save": 3,
+   "restore": "pause",
+   "rebuild": false,
+   "turns": [
+    {
+     "turn": 4,
+     "expectedTurn": 4,
+     "equal": false,
+     "diffs": [
+      {
+       "path": "cities[city16].surowce.drewno",
+       "A": "8",
+       "B": "13"
+      },
+      {
+       "path": "cities[city16].wealthState.pula",
+       "A": "3.9",
+       "B": "3.6374999999999997"
+      },
+      {
+       "path": "cities[city17].surowce",
+       "A": "(brak)",
+       "B": "{\"drewno\":50}"
+      },
+      {
+       "path": "cities[city25].surowce.drewno",
+       "A": "8",
+       "B": "50"
+      },
+      {
+       "path": "cities[city25].wealthState.pula",
+       "A": "3.9",
+       "B": "3.6374999999999997"
+      },
+      {
+       "path": "cities[city26].manpower",
+       "A": "2000",
+       "B": "(brak)"
+      }
+     ]
+    },
+    {
+     "turn": 5,
+     "expectedTurn": 5,
+     "equal": false,
+     "diffs": [
+      {
+       "path": "units[rec_5_city25_1tyixgb].category",
+       "A": "\"zwiadowca\"",
+       "B": "\"miecznik\""
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].hpMax",
+       "A": "10",
+       "B": "22"
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].q",
+       "A": "113",
+       "B": "116"
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].r",
+       "A": "79",
+       "B": "78"
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].ruch",
+       "A": "3",
+       "B": "2"
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].typeId",
+       "A": "\"Zwiadowca\"",
+       "B": "\"Wojownik\""
+      }
+     ]
+    },
+    {
+     "turn": 6,
+     "expectedTurn": 6,
+     "equal": false,
+     "diffs": [
+      {
+       "path": "units[rec_5_city25_1tyixgb].category",
+       "A": "\"zwiadowca\"",
+       "B": "\"miecznik\""
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].hpMax",
+       "A": "10",
+       "B": "22"
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].q",
+       "A": "110",
+       "B": "116"
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].r",
+       "A": "80",
+       "B": "78"
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].ruch",
+       "A": "3",
+       "B": "2"
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].typeId",
+       "A": "\"Zwiadowca\"",
+       "B": "\"Wojownik\""
+      }
+     ]
+    },
+    {
+     "turn": 7,
+     "expectedTurn": 7,
+     "equal": false,
+     "diffs": [
+      {
+       "path": "units[rec_5_city25_1tyixgb].category",
+       "A": "\"zwiadowca\"",
+       "B": "\"miecznik\""
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].hpMax",
+       "A": "10",
+       "B": "22"
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].q",
+       "A": "113",
+       "B": "116"
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].r",
+       "A": "79",
+       "B": "78"
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].ruch",
+       "A": "3",
+       "B": "2"
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].typeId",
+       "A": "\"Zwiadowca\"",
+       "B": "\"Wojownik\""
+      }
+     ]
+    },
+    {
+     "turn": 8,
+     "expectedTurn": 8,
+     "equal": false,
+     "diffs": [
+      {
+       "path": "units[rec_5_city25_1tyixgb].category",
+       "A": "\"zwiadowca\"",
+       "B": "\"miecznik\""
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].hpMax",
+       "A": "10",
+       "B": "22"
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].r",
+       "A": "79",
+       "B": "78"
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].ruch",
+       "A": "3",
+       "B": "2"
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].typeId",
+       "A": "\"Zwiadowca\"",
+       "B": "\"Wojownik\""
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].hp",
+       "A": "(brak)",
+       "B": "22"
+      }
+     ]
+    },
+    {
+     "turn": 9,
+     "expectedTurn": 9,
+     "equal": false,
+     "diffs": [
+      {
+       "path": "units[rec_5_city25_1tyixgb].category",
+       "A": "\"zwiadowca\"",
+       "B": "\"miecznik\""
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].hpMax",
+       "A": "10",
+       "B": "22"
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].q",
+       "A": "118",
+       "B": "116"
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].r",
+       "A": "80",
+       "B": "78"
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].ruch",
+       "A": "3",
+       "B": "2"
+      },
+      {
+       "path": "units[rec_5_city25_1tyixgb].typeId",
+       "A": "\"Zwiadowca\"",
+       "B": "\"Wojownik\""
+      }
+     ]
+    }
+   ],
+   "legacy": false,
+   "mapDiffers": true
+  }
+ ],
+ "anyDiff": true,
+ "verdict": "PASS",
+ "done": true
+}

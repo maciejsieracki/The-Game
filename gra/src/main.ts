@@ -1370,7 +1370,7 @@ import {
   type SaveToLocalResult,
   type GraczSaveV3,
 } from './game/save';
-import { serializeMapForSave, buildGameMapFromSnapshot, isValidMapSnapshot } from './map/mapSnapshot';
+import { serializeMapForSave, isValidMapSnapshot } from './map/mapSnapshot';
 import { loadMapForSave } from './game/load-map-source';
 import {
   ensureFsaAutosaveReady, fsaRotatingAutosaveWrite, getFsaReadinessState,
@@ -33737,28 +33737,20 @@ async function boot(): Promise<void> {
       (window as any).__detHarness = {
         snapshotJson: (): string => JSON.stringify(buildSaveGameSnapshot('det-harness')),
         /**
-         * R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1: wczytanie jak z menu pauzy (ta sama sesja/seed, `fromInGamePause`): ta sama decyzja
-         * co `loadGameFromSlot` (`loadNeedsMapRebuild` + `liveMapDiffersFromSave`); gdy mapa wymaga odbudowy, heksy sa podmieniane
-         * IN PLACE z `mapSnapshot` (zamiennik `regenerateWorldForLoad` bez sceny 3D). Zwraca { rebuild }. Tylko civTest.
+         * R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1 (r4): wczytanie z menu pauzy PRODUKCYJNĄ ścieżką `loadGameFromSlot(slot, true)`
+         * (ta sama funkcja, ta sama decyzja `loadNeedsMapRebuild` + `liveMapDiffersFromSave`, ta sama odbudowa
+         * `regenerateWorldForLoad`). Hak tylko zapisuje JSON do slotu (saveToLocal) i woła produkcyjną funkcję; NIE powtarza
+         * warunku. Zwraca wartości decyzji policzone WYŁĄCZNIE do raportu (odczyt). Tylko civTest.
          */
-        restoreJsonAsPauseLoad: (s: string): { rebuild: boolean } => {
+        loadJsonAsPauseLoad: async (s: string, slot: string): Promise<{ rebuildByMode: boolean; mapDiffers: boolean }> => {
           const o = JSON.parse(s);
           const lp = newGameParamsForLoad(o);
           const ls = o.seed ?? lp?.seed ?? _gameSeed;
-          const rebuild = loadNeedsMapRebuild(lp, ls, true) || (!!lp && liveMapDiffersFromSave(o));
-          if (rebuild && o.mapSnapshot && isValidMapSnapshot(o.mapSnapshot)) {
-            const m2 = buildGameMapFromSnapshot(o.mapSnapshot);
-            for (const k of Object.keys(map.hexes)) {
-              const h: any = map.hexes[k];
-              const n: any = (m2.hexes as any)[k];
-              if (!n) continue;
-              for (const f of Object.keys(h)) delete h[f];
-              Object.assign(h, n);
-            }
-            ensureDepositEraMeta(map.hexes);
-          }
-          restoreGameFromSave(o);
-          return { rebuild };
+          const report = { rebuildByMode: loadNeedsMapRebuild(lp, ls, true), mapDiffers: !!lp && liveMapDiffersFromSave(o) };
+          const w = await saveToLocal(slot, o);
+          if (!w.ok) throw new Error('saveToLocal failed: ' + w.reason);
+          await loadGameFromSlot(slot, true);
+          return report;
         },
         restoreJson: (s: string): void => { restoreGameFromSave(JSON.parse(s)); },
         dropMetaKeys: (s: string, keys: string[]): string => { const o = JSON.parse(s); for (const k of keys) delete (o.meta as any)[k]; return JSON.stringify(o); },

@@ -1,0 +1,63 @@
+{
+ "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/savefix-r4/dist",
+ "cfg": "aionly",
+ "seed": 7,
+ "saves": [
+  3
+ ],
+ "k": 6,
+ "restore": "pause",
+ "expect": "equal",
+ "mode": "B",
+ "pageErrors": [],
+ "segments": [
+  {
+   "save": 3,
+   "restore": "pause",
+   "rebuild": false,
+   "turns": [
+    {
+     "turn": 4,
+     "expectedTurn": 4,
+     "equal": true,
+     "diffs": []
+    },
+    {
+     "turn": 5,
+     "expectedTurn": 5,
+     "equal": true,
+     "diffs": []
+    },
+    {
+     "turn": 6,
+     "expectedTurn": 6,
+     "equal": true,
+     "diffs": []
+    },
+    {
+     "turn": 7,
+     "expectedTurn": 7,
+     "equal": true,
+     "diffs": []
+    },
+    {
+     "turn": 8,
+     "expectedTurn": 8,
+     "equal": true,
+     "diffs": []
+    },
+    {
+     "turn": 9,
+     "expectedTurn": 9,
+     "equal": true,
+     "diffs": []
+    }
+   ],
+   "legacy": false,
+   "mapDiffers": true
+  }
+ ],
+ "anyDiff": false,
+ "verdict": "PASS",
+ "done": true
+}

@@ -8,8 +8,8 @@
  * sa pomijane po obu stronach (restore dopisuje domyslne pola, np. budowaLista:[], magazynZywnosci:0 -- sama reprezentacja),
  * stackGroupId (z Date.now) pomijany.
  *
- * Wczytanie sesji B: --restore pause (domyslnie) = __detHarness.restoreJsonAsPauseLoad (ta sama decyzja co loadGameFromSlot:
- * loadNeedsMapRebuild || liveMapDiffersFromSave; mapa odtwarzana z mapSnapshot) ; --restore plain = stary __detHarness.restoreJson
+ * Wczytanie sesji B: --restore pause (domyslnie) = __detHarness.loadJsonAsPauseLoad (zapis do slotu + PRODUKCYJNE
+ * loadGameFromSlot(slot, true): decyzja i odbudowa mapy z mapSnapshot jak w menu pauzy; r4) ; --restore plain = __detHarness.restoreJson
  * (BEZ mapy -- odwzorowuje stan sprzed naprawy; uzywane jako mutacja czerwona: test MUSI wtedy zglosic roznice).
  *
  * Uzycie (z gra/, dist poza repo; PW_PATH = katalog playwright):
@@ -40,6 +40,7 @@ const STATE = path.resolve(arg('state', path.join(DIST, 'continuity-state.json')
 const PW = process.env.PW_PATH || path.resolve(__dirname, '..', 'node_modules', 'playwright');
 const CHROME = process.env.CHROME_PATH || '/opt/pw-browsers/chromium';
 const BUNT = CFG === 'bunt';
+const PAUSE_SLOT = 'civtest-savefix-pause-load'; // slot, przez ktory produkcyjne loadGameFromSlot(slot, true) czyta zapis
 const LEGACY = arg('legacy', '0') === '1'; // zapis legacy: migawka BEZ mapSnapshot (zgodnosc wsteczna)
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), CFG, SEED, ...a);
@@ -209,7 +210,8 @@ async function main() {
     // Zgodnosc wsteczna: zapis bez mapSnapshot musi sie wczytac bez bledu, nie odbudowywac mapy i dac grywalny stan (rownosci z A NIE oczekujemy).
     try {
       const o = JSON.parse(ref.snap); delete o.mapSnapshot;
-      seg.rebuild = (await B.page.evaluate((s) => window.__detHarness.restoreJsonAsPauseLoad(s), JSON.stringify(o))).rebuild;
+      const rp = await B.page.evaluate((a) => window.__detHarness.loadJsonAsPauseLoad(a.s, a.slot), { s: JSON.stringify(o), slot: PAUSE_SLOT });
+      seg.rebuild = rp.rebuildByMode; seg.mapDiffers = rp.mapDiffers;
       await wait(300);
       const t = await B.endTurn();
       seg.legacyTurn = t; seg.legacyOk = seg.rebuild === false && t === ref.turns[0];
@@ -225,7 +227,8 @@ async function main() {
     if (RESTORE === 'plain') {
       await B.page.evaluate((s) => window.__detHarness.restoreJson(s), ref.snap);
     } else {
-      seg.rebuild = (await B.page.evaluate((s) => window.__detHarness.restoreJsonAsPauseLoad(s), ref.snap)).rebuild;
+      const rp = await B.page.evaluate((a) => window.__detHarness.loadJsonAsPauseLoad(a.s, a.slot), { s: ref.snap, slot: PAUSE_SLOT });
+      seg.rebuild = rp.rebuildByMode; seg.mapDiffers = rp.mapDiffers;
     }
     await wait(300);
     for (let i = 0; i < kUse; i++) {

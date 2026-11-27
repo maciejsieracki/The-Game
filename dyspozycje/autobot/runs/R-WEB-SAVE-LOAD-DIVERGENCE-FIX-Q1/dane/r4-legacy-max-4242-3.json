@@ -1,0 +1,27 @@
+{
+ "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/savefix-r4/dist",
+ "cfg": "max",
+ "seed": 4242,
+ "saves": [
+  3
+ ],
+ "k": 6,
+ "restore": "pause",
+ "expect": "equal",
+ "mode": "B",
+ "pageErrors": [],
+ "segments": [
+  {
+   "save": 3,
+   "restore": "pause",
+   "rebuild": false,
+   "turns": [],
+   "legacy": true,
+   "mapDiffers": false,
+   "legacyTurn": 4,
+   "legacyOk": true
+  }
+ ],
+ "verdict": "PASS",
+ "done": true
+}
