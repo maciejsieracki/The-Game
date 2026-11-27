@@ -1,3 +1,9 @@
+## ROBOCZA 4bd55c32 -- 2026-11-27 -- FALA 932: Wczytanie zapisu z menu pauzy: gra odtwarza mapę z zapisu i przebieg po wczytaniu jest taki sam jak bez wczytania (testowa)
+
+- wczytanie zapisu z menu pauzy w tej samej grze (ten sam seed, rozmiar, typ mapy) zostawiało mapę ze zmianami po zapisie (nakładki, lasy); teraz gdy mapa żywa różni się od zapisanej, jest odbudowywana z zapisu jak przy wczytaniu z menu głównego; zapisy bez mapSnapshot bez zmian; dodatkowy hak testowy civTest
+- Weryfikacja: tsc 0; logic 213/213; save-load-sort 4/4; determinism-save-load-resume PASS; society-breakdown 56/0; FC: ai-test 297/0, wiring 267/0, culture-religion 108/0, plus10 72/0 i 190/0, rebellion 37/0 i 24/0; live B==A 6/6 tur (maksimum, seed 4242, zapis po t3), mutacja czerwona 6/6 rozjazd, zapis legacy bez mapSnapshot PASS
+- Limity: NIE ZMIERZONO: 13 z 16 komórek macierzy (bunt, seed 7 t10, default itd.), klik w UI menu pauzy i render 3D po wczytaniu, A==A' osobno; test live save-load-continuity nie wpięty w bramkę
+
 ## ROBOCZA edbfe177 -- 2026-11-27 -- FALA 931: Stolica po buncie lub cesji: przejęcie faktycznej stolicy daje plunder i sukcesję (testowa)
 
 - przejęcie faktycznej stolicy (wg capitalCityIdForOwner) uruchamia przejęcie stolicy (plunder skarbca + sukcesja) także gdy jawny wpis stolicy jest nieaktualny po buncie, cesji lub dwóch buntach; przejęcie ostatniego miasta będącego faktyczną stolicą przy nieaktualnym wpisie daje teraz eliminację
