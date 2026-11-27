@@ -40,6 +40,7 @@ const STATE = path.resolve(arg('state', path.join(DIST, 'continuity-state.json')
 const PW = process.env.PW_PATH || path.resolve(__dirname, '..', 'node_modules', 'playwright');
 const CHROME = process.env.CHROME_PATH || '/opt/pw-browsers/chromium';
 const BUNT = CFG === 'bunt';
+const LEGACY = arg('legacy', '0') === '1'; // zapis legacy: migawka BEZ mapSnapshot (zgodnosc wsteczna)
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), CFG, SEED, ...a);
 const { closeCivWelcome, prepareEndTurnGate } = require('./_live-ready.cjs');
@@ -203,7 +204,23 @@ async function main() {
   const kUse = Math.min(K, ref.dumps.length);
   let anyDiff = false;
   const B = await openSession(chromium, res);
-  const seg = { save: ref.save, restore: RESTORE, rebuild: null, turns: [] };
+  const seg = { save: ref.save, restore: RESTORE, rebuild: null, turns: [], legacy: LEGACY };
+  if (LEGACY) {
+    // Zgodnosc wsteczna: zapis bez mapSnapshot musi sie wczytac bez bledu, nie odbudowywac mapy i dac grywalny stan (rownosci z A NIE oczekujemy).
+    try {
+      const o = JSON.parse(ref.snap); delete o.mapSnapshot;
+      seg.rebuild = (await B.page.evaluate((s) => window.__detHarness.restoreJsonAsPauseLoad(s), JSON.stringify(o))).rebuild;
+      await wait(300);
+      const t = await B.endTurn();
+      seg.legacyTurn = t; seg.legacyOk = seg.rebuild === false && t === ref.turns[0];
+    } finally { await B.browser.close(); }
+    res.segments.push(seg);
+    res.verdict = seg.legacyOk && res.pageErrors.length === 0 ? 'PASS' : 'FAIL';
+    res.done = true; flush();
+    log('LEGACY rebuild=' + seg.rebuild + ' turn=' + seg.legacyTurn + ' pageErrors=' + res.pageErrors.length + ' VERDICT ' + res.verdict);
+    process.exitCode = res.verdict === 'PASS' ? 0 : 1;
+    return;
+  }
   try {
     if (RESTORE === 'plain') {
       await B.page.evaluate((s) => window.__detHarness.restoreJson(s), ref.snap);

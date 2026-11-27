@@ -1,0 +1,25 @@
+{
+ "cfg": "max",
+ "seed": 4242,
+ "saves": [
+  3
+ ],
+ "k": 6,
+ "restore": "pause",
+ "expect": "equal",
+ "mode": "B",
+ "pageErrors": [],
+ "segments": [
+  {
+   "save": 3,
+   "restore": "pause",
+   "rebuild": false,
+   "turns": [],
+   "legacy": true,
+   "legacyTurn": 4,
+   "legacyOk": true
+  }
+ ],
+ "verdict": "PASS",
+ "done": true
+}
