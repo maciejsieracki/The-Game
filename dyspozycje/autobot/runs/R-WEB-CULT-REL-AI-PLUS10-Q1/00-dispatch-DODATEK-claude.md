@@ -19,3 +19,15 @@ gra-robocza/, gra-kanon/, dyspozycje/WERSJE.md, manifest, rust-port/, npm run bu
 tsc 0; logic 213; tech-tree 20; research 33; unit-replace; combat 6; ai-test 297/0; testy kultury/społeczeństwa/ai-city-order-need po aktualizacji z mutacjami czerwonymi.
 ## Binarne kryterium
 AI: G=+10 stałe (+10/+16/+23 wg epoki) na każdym poziomie, D bez zmian; gracz bez zmian; null bez zmian (ai-test 297/0); testy z mutacjami czerwonymi; pomiar PRZED/PO na poziomie maksymalnym z liczbami.
+
+---
+# DODATEK (korekta właściciela 2026-11-27, po starcie rundy 1) — PLUS GRACZA rośnie z epoką ADDYTYWNIE
+Cytat właściciela: „Dla gracza w zależności od epoki też jest więcej, tylko proporcjonalnie, jeżeli zaczyna z poziomu zero, no to nie jest szesnaście, tylko sześć w drugiej epoce i trzynaście w trzeciej epoce. Po prostu ta różnica jest dodawana do pierwszej epoki.”
+ZNACZENIE: plus (G) rośnie z epoką o TĘ SAMĄ bezwzględną różnicę, którą daje skala epok dla +10 (x_e − x_1 = 10·(skala_epoki − 1) = 0 / +6 / +13), DODANĄ do wartości epoki 1 — a NIE mnożony przez skalę. Dotyczy GRACZA i AI:
+- AI (każdy poziom): G = 10 / 16 / 23 (epoka 1/2/3) — identycznie jak mnożenie.
+- Gracz łatwy: G = 10 / 16 / 23 (identycznie jak dziś).
+- Gracz normalny: G = 5 / 11 / 18 (dziś w kodzie mnożenie: 5 / 8 / 11,5 — ZMIANA).
+- Gracz trudny: G = 0 / 6 / 13 (dziś w kodzie mnożenie: 0 / 0 / 0 — ZMIANA).
+MINUSY (D) bez zmian względem dzisiejszego kodu (mnożone przez skalę epoki): łatwy −10/−16/−23, normalny −15/−24/−34,5, trudny −20/−32/−46 — dla gracza i AI.
+Wartość linii (Kultura i Religia osobno, do Szczęścia i do Prawa) = D_e + (G_e − D_e)·udział_własnej, D_e = D·skala_epoki, G_e jak wyżej (G_e = G_epoka1 + 10·(skala_epoki − 1)). Poziom null (zgodność, stare zapisy) bez zmian; poziom łatwy dla gracza ma pozostać dokładnie dzisiejszym wzorem (bit-w-bit).
+Testy: tabela epok 1/2/3 dla gracza i AI na wszystkich poziomach (powyższe wartości G i D), mutacje czerwone (G gracza mnożone zamiast dodawane → czerwone; AI = gracz → czerwone).
