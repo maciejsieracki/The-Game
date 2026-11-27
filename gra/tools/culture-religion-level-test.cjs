@@ -4,7 +4,8 @@
  *
  * Ustawienie „Kultura i religia” (Mały wpływ łatwy / Neutralny normalny / Duży wpływ trudny):
  *   • linia Kultury i linia Religii liczą się do Szczęścia ORAZ do Prawa miasta;
- *   • wartość linii = (D + (G − D) · udział własnej) · skala epoki;
+ *   • wartość linii = D_e + (G_e − D_e) · udział własnej, D_e = D − Δ, G_e = G + Δ, Δ = 10·(skala−1)
+ *     (R-WEB-CULT-REL-AI-PLUS10-Q1 runda 2: formuła ADDYTYWNA dla gracza i AI);
  *   • łatwy = dziś (2·x·udział − x), brak pola (zgodność) = dziś, bez linii Prawa.
  *
  * Zgodnie ze stałą regułą właściciela (2026-11-26) testy silnika idą na poziomie MAKSYMALNYM
@@ -98,9 +99,9 @@ eq('trudny 0% x1', M.cultureReligionLineValue('trudny', 1, 0), -20);
 eq('trudny 100% x1 (zero, brak plusów)', M.cultureReligionLineValue('trudny', 1, 1), 0);
 eq('trudny 50% x1', M.cultureReligionLineValue('trudny', 1, 0.5), -10);
 // skala epok ×1,6 i ×2,3
-eq('trudny 0% epoka 2 (×1,6)', M.cultureReligionLineValue('trudny', X2 / X1, 0), -32);
-eq('trudny 0% epoka 3 (×2,3)', M.cultureReligionLineValue('trudny', X3 / X1, 0), -46);
-eq('normalny 100% epoka 2 (×1,6)', M.cultureReligionLineValue('normalny', X2 / X1, 1), 8);
+eq('trudny 0% epoka 2 (addytywnie: −26)', M.cultureReligionLineValue('trudny', X2 / X1, 0), -26);
+eq('trudny 0% epoka 3 (addytywnie: −33)', M.cultureReligionLineValue('trudny', X3 / X1, 0), -33);
+eq('normalny 100% epoka 2 (addytywnie: +11)', M.cultureReligionLineValue('normalny', X2 / X1, 1), 11);
 // udział spoza [0,1] jest ścinany
 eq('trudny udział >1 ścięty', M.cultureReligionLineValue('trudny', 1, 7), 0);
 eq('trudny udział <0 ścięty', M.cultureReligionLineValue('trudny', 1, -3), -20);
@@ -131,13 +132,13 @@ function lineOf(bd, id) {
 M.setCulturaReligiaLevel('trudny');
 eq('stan: trudny ustawiony', M.getCulturaReligiaLevel(), 'trudny');
 
-// Kultura: udział 0% (100% obcej) → −20 w epoce 1, −32 w epoce 2, −46 w epoce 3.
+// Kultura: udział 0% (100% obcej) → −20 w epoce 1, −26 w epoce 2, −33 w epoce 3.
 let bd = M.computeHappinessBreakdown(baseHappy({ ownCultureShare: 0, ownReligionShare: 0.5 }), SOCIETY);
 eq('trudny Szczescie: kultura 0% epoka1 = −20', lineOf(bd, 'kultura'), -20);
 bd = M.computeHappinessBreakdown(baseHappy({ era: 2, ownCultureShare: 0, ownReligionShare: 0.5 }), SOCIETY);
-eq('trudny Szczescie: kultura 0% epoka2 = −32', lineOf(bd, 'kultura'), -32);
+eq('trudny Szczescie: kultura 0% epoka2 = −26', lineOf(bd, 'kultura'), -26);
 bd = M.computeHappinessBreakdown(baseHappy({ era: 3, ownCultureShare: 0, ownReligionShare: 0.5 }), SOCIETY);
-eq('trudny Szczescie: kultura 0% epoka3 = −46', lineOf(bd, 'kultura'), -46);
+eq('trudny Szczescie: kultura 0% epoka3 = −33', lineOf(bd, 'kultura'), -33);
 // Kultura 100% własnej na trudnym = 0 → linia pominięta (brak plusów).
 bd = M.computeHappinessBreakdown(baseHappy({ ownCultureShare: 1, ownReligionShare: 0.5 }), SOCIETY);
 check('trudny Szczescie: kultura 100% nie daje plusa', lineOf(bd, 'kultura') === undefined, lineOf(bd, 'kultura'));
@@ -239,10 +240,10 @@ const happyBase = { difficulty: 'hard', era: 1, population: 3, buildingZadowolen
 
 M.setCulturaReligiaLevel('trudny');
 let r2 = M.evaluateOrderFromBreakdown({ ...happyBase, era: 2, ownCultureShare: 0 }, lawInp({ era: 2 }), SOCIETY, 'hard');
-eq('trudny Prawo: kultura 0% epoka2 = −32', lawLine(r2, 'kultura_prawo'), -32);
+eq('trudny Prawo: kultura 0% epoka2 = −26', lawLine(r2, 'kultura_prawo'), -26);
 let r3 = M.evaluateOrderFromBreakdown({ ...happyBase, era: 3, ownCultureShare: 0 }, lawInp({ era: 3 }), SOCIETY, 'hard');
-eq('trudny Prawo: kultura 0% epoka3 = −46', lawLine(r3, 'kultura_prawo'), -46);
-eq('trudny Prawo: religia epoka3 (haRel 0 → 50%) = −23', lawLine(r3, 'religia_prawo'), -23);
+eq('trudny Prawo: kultura 0% epoka3 = −33', lawLine(r3, 'kultura_prawo'), -33);
+eq('trudny Prawo: religia epoka3 (haRel 0 → 50%) = −10', lawLine(r3, 'religia_prawo'), -10);
 
 // Źródło udziału religii w Prawie = to samo co w Szczęściu (haRel, bez ownReligionShare).
 const rHa = M.evaluateOrderFromBreakdown({ ...happyBase, haRel: -1, ownCultureShare: 1 }, lawInp({}), SOCIETY, 'hard');
@@ -258,14 +259,14 @@ const rEasy = M.evaluateOrderFromBreakdown({ ...happyBase, ownCultureShare: 1, o
 eq('łatwy Prawo: kultura 100% = +10', lawLine(rEasy, 'kultura_prawo'), 10);
 eq('łatwy Prawo: religia 100% = +10', lawLine(rEasy, 'religia_prawo'), 10);
 
-// Poziom normalny: Szczęście i Prawo (kultura 0% = −15, 100% = +5; epoka 2 ×1,6 → +8).
+// Poziom normalny: Szczęście i Prawo (kultura 0% = −15, 100% = +5; epoka 2 addytywnie → +11).
 M.setCulturaReligiaLevel('normalny');
 const nSz = M.computeHappinessBreakdown({ ...happyBase, ownCultureShare: 0, ownReligionShare: 1 }, SOCIETY);
 eq('normalny Szczescie: kultura 0% = −15', lineOf(nSz, 'kultura'), -15);
 const nSz2 = M.computeHappinessBreakdown({ ...happyBase, era: 2, ownCultureShare: 1, ownReligionShare: 1 }, SOCIETY);
-eq('normalny Szczescie: kultura 100% epoka2 = +8', lineOf(nSz2, 'kultura'), 8);
+eq('normalny Szczescie: kultura 100% epoka2 = +11', lineOf(nSz2, 'kultura'), 11);
 const nPr = M.evaluateOrderFromBreakdown({ ...happyBase, era: 2, ownCultureShare: 1, ownReligionShare: 1 }, lawInp({ era: 2 }), SOCIETY, 'hard');
-eq('normalny Prawo: kultura 100% epoka2 = +8', lawLine(nPr, 'kultura_prawo'), 8);
+eq('normalny Prawo: kultura 100% epoka2 = +11', lawLine(nPr, 'kultura_prawo'), 11);
 
 // Mutacje czerwone uruchomione na źródle: patrz raport obrony (30-obrona-claude.md).
 M.setCulturaReligiaLevel('trudny');

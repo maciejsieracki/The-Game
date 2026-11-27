@@ -119,7 +119,10 @@ eq('gracz normalny 100% ×1 = +5', M.cultureReligionLineValue('normalny', 1, 1, 
 eq('gracz latwy 100% ×1 = +10', M.cultureReligionLineValue('latwy', 1, 1, B, true), 10);
 eq('gracz trudny 0% ×1 = −20', M.cultureReligionLineValue('trudny', 1, 0, B, true), -20);
 eq('gracz domyślnie = gracz (trudny 100% = 0)', M.cultureReligionLineValue('trudny', 1, 1), 0);
-eq('gracz trudny 100% epoka 2 = 0 (brak plusów)', M.cultureReligionLineValue('trudny', X2 / X1, 1, B, true), 0);
+eq('gracz trudny 100% epoka 2 = +6 (addytywnie, runda 2)', M.cultureReligionLineValue('trudny', X2 / X1, 1, B, true), 6);
+eq('gracz trudny 100% epoka 3 = +13 (addytywnie)', M.cultureReligionLineValue('trudny', X3 / X1, 1, B, true), 13);
+eq('gracz trudny 0% epoka 2 = −26 (addytywnie)', M.cultureReligionLineValue('trudny', X2 / X1, 0, B, true), -26);
+eq('gracz normalny 100% epoka 2 = +11 (addytywnie)', M.cultureReligionLineValue('normalny', X2 / X1, 1, B, true), 11);
 
 // culturaReligiaBoundsForOwner: AI → G_ai, gracz → G.
 eq('bounds AI trudny G', M.culturaReligiaBoundsForOwner(B.trudny, false).G, 10);

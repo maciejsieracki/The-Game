@@ -6,16 +6,16 @@
 //   • Neutralny (normalny): D = −15, G = +5
 //   • Duży wpływ (trudny):  D = −20, G = 0
 //
-// GRACZ (człowiek, także hotseat): BEZ ZMIAN względem dzisiejszej wersji:
-//   wartość = (D + (G − D) · udział_własnej) · skala_epoki, skala_epoki = x_epoki / x_epoki1
-//   (10/16/23 → ×1,0 / ×1,6 / ×2,3).
-//
-// AI (cywilizacja komputera), decyzja właściciela 2026-11-27 („plus dziesięć zawsze stałe
-// miało być tylko dla AI”, „plus dziesięć rośnie w każdej epoce”, „minusy też rosną
+// WSPÓLNA FORMUŁA ADDYTYWNA (dla GRACZA i AI), potwierdzona przez właściciela 2026-11-27
+// (DODATEK 4 / runda 2: „dla gracza też rośnie z epoką, tylko addytywnie”, „minusy też rosną
 // addytywnie”): Δ = x_epoki − x_epoki1 (0 / +6 / +13 punktów), i:
-//   D_AI(e) = D − Δ        (łatwy −10/−16/−23, normalny −15/−21/−28, trudny −20/−26/−33)
-//   G_AI(e) = G_AI + Δ     (+10/+16/+23 na każdym poziomie)
-//   wartość = D_AI(e) + (G_AI(e) − D_AI(e)) · udział_własnej
+//   D_e = D − Δ            (minus wg poziomu podmiotu: łatwy −10/−16/−23, normalny −15/−21/−28,
+//                           trudny −20/−26/−33)
+//   G_e = G_podmiotu + Δ   (plus: AI +10/+16/+23 na każdym poziomie; gracz łatwy 10/16/23,
+//                           normalny 5/11/18, trudny 0/6/13)
+//   wartość = D_e + (G_e − D_e) · udział_własnej
+//
+// Poziom GRACZA steruje plusem i minusem gracza; poziom AI steruje minusem AI (plus AI stały).
 //
 // Stan poziomu: `null` = brak pola (stary zapis / tryb zgodności) — wtedy Szczęście liczy się
 // dokładnie jak dziś i linii Prawa NIE ma. Poziom AI: brak pola = taki sam jak poziom gracza.
@@ -94,8 +94,8 @@ export function getCulturaReligiaLevelForOwner(ownerIsHuman: boolean): CulturaRe
 /**
  * Wartość jednej linii (Kultura albo Religia) dla poziomu, epoki i udziału własnej [0,1].
  * `scaleEra` = x_epoki / x_epoki1 (np. 1,0 / 1,6 / 2,3). Udział spoza [0,1] jest ścinany.
- * `ownerIsHuman` (domyślnie true = gracz): true → wzór mnożony przez skalę (dziś, bez zmian);
- * false = AI → wzór addytywny: Δ = basePts·(skala−1) dodane do granic epoki 1 (D − Δ, GAi + Δ).
+ * `ownerIsHuman` (domyślnie true = gracz): wybiera G gracza (G) albo plus AI (GAi).
+ * Formuła addytywna dla obu: Δ = basePts·(skala−1); D − Δ oraz G_podmiotu + Δ.
  */
 export function cultureReligionLineValue(
   level: CulturaReligiaLevel,
@@ -108,11 +108,8 @@ export function cultureReligionLineValue(
   const raw = bounds[level];
   const s = Number.isFinite(udzialWlasnej) ? Math.min(1, Math.max(0, udzialWlasnej)) : 1;
   const k = Number.isFinite(scaleEra) ? scaleEra : 1;
-  if (ownerIsHuman) {
-    return (raw.D + (raw.G - raw.D) * s) * k;
-  }
   const delta = basePts * (k - 1);
-  const dAi = raw.D - delta;
-  const gAi = raw.GAi + delta;
-  return dAi + (gAi - dAi) * s;
+  const dE = raw.D - delta;
+  const gE = (ownerIsHuman ? raw.G : raw.GAi) + delta;
+  return dE + (gE - dE) * s;
 }

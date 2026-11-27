@@ -5,12 +5,13 @@
  * Macierz 3×3 „Kultura i religia”: poziom GRACZA × poziom AI, epoki 1–3, linie Kultury i Religii.
  *
  * Tabele (wartość linii przy 100% / 0% własnej; epoki 1/2/3; skala 1,0 / 1,6 / 2,3):
- *   GRACZ (człowiek, także hotseat) — BEZ ZMIAN względem poprzedniej wersji, mnożenie przez skalę:
- *     łatwy   G +10/+16/+23   D −10/−16/−23
- *     normalny G  +5/+8/+11,5  D −15/−24/−34,5
- *     trudny  G   0/ 0/ 0      D −20/−32/−46
- *   AI (cywilizacja komputera) — addytywnie: Δ = 0/+6/+13 do granic epoki 1:
- *     plus G_AI +10/+16/+23 na KAŻDYM poziomie
+ *   Wspólna formuła ADDYTYWNA (runda 2, DODATEK 4): Δ = 0/+6/+13 dodane do granic epoki 1;
+ *   D_e = D − Δ, G_e = G_podmiotu + Δ, wartość = D_e + (G_e − D_e)·udział.
+ *   GRACZ (człowiek, także hotseat):
+ *     łatwy    G +10/+16/+23   D −10/−16/−23
+ *     normalny G  +5/+11/+18   D −15/−21/−28
+ *     trudny   G   0/ +6/+13   D −20/−26/−33
+ *   AI (cywilizacja komputera): plus G_AI +10/+16/+23 na KAŻDYM poziomie;
  *     minus D   łatwy −10/−16/−23; normalny −15/−21/−28; trudny −20/−26/−33
  *
  * Testy wartości: `cultureReligionLineValue` i pełne `computeHappinessBreakdown` (linia kultury)
@@ -77,8 +78,8 @@ function eq(name, got, want) {
 // Oczekiwane wartości (epoki 1/2/3).
 const PLAYER = {
   latwy: { G: [10, 16, 23], D: [-10, -16, -23] },
-  normalny: { G: [5, 8, 11.5], D: [-15, -24, -34.5] },
-  trudny: { G: [0, 0, 0], D: [-20, -32, -46] },
+  normalny: { G: [5, 11, 18], D: [-15, -21, -28] },
+  trudny: { G: [0, 6, 13], D: [-20, -26, -33] },
 };
 const AI = {
   latwy: { G: [10, 16, 23], D: [-10, -16, -23] },
