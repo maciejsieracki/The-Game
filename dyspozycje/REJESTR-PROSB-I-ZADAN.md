@@ -11356,3 +11356,7 @@ R-WEB-MAP-ISLANDS-ORPHAN-FIX-Q1 (wf_d7ad9b86-4bd; Operator Haiku → Evaluator S
 ### 2026-11-27 · AIREBEL FC PASS-WITH-NOTES (a3ffe64a7) → runda 3 · wpis wg zegara maszyny `date -u` 07:2x
 - FC: PASS-WITH-NOTES na a3ffe64a7 (bramki zielone: tsc 0, gate 31/0, ai-test 297/0, logic 213, tech-tree 20, research 33, combat 6; mutacje wykryte). Nota 4: bunt OSTATNIEGO miasta AI nie wywołuje eliminateOwner (zombie „bez miast”) — ryzyko blokujące deploy. Nota 2: wpis buntu AI w dzienniku Wydarzeń, nie w „Wydarzeniach na świecie” — przyjęte jako odstępstwo (informacja dla właściciela, bez zmiany).
 - Decyzja inżynierska: runda 3 tego samego ID (Haiku), wariant ochronny: ostatnie miasto AI się nie buntuje. DODATEK r3 w dispatchu. Refs: refs/keep/AIREBEL-{op,eval,obrona,fc}.
+
+### 2026-11-27 · LIVEGATE2 start (R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1) · wpis wg zegara maszyny `date -u` 07:5x
+- Polecenie właściciela: wolny slot (3 z 4) — puścić kolejny temat + porządek na dysku. Dysk: usunięto test-tmp starsze niż 90 min (/tmp: aion/aiow/cgm1/playwright/chromium/civ-*/…) i podkatalogi scratchpadu >2 h + worktree RIVERSEP1 r3 (ref refs/keep/RIVERSEP1-r3-fc); wolne 13→18 GB. Pliki środowiska (code-sign, env-manager, claude-code.log) nietknięte.
+- Temat: kontynuacja #108 (lista z FC LIVEGATE): bramka „Zakończ turę” w ?playtest=mapa blokuje testy przed ekranem powitalnym. Operator HAIKU, cand = origin/main. Priorytet 3 (testy) — brak tematu gry gotowego bez decyzji właściciela (pytanie 40) i bez kolizji plików z AIREBEL/AIPLUS10.
