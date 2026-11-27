@@ -45,7 +45,7 @@ print('max wojen gracza wg typu', {t: max_war_type[(True, t)] for t in ('natural
 print('max wojen AI wg typu', {t: max_war_type[(False, t)] for t in ('naturalna', 'epoki')})
 print('tury z wojna gracza', player_war_turns, 'tury naruszenia (>1 tego samego typu)', player_viol)
 print('max sojuszy AI<->AI naraz (z pairs)', max_ally_ai, '| licznik sojuszeAiAi max', max(x[2] for x in ally_series))
-print('tury z sojuszem AI<->AI', sum(1 for x in ally_series if x[1] > 0), '| tury z >2 sojuszami', sum(1 for x in ally_series if x[1] > 2))
+print('tury z sojuszem AI<->AI', sum(1 for x in ally_series if x[1] > 0), '| tury z >2 parami sojuszy w calym swiecie (NIE kryterium limitu; kryterium = linia "tury z >2 na cywilizacje")', sum(1 for x in ally_series if x[1] > 2))
 print('ostatni licznik zerwan', (rows[-1].get('liczniki') or {}).get('zerwaniaZeroZaufania'))
 # Limit 2 dotyczy sojuszy NA CYWILIZACJE (nie globalnie): licznik per cywilizacja w kazdej turze.
 max_ally_civ = 0

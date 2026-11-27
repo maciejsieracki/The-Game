@@ -4,7 +4,9 @@ Data: 2026-11-27. UWAGA: sekcje poniżej do „KOREKTY” opisują dane STAREJ b
 Operator: Haiku 5.5, runda 1/5. Zmiany w `gra/src`: brak. Zmiany w `gra/tools`: jeden parametr w runnerze (`diplomacy-harder-measure-run.cjs`: `--unit-pace`, `--culture`; domyślne wartości = dotychczasowe zachowanie).
 Dane surowe: `dyspozycje/autobot/runs/R-WEB-VERIFY-LIVE-MAX-Q2/dane/` (jsonl + sha256 w sekcji „Dowody”).
 
-## Ustawienia pomiarów (poziom maksymalny — stan faktyczny)
+> **STAN WIĄŻĄCY (runda 3, baza `116a8e5fa`):** jedynym obowiązującym wynikiem dla pozycji 1–2 jest sekcja **„RUNDA 3 (kontynuacja po restarcie kontenera)”** na końcu pliku, wraz z tabelą sha256 w tej sekcji. Wszystkie sekcje oznaczone w nagłówku jako **HISTORIA — NIEAKTUALNE** opisują starą bazę `01795c329` albo wcześniejsze rundy; ich liczby i zdania „NIE ZMIERZONO” są zastąpione przez RUNDĘ 3 i nie należy ich czytać jako stanu bieżącego.
+
+## HISTORIA — NIEAKTUALNE (runda 1, stara baza 01795c329): Ustawienia pomiarów
 
 | Ustawienie | Wymagane (reguła właściciela) | Faktycznie w biegu | Odczyt potwierdzający |
 |---|---|---|---|
@@ -28,7 +30,7 @@ Uwaga: w Q1 biegi szły na Koszty jednostek „Niski”; ten dokument zastępuje
 | `tools/combat-test.cjs` | COMBAT TEST: 6/6 pass |
 | `tools/ai-test.cjs` | ai-test: 297 passed, 0 failed |
 
-## Tabela wyników
+## HISTORIA — NIEAKTUALNE (runda 1, stara baza 01795c329): Tabela wyników
 
 | Pomiar | Wynik | Poziom ustawień | NIE ZMIERZONO |
 |---|---|---|---|
@@ -38,13 +40,13 @@ Uwaga: w Q1 biegi szły na Koszty jednostek „Niski”; ten dokument zastępuje
 | 4. Cesja >1 miasta na żywo | — | — | **NIE ZMIERZONO.** Brak skryptu z hakiem civTest (pokój z cesją 2 miast) w tej rundzie. |
 | 5. FORTRING (runner FALA 902; wymuszenie fortów; round-trip zapisu przy flagach ON) | — | — | **NIE ZMIERZONO.** Runner nie został uruchomiony w tej rundzie. |
 
-## Czas i wykonanie
+## HISTORIA — NIEAKTUALNE (runda 1): Czas i wykonanie
 
 - Bieg seeda 4242: od tury 2 do 150, segmenty `--stop-at` z zapisem slotu (`dipl-measure-seed4242-all1-lvl-trudna`), wznowienia po 1–2 nieudanych próbach Chromium (`Target page … has been closed`) na segment; ciągłość wierszy potwierdzona (149 wierszy, tury 2–150).
 - Tempo zależało od obciążenia maszyny (load 5–8 na 4 rdzeniach): od ~2 s/turę (początek) do 2–8 min/turę (późniejsze tury z wieloma wojnami i wznowieniami). Stąd brak seeda 7 i biegów porównawczych.
 - Bramki uruchomione w tej rundzie (wyżej), nie odtworzone z Q1.
 
-## Dowody (dane w repo)
+## HISTORIA — NIEAKTUALNE (runda 1, stara baza 01795c329): Dowody (dane w repo). Aktualne sha256 danych rundy 3: sekcja RUNDA 3.
 
 Folder: `dyspozycje/autobot/runs/R-WEB-VERIFY-LIVE-MAX-Q2/dane/`
 
@@ -60,13 +62,13 @@ Odtworzenie analizy: `python3 -I analiza-limitow-q2.py seed4242-max/seed4242-all
 
 Odtworzenie biegu (z `gra/`, bundle w katalogu poza repo): `--diplo-level trudna --all-flags 1 --unit-pace wysoki --culture trudny` (dla maksimum kultury; seed 4242 wykonano bez `--culture`, czyli na `latwy`).
 
-## Wniosek dla orkiestratora
+## HISTORIA — NIEAKTUALNE (runda 1): Wniosek dla orkiestratora
 
 1. Pozycje 1 i 2 zmierzone tylko dla seeda 4242 i tylko z kulturą na Łatwy. Dla pełnej zgodności z regułą maksimum trzeba powtórzyć seed 4242 z `--culture trudny` (150 tur) oraz wykonać seed 7 i porównania Łatwa/Normalna (t100).
 2. Pozycje 3–5 pozostają NIE ZMIERZONO; wymagają nowego haka civTest (Targowisko, cesja >1 miasta) i uruchomienia runnera FORTRING.
 3. Dane nie są zmieniane regułami gry; zmieniony jest tylko runner (nowe opcje, domyślne bez zmian).
 
-## Runda obrony (Operator, runda 2/5) — uzupełnienie
+## HISTORIA — NIEAKTUALNE (runda 2, stara baza 01795c329): Runda obrony — uzupełnienie
 
 Pełna odpowiedź na zarzuty Evaluatora: `dyspozycje/autobot/runs/R-WEB-VERIFY-LIVE-MAX-Q2/30-obrona-claude.md`.
 
@@ -79,7 +81,7 @@ Nowe biegi na poziomie maksymalnym (Trudna, Wysoki ×4, flagi ON, Kultura trudny
 
 Uwaga (nie rozstrzygnięte): analiza `analiza-limitow-q2.py` liczy „naruszenie” jako >1 wojnę tego samego typu z graczem. Moduł `diplomacy-war-limit.ts` mówi, że gracz jako deklarujący nie jest ograniczany. Dane jsonl nie zawierają pola deklarującego, więc nie da się odróżnić wojny wypowiedzianej przez autopilota gracza od wojny AI. Wynik „41 tur” jest więc obserwacją, nie dowodem naruszenia.
 
-## KOREKTA — baza e6f3fd4b6 (runda obrony 2, Operator Haiku 5.5)
+## HISTORIA — NIEAKTUALNE (runda 2, baza e6f3fd4b6; zastąpione przez RUNDĘ 3): KOREKTA — baza e6f3fd4b6
 
 Baza rundy 2: origin/main `e6f3fd4b6d98799a2d622546a1863af77541552a` (po FALI 928). Pliki pracy przeniesione z 522f5cb929f121cfc5b680d7305591f6c3fea1b3 (`git checkout <sha> -- …`), zero zmian w `gra/src`.
 
@@ -130,6 +132,10 @@ Ustawienia (readback w logu KAŻDEGO udanego segmentu `.txt`): `diplo-level=trud
 
 Uwaga do skryptu: linia „tury z >2 sojuszami” (seed 7: 29) liczy pary sumarycznie w świecie, NIE per cywilizacja; kryterium limitu to linia „tury z >2 na cywilizację” = 0.
 
+Etykieta w `analiza-limitow-q2.py` (linia „tury z >2 sojuszami”) została doprecyzowana w tej rundzie — tylko napis, logika bez zmian — i wszystkie wyniki r3 przeliczono tym skryptem (sha256 poniżej). Stare pliki `.wynik.txt` z bazy 01795c329 mają starą etykietę i służą tylko jako historia.
+
+Uwaga o pokryciu limitu wojen (seed 7): gracz miał 0 wojen typu „naturalna” w każdej turze (`max wojen gracza wg typu {'naturalna': 0, 'epoki': 1}`). Limit „max 1 naturalna” NIE został więc na seedzie 7 wystawiony na próbę; 0 naruszeń na seedzie 7 dotyczy wojen epoki (max 1, dotrzymany) i dla wojny naturalnej jest słabszym dowodem. Jedyny pomiar wojny naturalnej gracza przy limicie 1 to seed 4242 (max 1, gracz w wojnie 66 tur).
+
 Limit sojuszy po raz pierwszy zmierzony dla wartości >0 przy maksimum: seed 7 osiągnął 2 na cywilizację i nie przekroczył.
 
 ### Porównanie poziomów Dyplomacji (seed 4242, t2–100, Wysoki ×4, kultura trudny, flagi ON)
@@ -142,7 +148,7 @@ Limit sojuszy po raz pierwszy zmierzony dla wartości >0 przy maksimum: seed 7 o
 
 Dodatkowo seed 7 Trudna t≤100: 26 tur z sojuszem, pierwszy t75, max 3 pary naraz, max 2 na cywilizację.
 
-Wniosek: liczba i tempo powstawania sojuszy rośnie monotonicznie z łagodnością poziomu (Łatwa > Normalna > Trudna). Zgodne ze zdaniem „Trudna (×3 kary / ÷3 bonusy) ogranicza sojusze” — **zamierzone, brak podstaw do podejrzenia błędu**. Jedno ziarno na porównanie (kierunek, nie wielkość; seed 7 Trudna pokazuje, że przy innym ziarnie Trudna też tworzy sojusze, 0 sojuszy z Q1 przy Niskim koszcie było zjawiskiem ziarna/ustawienia, nie twardym zerem).
+Wniosek: liczba i tempo powstawania sojuszy rośnie monotonicznie z łagodnością poziomu (Łatwa > Normalna > Trudna) — **wniosek kierunkowy, NIE ilościowy**: jedno ziarno (seed 4242) na poziom i gracz na autopilocie. Kierunek jest zgodny ze zdaniem „Trudna (×3 kary / ÷3 bonusy) ogranicza sojusze”, więc **nie ma podstaw do podejrzenia błędu**, ale wielkości różnic (64 / 42 / 7) nie wolno przenosić na inne ziarna bez dodatkowych biegów. Seed 7 Trudna (26 tur z sojuszem do t100) pokazuje, że przy innym ziarnie Trudna też tworzy sojusze; 0 sojuszy z Q1 przy Niskim koszcie było zjawiskiem ziarna/ustawienia, nie twardym zerem.
 
 ### Wynik biegu seed 7 do t150 (wznowienie)
 
@@ -160,3 +166,29 @@ Katalog `dyspozycje/autobot/runs/R-WEB-VERIFY-LIVE-MAX-Q2/dane/`: `seed4242-r3/`
 Bramki (r3, surowe wyjście): tsc exit 0; LOGIC OK (213/213); tech-tree-test 20 pass / 0 fail; research PASSED 33 / FAILED 0; unit-replace 21/21; combat sanity passed (6/6 wg poprzednich rund; ostatnia linia wyjścia „All sanity checks passed.”); ai-test 297 passed, 0 failed.
 
 Pozycje 3–5: → VLIVE3 (osobny temat; wykonany osobno, patrz rejestr).
+
+### Dowody rundy 3 (sha256, folder `dyspozycje/autobot/runs/R-WEB-VERIFY-LIVE-MAX-Q2/dane/`)
+
+Wiążąca tabela sha256 danych i wyników rundy 3 (baza 116a8e5fa). Sumy policzone `sha256sum` w tej rundzie.
+
+| Plik | sha256 |
+|---|---|
+| `seed4242-latwa-r3/seed4242-all1-lvl-latwa.jsonl` | `7840bd88373bb7c5a5724dff2e0c12e7e6285c7c54b72eaa4158d578dc66f0a9` |
+| `seed4242-latwa-r3/seed4242-all1-lvl-latwa.summary.json` | `58a09b46ebbcf20e7c31dc22be4f4b6c8646a3b5c3fdaa555cc162508c9ce85a` |
+| `seed4242-latwa-r3/seed4242-all1-lvl-latwa.state.json` | `a7f31d7d5362b9ffb7c84762344e798592a8ded847f04a3c4a9e815d42585cbd` |
+| `seed4242-normalna-r3/seed4242-all1-lvl-normalna.jsonl` | `8886d82e32536a905fb2fbd2c16fd0cae7621e70962609641dbff03a02592781` |
+| `seed4242-normalna-r3/seed4242-all1-lvl-normalna.summary.json` | `a69525fd92d772dd7f00f9f4ba847ea83aa696af6461ce24e89be9071efe03c8` |
+| `seed4242-normalna-r3/seed4242-all1-lvl-normalna.state.json` | `c2a72ddf4af1f5d5c3dc28e429bbae7419aaac643f0cc85f295882553dbe0b93` |
+| `seed7-r3/seed7-all1-lvl-trudna.jsonl` | `2653127730f7f31a2525269b513aea7dcbe41322ab9dc8eae968fc8765720c35` |
+| `seed7-r3/seed7-all1-lvl-trudna.summary.json` | `9c67b7f3ee23329e3b4a1cdcc60e9f19defdfc4ab8c0f3a2e0e57c12483ed42a` |
+| `seed7-r3/seed7-all1-lvl-trudna.state.json` | `d9bcc320ee96bf06fb02eea5a21007c908a5b7b7cebdfea89aedecd66ba17263` |
+| `seed4242-r3/seed4242-all1-lvl-trudna.jsonl` | `54497cd9c6a74ab562295852a7aadfcf38c6c6bf53137586b85790686074c787` |
+| `seed4242-r3/seed4242-all1-lvl-trudna.summary.json` | `d39be568340bf31010555e277795ed5e2269b4f990548d4fd40ce58308cb3a65` |
+| `seed4242-r3/seed4242-all1-lvl-trudna.state.json` | `37716d7906fb235e4ac3e49ce0b79187c74ef5d14455a70ac3432e7d8ca989c6` |
+| `analiza-limitow-q2.py` (po doprecyzowaniu etykiety) | `585d99889b27e046d5301c524b24a034ef7aff2fbb9a62679cd4d372b729f908` |
+| `analiza-limitow-q2.seed7-r3.wynik.txt` | `71a12fb72782d0250f7211f64c6e6c04f85af71df7904927ed14fe6f2f549159` |
+| `analiza-limitow-q2.seed4242-latwa-r3.wynik.txt` | `7c5680020f7779c3da6c4d898cddfad3b6235d8101d3c026688911a0eed5bab7` |
+| `analiza-limitow-q2.seed4242-normalna-r3.wynik.txt` | `9e93066ab918d5f79ff53fdcdfb02d623ed16724e384a48d3d35dbaa5d351dd9` |
+| `analiza-limitow-q2.seed4242-r3.wynik.txt` | `dacc1c24b4ffe0376e77fd21637ddcb770174ee4bbb5dbc88d4b39d74b847ffa` |
+
+Odtworzenie wyniku: `python3 -I analiza-limitow-q2.py seed7-r3/seed7-all1-lvl-trudna.jsonl` (z katalogu `dane/`).
