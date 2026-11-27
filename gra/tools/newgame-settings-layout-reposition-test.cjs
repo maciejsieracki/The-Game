@@ -27,9 +27,11 @@ const MAIN_GRID_ORDER = [
   'Administratorzy', // R-WEB-SETTINGS-ADMINISTRATORS-WIZARD-Q1 (dawniej Automatyzacja budowy): 13. karta (główne ustawienia, nie zaawansowane)
   'Odkrywanie mapy klawiszem F (tryb testowy)', // R-WEB-SETTINGS-FOG-REVEAL-KEY-F-OPTION-Q1: 14. karta (główne ustawienia)
 ];
-/** Kolejność okna zaawansowanych (14 pozycji, bez duplikatów z siatką; R-WEB-BATTLE-HIT-MODE-SETTING-Q1 dodał „Trafienia”). */
+/** Kolejność okna zaawansowanych (18 pozycji, bez duplikatów z siatką; R-WEB-BATTLE-HIT-MODE-SETTING-Q1 dodał „Trafienia”; „Wzrost surowców z epoką” i „Dyplomacja i wojna” dodane wcześniej; R-WEB-AI-CULT-REL-AI-PLUS10-Q1 dodał dwa selektory „Kultura i religia”: dla gracza i dla komputera (AI)). */
 const ADV_ORDER = [
   'Zasięg ruchu', 'Limit miast zakładanych (baza)', 'Bitwy', 'Trafienia',
+  'Wzrost surowców z epoką', 'Dyplomacja i wojna',
+  'Kultura i religia — dla gracza', 'Kultura i religia — dla komputera (AI)',
   'Wymagaj rozpatrzenia ofert handlowych przed końcem tury', 'Wzrost ludności',
   'Koszty budynków', 'Koszty jednostek', 'Jakość grafiki mapy', 'Surowce na mapie',
   'Rzeki', 'Pustynie', 'Las', 'Góry i wzgórza',
@@ -117,7 +119,7 @@ window.__openWizard();
     await page.locator('.civ-newgame .btn-adv').click();
     await page.waitForSelector('.civ-newgame .adv-overlay.open');
     const advLabels = (await page.locator('.civ-newgame .adv-modal .adv-lbl').allTextContents()).map(x => x.trim());
-    assert.deepStrictEqual(advLabels, ADV_ORDER, 'advanced window lists 14 options in the agreed order');
+    assert.deepStrictEqual(advLabels, ADV_ORDER, 'advanced window lists 18 options in the agreed order');
     for (const l of advLabels) assert(!MAIN_GRID_ORDER.includes(l), `no duplicate "${l}" between grid and advanced`);
     await page.locator('.civ-newgame .adv-close').click();
 
