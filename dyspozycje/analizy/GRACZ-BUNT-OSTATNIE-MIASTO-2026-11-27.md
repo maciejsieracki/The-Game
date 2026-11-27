@@ -2,8 +2,8 @@
 
 STATUS: POMIAR WYKONANY NA ŻYWO (runda 3). Baza: origin/main 909a057fa. Jedyna zmiana w `gra/src`: instrumentacja
 `civTest` w `gra/src/main.ts` (tylko odczyt i dopisywanie do tablicy; poza `?civTest=1` brak skutku). Dane:
-`dyspozycje/autobot/runs/R-WEB-PLAYER-LASTCITY-REVOLT-Q1/dane-r3/` (jsonl.gz, run.log z readbackiem ustawień, zrzuty
-ekranu porażki). Tabela z danych: `node gra/tools/plrrevolt-r3-table.cjs <dane-r3>`.
+`dyspozycje/autobot/runs/R-WEB-PLAYER-LASTCITY-REVOLT-Q1/dane-r3/` (jsonl.gz, state/summary json, zrzuty
+ekranu porażki). UWAGA: plik `run.log` z readbackiem ustawień NIE jest w commicie (`*.log` w .gitignore); zob. §6. Tabela z danych: `node gra/tools/plrrevolt-r3-table.cjs <dane-r3>`.
 
 ## 0. STAN WIĄŻĄCY (wnioski runda 3)
 
@@ -18,19 +18,22 @@ ekranu porażki). Tabela z danych: `node gra/tools/plrrevolt-r3-table.cjs <dane-
    `jednostkiWojskowe=0`, `miastaWojsko[0].wojsko=0`, 3 jednostki barbarzyńców w promieniu 3 od miasta w t14-15).
    Porządek miasta w chwili utraty: 49% (Niepokój), próg skrajnego buntu 12%.
 3. **Dawny „t29 V4/4242” z AIBAL2** nie odtworzył się w t29: w świecie z barbarzyńcami Trudny (jak w REALDEF4) ten sam
-   wariant ginie w t16. Rozbieżność z REALDEF4 wyjaśniona (pkt 6).
-4. **Bunt gracza nie jest osiągalny w tych warunkach (60 tur, maksimum), bo miasta gracza mają immunitet osiedla.** Miasto
-   o populacji 1-4 nie wchodzi w bunt (`isOsiedleRevoltImmune`, próg `prawo_bonus_osada_prog` = 4 na każdym poziomie,
+   wariant ginie w t16. Rozbieżność z REALDEF4 NIE WYJAŚNIONA w pełni: tury utraty w REALDEF4 (4242 t10, 778899 t13, seed 7 ok. t14) różne od tych tu (t16, t12, t29); pkt 6 wyjaśnia tylko zmianę poziomu barbarzyńców, nie różnicę tur (§6, zarzut 2).
+4. **Bunt gracza nie wystąpił w 60 turach; wniosek dotyczy tylko populacji 1-4, bo tam miasta gracza mają immunitet osiedla.**
+   Miasto o populacji 1-4 nie wchodzi w bunt (`isOsiedleRevoltImmune`, próg `prawo_bonus_osada_prog` = 4 na każdym poziomie,
    `society-breakdown.ts:491-499`). Biegi z wyłączonymi barbarzyńcami (diagnostyka, pkt 5): w t60 gracz ma 1 miasto o
    populacji 3, Porządek 26-36% (nigdy poniżej 26,1%; próg buntu 12%).
 5. **Ochrona ostatniego miasta gracza przed buntem: NIE MA** (kod: `society-breakdown.ts:522-533`, ochrona tylko AI;
    dla gracza `ownerIsHuman` zawsze zezwala). Bunt ostatniego miasta gracza pozostaje możliwy w mechanice, ale w 15
-   żywych biegach nie wystąpił i w opisanych warunkach (miasto do pop 4, Porządek >= 26%) wystąpić nie może.
-   NIE ZMIERZONO: bunt przy populacji >= 5 (gracz nie dociągnął do niej w 60 turach).
+   żywych biegach nie wystąpił; przy populacji 1-4 wystąpić nie może (immunitet osiedla).
+   NIE ZMIERZONO: bunt przy populacji >= 5 (gracz nie dociągnął do niej w 60 turach). Odpowiedź „jak często” dotyczy
+   tylko krótkich gier z miastem pop 1-4 (zarzut 5).
 6. **Czemu poprzednie rundy dawały 7/9 przeżyć do t60 (r2) przeciw 4/5 ginie t10-16 (REALDEF4):** runner r1/r2 miał
    zaszyte `barbariansLevel: "normalny"` oraz `kosztJednostekPace: "normalny"` (nadpisywane domyślnym `--pace`). Teraz
-   runner startuje z `barbariansLevel` = Trudny (`--barb`, domyślnie trudny) i `--pace wysoki`; readback każdego biegu
-   jest w `*.run.log` (linia `[readback-plr]`, pole `live.barbariansLevel` z gry).
+   runner startuje z `barbariansLevel` = Trudny (`--barb`, domyślnie trudny) i `--pace wysoki`. Readback ustawień NIE jest
+   w commicie dla żadnego biegu: `*.run.log` jest w .gitignore, a jsonl/summary/state nie zawierają pól `barbariansLevel`
+   ani „readback” (0 trafień). Wartość Trudny potwierdzona w trakcie biegu tylko dla wariantu V4-nomin (hak `settings()`),
+   dla pozostałych NIE ZWERYFIKOWANO artefaktem (§6, zarzut 1).
 7. **Skutek w UI po utracie ostatniego miasta (zmierzone, 9/9 biegów pasywnych + 2/3 autopilota):** gra kończy się
    natychmiast (`gameOver`), pokazuje się pełnoekranowa karta „TWOJE IMPERIUM UPADŁO / KLĘSKA” z liczbami (tury
    przetrwane, ostatnia epoka, zbadane technologie, cywilizacja, utracone miasta 1, utracone jednostki 1) i DWOMA
@@ -38,7 +41,7 @@ ekranu porażki). Tabela z danych: `node gra/tools/plrrevolt-r3-table.cjs <dane-
    „Zakończ turę” jest zablokowane (`[EndTurn] blocked: gameOver`). Zrzuty: `dane-r3/*-defeat.png`. Gracz nie dostaje
    żadnego komunikatu o przyczynie (barbarzyńcy vs bunt) na ekranie porażki.
 
-## 1. Tabela 9 biegów (pasywny gracz, maksimum: Trudny, Koszty jednostek Wysoki x4, Dyplomacja trudna, barbarzyńcy Trudny, kultura AI normalny)
+## 1. Tabela 9 biegów (pasywny gracz, maksimum: Trudny, Koszty jednostek Wysoki x4, Dyplomacja trudna, barbarzyńcy Trudny; kultura AI NORMALNY, nie trudny: odstępstwo od maksimum, zob. §6)
 
 Porządek = `porPct` miast gracza z `cityOrderState` (min / średnia po turach do utraty). Skrajny bunt = `porPct < 12`.
 Wszystkie biegi: 1 miasto, 0 jednostek wojskowych, populacja miasta 1-3 (osiedle = immunitet buntu).
@@ -122,7 +125,42 @@ miasta w 60 turach).
 - Gracz w biegach jest pasywny (0 jednostek wojskowych) lub na autopilocie AI; to nie jest „rozsądna gra” człowieka
   (REALDEF5 bada obronę startu). Wniosek o częstości buntu dotyczy tej próby (15 biegów, 1 miasto o pop 1-3).
 - Biegi 60-turowe wykonano w jednym segmencie (wznowienie ze slotu sypało Chromium dwa razy z rzędu, `diag-brak-trudny-s4242`
-  powtórzono od zera). Kultura AI = normalny we wszystkich biegach.
+  powtórzono od zera). Kultura AI = normalny we wszystkich biegach: to NIE jest poziom maksymalny (maksimum = trudny);
+  zapisane jako odstępstwo od reguły testowania na maksimum, bez ponownego pomiaru (§6, zarzut 5 i sekcja zakresu).
 - Propozycje (NIE decyzje; bez zmiany balansu): (a) ekran porażki może podawać przyczynę utraty (barbarzyńcy / bunt);
   (b) decyzja o ochronie ostatniego miasta gracza przed buntem: pytanie ABC do właściciela dopiero po turnieju, i tylko
   jeśli bunt okaże się osiągalny przy populacji >= 5 (dziś niezmierzone).
+
+## 6. Korekty po obronie r3 (zarzuty Evaluatora, commit e30c344 -> kolejny commit obrony)
+
+Każdy zarzut: PRZYJĘTY (poprawka w tym dokumencie) albo ODRZUCONY z dowodem. Brak dowodu = przyjęty.
+
+1. **Readback ustawień (PRZYJĘTY).** `*.run.log` NIE jest w repo (wzorzec `*.log` w .gitignore; `git ls-files` nie zawiera
+   żadnego run.log). W `dane-r3/` 0 trafień `barbariansLevel` i `readback` we wszystkich 16 plikach jsonl.gz (sprawdzone
+   `zcat | grep -c -i 'barbariansLevel\|readback'`). Readback zweryfikowany wyłącznie w trakcie biegu V4-nomin (hak
+   `__cityOwnerChangeLogDebug.settings()`); zapis z tego biegu NIE trafił do commita. Pozostałe 15 biegów: barbarzyńcy
+   Trudny NIE ZWERYFIKOWANI artefaktem. Naprawa wymaga ponownego biegu z zapisem readbacku do pliku w repo (NIE ZMIERZONO).
+2. **Rozbieżność z REALDEF4 (PRZYJĘTY, wyjaśnienie wycofane do „NIE WYJAŚNIONE”).** REALDEF4: 4242 t10, 778899 t13,
+   seed 7 ok. t14. Ta runda: 4242 t16, 778899 t12, seed 7 t29. Różne tury nawet przy tym samym ziarnie i ustawieniach
+   barbarzyńców. Przyczyna różnicy NIE ZMIERZONA (możliwe: inne ustawienia tempa/kultury lub inna wersja gry; nie
+   sprawdzono). Wniosek „barbarzyńcy Trudny to wyjaśnienie” jest niepotwierdzony.
+3. **Bit-w-bit wpływ haka civTest (PRZYJĘTY, NIE ZMIERZONO).** Nie porównano biegów z bundlem bez haka (909a057fa)
+   z tym samym ziarnem. Dowody dostępne: `git diff 909a057fa e30c344 -- gra/src` pokazuje wyłącznie dopisanie
+   `noteCityOwnerChangeForTest(...)` w 5 miejscach (linie zmian `city.ownerId`), definicję funkcji zaczynającą się od
+   `isCivTestEnabled` (bez `civTest` = natychmiastowy powrót) oraz blok `window.__cityOwnerChangeLogDebug` w bloku civTest.
+   Funkcja czyta `cityOrderState`, zapisuje do lokalnej tablicy i nie wywołuje efektów ubocznych. `ai-test` i `logic-test`
+   nie ładują `main.ts`, więc NIE są dowodem inertności. Dowód bit-w-bit wymaga biegu A/B (NIE ZMIERZONO).
+4. **Kosmetyka danych (PRZYJĘTY, częściowo naprawione).** Ścieżki `screenshot` w `*.summary.json` i `*.state.json`
+   wskazywały na worktree `wf_1780e1ff-d83-1`; zamieniono na ścieżki względem repo (`dyspozycje/autobot/runs/...`).
+   Pole `why.ownerChangesTail` jest puste (`[]`) w summary: log zmian właściciela jest tylko w jsonl, a summary go nie
+   przepisuje. NIE UZUPEŁNIONO (wymaga osobnego eksportu z jsonl; nie wykonano).
+5. **Bunt przy pop >= 5 (PRZYJĘTY).** Wniosek „bunt niedostępny” dotyczy wyłącznie populacji 1-4 (immunitet osiedla,
+   `society-breakdown.ts:491-499`) w 60 turach. Przy pop >= 5 NIE ZMIERZONO. Kultura AI = normalny zamiast maksimum
+   (trudny) — odstępstwo, NIE ZMIERZONO na maksimum.
+
+### Zakres i co pozostaje otwarte
+
+- Mechanizm: utrata miasta gracza w tych biegach = zdobycie przez barbarzyńców (`applyCityCaptureToMap`), co jest
+  potwierdzone stosem wywołań TYLKO dla V4-nomin t16. Dla pozostałych biegów ścieżka odczytana z zapisu (`0 -> -1`).
+- Bunt gracza (-99): 0 zaobserwowanych zdarzeń; nie jest to dowód, że bunt jest niemożliwy (pop >= 5 NIE ZMIERZONO).
+- UI porażki: zmierzone (sekcja 0 pkt 7) na 9 biegach pasywnych; zrzuty w `dane-r3/*-defeat.png`.
