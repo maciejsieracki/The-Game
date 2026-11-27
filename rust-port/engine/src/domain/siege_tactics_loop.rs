@@ -6295,7 +6295,6 @@ impl<R: RollSource> LoopBody for ProdBody<R> {
         // R-RUSTPORT-P4-417A (H4): `_performPlayerOrder(ru, done)` (`:6067-6069`, ciało `:18280-18428`) w trybie ręcznym.
         // Maszyna zwraca `U7.0-manual` (pin: każda gałąź `return true`); decyzję liczą porty z predykatami ciała.
         let mut doctrine_plan = doctrine_plan;
-        let mut doctrine = doctrine;
         let mut manual_doctrine = false;
         if is_player && res.branches.contains(&"U7.0-manual") && skipped.is_empty() {
             match self.plan_manual_order(unit, st, wall_col, atk_plan.as_ref()) {
