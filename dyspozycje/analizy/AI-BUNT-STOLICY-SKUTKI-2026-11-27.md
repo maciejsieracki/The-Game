@@ -1,51 +1,64 @@
 # AI-BUNT-STOLICY — skutki buntu stolicy AI przy ≥ 2 miastach (R-WEB-AI-CAPITAL-REBEL-EFFECTS-Q1, tag CAPREBEL)
 
-Data: 2026-11-27. Baza kodu: `659e2d01c` (origin/main). Runda 1/5, Operator HAIKU 5.5.
-Surowe dane: `dyspozycje/autobot/runs/R-WEB-AI-CAPITAL-REBEL-EFFECTS-Q1/dane/capital-s4242-3t.txt`.
-Raport operatora: `dyspozycje/autobot/runs/R-WEB-AI-CAPITAL-REBEL-EFFECTS-Q1/10-operator-claude.md`.
+Data: 2026-11-27. Baza kodu: `659e2d01c` (origin/main). Runda 2/5 (obrona Operatora po FC c26d0bf58; Operator HAIKU 5.5).
+Surowe dane (`dyspozycje/autobot/runs/R-WEB-AI-CAPITAL-REBEL-EFFECTS-Q1/dane/`):
+- `capital-s4242-5t-buntu-max.txt` — bunt wymuszony, 5 tur po buncie, wygrana włączona (runda 2).
+- `capital-s4242-5t-kontrola-max.txt` — ten sam start BEZ buntu, kontrafaktyk do skarbca (runda 2).
+- `capital-s4242-3t.txt` — pierwszy bieg rundy 1 (3 tury, wygrana wyłączona; zostawiony dla historii).
 
-Ustawienia maksymalne (poziom „Trudny”, kultura i religia „trudny”, koszty jednostek „wysoki” ×4, dyplomacja i wojna „trudna”, wzrost surowców z epoką WYŁ.) — potwierdzone odczytem `__settingsLive.getSettings()` w każdym biegu. Start przez `__settingsLive.startNewGame` (realny `doStartGame`).
+Raporty: `dyspozycje/autobot/runs/R-WEB-AI-CAPITAL-REBEL-EFFECTS-Q1/10-operator-claude.md` (runda 1), `30-obrona-claude.md` (runda 2).
+
+## Ustawienia maksymalne (runda 2)
+
+Poziom MAKSYMALNY nowej gry, potwierdzony odczytem `__settingsLive.getSettings()` w obu biegach:
+`difficulty: hard` (Trudny), `kulturaReligiaLevel` i `kulturaReligiaLevelAI: trudny`, `kosztJednostekPace: wysoki` (×4), `diplomacyWarLevel: trudna`, `wzrostSurowcowZEpoka: true` (ON).
+
+Uzasadnienie „maksimum” dla flagi wzrostu surowców: ustawienie ma dwa stany (WYŁ./ON, `newGameFlow.ts` ~1903–1908). Stan ON daje wyższą produkcję, więc jest poziomem maksymalnym. W rundzie 1 był błędnie WYŁ. (poprawione). Nie ma innego poziomu tego ustawienia do porównania.
+
+Start przez `__settingsLive.startNewGame` (realny `doStartGame`). Zwycięstwo WŁĄCZONE: runner nie wywołuje już `disableVictoryCheckForTest` ani `suppressVictoryForTest`.
 
 ## Tabela skutków
 
-| Pozycja | Skutek | Z kodu | Zmierzone żywo (seed 4242, stolica city16 właściciela 13, 2 miasta) | OCENA |
+| Pozycja | Skutek | Z kodu | Zmierzone żywo | OCENA |
 |---|---|---|---|---|
-| (a) Nowa stolica | `capitalCityIdForOwner` po buncie: wpis `capitalCityIdByOwner` wskazuje miasto, które już nie należy do właściciela, więc spada na `oldestCityOfOwner` (`gra/src/main.ts` ~l.2478, ~40138) | Wyliczana na żywo, bez zapisu | TURA 1: stolica city16, miasta [city16, city17]. TURY 2–4: stolica **city17**, właściciel 13 ma miasta [city17], city16 należy do −99 (rebelianci) | ZAMIERZONE (fallback zgodny z komentarzem kodu) |
-| (b) Pałac/budynki stołeczne | Budynki są przypisane do ID miasta (`cityBuilt`), więc przechodzą razem z miastem do rebeliantów | Kod: brak usuwania budynków przy buncie | NIE ZMIERZONO: w tym biegu w żadnym mieście nie było budynków (`buildingsOf` = []) — tura 1–4 za wczesna; pałac nie był zbudowany | NIE ZMIERZONO (brak budynków w biegu) |
-| (b) Mennica | Mennica liczy się tylko z AKTUALNEJ stolicy (`ownersWithMennica`, `gra/src/game/turn-economy.ts` ~l.298; `ownerHasMennica` w `cityPanel.ts`). Mennica w rebelianckim mieście nie jest już „osierocona” dla właściciela (`ownerHasOrphanMennica` liczy miasta właściciela) | Kod: po buncie stolicy właściciel traci bonus Waluty+Mennicy, dopóki nie postawi Mennicy w nowej stolicy | NIE ZMIERZONO: Mennica nie była zbudowana (`mennicaWCapitalOwner` = false, `mennicaAnyCities` = []) | NIE ZMIERZONO (kod: ZAMIERZONE wg R-WEB-MINT-CAPITAL-ONLY-Q1; do potwierdzenia na żywo z zbudowaną Mennicą) |
-| (c) Efekty stolicy w ekonomii tury (MINTDEBT / FALA 920) | Korupcja i efekty stolicy liczone wg AKTUALNEJ stolicy (`capitalCityIdForOwner`, `turn-economy.ts` ~l.267, `society-inputs.ts` `stolicaEasyBonusActive`) | Kod: przełączenie na city17 w tej samej turze | NIE ZMIERZONO: nie odczytano stanu skarbca/korupcji przed i po zmianie stolicy (poza zakresem hooka tej rundy) | NIE ZMIERZONO |
-| (d) Warunki zwycięstwa / eliminacji | `eliminateOwner` wywoływane przy 0 miastach; właściciel z 1 miastem nie jest eliminowany | Kod: eliminacja wymaga utraty wszystkich miast | Właściciel 13 po buncie: `ownerEliminated` = false w turach 1–4, ma 1 miasto (city17), tura kończy się normalnie | ZAMIERZONE dla eliminacji. Warunek zwycięstwa NIE ZMIERZONO: w runnerze wyłączono sprawdzanie zwycięstwa (`disableVictoryCheckForTest`), więc ten pomiar nie dowodzi zachowania przy włączonym zwycięstwie. Wpis dla gracza o buncie AI: zob. poz. (f)/news w AIREBELVER |
-| (e) Crash / pageerror / zawieszenie tury | — | — | 4 tury po wymuszeniu (tury 2–4 zakończone, `errors` = []); żadnego pageerror ani console.error w biegu | ZMIERZONO: brak błędów w 3 turach po buncie. Dłuższe biegi NIE ZMIERZONO |
-| (f) Dyplomacja: relacja właściciela z rebeliantami | Relacja `getDiploRelation(owner, −99)` | Kod: brak ustawiania relacji przy buncie w `transferCityToRebelFactionWithLedger` | `relOwnerRebel` = „neutralni” przed i po buncie (tury 1–4); relacja właściciela z graczem = „neutralni” | ZMIERZONO: buntownicy nie dostają wojny/relacji −99 z właścicielem (zamierzone lub do potwierdzenia; relacja −99 z dispatchu NIE potwierdzona). Wojny AI↔frakcja NIE ZMIERZONO |
-| (g) Zapis/wczytanie po buncie stolicy (round-trip) | Stan `capitalCityIdByOwner` i miast | Kod: wpis stolicy nie jest zapisywany po buncie (fallback liczony na żywo) | NIE ZMIERZONO w tej rundzie (zapis/wczytanie poza zakresem tego biegu) | NIE ZMIERZONO |
+| (a) Nowa stolica | Po buncie stolicy AI `capitalCityIdForOwner` (`main.ts` ~40154–40158) nie znajduje jawnego wpisu, więc spada na `oldestCityOfOwner`. | Bunt (`transferCityToRebelFactionWithLedger`, `main.ts` ~41815–41821) zmienia tylko `ownerId`. Nie woła relokacji ani nie czyści mapy. | Bieg buntu: tura 1 stolica city16 (miasta city16, city17). Tury 2–6 stolica **city17**, miasta właściciela [city17], city16 należy do −99. Jawny wpis `explicitCapitalOf` = null we wszystkich wierszach. | ZAMIERZONE wg komentarza kodu (fallback). Sukcesja inna niż przy podboju — patrz (a2). |
+| (a2) Sukcesja: bunt vs podbój | Podbój stolicy uruchamia relokację i wpis jawny (`maybeRelocateThreatenedAiCapital`, `main.ts` ~40332, zapis ~40370; `runCapitalCapturePlunder`, zapis/kasowanie ~40788–40790). Bunt ich nie wywołuje. | Kod: różnica potwierdzona przez odczyt wywołań. | Zmierzono tylko ścieżkę buntu (nowa stolica = najstarsze pozostałe miasto; bez wyboru). Ścieżka podboju NIE ZMIERZONO w tym temacie. | PODEJRZANE — decyzja gry (patrz „Pytanie”). Ryzyko: jawny wpis zostaje po buncie i po odbiciu miasta wraca stara stolica (ścieżka kodu, NIE ZMIERZONO — brak scenariusza odbicia). |
+| (b) Pałac/budynki stołeczne | Budynki są przypisane do ID miasta (`cityBuilt`) i przechodzą razem z miastem do rebeliantów. | Kod: brak usuwania budynków przy buncie. | `buildingsOf` = [] w obu biegach (żadne miasto nie zbudowało budynku przez 5–6 tur, bez zapisu stanu gry). | NIE ZMIERZONO — brak budynków w biegu. |
+| (b) Mennica | Mennica liczy się z AKTUALNEJ stolicy (`turn-economy.ts` ~298, `cityPanel.ts`). Po buncie właściciel traci bonus Mennicy, dopóki nowa stolica nie ma Mennicy. | Kod: zgodne z R-WEB-MINT-CAPITAL-ONLY-Q1. | Mennica nie powstała naturalnie w żadnym wierszu (`mennicaAnyCities` = [], `mennicaWCapitalOwner` = false). Budowa Mennicy wymaga hooka zapisu, którego nie ma w allowliście rundy. | NIE ZMIERZONO (próba naturalnego powstania: 2 biegi po 5 tur, bez wyniku). Do zrobienia po zgodzie na hak zapisu. |
+| (c) Efekty stolicy w ekonomii tury (MINTDEBT / FALA 920) | Korupcja i efekty stolicy liczone wg AKTUALNEJ stolicy (`capitalCityIdForOwner`, `turn-economy.ts` ~267, `society-inputs.ts` `stolicaEasyBonusActive`). | Kod: przełączenie w tej samej turze. | Skarbiec właściciela 13, bunt: t1 0 → t2 16 → t3 17 → t4 18 → t5 19 → t6 22. Kontrola (bez buntu): t1 0 → t2 9 → t3 5 → t4 88 → t5 63 → t6 72. Trajektorie rozchodzą się od tury 2 (wymuszenie zmienia dalszy bieg AI), więc nie wyodrębniają efektu stolicy. Korupcji nie odczytano. | NIE ZMIERZONO (wyodrębnienie niemożliwe z 1 ziarna; brak pomiaru korupcji). |
+| (d) Zwycięstwo / eliminacja | Eliminacja przy 0 miastach (`eliminateOwner`, `main.ts` ~40513). Właściciel z 1 miastem nie jest eliminowany. | Kod: zgodne. | Zwycięstwo WŁĄCZONE. `gameOver` = false (odczyt `__defeatTestDebug.isGameOver`, `main.ts` ~31697) we wszystkich wierszach obu biegów; `ownerEliminated` = false; tury kończą się normalnie. | ZMIERZONO (6 tur po buncie, seed 4242). Wpis dla gracza o buncie AI: patrz AIREBELVER/AIREBELNEWS (nie w tym pomiarze). |
+| (e) Crash / pageerror / zawieszenie tury | — | — | Bieg buntu: 6 wierszy, `errors` = []. Bieg kontrolny: 6 wierszy, `errors` = []. | ZMIERZONO do tury 6. Dłuższe biegi NIE ZMIERZONO. |
+| (f) Dyplomacja: relacja z rebeliantami | `getDiploRelation(owner, −99)` (`main.ts` ~11206). Specjalny przypadek tylko dla barbarzyńców (`isBarbarian` = `ownerId === BARBARIAN_OWNER_ID`, `barbarians.ts` ~54). | Kod: −99 to `REBEL_FACTION_OWNER_ID` (`society-breakdown.ts` ~232), czyli ID właściciela frakcji, a nie wartość relacji. Dla −99 nie ma reguły rebelianckiej, więc zwraca relację domyślną (neutralną) — zgodnie z kodem. | `relOwnerRebel` = „neutralni” w każdym wierszu obu biegów; `relOwnerPlayer` = „neutralni”. | ZGODNE Z KODEM (relacja neutralna; poprzednie „oczekiwane −99” było błędną interpretacją ID). Wojny AI↔frakcja NIE ZMIERZONO (brak odczytu stanu wojny). |
+| (g) Zapis/wczytanie po buncie (round-trip) | Mapa `capitalCityIdByOwner` jest serializowana (`main.ts` ~42791) i odczytywana (~52692–52694). Bunt jej nie czyści. | Kod: zapis i odczyt istnieją. | NIE ZMIERZONO: bieg nie zawierał zapisu/wczytania. W obu biegach wpis jawny dla właściciela był pusty (null), więc round-trip nie dotyczy wpisu. | NIE ZMIERZONO (round-trip wymaga biegu z zapisem). |
 
 ## Co dokładnie zmierzono
 
-- Runner: `gra/tools/caprebel-capital-live.cjs` (nowy), 3 tury po wymuszeniu, seed 4242.
-- Kandydaci AI z ≥ 2 miastami w t1: [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34, 37]; wybrany owner 13 (`SEED mod N`).
-- Hak do odczytu budynków i Mennicy: `__capRebelReadTestDebug` w `gra/src/main.ts` (jedyna zmiana gra/src; WYŁĄCZNIE odczyt, bez zapisu stanu gry).
-- Istniejący hak wymuszenia: `__rebelNotifyTestDebug.forceRevoltEligible(city16)` (próg buntu skrajnego 14% → 95%, grace 0), jak w AIREBELVER.
+- Runner `gra/tools/caprebel-capital-live.cjs` (runda 2): wygrana włączona, maksimum (w tym `wzrostSurowcowZEpoka: true`), odczyty: stolica (fallback i jawna), miasta, skarbiec, budynki, Mennica, eliminacja, `gameOver`, relacje. Tryb `--control 1` = ten sam start bez wymuszenia buntu.
+- Kandydaci AI z ≥ 2 miastami w t1 (seed 4242): [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34, 37]; wybrany owner 13.
+- Hak `__capRebelReadTestDebug` w `gra/src/main.ts` (odczyt, bez zapisu stanu gry): rundy 1 i 2 dodały `treasuryOf` (`ownerTreasury`) i `explicitCapitalOf` (`capitalCityIdByOwner.get`).
+- Wymuszenie buntu: `__rebelNotifyTestDebug.forceRevoltEligible(city16)` (próg buntu skrajnego 14% → 95%, grace 0), jak w AIREBELVER.
+- Bramki po zmianie hooka: `tsc --noEmit` exit 0; `ai-city-rebellion-gate-test` PASS=37 FAIL=0; `ai-city-rebellion-news-test` PASS 24/0; `logic-test` LOGIC OK (213/213); `ai-test` 297 passed 0 failed; `combat-test` 6/6; `unit-replace-test` 21/21 (wszystkie w tej rundzie, exit 0).
 
 ## Wnioski ostrożne
 
-1. Bunt stolicy AI przy 2 miastach: stolica przechodzi na najstarsze pozostałe miasto (city17), właściciel zostaje żywy z 1 miastem. Zgodne z komentarzem kodu. ZMIERZONO (seed 4242).
-2. Mennica i efekty stolicy w ekonomii: wg kodu bonus Waluty+Mennicy znika dla właściciela, dopóki nowa stolica nie ma Mennicy. Nie potwierdzone żywo, bo w biegu nie było budynków.
-3. Warunek zwycięstwa nie został zmierzony przy włączonym sprawdzeniu zwycięstwa (hak testowy je wyłącza).
-4. Relacja z rebeliantami: 'neutralni' zamiast oczekiwanego −99. Do wyjaśnienia przez właściciela tylko jeśli ma to wpływać na grę (poza zakresem tej rundy).
+1. Bunt stolicy AI przy 2 miastach: stolica przechodzi na najstarsze pozostałe miasto (city17), właściciel żyje z 1 miastem, zwycięstwo nie jest wyzwalane (ZMIERZONO, 6 tur, seed 4242, poziom maksymalny).
+2. Sukcesja po buncie różni się od sukcesji po podboju (kod, a2). Nowa stolica jest wybierana automatycznie, bez relokacji. Ryzyko odbicia miasta ze starym wpisem jawnym jest opisane w kodzie, nie zmierzone.
+3. Efekty ekonomiczne (Mennica, skarbiec, korupcja) nie są wyodrębnione. Wynik z 1 ziarna jest zbyt szumowy (skarbiec skacze niezależnie od buntu), a Mennicy nie udało się zbudować bez hooka zapisu.
+4. Relacja z rebeliantami jest neutralna zgodnie z kodem. To nie jest rozbieżność.
+
+## Pytanie do właściciela (nie blokuje zamknięcia pomiaru)
+
+DECISION_REQUIRED (gra, wariant wg skutku dla gracza): po buncie stolicy AI nowa stolica to dziś najstarsze pozostałe miasto bez wyboru.
+- A: zostaje jak jest — AI wybiera nową stolicę automatycznie (najstarsze miasto). Gracz widzi to w grze tylko przez zmianę miejsca stolicy AI.
+- B: jak przy podboju — AI relokuje stolicę (wpis jawny) przy zachowaniu wiarygodności wyboru; po odbiciu miasta stolica nie wraca do starego miasta.
+- C: po buncie stolicy AI bez nowej stolicy przez N tur (AI traci efekty stolicy aż do wyboru).
+Konsekwencja implementacyjna: A = brak zmian; B = zmiana w `maybeRelocate`/bunt, testy sukcesji; C = nowy stan i testy ekonomii tury.
 
 ## Otwarte (NIE ZMIERZONO)
 
-- (b) i (c): dłuższy bieg z zbudowaną Mennicą w stolicy (≥ 1 budowa przed buntem) i odczyt skarbca/korupcji przed i po zmianie stolicy.
-- (d): bieg z włączonym sprawdzeniem zwycięstwa.
-- (g): zapis przed buntem i wczytanie po buncie, tura +3.
-- Wariant z buntem na stolicy AI przy 2 miastach, gdy stolicą jest drugie miasto (inny seed).
-
-## Bramki (tura 1/5)
-
-- `tsc --noEmit` (gra/): exit 0
-- `ai-city-rebellion-gate-test.cjs`: PASS=37 FAIL=0
-- `ai-city-rebellion-news-test.cjs`: PASS 24/0
-- `logic-test.cjs`: LOGIC OK (213/213)
-- `tech-tree-test.cjs`: 20 pass, 0 fail
-- `research-test.cjs`: ALL GREEN (liczba przypadków nie wypisana przez skrypt)
-- `ai-test` (297), `combat`, `unit-replace`: NIE URUCHOMIONO w tej rundzie (zmiana gra/src ograniczona do read-only hooka).
+- (b) Mennica i Pałac: wymaga hooka zapisu (budowa) poza allowlistą tej rundy — propozycja osobnego tematu z hakiem civTest (zapis tylko w bloku testowym).
+- (c) Korupcja i skarbiec z wyodrębnieniem efektu stolicy: wymaga wielu ziaren albo hooka pomiaru korupcji.
+- (g) Zapis przed buntem i wczytanie po buncie.
+- Ścieżka podboju stolicy i odbicie miasta (ryzyko starego wpisu jawnego).
+- Wojny AI↔frakcja.
+- Dłuższe biegi (>6 tur).

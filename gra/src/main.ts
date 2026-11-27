@@ -32003,6 +32003,10 @@ async function boot(): Promise<void> {
       },
       cityIdsWithMennicaAnyOwner: (): Array<{ cityId: string; ownerId: number }> =>
         cities.filter(c => (cityBuilt.get(c.id) ?? []).includes('mennica')).map(c => ({ cityId: c.id, ownerId: c.ownerId })),
+      /** Skarbiec właściciela (odczyt, ta sama funkcja co reguły ekonomii). */
+      treasuryOf: (ownerId: number): number => ownerTreasury(ownerId),
+      /** Jawny wpis capitalCityIdByOwner (bez fallbacku) — odróżnia „wpis zostaje” od „spadek na najstarsze miasto”. */
+      explicitCapitalOf: (ownerId: number): string | null => capitalCityIdByOwner.get(ownerId) ?? null,
     };
 
     (window as any).__cityCessionTestDebug = {

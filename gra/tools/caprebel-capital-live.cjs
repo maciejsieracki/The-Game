@@ -4,6 +4,7 @@
  * Zywy pomiar skutkow buntu STOLICY AI przy >= 2 miastach (wymuszenie istniejacym hakiem
  * __rebelNotifyTestDebug.forceRevoltEligible na stolicy), maksymalne ustawienia nowej gry
  * (__settingsLive.startNewGame: Trudny, kultura trudny, koszty jednostek wysoki x4, dyplomacja trudna).
+ * Zwyciestwo wlaczone; flagi maksymalne (wzrostSurowcowZEpoka: true = ON, jedyny stan wyzszy od domyslnego).
  * Odczyt: __cityCessionTestDebug (stolica, miasta wlasciciela), __capRebelReadTestDebug (budynki, Mennica,
  * osierocona Mennica; tylko odczyt), __rebelNotifyTestDebug (eliminacja), __rebelProtectionTestDebug
  * (relacje, gameOver, tura).
@@ -20,6 +21,7 @@ function arg(name, def) {
 const DIST = arg('dist', '');
 const TURNS = parseInt(arg('turns', '3'), 10);
 const SEED = parseInt(arg('seed', '4242'), 10);
+const CONTROL = arg('control', '0') === '1'; // kontrola: ten sam start, BEZ wymuszenia buntu (kontrafaktyk do porownania skarbca)
 if (!DIST || !fs.existsSync(path.join(DIST, 'index.html'))) throw new Error('--dist: brak index.html w ' + DIST);
 const URL_GAME = 'file://' + path.join(DIST, 'index.html') + '?civTest=1&civSeed=' + SEED;
 const CHROME = process.env.CHROME_PATH || '/opt/pw-browsers/chromium';
@@ -36,6 +38,7 @@ const MAX_PARAMS = {
   worldDensityLabels: { resources: 'Normalnie', rivers: 'Normalnie', desert: 'Normalnie', forest: 'Normalnie', relief: 'Normalnie' },
   advanced: {
     barbariansLevel: 'normalny', battleAlwaysManual: false, victoryMode: 'moc_i_dominacja', buildingCostPace: 'niski',
+    wzrostSurowcowZEpoka: true,
     kosztJednostekPace: 'wysoki', wzrostLudnosciPace: 'wysoki', ruchSwiataPace: 'krotki', landFractionPercent: 30, landFractionCustom: false,
     cityStateDifficultyOverride: 'normal', cityLimitBase: 10, diplomacyWarLevel: 'trudna', kulturaReligiaLevel: 'trudny',
   },
@@ -61,10 +64,13 @@ async function snapshot(page, owner, capOrigId, rebelId) {
     const rb = window.__rebelNotifyTestDebug;
     const cap = window.__capRebelReadTestDebug;
     const pr = window.__rebelProtectionTestDebug;
+    const df = window.__defeatTestDebug;
     const capNow = cc.capitalOf(owner);
     return {
       turn: pr.getTurn(),
       capitalNow: capNow,
+      explicitCapitalNow: cap.explicitCapitalOf(owner),
+      treasuryOwner: cap.treasuryOf(owner),
       capitalOrigOwnerNow: cc.cityOwner(capOrigId),
       ownerCityIds: cc.ownerCityIds(owner),
       capOrigBuildings: cap.buildingsOf(capOrigId),
@@ -75,7 +81,7 @@ async function snapshot(page, owner, capOrigId, rebelId) {
       ownerEliminated: rb.isOwnerEliminated(owner),
       relOwnerRebel: pr.getRelationStatus(owner, rebelId),
       relOwnerPlayer: pr.getRelationStatus(owner, 0),
-      gameOver: typeof pr.isGameOver === "function" ? pr.isGameOver() : null,
+      gameOver: df.isGameOver(),
     };
   }, { owner, capOrigId, rebelId });
 }
@@ -93,7 +99,7 @@ async function main() {
     page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
     page.on('console', (m) => { if (m.type() === 'error') errors.push('console.error: ' + m.text().slice(0, 200)); });
     await page.goto(URL_GAME, { waitUntil: 'load', timeout: 180000 });
-    await page.waitForFunction(() => !!window.__aiEconomyMeasure && !!window.__settingsLive && !!window.__rebelNotifyTestDebug && !!window.__eraTestDebug && !!window.__rebelProtectionTestDebug && !!window.__capRebelReadTestDebug && !!window.__cityCessionTestDebug, null, { timeout: 180000 });
+    await page.waitForFunction(() => !!window.__aiEconomyMeasure && !!window.__settingsLive && !!window.__rebelNotifyTestDebug && !!window.__eraTestDebug && !!window.__rebelProtectionTestDebug && !!window.__capRebelReadTestDebug && !!window.__cityCessionTestDebug && !!window.__defeatTestDebug, null, { timeout: 180000 });
     await page.evaluate((p) => window.__settingsLive.startNewGame(p), Object.assign({ seed: SEED }, MAX_PARAMS));
     await page.waitForFunction(() => { try { return window.__eraTestDebug.getWorldState().turn >= 1; } catch (_) { return false; } }, null, { timeout: 240000 });
     await page.waitForFunction(() => {
@@ -103,8 +109,7 @@ async function main() {
     const founded = await page.evaluate(() => window.__aiTradeWiringTestDebug.foundFirstCity());
     if (!founded) throw new Error('foundFirstCity=false');
     await page.waitForFunction(() => { try { return window.__rebelProtectionTestDebug.pickTwoAiOwners() !== null; } catch (_) { return false; } }, null, { timeout: 240000, polling: 500 });
-    await page.evaluate(() => { try { window.__truceTestDebug && window.__truceTestDebug.suppressVictoryForTest && window.__truceTestDebug.suppressVictoryForTest(); } catch (_) {} });
-    await page.evaluate(() => window.__rebelProtectionTestDebug.disableVictoryCheckForTest());
+    // Zwyciestwo ZOSTAJE WLACZONE (bez suppressVictoryForTest / disableVictoryCheckForTest): mierzymy skutek na warunki wygranej.
     await page.evaluate(() => window.__rebelProtectionTestDebug.pullPlayerUnitsHome());
     const settings = await page.evaluate(() => window.__settingsLive.getSettings());
     const rebelId = await page.evaluate(() => window.__rebelProtectionTestDebug.REBEL_FACTION_OWNER_ID);
@@ -116,7 +121,7 @@ async function main() {
     const capId = await page.evaluate((o) => window.__cityCessionTestDebug.capitalOf(o), ownerId);
     if (!capId) throw new Error('brak stolicy dla owner ' + ownerId);
     const pre = await snapshot(page, ownerId, capId, rebelId);
-    const forced = await page.evaluate((c) => window.__rebelNotifyTestDebug.forceRevoltEligible(c), capId);
+    const forced = CONTROL ? null : await page.evaluate((c) => window.__rebelNotifyTestDebug.forceRevoltEligible(c), capId);
     rows.push({ tura: 1, faza: 'przed-wymuszeniem', ...pre, forced });
 
     for (let t = 2; t <= TURNS + 1; t++) {
@@ -129,10 +134,11 @@ async function main() {
     }
     const after = rows.filter((r) => r.faza === 'po-turze');
     const newCapOk = after.length > 0 && after.every((r) => r.capitalNow && r.capitalNow !== capId);
-    const verdict = rows.some((r) => r.nieSettled) ? 'NIE ZMIERZONO (tura nie zakonczyla sie)'
+    const verdict = CONTROL ? 'KONTROLA-BEZ-BUNTU'
+      : rows.some((r) => r.nieSettled) ? 'NIE ZMIERZONO (tura nie zakonczyla sie)'
       : (newCapOk ? 'NOWA-STOLICA-PO-BUNTCIE' : 'BRAK-ZMIANY-STOLICY');
     console.log('PREFIX=CAPREBEL-CAPITAL ' + JSON.stringify({
-      seed: SEED, ownerId, capId, kandydaciDwaMiasta: aiTwoPlus, settings, verdict, rows, errors: errors.slice(0, 8),
+      seed: SEED, control: CONTROL, ownerId, capId, kandydaciDwaMiasta: aiTwoPlus, settings, verdict, rows, errors: errors.slice(0, 8),
     }));
   } finally {
     await browser.close();
