@@ -36,3 +36,26 @@ engine: `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`, pełny
 
 ## ZAKAZY
 Brak push na `parity-v2`/deploy/integracji, brak `git add -A`, brak `#[ignore]`, brak osłabiania asercji, brak zmian w `gra/`, kontrakcie mostu, kliencie i rendererze, brak linii z nazwą modelu w commitach (dozwolona `Claude-Session:`). Commituj WIP wcześnie. Raporty: `01-operator-r1.md`, `02-evaluator.md`, `02a-obrona.md`, `03-final-control.md`; kontrakt raportu z CLAUDE.md (STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH).
+
+---
+
+## DODATEK r2 (orkiestrator, 2026-11-27 ~12:25) — po FAIL Evaluatora `1cf5ebca3` i FAIL FC `707654e47` (runda 1/5)
+**BAZA r2: `707654e47`** (= `5583106a3` obrona r1 + raport FC; dostępne jako `refs/heads/rust-port-wip/417a-k5exec-h4-manual-mode-state-q1-fc`; kod produkcyjny = `72aa1f21d`; `git fetch origin rust-port-wip/417a-k5exec-h4-manual-mode-state-q1-fc && git checkout -B <gałąź> FETCH_HEAD`). Bazą kodu jest ta gałąź, NIE `parity-v2`; `parity-v2` = `617185ba8` jest jej przodkiem.
+Modele r2 bez zmian: Operator/Obrona/Evaluator/FC = Sonnet 5.5 (powód braku eskalacji: FAIL wynika z niewykonanej pracy Operatora — brak wektorów — a nie z płytkiej oceny).
+
+### Rozstrzygnięcie FC r1 (wiążące dla r2)
+NAPRAW (1): brak wektorów KROKU z wykonania pinu dla ciała (kryteria 2, 3, 4): fx `_siegeSafeApproach` z pinu, kolejka `_executeUnitsImmediate` na wektorach, podprzyczyny `removed` i progi pokrycia na podprzyczyny, ciała ram_tower / tower_climb / infantry_to_tower w trybie ręcznym. ODDANE (nie ruszać): mutanty (kryterium 5 spełnione: 22 + 12 + M4/M8/M11/M12/M13–M16 zabite), blokada generała D-417A-7 (część B), `SiegeLoop` E2E z trybem ręcznym (część B #422), marsz krokowy i strona obrońcy (pokryte testami obrony).
+
+### ZAKRES r2 (decyzja właściciela 2026-11-27: praca zawsze w dwóch częściach — r2 = pierwsza połowa pozostałej pracy; druga połowa = r3 tego samego ID)
+r2 obejmuje WYŁĄCZNIE rodzaje rozkazów **hold / none / move / attack / attackMove** (bez oblężenia ręcznego i bez kolejki):
+1. Nowy tryb generatora `p6_k5loop_wiring_a_gen.mjs` za flagą środowiska (np. `WIRING_A_MANUAL_BODY_STEPS=1`; strażnik SHA-256 `3eeeb760…` BEZ ZMIAN, brak zmian istniejących trybów), który wykonuje z TEKSTU pinu `_activateUnit` (ścieżka `manualMode && isPlayerSide` → `_performPlayerOrder`, `:6048-6112`, `:18280-18428`) na przygotowanych scenach i zapisuje: stan jednostek przed, rozkaz gracza, decyzję/skutki (ruch o jedno pole, atak, zdjęcie rozkazu, wartość zwracana), stan po. Sceny z różnymi: strona gracza/obrońcy, cel żywy/`dead`/`fadingOut`/`routed`/`removed`, cel = pozycja, sąsiad (atak), zajęte pole (obejście), blokada generała nieaktywna.
+2. Nowy plik wektorów w `p6_k5loop_wiring_a_pin_vectors/` (np. `manual_body_step_vectors.json`) + konsument Rust w `tests/p4_417a_manual_mode_state.rs` (lub osobnym pliku `tests/p4_417a_manual_body_vectors.rs`) budujący `ProdBody` z migawki sceny pinu, wywołujący produkcyjne `plan_manual_order`/`decide_manual` (przez API ciała), porównujący z pinem bajt w bajt. Wektory minimum 600 przypadków, wszystkie wymienione rodzaje i podprzyczyny `dead`/`fadingOut`/`routed`/`removed`/cel = pozycja także dla `attack`.
+3. Porównanie `fx` dla `_siegeSafeApproach` — w r2 tylko dla `attack`/`attackMove` poza murem, jeśli to w ogóle występuje; wariant przy murze = r3.
+4. Mutanty na pliku produkcyjnym: co najmniej 8 NOWYCH (innych niż M1–M22 i M4/M8/M11–M16) dla gałęzi hold/none/move/attack/attackMove w konsumencie wektorów; zabite lub jawnie równoważne.
+5. Bez regresji: wszystkie istniejące wektory i pełny `cargo test` engine zielony; istniejące 41 testów bez osłabienia.
+
+**r3 (osobna runda tego samego ID, po integracji lub PASS r2):** oblężenie ręczne (`_performSiegeManualOrder` na ciele: ram_tower, tower_climb, infantry_to_tower, `_siegeSafeApproach` przy murze), kolejka `execute_units_immediate` na wektorach z `_executeUnitsImmediate` (busy-gate, `acted`, odświeżenie wizualiów).
+
+### Kryteria końca r2
+(a) tryb generatora + wektory z WYKONANIA tekstu pinu, 0 rozbieżności; (b) ≥ 8 nowych mutantów zabitych/równoważnych; (c) pełny `cargo test` engine EXIT 0 bez regresji; (d) strażnik generatora bez zmian (MD5/SHA w raporcie); (e) raport z listą NIE_ZMIERZONO i mapą r3.
+Budżet r2 ≈ 2,5 h (4 role). Zakazy i bramki jak w dispatchu głównym (fmt/clippy/pełny test; ≥ 8 GB; jeden build; sprzątanie targetu).
