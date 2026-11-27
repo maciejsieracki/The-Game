@@ -8,7 +8,7 @@ const ENTRY = path.resolve(__dirname, '.earth-template-entry.ts');
 const BUNDLE = path.resolve(__dirname, '.earth-template-bundle.cjs');
 
 fs.writeFileSync(ENTRY, `
-export { generujSwiat } from '../src/map/generator';
+export { generujSwiat, ROZMIAR_DIMS } from '../src/map/generator';
 export { countLandSeaHexes, findInlandWaterHexes, repairRiverPathAdjacency } from '../src/map/gen-helpers';
 export { earthTemplateLandAt, earthNorthOceanRows, earthSouthOceanRows } from '../src/map/earth-land-mask';
 export { generateMap } from '../src/map/generator';
@@ -73,15 +73,55 @@ for (let r = H - b - south; r < H - b; r++) {
 ok(southLand === 0, `ziemia: 0 lądu w buforze południowym (${south} rzędów, found ${southLand})`);
 ok(south >= 28 && south <= 32, `ziemia standard: bufor południowy ≈30 rzędów (got ${south})`);
 
+// Decyzja właściciela 5B (R-WEB-MAP-EARTH-ANTARCTICA-Q1, 2026-11-26; reguła C-MAP-Q3c):
+// Antarktyda USUNIĘTA z mapy Ziemi. Pas polarny południowy = 3 rzędy nad buforem południowym
+// + sam bufor (r od H-b-south-3 do H-b-1). Oczekiwany ląd w tym pasie: 0 heksów.
+const SOUTH_BELT_EXTRA_ROWS = 3;
+function southBeltStart(H) {
+  return H - b - M.earthSouthOceanRows(H) - SOUTH_BELT_EXTRA_ROWS;
+}
+function southBeltLandMask(Wd, Hd) {
+  let n = 0;
+  for (let r = southBeltStart(Hd); r < Hd - b; r++) {
+    for (let q = b; q < Wd - b; q++) {
+      if (M.earthTemplateLandAt(q, r, Wd, Hd) > 0) n++;
+    }
+  }
+  return n;
+}
+function southBeltLandTerrain(m) {
+  const Hm = m.wysokoscR;
+  const Wm = m.szerokoscQ;
+  const start = southBeltStart(Hm);
+  let n = 0;
+  for (const key of Object.keys(m.hexes)) {
+    const [q, r] = key.split(',').map(Number);
+    if (r < start || r >= Hm - b || q < b || q >= Wm - b) continue;
+    const tb = m.hexes[key].terenBazowy;
+    if (tb !== 'morze' && tb !== 'plytkie_morze') n++;
+  }
+  return n;
+}
+// Dowód z POLARZERO (r=85, środkowe 35–65% szerokości): brak lądu — asercja odwrócona (nie usunięta).
+const antRow = southBeltStart(H); // r=85 na mapie standardowej (120 wierszy)
 let antLand = 0;
-const landRows = H - 2 * b - north - south;
-const antRow = b + north + landRows - 3;
 for (let q = Math.floor(W * 0.35); q < Math.floor(W * 0.65); q++) {
   if (M.earthTemplateLandAt(q, antRow, W, H) > 0) antLand++;
 }
-ok(antLand > 0, `ziemia: Antarktyda w szablonie nad buforem południowym (found ${antLand} heksów przy r=${antRow})`);
+ok(antLand === 0, `ziemia: brak lądu Antarktydy w środkowym paśmie r=${antRow} (decyzja 5B; found ${antLand})`);
+
+const standardBelt = southBeltLandMask(W, H);
+ok(standardBelt === 0, `ziemia standard: 0 lądu w pasie polarnym południowym (r=${southBeltStart(H)}..${H - b - 1}, found ${standardBelt})`);
+ok(southBeltLandTerrain(map) === 0, `ziemia standard: 0 heksów lądu (terenem) w pasie polarnym południowym (found ${southBeltLandTerrain(map)})`);
+for (const size of ['duzy', 'ogromny']) {
+  const [Wd, Hd] = M.ROZMIAR_DIMS[size];
+  const belt = southBeltLandMask(Wd, Hd);
+  ok(belt === 0, `ziemia ${size} (${Wd}×${Hd}): 0 lądu w szablonie w pasie polarnym południowym (found ${belt})`);
+}
 
 const big = M.generujSwiat(4242, 'duzy', 'ziemia', genOpts);
+const bigBelt = southBeltLandTerrain(big);
+ok(bigBelt === 0, `ziemia duzy: 0 heksów lądu (terenem) w pasie polarnym południowym (found ${bigBelt})`);
 let morseInMask = 0;
 for (const key of Object.keys(big.hexes)) {
   const [q, r] = key.split(',').map(Number);
