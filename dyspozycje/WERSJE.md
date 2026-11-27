@@ -1,3 +1,9 @@
+## ROBOCZA daf475f0 -- 2026-11-27 -- FALA 929: AI: bunt miasta komputera w trwałej liście Wydarzenia na świecie (testowa)
+
+- Bunt miasta AI (nowe gry, Kultura i religia ≠ zgodność) dodaje jednozdaniowy wpis 'rebelia' do trwałej listy Wydarzenia na świecie w oknie dyplomacji, widoczny tylko gdy właściciel miasta jest znany graczowi (ta sama reguła widoczności co wojny/pokoje AI); wpis w dzienniku Wydarzeń zostaje. Tryb zgodności i zapisy bez zmian.
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; ai-test 297/0; society-breakdown 56/0; rebellion-gate 37/0; rebellion-news 24/0 (mutacja czerwona 23/1); diplo-world-news 67/0; round-trip zapisu listy OK
+- Limity: NIE ZMIERZONO: render w Chromium (zrzut okna dyplomacji z wpisem), bieg żywy na maksimum, CSS per rodzaj wpisu; test ścieżki w main.ts jest dopasowaniem po źródle
+
 ## ROBOCZA 7103aff5 -- 2026-11-27 -- FALA 928: AI: miasta komputera w głębokim niepokoju buntują się jak miasta gracza (nowe gry) (testowa)
 
 - W nowych grach (ustawienie Kultura i religia ≠ tryb zgodności) miasto AI w buncie skrajnym po wyczerpaniu łaski przechodzi tę samą rebelię co miasto gracza; ostatnie miasto AI się nie buntuje (ochrona przed cywilizacją bez miast). Tryb zgodności i zapisy bez zmian. Wpis buntu AI w dzienniku Wydarzeń (tylko przy kontakcie z właścicielem).

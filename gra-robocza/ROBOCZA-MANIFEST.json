@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "7103aff5de10afb5c29ba337f20f7f2d",
-  "bundleSha256": "7ec73922124d909467720d7aff324f4f0a7b43023636ad41478182775c04338a",
-  "bundleBytes": 15040550,
+  "bundleMd5": "daf475f0d2213c313b53afb88285d477",
+  "bundleSha256": "97547413708f678ef3847af93b5efd6289aa226a76ce5446b7aad24a21186e8d",
+  "bundleBytes": 15041024,
   "sourceSnapshot": {
-    "source": "main + merge FC 2078c918f (kod 84deecaa8, baza a3ffe64a7)",
+    "source": "main + merge FC c0aded03c (kod 8008761e4, baza e6f3fd4b6)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 928: W nowych grach (ustawienie Kultura i religia ≠ tryb zgodności) miasto AI w buncie skrajnym po wyczerpaniu łaski przechodzi tę samą rebelię co miasto gracza; ostatnie miasto AI się nie buntuje (ochrona przed cywilizacją bez miast). Tryb zgodności i zapisy bez zmian. Wpis buntu AI w dzienniku Wydarzeń (tylko przy kontakcie z właścicielem)."
+    "FALA 929: Bunt miasta AI (nowe gry, Kultura i religia ≠ zgodność) dodaje jednozdaniowy wpis 'rebelia' do trwałej listy Wydarzenia na świecie w oknie dyplomacji, widoczny tylko gdy właściciel miasta jest znany graczowi (ta sama reguła widoczności co wojny/pokoje AI); wpis w dzienniku Wydarzeń zostaje. Tryb zgodności i zapisy bez zmian."
   ],
   "verification": [
-    "tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat OK; ai-test 297/0; society-breakdown 56/0; culture-religion-level 59/0; culture-religion 65/0; ai-city-order-need-wiring 231/0; ai-city-rebellion-gate 37/0; mutacje czerwone; pomiar 60 tur Trudny/Kultura trudny/Koszty Wysoki x4 seed 4242 i 7: 10 i 16 buntów miast AI"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; ai-test 297/0; society-breakdown 56/0; rebellion-gate 37/0; rebellion-news 24/0 (mutacja czerwona 23/1); diplo-world-news 67/0; round-trip zapisu listy OK"
   ],
   "limits": [
-    "NIE ZMIERZONO: round-trip zapisu, hotseat, wygląd wpisu w przeglądarce, skutki utraty stolicy przez AI z >=2 miastami, runtime pętli tury; ochrona ostatniego miasta nie została wywołana w pomiarze; wpis nie trafia do listy Wydarzenia na świecie"
+    "NIE ZMIERZONO: render w Chromium (zrzut okna dyplomacji z wpisem), bieg żywy na maksimum, CSS per rodzaj wpisu; test ścieżki w main.ts jest dopasowaniem po źródle"
   ],
-  "finalControl": "FC PASS-WITH-NOTES (AIREBEL r3, raport 2078c918f)",
+  "finalControl": "FC PASS-WITH-NOTES (AIREBELNEWS r1, raport c0aded03c)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-27T08:00:43",
+  "hubGeneratedAt": "2026-11-27T08:11:52",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "7103aff5de10afb5c29ba337f20f7f2d",
-      "sizeBytes": 15040550
+      "md5": "daf475f0d2213c313b53afb88285d477",
+      "sizeBytes": 15041024
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "7103aff5de10afb5c29ba337f20f7f2d",
-      "sizeBytes": 15040550
+      "md5": "daf475f0d2213c313b53afb88285d477",
+      "sizeBytes": 15041024
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "7103aff5de10afb5c29ba337f20f7f2d",
-      "sizeBytes": 15040550
+      "md5": "daf475f0d2213c313b53afb88285d477",
+      "sizeBytes": 15041024
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "7103aff5de10afb5c29ba337f20f7f2d",
-      "sizeBytes": 15040550
+      "md5": "daf475f0d2213c313b53afb88285d477",
+      "sizeBytes": 15041024
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "7103aff5de10afb5c29ba337f20f7f2d",
-      "sizeBytes": 15040550
+      "md5": "daf475f0d2213c313b53afb88285d477",
+      "sizeBytes": 15041024
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "7103aff5de10afb5c29ba337f20f7f2d",
-      "sizeBytes": 15040550
+      "md5": "daf475f0d2213c313b53afb88285d477",
+      "sizeBytes": 15041024
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "7103aff5de10afb5c29ba337f20f7f2d",
-      "sizeBytes": 15040550
+      "md5": "daf475f0d2213c313b53afb88285d477",
+      "sizeBytes": 15041024
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "7103aff5de10afb5c29ba337f20f7f2d",
-      "sizeBytes": 15040550
+      "md5": "daf475f0d2213c313b53afb88285d477",
+      "sizeBytes": 15041024
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "7103aff5de10afb5c29ba337f20f7f2d",
-      "sizeBytes": 15040550
+      "md5": "daf475f0d2213c313b53afb88285d477",
+      "sizeBytes": 15041024
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "7103aff5de10afb5c29ba337f20f7f2d",
-      "sizeBytes": 15040550
+      "md5": "daf475f0d2213c313b53afb88285d477",
+      "sizeBytes": 15041024
     }
   ],
-  "md5": "7103aff5de10afb5c29ba337f20f7f2d",
+  "md5": "daf475f0d2213c313b53afb88285d477",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
