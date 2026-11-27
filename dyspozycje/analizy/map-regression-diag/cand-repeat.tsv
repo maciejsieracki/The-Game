@@ -1,0 +1,6 @@
+B|rivers=medium|seed=777|typ=wyspy	{"mapa":"standardowy","orphanCount":6,"tribViolations":0,"tribOk":true,"firstFail":null,"netSample":"{\"connected\":false,\"orphanCount\":6,\"riverHexCount\":8552}","ms":373146}
+B|rivers=medium|seed=7|typ=wyspy	{"mapa":"standardowy","orphanCount":24,"tribViolations":0,"tribOk":true,"firstFail":null,"netSample":"{\"connected\":false,\"orphanCount\":24,\"riverHexCount\":8368}","ms":131149}
+B|rivers=medium|seed=2026|typ=wyspy	{"mapa":"standardowy","orphanCount":1,"tribViolations":0,"tribOk":true,"firstFail":null,"netSample":"{\"connected\":false,\"orphanCount\":1,\"riverHexCount\":8788}","ms":271082}
+B|rivers=high|seed=123|typ=wyspy	{"mapa":"standardowy","orphanCount":4,"tribViolations":0,"tribOk":true,"firstFail":null,"netSample":"{\"connected\":false,\"orphanCount\":4,\"riverHexCount\":8574}","ms":155588}
+B|rivers=high|seed=777|typ=wyspy	{"mapa":"standardowy","orphanCount":10,"tribViolations":0,"tribOk":true,"firstFail":null,"netSample":"{\"connected\":false,\"orphanCount\":10,\"riverHexCount\":8996}","ms":402065}
+B|rivers=high|seed=7|typ=wyspy	{"mapa":"standardowy","orphanCount":18,"tribViolations":0,"tribOk":true,"firstFail":null,"netSample":"{\"connected\":false,\"orphanCount\":18,\"riverHexCount\":8430}","ms":148479}
