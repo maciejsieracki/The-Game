@@ -484,7 +484,7 @@ import {
   loadRevoltParams,
   revoltWarningMessage,
   isOsiedleRevoltImmune,
-  aiCityRebellionEnabled,
+  shouldStartCityRebellion,
   REBEL_FACTION_OWNER_ID,
 } from './game/society-breakdown';
 import { computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
@@ -45154,11 +45154,13 @@ async function boot(): Promise<void> {
                 // Bramka jest jedna (aiCityRebellionEnabled); ścieżka wspólna — bez duplikacji.
                 const rebelOwnerPrev = city.ownerId;
                 const rebelByPlayer = isHuman(rebelOwnerPrev);
-                if (
-                  graceUpd.shouldTriggerRebellion
-                  && !city.rebelState
-                  && (rebelByPlayer || aiCityRebellionEnabled(getCulturaReligiaLevel(), isAiOwner(humanSeats, rebelOwnerPrev)))
-                ) {
+                if (shouldStartCityRebellion(
+                  graceUpd.shouldTriggerRebellion,
+                  city.rebelState === true,
+                  rebelByPlayer,
+                  isAiOwner(humanSeats, rebelOwnerPrev),
+                  getCulturaReligiaLevel(),
+                )) {
                   const wonderWatchRebel = beginWonderTransferWatch(); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
                   markCityRebellionStarted(city);
                   city.rebelState = true;

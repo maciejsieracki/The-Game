@@ -8,8 +8,8 @@ Diagnoza wyjściowa: `dyspozycje/analizy/AI-KULTURA-RELIGIA-REBELIA-2026-11-26.m
 
 1. `gra/src/game/society-breakdown.ts`: nowa czysta bramka `aiCityRebellionEnabled(level, isAiOwnerCity)` = `isAiOwnerCity && level !== null`.
    Poziom `null` (tryb zgodności, stare zapisy) → AI nie buntuje się, jak dziś.
-2. `gra/src/main.ts`, pętla Porządku miasta: warunek `shouldTriggerRebellion && isHuman(city.ownerId)` zastąpiony przez
-   `shouldTriggerRebellion && !city.rebelState && (rebelByPlayer || aiCityRebellionEnabled(getCulturaReligiaLevel(), isAiOwner(humanSeats, rebelOwnerPrev)))`.
+2. `gra/src/game/society-breakdown.ts`: czysta bramka startu `shouldStartCityRebellion(shouldTrigger, hasRebelState, ownerIsHuman, ownerIsAi, level)` = `shouldTrigger && !hasRebelState && (ownerIsHuman || aiCityRebellionEnabled(level, ownerIsAi))`.
+   `gra/src/main.ts`, pętla Porządku miasta: warunek `shouldTriggerRebellion && isHuman(city.ownerId)` zastąpiony wywołaniem `shouldStartCityRebellion(...)` (ta sama logika, testowana zachowaniem w obronie).
    Ścieżka buntu jest WSPÓLNA (bez duplikacji): `markCityRebellionStarted`, `stampCityFounderOnCapture`, `transferCityToRebelFactionWithLedger` (księga zasobów), `settleWonderTransfer`, `seedCityOwnerDefaults`.
 3. Komunikat: gracz nadal dostaje toast (`showHintMessage`) bez zmian. Dla miasta AI bez modala — nowa funkcja `recordAiCityRebellionNews`
    dopisuje jednozdaniowy wpis do dziennika „Wydarzenia” (`warEventLog`), tylko gdy gracz zna właściciela (`getDiplomaticContacts()`).
@@ -22,11 +22,13 @@ Zakres: reguła aktywna tylko przy poziomie „Kultura i religia” ≠ null (no
 
 ## Testy
 
-- Nowy test: `gra/tools/ai-city-rebellion-gate-test.cjs` — 18/0.
+- Nowy test: `gra/tools/ai-city-rebellion-gate-test.cjs` — 31/0 (w obronie: bramka startu testowana zachowaniem na wejściach, nie tekstem main.ts).
   Sprawdza: bramkę dla łatwy/normalny/trudny (AI = tak, nie-AI = nie), null = nie; bunt skrajny po łasce na trudnym; immunitet osiedla pop 1–4; okablowanie w main.ts (ciąg bramki, brak starego warunku, wpis bez modala, wspólna ścieżka).
-- Mutacje czerwone (wykonane, przywrócone, plik sprawdzony ponownie):
-  - M1: bramka w main.ts z powrotem do samego `rebelByPlayer` → test FAIL (2 asercje: wiring + ścieżka).
-  - M2: helper zwraca `isAiOwnerCity` (ignoruje poziom) → test FAIL (asercja „AI + null => BRAK buntu AI”).
+- Mutacje czerwone (wykonane w obronie, przywrócone, test 31/0 po przywróceniu):
+  - M-a: `aiCityRebellionEnabled` ignoruje poziom → FAIL (2 asercje).
+  - M-b: `shouldStartCityRebellion` bez warunku `!hasRebelState` → FAIL (2 asercje).
+  - M-c: AI bez warunku poziomu w bramce startu → FAIL (1 asercja).
+  - M-d (z pierwszej rundy): bramka w main.ts z powrotem do samego `rebelByPlayer` → FAIL (asercja wiring).
 - Bramki (wyniki z surowego wyjścia):
   - tsc --noEmit: exit 0
   - logic-test: LOGIC OK (213/213)
@@ -45,30 +47,36 @@ NIE ZMIERZONO: round-trip zapisu/wczytania miasta w buncie AI (pola `rebelState`
 ## Pomiar (runner `gra/tools/ai-cult-rel-measure-run.cjs --city-state 1 --pace wysoki`)
 
 Ustawienia maksymalne: gra Trudny, „Kultura i religia” trudny (domyślnie w runnerze), „Koszty jednostek” Wysoki ×4 (`--pace wysoki`), 60 tur, bundle live zbudowany poza repo (vite, bez `npm run build`).
-PRZED = wartości z `AI-KULTURA-RELIGIA-REBELIA-2026-11-26.md` / AICULTREBEL (tego samego runnera na main); NIE PONOWIONO w tej rundzie.
+Oba stany mierzone TYM SAMYM runnerem w tej rundzie (obrona, runda 2):
+- PRZED = baza 44649038c (origin/main), bundle `dist-base` zbudowany z `git archive` tej bazy.
+- PO = kandydat 88b933e0 z poprawką obrony (wyodrębniona czysta bramka `shouldStartCityRebellion`, zachowanie identyczne), bundle `dist-po`.
+Odczyt t60 z `seedN.jsonl`: AI = właściciele > 0 bez gracza (`czlowiek` = 0); bunt = wiersze `cityState` z owner −99.
 
-| Ziarno | Stan | Miasta AI (civ) t60 | AI krytyczne t60 | Miasta w buncie (frakcja rebeliantów, −99) t60 | Jednostki wojskowe AI t60 |
+| Ziarno | Stan | Miasta AI t60 | AI krytyczne t60 | Miasta w buncie (−99) t60 | Jednostki wojskowe AI t60 |
 |---|---|---|---|---|---|
-| 4242 | PRZED | 149 | 57 | 0 | NIE ZMIERZONO (brak w dokumencie) |
+| 4242 | PRZED | 149 | 59 | 0 | 144 |
 | 4242 | PO | 148 | 59 | 10 | 148 |
-| 7 | PRZED | 149 | 75 | 0 | NIE ZMIERZONO (brak w dokumencie) |
-| 7 | PO | 138 | 56 | 16 | 134 |
+| 7 | PRZED | 149 | 75 | 0 | 138 |
+| 7 | PO | 137 | 55 | 16 | 134 |
 
-Przebieg PO (miasta rebeliantów, suma wierszy `cityState` owner −99):
-- seed 4242: t10 0, t20 0, t30 0, t40 1, t50 6, t60 10.
-- seed 7: t10 0, t20 0, t30 0, t40 0, t50 11, t60 16.
+Uwagi do tabeli:
+- Poprzednia runda Operatora podała dla PO s7: 138 / 56 / 16 / 134 oraz PRZED s4242 57 krytycznych (z dokumentu AICULTREBEL). Ponowny pomiar daje 59 krytycznych PRZED s4242 i 137/55 PO s7. Różnice rzędu 1–2 miast wskazują na szum rozchodzenia się symulacji (niedeterminizm runnera między przebiegami), NIE na efekt zmiany. Jeden przebieg na ziarno; NIE ZMIERZONO rozkładu wielu przebiegów.
+- PRZED s7 w tym pomiarze: 75 krytycznych, zgodnie z dokumentem AICULTREBEL.
+- Miasta w buncie to frakcja −99; przypisanie do AI jest wnioskiem (brak haka „poprzedni właściciel”), NIE ZMIERZONO bezpośrednio.
+- Suma „miasta AI + miasta w buncie”: PO s4242 158, PO s7 153, PRZED 149. Symulacja rozchodzi się po pierwszym buncie; porównanie sum jest przybliżone.
+- Przebieg PO (miasta w −99, suma wierszy `cityState`): s4242 t40 1, t50 6, t60 10; s7 t50 11, t60 16 (wcześniej t10–t30 = 0).
 
 Wnioski ostrożne:
-- Bunt AI zaczyna działać: PRZED 0 buntów, PO 10 i 16 miast w t60. Gracz nie ma miast w buncie (wiersz właściciela 0: miasta 1, bunt 0), więc miasta w −99 pochodzą z buntu AI.
-- Liczba miast AI w buntach nie jest bezpośrednio mierzona (brak haka „poprzedni właściciel”); przypisanie do AI jest wnioskiem z powyższego, NIE ZMIERZONO bezpośrednio.
-- Suma miast AI + miast w buncie wynosi 158 (s4242) i 154 (s7), czyli więcej niż PRZED (149). Symulacja rozchodzi się po pierwszym buncie, więc porównanie PRZED/PO jest przybliżone; NIE ZMIERZONO, czy różnica to skutek dodatkowych miast po stronie PRZED, czy zmiana gry.
-- Krytyczne miasta AI w s4242 nie spadły (59 vs 57); w s7 spadły (56 vs 75). Przy jednym ziarnie to może być szum rozchodzenia się symulacji; nie wyciągam wniosku o efekcie buntu na porządek AI.
-- Na mapie sytuacja „garnizon/bunt” nie była rozpatrywana osobno; to zostaje do oceny właściciela.
+- Bunt AI działa: PRZED 0 buntów, PO 10 i 16 miast w t60.
+- Krytyczne miasta AI: s4242 bez zmiany (59 vs 59); s7 spadek 75 → 55. Jeden ziarno, z szumem; nie wyciągam wniosku o efekcie buntu na porządek AI.
+- Jednostki AI: s4242 144 → 148 (wzrost w szumie), s7 138 → 134.
+- Wpis w dzienniku „Wydarzenia” dla buntu AI: NIE ZMIERZONO w przeglądarce (tylko kod).
 
-Uwaga o runnerze: wznowienie z zapisu slotu (`--stop-at` w kilku wywołaniach) padało przy ładowaniu w Chromium (zrzut SIGSEGV / „Target page … has been closed”) dwa razy z rzędu. Pełne przebiegi jednym wywołaniem (60 tur ≈ 3–4 min) przeszły bez błędu, więc wyniki pochodzą z przebiegów bez wznowienia. Surowe pliki: `scratchpad` operatora (`airebel/out-post-s4242g`, `airebel/out-post-s7g`).
+Uwaga o runnerze: wznowienie z zapisu slotu w Chromium padło raz (SIGSEGV / „Target page … has been closed”) w przebiegu PRZED s7 i zadziałało przy ponowieniu z tym samym `--out` i `--profile`. Surowe pliki tej rundy: `scratchpad/prz/` (PRZED) i `scratchpad/po/` (PO) w katalogu sesji obrony.
 
 ## Nie zrobione / do decyzji
 
 - Bunt AI nie zmienia ekonomii AI ani wyglądu wpisu w panelu w przeglądarce (NIE ZMIERZONO).
+- Round-trip zapisu miasta w buncie AI, hotseat i skutki buntu ostatniego/stołecznego miasta AI dla eliminacji cywilizacji: NIE ZMIERZONO. Kod (ścieżka `transferCityToRebelFactionWithLedger`, main.ts) tylko przepisuje `ownerId` na frakcję −99 i nie wywołuje `eliminateOwner`; czy cywilizacja AI bez miast jest dalej traktowana jako żywa, nie zbadano.
 - Wpis „Wydarzenia na świecie” w oknie dyplomacji — świadomie tylko dziennik Wydarzeń (patrz pkt 3 wyżej); ewentualne przeniesienie do trwałej listy to osobna decyzja.
 - Nie zmieniano progów ani łaski; dalsze pytanie o balans buntów AI (ile miast AI powinno się buntować) zostaje dla właściciela po obejrzeniu wyników.
