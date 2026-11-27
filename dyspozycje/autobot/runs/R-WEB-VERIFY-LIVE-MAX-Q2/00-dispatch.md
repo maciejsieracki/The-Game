@@ -17,3 +17,15 @@ gra-robocza/, gra-kanon/, dyspozycje/WERSJE.md, manifest, rust-port/, npm run bu
 tsc 0; logic 213; tech-tree 20; research 33; unit-replace; combat 6; ai-test 297/0 (uruchom — w Q1 Operator je pominął).
 ## Binarne kryterium
 Dla pozycji 1–5 wynik liczbowy albo NIE ZMIERZONO z konkretnym powodem; wszystkie biegi na Wysoki ×4 + Trudna; dane w repo; bramki uruchomione.
+
+## DODATEK runda 2/5 (orkiestrator) — BAZA: FC r1 FAIL, kandydat 522f5cb929f121cfc5b680d7305591f6c3fea1b3 (kod/dane obrony dd5b6d0073bdae266e72244e7da2431bd6588148); args.cand = 522f5cb929f121cfc5b680d7305591f6c3fea1b3
+Decyzja inżynierska orkiestratora (zawężenie zakresu rundy 2, bez wpływu na grę): pozycje 3–5 (Targowisko Żywność→Podatek, cesja >1 miasta, FORTRING) NIE wchodzą do rundy 2 — wymagają haków civTest w main.ts i dostaną OSOBNY temat (VLIVE3), bo dwa tematy dotykają dziś main.ts równolegle. Binarne kryterium rundy 2 = tylko pozycje 1–2 (poniżej). Wyniki pozycji 3–5 wpisz w dokumencie jako „→ VLIVE3 (osobny temat)”.
+Stan: dane runnera w dane/seed4242-max-trudny (t2–120, Trudna + Wysoki ×4; culture=trudny NIE potwierdzone w logach seed 4242), dane/seed7-max-trudny (t2–40, culture=trudny w logu), runner wznawialny (state.json, gra/tools/diplomacy-harder-measure-run.cjs, opcje --unit-pace, --culture; readback ustawień z getSettings).
+Zadanie rundy 2:
+1. Seed 4242 na PEŁNYM maksimum: Dyplomacja Trudna + Koszty jednostek Wysoki ×4 + Kultura i religia trudny (NIE Łatwy), tury 2–150. Zacznij od nowego katalogu danych (np. dane/seed4242-max-trudny-kultura/), bo poprzedni bieg miał kulturę Łatwy; w logu KAŻDEGO segmentu zapisz linie readback unit-pace/culture/diploLevel. Do jsonl DOPISZ pole „kto wypowiedział wojnę” (deklarujący) dla wojen z graczem (żeby rozstrzygnąć 41 tur t40–80 z >1 wojną naturalną z graczem: zamierzone czy błąd) — zmiana w runnerze, nie w grze (jeśli konieczny read-only odczyt z civTest: istniejące haki; zmian gra/src nie rób).
+2. Seed 7 na maksimum t2–150 (wznów z dane/seed7-max-trudny, kultura trudny już ustawiona); jeśli Chromium pada przy wznowieniu slotu (SIGSEGV), ponów do 3 razy na segment, zapisuj raw logi .txt.
+3. Porównanie Dyplomacja Łatwa i Normalna do t100 (seed 4242; reszta ustawień jak max) — ile tur z sojuszami AI↔AI, ile sojuszy na cywilizację; wniosek: czy 0 sojuszy AI↔AI przy Trudnej jest zamierzone (reguły trudności), czy błąd.
+4. Limity: wojen z graczem (max 1 naturalna + 1 epoki), sojuszy AI↔AI (max 2/cywilizację) — wynik liczbowy z analiza-limitow-q2.py na nowych danych.
+5. Bramki: tsc 0, logic 213, tech-tree 20, research 33, unit-replace, combat 6, ai-test 297/0.
+6. Jeśli czas/obciążenie nie pozwala dobiec do t150 — zapisz dokładnie do której tury, i które pozycje NIE ZMIERZONO z powodem; nie zgaduj. Maszyna ma 4 równoległe tematy — biegi rób sekwencyjnie.
+Kryteria FC (NAPRAW): seed 4242 t2–150 i seed 7 t2–150 (lub jawne NIE ZMIERZONO z numerem tury i powodem technicznym), kultura trudny w logach każdego segmentu, porównanie Łatwa/Normalna do t100 z wnioskiem, pole deklarującego wojnę.
