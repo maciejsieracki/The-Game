@@ -1,0 +1,108 @@
+{
+ "schema": "flee-manual-measure-v1",
+ "mnoznik": 0.5,
+ "rows": [
+  {
+   "case": "Wojownik (gracz) zlamany w reczniej turze 1",
+   "nazwa": "Warrior",
+   "normal": 4,
+   "flee": 2,
+   "cap": 2,
+   "perRound": {
+    "1": 2,
+    "2": 2,
+    "3": 2,
+    "4": 2,
+    "5": 1
+   },
+   "bitwaTury": 5,
+   "rundyMax": 4,
+   "maxPerRound": 2,
+   "totalSteps": 9,
+   "kroki": 9,
+   "pozycjaStart": {
+    "col": 31,
+    "row": 74
+   },
+   "pozycjaKoniec": {
+    "col": 22,
+    "row": 74,
+    "round": 5
+   },
+   "poza_plansza": 0,
+   "kroki_bez_punktow": 0,
+   "plansza": [
+    68,
+    156
+   ]
+  },
+  {
+   "case": "Rydwan konny (gracz) zlamany w reczniej turze 1",
+   "nazwa": "War Chariot",
+   "normal": 6,
+   "flee": 3,
+   "cap": 3,
+   "perRound": {
+    "1": 3,
+    "2": 3,
+    "3": 3,
+    "4": 3,
+    "5": 1
+   },
+   "bitwaTury": 5,
+   "rundyMax": 4,
+   "maxPerRound": 3,
+   "totalSteps": 13,
+   "kroki": 13,
+   "pozycjaStart": {
+    "col": 31,
+    "row": 76
+   },
+   "pozycjaKoniec": {
+    "col": 18,
+    "row": 76,
+    "round": 5
+   },
+   "poza_plansza": 0,
+   "kroki_bez_punktow": 0,
+   "plansza": [
+    68,
+    156
+   ]
+  },
+  {
+   "case": "Strażnik bram Harappy (gracz, civ Harappa) zlamany w reczniej turze 1",
+   "nazwa": "Harappan Gate Guard",
+   "normal": 3,
+   "flee": 1,
+   "cap": 1,
+   "perRound": {
+    "1": 1,
+    "2": 1,
+    "3": 1,
+    "4": 1,
+    "5": 1
+   },
+   "bitwaTury": 5,
+   "rundyMax": 4,
+   "maxPerRound": 1,
+   "totalSteps": 5,
+   "kroki": 5,
+   "pozycjaStart": {
+    "col": 31,
+    "row": 76
+   },
+   "pozycjaKoniec": {
+    "col": 26,
+    "row": 76,
+    "round": 5
+   },
+   "poza_plansza": 0,
+   "kroki_bez_punktow": 0,
+   "plansza": [
+    68,
+    156
+   ]
+  }
+ ]
+}
