@@ -33,8 +33,12 @@ if (!process.argv[2] || OUT.startsWith(path.resolve(GRA, '..')) || !['max', 'low
 }
 const LIVE_TOOL = path.join(GRA, 'tools', 'test-hook-setcitylimit-live-bundle.cjs');
 const LOG = path.join(OUT, `defeat-${VARIANT}-s${SEED}.txt`);
+// Poziom barbarzyńców: MAKSIMUM = 'trudny' (typ BarbariansLevel: latwy | normalny | trudny | brak; 'brak' = wyłączeni,
+// więc najwyższa intensywność to 'trudny'). Runda r1 używała 'normalny' (zarzut obrony nr 1). Nadpisanie do
+// odtworzenia starych danych: DEFEAT_BARB_LEVEL=normalny.
+const BARB_LEVEL = process.env.DEFEAT_BARB_LEVEL || 'trudny';
 const BASE_ADV = {
-  barbariansLevel: 'normalny', battleAlwaysManual: false, victoryMode: 'moc_i_dominacja', buildingCostPace: 'niski',
+  barbariansLevel: BARB_LEVEL, battleAlwaysManual: false, victoryMode: 'moc_i_dominacja', buildingCostPace: 'niski',
   kosztJednostekPace: 'wysoki', wzrostLudnosciPace: 'wysoki', ruchSwiataPace: 'krotki', landFractionPercent: 30,
   landFractionCustom: false, cityStateDifficultyOverride: 'normal', cityLimitBase: 10,
   diplomacyWarLevel: 'trudna', kulturaReligiaLevel: 'trudny',

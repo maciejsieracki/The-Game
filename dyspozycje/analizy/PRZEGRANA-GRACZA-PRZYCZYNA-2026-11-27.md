@@ -1,89 +1,82 @@
-# Przegrana gracza: kto i jak zdobywa jedyne miasto (tag DEFEAT)
+# Przegrana gracza: kto i jak zdobywa jedyne miasto (tag DEFEAT, runda 2)
 
-Temat: R-WEB-EARLY-DEFEAT-CAUSE-Q1 (tag DEFEAT). Baza: `origin/main` = `fbd50d4e3` (ENDSTALL r1).
-Zmiany gry: jeden read-only hak testowy w `gra/src/main.ts` (`__defeatTestDebug.cityThreatProbe`), bez zmian logiki, progów i danych (`gra/data/**` nietknięte).
-Dane surowe (logi `*.txt`, poza repo): `scratchpad/defeat/` (runy `max`, `maxB`, `maxC`, `garrison`, `low`, `rt`, `rt2`).
-Runner: `gra/tools/defeat-cause-live.cjs` (nowy). Poprawka klasyfikacji `gameOver` w `gra/tools/endstall-fortring-live.cjs` i `gra/tools/vlive3-fortring-live.cjs`.
+Temat: R-WEB-EARLY-DEFEAT-CAUSE-Q1 (tag DEFEAT). Baza kodu: `origin/main` = `fbd50d4e3` (ENDSTALL r1); kandydat obrony: `021bfef1e`.
+Runda 2 (obrona Operatora) poprawia wcześniejszy wynik. Wcześniejsze liczby 31% (13/42) i 0% (0/10) były policzone przy poziomie barbarzyńców **Normalny**, który nie jest maksimum. Poniżej: pomiar przy maksimum (**Trudny**).
 
-## Wynik w czterech zdaniach
+Zmiany gry: tylko odczyt, hak testowy `__defeatTestDebug.cityThreatProbe` w `gra/src/main.ts` (bez zmian logiki, progów i danych; `gra/data/**` nietknięte).
+Runner: `gra/tools/defeat-cause-live.cjs` (poziom barbarzyńców z `DEFEAT_BARB_LEVEL`, domyślnie `trudny`).
+Poprawka klasyfikacji `gameOver` w `gra/tools/endstall-fortring-live.cjs` i `gra/tools/vlive3-fortring-live.cjs`.
+Dane: `dyspozycje/autobot/runs/R-WEB-EARLY-DEFEAT-CAUSE-Q1/dane-podsumowanie-r2.jsonl` (77 przebiegów, jeden wiersz na przebieg). Surowe logi `*.txt` zostają poza repo (`scratchpad/defeatT/`, `scratchpad/defeat/`).
 
-1. Jedyne miasto gracza zdobywają BARBARZYŃCY (właściciel -1) w 13 z 13 przegranych przebiegów; żaden AI ani żadna wojna nie była tu przyczyną.
-2. Zdobycie następuje w fazie barbarzyńców kolejnej tury po tym, jak 1–2 „Wojownik szekelesz” podejdą na odległość 1–2 heksów od miasta. Miasto broni jedynie startowy Zwiadowca (kategoria `zwiadowca`, poza garnizonem), walka jest rozstrzygana automatycznie (otwarte podsumowanie bitwy w turze przegranej).
-3. Przy wariancie „max + dwie jednostki wojskowe gracza na mieście” przegrana nie wystąpiła w 10 z 10 przebiegów (wszystkie 20 tur ukończone).
-4. Round-trip po przegranej: zapis był blokowany przez otwarte podsumowanie bitwy, po jego zamknięciu zapis i odczyt działają; ślad `[Diag:load] OK tura=N miasta=1` przy `owners=[]` w ENDSTALL to miasto należące do barbarzyńców (snapshot ich pomija). Artefakt harnessu, nie błąd zapisu (szczegóły w punkcie 3).
+## Wynik w pięciu zdaniach
 
-## 1. Przyczyna utraty miasta (pkt 1 celu) — seed 4242 i 7, maksimum, FORTRING ON, gracz bierny
+1. Maksimum (Trudny, Trudna dyplomacja, Wysoki x4 koszty, kultura Trudny, barbarzyńcy Trudny): jedyne miasto gracza przepada w 34 z 37 przebiegów (92%), w turach 8–15.
+2. Zdobywcą jest zawsze strona barbarzyńców (właściciel -1). Żaden AI nie zdobył miasta gracza w żadnym przebiegu.
+3. Gracz nie ma w mieście żadnej jednostki wojskowej, tylko startowego Zwiadowcę. W turze poprzedzającej utratę 1–4 „Wojownik szekelesz” (lub Sherden) stoi 1–2 heksy od miasta. W turze utraty otwarte jest podsumowanie bitwy (34/34).
+4. Dwie jednostki wojskowe na mieście (klony wojownika barbarzyńców, patrz uwagi) zmniejszają utratę do 65% (13/20). Różnica względem maksimum jest istotna (Fisher, p = 0,024). Nie jest to zero.
+5. Dolny poziom dyplomacji, kosztów i kultury (wariant `low`, barbarzyńcy nadal Trudny) daje 20/20 utrat (100%). Różnica względem maksimum nie jest istotna (p = 0,54), więc tych ustawień nie da się rozdzielić przy tej liczbie przebiegów.
 
-Ustawienia maksimum (jak w ENDSTALL): Trudny / dyplomacja „trudna” / koszty jednostek „wysoki” ×4 / kultura i religia „trudny”, mapa Mały, Rzymianie, 2 państwa-miasta. Przebieg: 20 tur, gracz bierny (bitwy zamykane trybem auto, jak w runnerze ENDSTALL), jeden fort wymuszony przy mieście.
+## 1. Maksimum: kto i kiedy zdobywa miasto (pkt 1 celu) — barbarzyńcy Trudny
 
-Zmierzone przebiegi przegranej (13 z 42 przebiegów maksimum):
+Przebiegi: seed 4242 — 19 (w tym `r1-s4242` z pierwszego testu), seed 7 — 18. Każdy z 20 tur, gracz bierny (bitwy w trybie auto, jak w ENDSTALL).
 
-| Przebieg | Ziarno | Tura przegranej | Zdobywca (owner) | Obcy w promieniu 3 w turze poprzedniej | Garnizon/obrona gracza przed utratą | Podsumowanie bitwy w turze przegranej |
-|---|---|---|---|---|---|---|
-| r-4242-20449 | 4242 | 8 | barbarzyńcy (-1) | Wojownik szekelesz ×1 | Zwiadowca (poza garnizonem) | tak |
-| r-7-3705 | 7 | 12 | barbarzyńcy (-1) | Wojownik szekelesz ×1 | Zwiadowca | tak |
-| run4-s7 | 7 | 16 | barbarzyńcy (-1) | Wojownik szekelesz ×1 | Zwiadowca | tak |
-| run7 | 4242 | 10 | barbarzyńcy (-1) | Wojownik szekelesz ×1 | Zwiadowca | tak |
-| run9 | 4242 | 9 | barbarzyńcy (-1) | Wojownik szekelesz ×1 | Zwiadowca | tak |
-| run12 | 7 | 9 | barbarzyńcy (-1) | Wojownik szekelesz ×1 | Zwiadowca | tak |
-| run14 | 4242 | 13 | barbarzyńcy (-1) | Wojownik szekelesz ×2 | Zwiadowca | tak |
-| run15 | 4242 | 8 | barbarzyńcy (-1) | Wojownik szekelesz ×1 | Zwiadowca | tak |
-| run16 | 7 | 8 | barbarzyńcy (-1) | Wojownik szekelesz ×1 | Zwiadowca | tak |
-| run17 | 4242 | 13 | barbarzyńcy (-1) | Wojownik szekelesz ×1 | Zwiadowca | tak |
-| run19 | 4242 | 11 | barbarzyńcy (-1) | Wojownik szekelesz ×1 | Zwiadowca | tak |
-| run22 | 4242 | 9 | barbarzyńcy (-1) | Wojownik szekelesz ×1 | Zwiadowca | tak |
-| run27 | 4242 | 11 | barbarzyńcy (-1) | Wojownik szekelesz ×1 | Zwiadowca | tak |
+| Seed | Przebiegi | Utrata miasta | Tura utraty (zakres) | Zdobywca | Podsumowanie bitwy w turze utraty |
+|---|---|---|---|---|---|
+| 4242 | 19 | 17 (89%) | 8–15 | barbarzyńcy (-1): 17/17 | tak: 17/17 |
+| 7 | 18 | 17 (94%) | 8–15 | barbarzyńcy (-1): 17/17 | tak: 17/17 |
+| razem | 37 | 34 (92%) | 8–15 | barbarzyńcy 34/34 | 34/34 |
 
-Wnioski z tabeli:
-- Zdobywca: 13/13 barbarzyńcy, 0/13 AI, 0/13 państwa-miasta. Wojna wypowiedziana przed utratą: nie dotyczy (barbarzyńcy nie wypowiadają wojny; żaden AI nie zdobył miasta gracza w żadnym z 42 przebiegów maksimum).
-- Źródło: w turze 5 w logu pojawiają się „nowe obozy: 2” i dwa wpisy `Spawn: Wojownik szekelesz` (w odległości kilku–kilkunastu heksów od miasta gracza); wojownicy dochodzą do miasta w ciągu ok. 3–4 tur.
-- Garnizon: w każdym z 13 przypadków jedyną jednostką gracza na heksie miasta jest startowy Zwiadowca. Nie jest to jednostka wojskowa obronna i nie stoi w garnizonie. Miasto bez obrony zostaje zdobyte w jednej bitwie.
-- Przebiegi bez utraty (29 z 42) kończą 20 tur. Maksimum w tym scenariuszu: utrata w turach 8–16 (mediana 10).
-- Z wymienionych tur 13 przegranych ma tura przegranej przedział 8–16; to ten sam przedział, który podał ENDSTALL.
+Uwaga do tabeli: przebiegi kończone bez utraty (3 w sumie) mają `dokonczone` w 20 turach. Wszystkie 34 przegrane mają w turze poprzedzającej utratę: jedynego gracza na mieście = Zwiadowca (poza garnizonem), a obcych wojowników w promieniu 3 heksów 1–4.
 
-Różnica wobec ENDSTALL (15/24 = 62% na seed 4242) nie została wyjaśniona. Tu seed 4242 daje 9/31 (29%), seed 7 daje 4/11 (36%). Nie zbadano, czy różnica wynika z wersji runnera, z kolejności wywołań sondy, czy z innego bazowego commita; NIE ZMIERZONO przyczyny różnicy.
+Co to znaczy: w tym ustawieniu jedyne miasto startowe bez wojska jest zdobywane przez barbarzyńców w ciągu kilku tur od pierwszego pojawienia się wojowników w pobliżu.
 
-## 2. Porównanie ustawień (pkt 2 celu, 10 przebiegów na wariant)
+## 2. Porównanie ustawień (pkt 2 celu)
 
-| Wariant | Opis | Ziarno 4242 | Ziarno 7 | Razem przegranych / 10 |
-|---|---|---|---|---|
-| (a) maksimum | jak wyżej; wszystkie 42 przebiegi maksimum (w tym serie z sekcji 1) | 9/31 | 4/11 | 13/42 (31%) |
-| (b) dolny poziom dyplomacji/kosztów/kultury | jak maksimum, ale Dyplomacja „łatwa”, Koszty jednostek „niski”, Kultura „łatwy”; poziom trudności pozostaje Trudny | 2/5 | 4/5 | 6/10 |
-| (c) maksimum + 2 jednostki wojskowe gracza | dwie jednostki klonowane przez istniejący hak (`__hotSeatTestDebug.spawnTestUnitForPlayer`) na heksie miasta w turze 5/6, gdy w świecie pojawi się pierwsza jednostka wojskowa | 0/5 | 0/5 | 0/10 |
+| Wariant | Ustawienia | Ziarno 4242 | Ziarno 7 | Razem przegranych / przebiegów | Tury utraty |
+|---|---|---|---|---|---|
+| (a) maksimum | Trudny; barbarzyńcy Trudny; Trudna dyplomacja; Wysoki x4; kultura Trudny | 17/19 | 17/18 | **34/37 (92%)** | 8–15 |
+| (b) dolny poziom dyplomacji, kosztów i kultury | jak (a), ale Dyplomacja „łatwa”, Koszty „niski”, kultura „łatwy”; barbarzyńcy Trudny | 10/10 | 10/10 | **20/20 (100%)** | 8–17 |
+| (c) maksimum + 2 jednostki wojskowe na mieście | jak (a) + 2 klony wojownika barbarzyńców na heksie miasta w turze 5/6 | 7/10 | 6/10 | **13/20 (65%)** | 10–18 |
+
+Test istotności (dwustronny Fisher):
+- (b) względem (a): p = 0,54 — brak różnicy.
+- (c) względem (a): p = 0,024 — różnica istotna.
 
 Uwagi do wariantów:
-- Wariant (b) wykonano zgodnie z dispatchem (pkt 2b). Właściciel w zasadach testowania wskazał, że poziomy inne niż maksymalne nie muszą być mierzone; wynik traktuję jako informacyjny.
-- Wariant (c): w starcie gry w świecie nie ma żadnej jednostki wojskowej (tylko zwiadowca i cywilne), więc hak klonujący szablon wojskowy zwracał `null`. Dlatego jednostki stawiano w pierwszej turze, w której pojawia się barbarzyńska jednostka wojskowa (tura 5/6). Są to klony wojownika barbarzyńców (ten sam typ i statystyki), a nie jednostki z pełnej produkcji gracza. Odstępstwo od „zbuduj/ustaw” z dispatchu; NIE ZMIERZONO wariantu z jednostkami budowanymi realnie przez gracza.
-- W wariancie (c) w 3 z 10 przebiegów (g2, g3, g7) widziano otwarte podsumowanie bitwy w co najmniej jednej turze; miasto zostało utrzymane we wszystkich 10.
-- W wariancie (b) wszystkie 6 przegranych ma tę samą przyczynę (barbarzyńcy, Zwiadowca bez garnizonu).
+- Wariant (c) nie jest „budowanym przez gracza” wojskiem. Hak `__hotSeatTestDebug.spawnTestUnitForPlayer` klonuje istniejący szablon wojskowy świata. Na starcie świat nie ma jednostek wojskowych, więc klony to wojownicy barbarzyńców, stawiane w pierwszej turze, w której pojawia się taka jednostka (tura 5/6). Dispatch wymagał jednostek zbudowanych przez gracza. Tego NIE ZMIERZONO (brak haka budowy w runnerze, a koszt i czas budowy przy Wysoki x4 nie są znane).
+- W (c) w 12 z 13 utrat na heksie miasta stoją oprócz Zwiadowcy 2 wojowniki gracza (w jednym przypadku 1). Klony mają ten sam typ i statystyki co wojownicy barbarzyńców.
+- Wariant (b): poziom trudności pozostaje Trudny, zmienia się tylko dyplomacja, koszty jednostek i kultura. Poziomy inne niż maksymalne nie były wymagane przez właściciela, a wynik traktuję jako informacyjny.
 
-Wniosek liczbowy: w maksimum i w wariancie (b) utrata jedynego miasta bez obrony wojskowej występuje w ok. 30–60% przebiegów; z dwiema jednostkami obronnymi w wariancie (c) — w 0 z 10.
+## 3. Historyczne wyniki na poziomie barbarzyńców Normalny (runda 1, do porównania)
 
-## 3. Round-trip po przegranej (pkt 3 celu)
+Te liczby są **nieaktualne jako wynik maksimum** i zostają tylko dla rozliczenia zarzutów. Runner w rundzie 1 ustawiał barbarzyńców na Normalny, co nie jest maksimum.
 
-Odtworzenie (`rt`, `rt2`): po przegranej w turze N (wielokrotnie: N=9, 10):
-- Przed zapisem okno podsumowania bitwy było otwarte (`battle.summaryOpen = true`). Zapis był wtedy odrzucany (`saved: false`), a `[Diag:load] brak danych` oznaczał brak zapisu w slocie. Przyczyna: twarda bramka `isSaveBlockedByBattle` w `persistSaveToSlot`.
-- Po zamknięciu bitwy (`clearBattles`, 1 zamknięcie) zapis się udaje (`saved: true`), `[Load] ... tura=N`, `[Diag:load] OK tura=N miasta=1`. Po wczytaniu: `tracked owner = -1` (miasto barbarzyńców), `playerOnHex = 0`, `gameOver = false`.
-- Po wczytaniu jeden koniec tury przywraca przegraną (`gameOverAfter: true`, właściciel -1).
+| Wariant | Razem przegranych / przebiegów | Komentarz |
+|---|---|---|
+| max, barbarzyńcy Normalny (seed 4242: 9/31; seed 7: 4/11) | 13/42 (31%) | surowe dane w `scratchpad/defeat/` (poza repo) |
+| low, barbarzyńcy Normalny | 6/10 | |
+| garrison, barbarzyńcy Normalny | 0/10 | wynik nieprawdziwy dla maksimum; patrz tabela 2 |
 
-Wniosek: ślad ENDSTALL `[Diag:load] OK tura=9 miasta=1` przy `owners=[]` jest zgodny z zachowaniem gry. `miasta=` w logu to `cities.length` (wszystkie miasta, także należące do barbarzyńców), a `owners` w snapshot pomija barbarzyńców (`isAiOwner && !isBarbarian`). Jedyne miasto należało do barbarzyńców.
+Różnica między ENDSTALL (15/24 = 62%, seed 4242) a rundą 1 (seed 4242: 9/31 = 29%) nie została wyjaśniona. ENDSTALL także używał barbarzyńców Normalny, więc poziom barbarzyńców jej nie tłumaczy. NIE ZMIERZONO przyczyny różnicy (możliwe różnice wersji runnera lub kolejności wywołań).
 
-Werdykt: ARTEFAKT HARNESSU (bramka zapisu przy otwartym podsumowaniu bitwy + definicja snapshot). Nie stwierdzono błędu zapisu/odczytu po przegranej.
+## 4. Round-trip po przegranej (pkt 3 celu)
 
-Obserwacja do oceny (nie błąd potwierdzony): po wczytaniu zapisu z przegraną stan pokazuje `gameOver = false` aż do końca tury; przegrana jest wtórnie wykrywana w tym końcu tury. Czy ekran porażki powinien wracać od razu po wczytaniu, to pytanie o zachowanie, nie o poprawność; zostawiono do decyzji orkiestratora.
+Sprawdzono na przebiegu `r1-s4242` (barbarzyńcy Trudny, tura 9):
+- Przed zapisem otwarte było podsumowanie bitwy (`summaryOpen = true`). Zapis jest wtedy blokowany przez bramkę `isSaveBlockedByBattle`. To zamierzone zachowanie, a runner zamyka bitwę przed round-trip.
+- Po zamknięciu bitwy zapis się udaje (`saved: true`). Po wczytaniu miasto należy do barbarzyńców (owner -1), a jeden koniec tury przywraca przegraną (`gameOverAfter: true`).
+- Ślad ENDSTALL `[Diag:load] OK tura=9 miasta=1` przy `owners=[]` jest zgodny z tym: `miasta=` liczy wszystkie miasta (`cities.length`), a snapshot pomija miasta barbarzyńców.
 
-## 4. Runner (pkt 4 celu)
+Werdykt: artefakt harnessu (bramka zapisu przy otwartym podsumowaniu + definicja snapshotu). Nie stwierdzono błędu zapisu lub odczytu po przegranej. Round-trip zweryfikowano na jednym przebiegu, nie na wszystkich 37.
 
-- `gra/tools/endstall-fortring-live.cjs` i `gra/tools/vlive3-fortring-live.cjs`: gdy bramka tury jest zablokowana i `__defeatTestDebug.isGameOver() === true`, zapis to `kind: 'result', outcome: 'przegrana'` (wynik przebiegu), nie `stop/cannot-end`.
-- Nowy `gra/tools/defeat-cause-live.cjs`: rejestruje na każdą turę właściciela miasta gracza, obce jednostki w promieniu 3, jednostki gracza na heksie miasta, stan bitwy i linie konsoli o bitwach/zdobyciu; wariant `max | low | garrison`; po przegranej round-trip z zamknięciem bitew i jednym końcem tury po wczytaniu.
+Obserwacja do oceny (nie błąd potwierdzony): po wczytaniu zapisu z przegraną `gameOver` wynosi `false` do końca tury. Czy ekran porażki ma wracać od razu, to pytanie o zachowanie, nie o poprawność. Zostawiono orkiestratorowi.
 
 ## 5. Ograniczenia
 
-- Liczby pochodzą z żywego Chromium, dane surowe w `scratchpad/defeat/` (poza repo). Nie zapisano wizualnej weryfikacji ekranu porażki.
-- „Otwarte podsumowanie bitwy” w turze przegranej potwierdza, że walka była (auto-rozstrzygnięcie), ale nie zapisuje jej wyniku liczbowego (siły, straty). Liczebność obrońców i atakujących z logu bitwy NIE ZMIERZONO.
-- Stan wojny (formalne wypowiedzenie) nie był odczytywany osobnym hakiem; dla zdobywcy barbarzyńskiego ustalenie „wojny” nie ma zastosowania.
-- Wariant (c) z klonami wojskowymi barbarzyńców zamiast realnej budowy przez gracza.
+- Czy w turze utraty była **bitwa**, czy **zajęcie miasta bez walki** (`captureCityWithoutBattle`), nie zostało rozstrzygnięte. Dowodem jest tylko flaga `summaryOpen` (34/34). Siły obu stron i straty nie były mierzone (log zawiera tylko flagę).
+- Wariant (c) używa klonów wojownika barbarzyńców, nie jednostek zbudowanych przez gracza (patrz tabela 2).
+- Formalny stan wojny nie był odczytywany (zdobywca to barbarzyńcy, nie dotyczy).
+- Surowe logi `*.txt` nie są w repozytorium. W repozytorium jest plik `dane-podsumowanie-r2.jsonl` z jednym wierszem na przebieg. Pełne logi można odtworzyć runnerem (`node gra/tools/defeat-cause-live.cjs <katalog> <max|low|garrison> <seed> 20`, z `DEFEAT_BARB_LEVEL` domyślnie `trudny`).
 
 ## Pytanie do właściciela (jednozdaniowe, dla orkiestratora)
 
-DECISION_REQUIRED: Przy maksymalnym ustawieniu gry, gdy gracz nie buduje obrony, jedyne miasto ginie w ok. 31% przebiegów (tury 8–16) w ataku barbarzyńców, a z dwiema jednostkami wojskowymi na mieście — w 0% przebiegów: (A) zostawić obecny balans, przy którym ten start bez obrony bywa przegrany; (B) zwiększyć obronę startową gracza (mniej przegranych, zmiana dla wszystkich ustawień); (C) zmienić zachowanie barbarzyńców w pobliżu miasta gracza w pierwszych turach (mniej przegranych bez zmiany obrony gracza). Decyzja należy do właściciela; parametrów nie zmieniono.
+DECISION_REQUIRED: Przy maksymalnym ustawieniu gry, gdy gracz nie buduje obrony, jedyne miasto startowe ginie w 92% przebiegów (tury 8–15), zawsze w ataku barbarzyńców; z dwoma jednostkami wojskowymi na mieście spada to do 65% (klony barbarzyńców, nie budowa gracza), a na dolnym poziomie dyplomacji i kosztów nadal 100%: (A) zostawić obecny balans; (B) zwiększyć obronę startową gracza (mniej utrat we wszystkich ustawieniach); (C) zmienić zachowanie barbarzyńców w pobliżu miasta gracza w pierwszych turach (mniej utrat bez zmiany obrony gracza). Decyzja należy do właściciela; parametrów nie zmieniono.
