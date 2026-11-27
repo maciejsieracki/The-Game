@@ -1,0 +1,43 @@
+A. bramka aiCityRebellionEnabled
+  PASS  AI + poziom latwy => buntuje sie
+  PASS  nie-AI + poziom latwy => bramka zamknieta (decyduje czlowiek/inny)
+  PASS  AI + poziom normalny => buntuje sie
+  PASS  nie-AI + poziom normalny => bramka zamknieta (decyduje czlowiek/inny)
+  PASS  AI + poziom trudny => buntuje sie
+  PASS  nie-AI + poziom trudny => bramka zamknieta (decyduje czlowiek/inny)
+  PASS  AI + null (tryb zgodnosci) => BRAK buntu AI
+  PASS  nie-AI + null => false
+  PASS  start: AI + latwy + bunt skrajny + 2 inne miasta => START
+  PASS  start: gracz + latwy + bunt skrajny => START (zachowanie sprzed zmiany)
+  PASS  start: AI + normalny + bunt skrajny + 2 inne miasta => START
+  PASS  start: gracz + normalny + bunt skrajny => START (zachowanie sprzed zmiany)
+  PASS  start: AI + trudny + bunt skrajny + 2 inne miasta => START
+  PASS  start: gracz + trudny + bunt skrajny => START (zachowanie sprzed zmiany)
+  PASS  start: AI + null (zgodnosc) => BRAK startu
+  PASS  start: gracz + null => START (zgodnosc dla gracza bez zmian)
+  PASS  start: brak bunt skrajny => brak startu (AI, trudny)
+  PASS  start: brak bunt skrajny => brak startu (gracz)
+  PASS  start: miasto juz w buncie => brak drugiego startu (AI)
+  PASS  start: miasto juz w buncie => brak drugiego startu (gracz)
+  PASS  R3: AI ostatnie miasto (0 innych) + trudny => BRAK startu
+  PASS  R3: AI ostatnie miasto (0 innych) + latwy => BRAK startu
+  PASS  R3: AI z 2 miastami (1 inne) => START (pierwsze miasto moze sie zbuntowac)
+  PASS  R3: gracz ostatnie miasto (0 innych) => START (regula tylko dla AI)
+  PASS  R3: AI ostatnie miasto przy null (zgodnosc) => brak startu (bez zmian)
+  PASS  start: barbarzynca/rebeliant (ani gracz, ani AI) => brak startu
+B. laska i bunt skrajny (poziom trudny = maksimum)
+  PASS  bunt skrajny po wyczerpaniu laski wyzwala rebelie
+  PASS  laska trwa co najmniej 1 ture przed buntem
+  PASS  powyzej progu bunt nie startuje
+C. immunitet osiedla (pop 1-4) nadal chroni na trudnym
+  PASS  pop 1 immunitet
+  PASS  pop 4 immunitet
+  PASS  pop 5 bez immunitetu
+D. okablowanie main.ts
+  PASS  bramka wola shouldStartCityRebellion(..., getCulturaReligiaLevel(), rebelOwnerOtherCities)
+  PASS  R3: liczba innych miast wlasciciela liczona na zywo z cities (bez miasta rozpatrywanego)
+  PASS  stary warunek tylko-czlowiek nie wystepuje
+  PASS  bunt AI: wpis w dzienniku bez modala (recordAiCityRebellionNews)
+  PASS  wspolna sciezka: transferCityToRebelFactionWithLedger po bramce AI
+
+WYNIK: PASS=37 FAIL=0

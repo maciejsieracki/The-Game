@@ -1,0 +1,65 @@
+
+== A. wspolny executeUnitReplace: pelny koszt Pieniadz + surowce ==
+  [OK] zamiana wykonana przez wspolny modul
+  [OK] zaplacono PELNY Pieniadz nowej jednostki (32)
+  [OK] pobrano PELNE surowce z puli: {"braz":50}
+  [OK] rola wodza (isGeneral) i armia (stackGroupId) zachowane
+  [OK] wyszkolenie/bonusy zachowane
+  [OK] HP% zachowane, ruch zuzyty, flaga tury ustawiona
+
+== B. brak zasobow = brak zamiany (zero mutacji) ==
+  [OK] brak surowca -> bez zamiany i bez pobrania
+  [OK] brak Pieniadza -> bez zamiany i bez pobrania surowca
+
+== C. 1 zamiana na jednostke na ture ==
+  [OK] pierwsza zamiana OK
+  [OK] druga w tej samej turze odrzucona, nic nie pobrano
+
+== D. limit Super-jednostki (brama wspolna) ==
+  [OK] brama (Super max 1) blokuje przed kosztem
+  [OK] superUnitLimitViolation: druga sztuka Super zablokowana (Hieros Lochos (Święty Zastęp))
+
+== E. AI: promoteAiUnitForEra deleguje do wspolnego modulu ==
+  [OK] AI: zamiana za pelny koszt
+  [OK] AI: 1 zamiana/jednostke/ture
+  [OK] AI: brama (limit Super) blokuje zamiane
+  [OK] AI: bez surowca -> brak zamiany, skarbiec nietkniety
+
+== F. limit zamian na ture i kolejnosc (najstarsze/najslabsze najpierw) ==
+  [OK] cap = max(1, floor(10% armii)): 0->0, 5->1, 35->3, 100->10
+  [OK] parametr udzialu <= 10%
+  [OK] ai-params.json ustawia dotychczasowe 10% i ten sam cap
+  [OK] limit z konfiguracji wplywa na cap
+  [OK] brak lub niepoprawny limit zachowuje dawny fallback 10%
+  [OK] kolejnosc: epoka rosnaco, potem sila rosnaco: cbae
+  [OK] zablokowana (bitwa/oblezenie/zagrozenie/poza terytorium) pominieta
+
+== G. klasa armii zachowana (wrecz/dystans/konnica) ==
+  [OK] wrecz -> wrecz dozwolone
+  [OK] AI shared candidate path keeps new melee cross-Typ choices (Falangite + Spearman)
+  [OK] wrecz (Swordsman) -> dystans (Slinger) ODRZUCONE
+  [OK] wrecz -> konnica (Mount) ODRZUCONE
+
+== H. okablowanie w main.ts (zrodlo) ==
+  [OK] gracz: performUnitReplace -> executeUnitReplace (wspolny modul)
+  [OK] AI: te same zaleznosci (brama Super, koszt, platnosc) co gracz
+  [OK] AI: limit z ai-params.json steruje capem zamian na ture
+  [OK] AI: tylko na wlasnym terytorium (jak gracz)
+  [OK] AI: nie rusza jednostek w oblezeniu ani pod bezposrednim zagrozeniem
+  [OK] AI: zachowanie klasy armii
+  [OK] AI: raz na ture wlasciciela, nie przy wznowieniu komend
+  [OK] AI: brak mnoznika uprzywilejowania trudnosci w zamianie
+
+== I. regula rezerwy utrzymania AI przy zamianie (r2, zarzut Evaluatora 1) ==
+  [OK] bogaty skarbiec: zamiana dozwolona
+  [OK] skarbiec po zaplacie (50) < 10 tur utrzymania (100): ODRZUCONE
+  [OK] skarbiec < cena: ODRZUCONE
+  [OK] dochod netto 2 < minimum 3: ODRZUCONE
+  [OK] przyrost utrzymania 15 liczony w netto (5 >= 3): dozwolone
+  [OK] brak danych rezerwy: dawna regula (cena)
+  [OK] brak danych rezerwy: skarbiec < cena nadal ODRZUCONE
+  [OK] AI: brama zamiany = brama Super (wspolna) + regula rezerwy
+  [OK] AI: rezerwa liczona dla ZAMIANY (jedna jednostka zmienia typ, bez dodania)
+  [OK] aiPurchaseReserveInputs: gałąź zamiany
+
+ai-unit-replace-same-rules: 45 passed, 0 failed
