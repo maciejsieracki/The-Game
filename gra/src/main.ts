@@ -34551,6 +34551,8 @@ async function boot(): Promise<void> {
       // przejęcia miast (poprzedni -> nowy właściciel) z ostatniego wywołania. Zero zapisu do stanu gry.
       let cityOwnerPrevForTest: Map<number, number> | null = null;
       let cityTransfersLastForTest: Array<{ z: number; na: number; liczba: number }> = [];
+      // AICULTREBEL (tylko odczyt): licznik kolejnych tur w strefie buntu skrajnego per id miasta.
+      const cityCritStreakForTest = new Map<string, number>();
       (window as any).__aiEconomyMeasure = {
         schemaVersion: 1,
         /** R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1 (tylko ?civTest=1, domyślnie OFF): gracz (0) wykonuje w fazie AI
@@ -34601,8 +34603,8 @@ async function boot(): Promise<void> {
         /** AICULT-DIAG (tylko odczyt, ?civTest=1): stan miast per właściciel na bieżący moment: liczba miast, miasta w buncie
          *  skrajnym (`st.bunt`), w rebelii (`st.rebelState`), z ostrzeżeniem o rebelii (`st.revoltWarning`), Porządek (porPct)
          *  poniżej progu `prog` (%), suma porPct i rozkład pasm (bandLabel). Rebelianci = owner -99, barbarzyńcy = -1. */
-        cityStateTurn: (prog: number): Array<{ owner: number; miasta: number; bunt: number; rebelia: number; ostrzezenie: number; ponizejProgu: number; porPctSuma: number; pasma: Record<string, number> }> => {
-          const by = new Map<number, { owner: number; miasta: number; bunt: number; rebelia: number; ostrzezenie: number; ponizejProgu: number; porPctSuma: number; pasma: Record<string, number> }>();
+        cityStateTurn: (prog: number): Array<{ owner: number; miasta: number; bunt: number; rebelia: number; ostrzezenie: number; ponizejProgu: number; porPctSuma: number; pasma: Record<string, number>; krytyczne?: number; seria3?: number; lacznaZero?: number; poCapture?: number; osiedle?: number; rebeliaDozwolona?: number; czlowiek?: number }> => {
+          const by = new Map<number, { owner: number; miasta: number; bunt: number; rebelia: number; ostrzezenie: number; ponizejProgu: number; porPctSuma: number; pasma: Record<string, number>; krytyczne?: number; seria3?: number; lacznaZero?: number; poCapture?: number; osiedle?: number; rebeliaDozwolona?: number; czlowiek?: number }>();
           for (const c of cities) {
             const o = c.ownerId;
             let row = by.get(o);
@@ -34613,6 +34615,19 @@ async function boot(): Promise<void> {
             if (st?.rebelState) row.rebelia++;
             if (st?.revoltWarning) row.ostrzezenie++;
             if (typeof st?.porPct === 'number') { row.porPctSuma += st.porPct; if (st.porPct < prog) row.ponizejProgu++; }
+            // AICULTREBEL (tylko odczyt): seria tur w buntcie skrajnym; łaska (0 = wyczerpana); blokady warunku rebelii.
+            const krytyczne = typeof st?.porPct === 'number' && st.porPct < prog;
+            const seria = krytyczne ? (cityCritStreakForTest.get(c.id) ?? 0) + 1 : 0;
+            if (krytyczne) cityCritStreakForTest.set(c.id, seria); else cityCritStreakForTest.delete(c.id);
+            if (krytyczne) {
+              row.krytyczne = (row.krytyczne ?? 0) + 1;
+              if (seria >= 3) row.seria3 = (row.seria3 ?? 0) + 1;
+              if (st?.revoltGraceRemaining === 0) row.lacznaZero = (row.lacznaZero ?? 0) + 1;
+              if ((st?.postCaptureLawTurnsRemaining ?? 0) > 0) row.poCapture = (row.poCapture ?? 0) + 1;
+              if (isOsiedleRevoltImmune(c.population, data.societyParams, _menuDifficulty)) row.osiedle = (row.osiedle ?? 0) + 1;
+              if (seria >= 3 && st?.revoltGraceRemaining === 0 && isHuman(o)) row.rebeliaDozwolona = (row.rebeliaDozwolona ?? 0) + 1;
+            }
+            row.czlowiek = isHuman(o) ? 1 : 0;
             const band = st?.bandLabel ?? 'brak';
             row.pasma[band] = (row.pasma[band] ?? 0) + 1;
           }
