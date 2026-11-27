@@ -48,5 +48,21 @@ ok(trig > 0 && /if \(!canPlayerInitiateEndTurn\(\)\) \{\s*console\.warn\(/.test(
 ok(/healStaleEndTurnBlockers\(\);\n\s*if \(playtestWalkaActive\)/.test(body),
   'healStaleEndTurnBlockers() nadal wołane przed bramkami (semantyka bez zmian)');
 
+// Ścieżki KLIKU gracza (advanceSeat ← triggerPlayerEndTurn, endActiveHumanTurn) muszą
+// wołać wersję GŁOŚNĄ: bramka advanceSeat() ma console.warn przy odrzuceniu kliku.
+const advStart = src.indexOf('function advanceSeat(');
+const advEnd = src.indexOf('function triggerPlayerEndTurn(', advStart);
+ok(advStart > 0 && advEnd > advStart, 'funkcja advanceSeat znaleziona');
+const advBody = src.slice(advStart, advEnd);
+ok(/if \(!canPlayerInitiateEndTurn\(\)\) \{/.test(advBody) && !/canPlayerInitiateEndTurn\(true\)/.test(advBody),
+  'advanceSeat (klik) woła wersję głośną canPlayerInitiateEndTurn()');
+const trigStart = src.indexOf('function triggerPlayerEndTurn(');
+const trigEnd = src.indexOf('window.addEventListener', trigStart);
+ok(trigStart > 0 && trigEnd > trigStart && !/canPlayerInitiateEndTurn\(/.test(src.slice(trigStart, trigEnd)),
+  'triggerPlayerEndTurn (klik) nie woła wersji cichej ani własnej bramki');
+// Jedyne wywołanie wersji cichej to HUD config.canEndTurn (cykl 500 ms + render przycisku).
+const quietCalls = src.match(/canPlayerInitiateEndTurn\(true\)/g) || [];
+ok(quietCalls.length === 1, `dokładnie jedno wywołanie wersji cichej w kodzie (${quietCalls.length})`);
+
 console.log(`\n${pass} pass, ${fail} fail`);
 process.exit(fail === 0 ? 0 : 1);
