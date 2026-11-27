@@ -753,4 +753,20 @@ fn kolejnosc_zagrozen_priorytet_potem_manhattan() {
         vec![1, 3, 2, 0]
     );
     assert!(attack_move_threats(&inp, None, &s).is_empty());
+
+    // N2 (Obrona r1): pełny remis (ten sam `_priorityScore` i ta sama odległość Manhattan) na tablicy > 20
+    // elementów, z przeplotem kluczy (bez gotowego posortowanego przebiegu). `Array.prototype.sort` (TimSort)
+    // jest stabilny, więc przy remisie zostaje kolejność rosteru: najpierw parzyste (wynik 0), potem nieparzyste.
+    let many: Vec<AttackEnemy> = (0..48).map(|_| mk(11, 10)).collect();
+    let inp = AttackOrderInput {
+        pos: (10, 10),
+        enemies: &many,
+        avoid_auto_backtrack: false,
+        last_auto_move_from: None,
+    };
+    let s = S {
+        prio: (0..48).map(|i| f64::from(i % 2)).collect(),
+    };
+    let want: Vec<usize> = (0..48).step_by(2).chain((1..48).step_by(2)).collect();
+    assert_eq!(attack_move_threats(&inp, Some(&route), &s), want);
 }
