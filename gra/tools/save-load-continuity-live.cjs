@@ -47,7 +47,7 @@ const log = (...a) => console.log(new Date().toISOString().slice(11, 19), CFG, S
 const { closeCivWelcome, prepareEndTurnGate } = require('./_live-ready.cjs');
 
 const MAX_ADV = {
-  barbariansLevel: 'normalny', battleAlwaysManual: false, victoryMode: 'moc_i_dominacja', buildingCostPace: 'niski',
+  barbariansLevel: 'trudny', battleAlwaysManual: false, victoryMode: 'moc_i_dominacja', buildingCostPace: 'niski',
   wzrostSurowcowZEpoka: true,
   kosztJednostekPace: 'wysoki', wzrostLudnosciPace: 'wysoki', ruchSwiataPace: 'krotki', landFractionPercent: 30, landFractionCustom: false,
   cityStateDifficultyOverride: 'normal', cityLimitBase: 10, diplomacyWarLevel: 'trudna', kulturaReligiaLevel: 'trudny',
@@ -173,7 +173,8 @@ async function openSession(chromium, res) {
 
 async function main() {
   const { chromium } = require(PW);
-  const res = { dist: DIST, cfg: CFG, seed: SEED, saves: SAVES, k: K, restore: RESTORE, expect: EXPECT, mode: MODE, pageErrors: [], segments: [] };
+  const res = { dist: DIST, cfg: CFG, seed: SEED, saves: SAVES, k: K, restore: RESTORE, expect: EXPECT, mode: MODE, pageErrors: [], segments: [],
+    cfgUsed: CFG === 'default' ? null : { barbariansLevel: MAX_ADV.barbariansLevel, difficulty: MAX_PARAMS.difficulty, rivals: MAX_PARAMS.rivals, civTypesCount: MAX_PARAMS.civTypesCount } };
   const flush = () => fs.writeFileSync(OUT, JSON.stringify(res, null, 1));
   if (MODE === 'A') {
     // --- sesja A: ciagla gra; migawki w punktach zapisu, zrzuty K tur po kazdej migawce -> plik stanu (--state) ---
