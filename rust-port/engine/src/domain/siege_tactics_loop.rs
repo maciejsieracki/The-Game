@@ -2498,6 +2498,10 @@ struct ProdAdvanceWorld<'a> {
     /// K5LOOP-SIEGE-ATK-B (T2b): `_meleeBlockedByWall(ru, e)` (`:8439`, `:8456`) dla każdego wroga (indeks listy strony
     /// przeciwnej), [`ProdBody::melee_blocked_list`]. Bez muru same `false`.
     blocked: Vec<bool>,
+    /// R-RUSTPORT-P4-417A r2: `_compactAttackAllowsStep` czyta `_effectiveMetaForUnit(ru)` (`:8140`), które dopisuje brakujący
+    /// wpis grupy (`_ensureGroupMeta`, `:17636`); ślad wywołania predykatu, żeby wołający dopisał wpis jak pin
+    /// ([`ProdBody::ensure_group_meta_of`]). `None` = bez śladu (dotychczasowi wołający).
+    compact_probe: Option<&'a Cell<bool>>,
 }
 
 impl ProdAdvanceWorld<'_> {
@@ -2605,6 +2609,9 @@ impl AdvanceWorld for ProdAdvanceWorld<'_> {
 
     /// Web `_compactAttackAllowsStep(ru, col)` (`battleScene.ts:8139-8172`) przez [`compact_attack_allows_step`].
     fn compact_attack_allows_step(&self, _unit_id: &str, col: f64) -> bool {
+        if let Some(probe) = self.compact_probe {
+            probe.set(true);
+        }
         let six = side_ix(self.unit.side);
         let me = &self.units[six][self.unit.idx].activate;
         let side = match self.unit.side {
@@ -3041,6 +3048,16 @@ impl<R: RollSource> ProdBody<R> {
     /// K5DOC-T4e-0 (D3): web `occByKey` (klucz pola -> identyfikator jednostki).
     pub fn occ_by_key(&self) -> &HashMap<CellKey, String> {
         &self.occ_by_key
+    }
+
+    /// R-RUSTPORT-P4-417A r2: nadpisanie `occByKey` zadanym zbiorem zajętych pól (migawka sceny pinu: martwi nie zajmują
+    /// pola, część uciekających też nie, `:6010-6020`; wektory kroku ciała). Domyślnie zajętość seedowana z pozycji wszystkich
+    /// jednostek ([`ProdBody::new`]).
+    pub fn set_occupancy(&mut self, tiles: impl IntoIterator<Item = ((i64, i64), UnitRef)>) {
+        self.occ_by_key = tiles
+            .into_iter()
+            .map(|((c, r), u)| (cell_key(c as f64, r as f64), unit_tag(u)))
+            .collect();
     }
 
     /// K5DOC-T4e-0: jeden krok ruchu pieszego/kawalerii (web `_doMove`, `battleScene.ts:8685-8776`) przez
@@ -3805,11 +3822,11 @@ impl<R: RollSource> ProdBody<R> {
             return 0.0;
         };
         pend.move_left = Some(res.move_left);
-        // Odmowa bramki muru (`:8689-8692`): `done()` bez callbacku kroku.
-        if !res.outcome.done {
-            if let Some(p) = prev {
-                self.doctrine[ix][unit.idx].last_auto_move_from = Some(p);
-            }
+        // `done` przekazane do `_doMove` JEST callbackiem kroku rozkazu (`:18350-18352`): wołany po animacji kroku, a przy
+        // odmowie bramki muru (`:8689-8692`) od razu, więc `lastAutoMoveFrom = previousPosition` ustawia się w obu przypadkach
+        // (417A r2, wektory kroku ciała: odmowa też zapisuje `previousPosition`).
+        if let Some(p) = prev {
+            self.doctrine[ix][unit.idx].last_auto_move_from = Some(p);
         }
         self.pending[ix][unit.idx] = Some(pend);
         step_ms(&res, self.frame_ms)
@@ -3842,6 +3859,12 @@ impl<R: RollSource> ProdBody<R> {
         c.move_left = res.move_left;
         c.moved = true;
         if res.outcome.done {
+            // 417A r2: w rozkazie ruchu gracza `done` odmowy to callback kroku (`:18350-18352`): `previousPosition` zapisana.
+            if matches!(c.kind, MarchKind::MoveOrder) {
+                if let Some(p) = c.prev {
+                    self.doctrine[side_ix(c.unit.side)][c.unit.idx].last_auto_move_from = Some(p);
+                }
+            }
             MarchNext::Done
         } else {
             MarchNext::StepEnd
@@ -4532,6 +4555,7 @@ impl<R: RollSource> ProdBody<R> {
             doctrine: &self.doctrine,
             group_meta: &self.group_meta,
             formation_rank: &self.formation_rank,
+            compact_probe: None,
         }
     }
 
@@ -8589,8 +8613,13 @@ impl<R: RollSource> ProdBody<R> {
             occ: &self.occ_by_key,
             missing: Cell::new(false),
         };
+        // `_compactAttackAllowsStep` (`:8140`) dopisuje wpis grupy jednostki (`_effectiveMetaForUnit` -> `_ensureGroupMeta`).
+        let compact_probe = Cell::new(false);
         let gates = ProdMoveGates {
-            world: self.advance_world(unit, st),
+            world: ProdAdvanceWorld {
+                compact_probe: Some(&compact_probe),
+                ..self.advance_world(unit, st)
+            },
         };
         let attack = || {
             let me = self.combatant(unit, st);
@@ -8614,7 +8643,10 @@ impl<R: RollSource> ProdBody<R> {
                     }
                 })
                 .collect();
-            let w = self.advance_world(unit, st);
+            let w = ProdAdvanceWorld {
+                compact_probe: Some(&compact_probe),
+                ..self.advance_world(unit, st)
+            };
             let avoid = w.avoid_auto_backtrack("");
             let env = ProdAttackEnv {
                 terrain: self.terrain.as_deref(),
@@ -8651,6 +8683,9 @@ impl<R: RollSource> ProdBody<R> {
         };
         let res = perform_player_order(order, false, od, move_input, &grid, &gates, attack);
         let grid_missing = grid.missing.get();
+        if compact_probe.get() {
+            self.ensure_group_meta_of(unit);
+        }
         if grid_missing || missing.get() {
             return (ManualRun::MissingTerrain, None);
         }

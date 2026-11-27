@@ -2024,6 +2024,312 @@ if (process.env.WIRING_A_ATTACK_ORDER_STEPS) {
   process.exit(0);
 }
 
+// R-RUSTPORT-P4-417A r2 (K5EXEC-H4, D-417A-3): wektory KROKU CIALA trybu recznego. `WIRING_A_MANUAL_BODY_STEPS=1`:
+// przypadki jednego wywolania `_activateUnit(ru, done)` (`:6024-6112`) na scenie pinu w trybie recznym
+// (`_manualMode`, strona gracza = `_deployPlayerSideOpt`) z rozkazem gracza `hold` / `none` / `move` / `attack` /
+// `attackMove` (`_performPlayerOrder` `:18280-18428`, wolany z `:6068`). Pin wykonuje caly tekst (straznik SHA-256).
+// Wykonawcze `_doMove` (przestawia jednostke i `occByKey`, potem callback), `_doAttack`, `_doRangedAttack`,
+// `_doMeleeAttack` i `_refreshQueuedOrderVisuals` zapisuja decyzje; kazdy przypadek z czynnoscia spoza
+// {done, move, attack} albo z drugim wykonaniem jest odrzucany (licznik `dropped`). Blokada generala nieaktywna
+// (`blockadeActive = false`; w ciele czesc B #422), `siegeWallCol = -1` (oblezenie reczne = r3). Wejscie sceny
+// (`inputs`) jest w formacie `vectors.json`, wiec test Rust buduje te sama scene przez `SiegeBattleSession::prepare_scene`
+// i NADPISUJE stan (pozycje, flagi, zajetosc, doktryna) z migawki. Zapis: `manual_body_step_vectors.json` (`WIRING_A_OUT`).
+if (process.env.WIRING_A_MANUAL_BODY_STEPS) {
+  const tS = Date.now();
+  let seed = 0x417417;
+  const rnd = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+  const ri = (a, b) => a + Math.floor(rnd() * (b - a + 1));
+  const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
+  const ck = (c, r) => `${c},${r}`;
+  const BASES = [
+    { name: 'st_mur', built: ['mury'], atk: [MO_W, MO_W, MO_W, MO_K, MO_L, MO_L, MO_F, MO_W], def: [MO_W, MO_S, MO_L, MO_L, MO_W, MO_W] },
+    { name: 'st_rzeka', built: ['palisada'], world: { baza: 'Równina', las: false, rzeka: true }, atk: [MO_W, MO_K, MO_K, MO_L, MO_W, MO_W, MO_F, MO_W], def: [MO_W, MO_L, MO_L, MO_S, MO_W, MO_K] },
+    { name: 'st_las', teren: 'Las', built: ['mury', 'baszta'], world: { baza: 'Las', las: true, rzeka: false }, atk: [MO_W, MO_W, MO_L, MO_K, MO_W, MO_S, MO_W, MO_L], def: [MO_W, MO_W, MO_L, MO_L, MO_K, MO_W] },
+  ];
+  const DOCS = [null, 'steady', 'skirmish', 'aggressive', 'defensive', 'manual'];
+  const N = {
+    hold: Number(process.env.WIRING_A_MANUAL_BODY_NH ?? 60),
+    none: Number(process.env.WIRING_A_MANUAL_BODY_NN ?? 240),
+    move: Number(process.env.WIRING_A_MANUAL_BODY_NM ?? 270),
+    attack: Number(process.env.WIRING_A_MANUAL_BODY_NA ?? 240),
+    attackMove: Number(process.env.WIRING_A_MANUAL_BODY_NAM ?? 240),
+    wallMove: Number(process.env.WIRING_A_MANUAL_BODY_NWM ?? 120),
+    wallAttack: Number(process.env.WIRING_A_MANUAL_BODY_NWA ?? 90),
+    wallNone: Number(process.env.WIRING_A_MANUAL_BODY_NWN ?? 60),
+  };
+  const cases = [];
+  const inputs = {};
+  const dropped = { drugie: 0, inne: 0 };
+  for (const base of BASES) {
+    modCache = new Map();
+    rafQ = [];
+    globalThis.__blowRandom = () => { throw new Error('rzut w przypadku kroku'); };
+    const { BattleScene } = load(SCENE);
+    const attackerIn = JSON.parse(JSON.stringify(A(base.atk)));
+    const defenderIn = JSON.parse(JSON.stringify(D(base.def)));
+    const bs = new BattleScene({
+      attacker: JSON.parse(JSON.stringify(attackerIn)),
+      defender: JSON.parse(JSON.stringify(defenderIn)),
+      teren: base.teren ?? 'Równina', worldTerrain: base.world, data: { units, counters, terrainCombat },
+      deploy: false, deployPlayerSide: 'atk', manualControlAllowed: false,
+      siege: { defCiv: 'rzym', builtBuildingIds: base.built }, attackerCivBonusy: [], defenderCivBonusy: [],
+      attackerEra: 1, defenderEra: 1,
+    });
+    inputs[base.name] = {
+      teren: base.teren ?? 'Równina', worldTerrain: base.world ?? null, builtBuildingIds: base.built, defCiv: 'rzym', defenderEra: 1,
+      attacker: attackerIn, defender: defenderIn,
+    };
+    const all = [...bs.atk, ...bs.def];
+    const wallCol0 = bs.siegeWallCol;
+    if (wallCol0 < 0) throw new Error('scena bez muru');
+    let wallOn = false;
+    const key = (u) => (u.side === 'atk' ? 'atk:' : 'def:') + u.bu.id;
+    const rosterOf = (ru) => (ru.side === 'atk' ? bs.def : bs.atk);
+    const eIdx = (ru, e) => { const i = rosterOf(ru).indexOf(e); if (i < 0) throw new Error('cel spoza rosteru wroga'); return i; };
+    if (bs._manualMode !== true) throw new Error('_manualMode sceny != true');
+    let rec = null;
+    bs._doMove = function (ru, c, r, cb) {
+      rec.exec.push('move');
+      // Drugie wykonanie w jednej aktywacji (rekurencja callbackow jazdy): przypadek odrzucany, bez dalszej rekurencji.
+      if (rec.exec.length > 1) return;
+      // Odmowa bramki muru (`:8689-8693`): jednostka stoi, `moveLeft = 0`, callback wolany od razu (ruch nie nastepuje).
+      if (this.siegeWallCol >= 0 && this._siegeMoveRefused(ru, c, r)) { ru.moveLeft = 0; rec.refused = true; if (cb) cb(); return; }
+      if (rec.kind === 'done') { rec.kind = 'move'; rec.step = [c, r]; }
+      // `_doMove` pinu przestawia jednostke i `occByKey` w chwili kroku, callback po animacji.
+      if (this.occByKey.get(ck(ru.q, ru.r)) === ru) this.occByKey.delete(ck(ru.q, ru.r));
+      ru.q = c; ru.r = r;
+      this.occByKey.set(ck(c, r), ru);
+      if (cb) cb();
+    };
+    bs._doAttack = function (a, d, cb) {
+      rec.exec.push('attack');
+      if (rec.exec.length > 1) return;
+      if (rec.kind === 'done') { rec.kind = 'attack'; rec.attack = eIdx(a, d); }
+      if (cb) cb();
+    };
+    bs._doRangedAttack = function () { rec.exec.push('ranged'); };
+    bs._doMeleeAttack = function () { rec.exec.push('melee'); };
+    bs._refreshQueuedOrderVisuals = function () {};
+    const oPPO = bs._performPlayerOrder;
+    bs._performPlayerOrder = function (...a) { const out = oPPO.apply(this, a); rec.ret = out; return out; };
+    const layout = () => {
+      for (const u of all) { u.dead = false; u.fadingOut = false; u.routed = false; u.removed = false; u.playerOrder = { type: 'none' }; }
+      const used = new Set();
+      const anchorC = wallOn ? ri(Math.max(4, wallCol0 - 10), wallCol0 + 4) : ri(4, 60);
+      const anchorR = ri(20, 130);
+      for (const u of all) {
+        let ok = false;
+        for (let k = 0; k < 400 && !ok; k++) {
+          const c = anchorC + ri(-6, 6);
+          const r = anchorR + ri(-6, 6);
+          if (c < 0 || c >= BF_COLS_PIN || r < 0 || r >= BF_ROWS_PIN) continue;
+          if (used.has(ck(c, r)) || !bs._passableForUnit(u, c, r)) continue;
+          used.add(ck(c, r));
+          u.q = c; u.r = r;
+          ok = true;
+        }
+        if (!ok) return false;
+      }
+      for (const u of all) {
+        const x = rnd();
+        if (x < 0.06) u.dead = true;
+        else if (x < 0.1) u.routed = true;
+        else if (x < 0.13) u.fadingOut = true;
+        else if (x < 0.16) u.removed = true;
+      }
+      bs.occByKey = new Map();
+      for (const u of all) if (!u.dead && !(u.routed && rnd() < 0.5)) bs.occByKey.set(ck(u.q, u.r), u);
+      return true;
+    };
+    const setState = (ru, docMode) => {
+      // docMode: 'rand' (losowa), 'manual' (doktryna reczna: `none` = done), 'auto' (jednostka z doktryna AUTO).
+      if (docMode === 'manual') ru.unitDoctrine = pick(['manual', 'manual', null]);
+      else if (docMode === 'auto') ru.unitDoctrine = pick(['steady', 'skirmish', 'aggressive', 'defensive', null]);
+      else ru.unitDoctrine = pick(DOCS);
+      ru.groupId = rnd() < 0.35 ? pick(['g1', 'g2']) : null;
+      bs._groupMeta = new Map();
+      if (rnd() < 0.6) bs._groupMeta.set('g1', { doctrine: pick(DOCS.filter(Boolean)), autoPlay: rnd() < 0.7 });
+      ru.formationRank = rnd() < 0.5 ? ri(0, 3) : undefined;
+      for (const u of all) if (u !== ru) u.formationRank = rnd() < 0.5 ? ri(0, 3) : undefined;
+      ru.lastAutoMoveFrom = rnd() < 0.3 ? undefined : { q: ru.q + pick([-1, 0, 1]), r: ru.r + pick([-1, 0, 1]) };
+      for (const u of all) if (u.rangedBase) u.ammoLeft = pick([0, 3, 10]);
+      bs._generalSettings.blockadeActive = false;
+      bs._generalSettings.blockadeCol = null;
+      bs._deployPlayerSideOpt = ru.side === 'atk' ? 'atk' : 'def';
+      bs.siegeWallCol = wallOn ? wallCol0 : -1;
+      bs.wallEverBreached = wallOn && rnd() < 0.3;
+    };
+    const uj = (u) => ({
+      id: u.bu.id, q: u.q, r: u.r, dead: !!u.dead, fadingOut: !!u.fadingOut, routed: !!u.routed, removed: !!u.removed,
+      ammo: u.ammoLeft > 0, rangedBase: !!u.rangedBase, range: u.range, formationRank: u.formationRank ?? null,
+      unitDoctrine: u.unitDoctrine ?? null, groupId: u.groupId ?? null,
+      lastAutoMoveFrom: u.lastAutoMoveFrom ? [u.lastAutoMoveFrom.q, u.lastAutoMoveFrom.r] : null,
+    });
+    const orderJson = (o) => ({ ...o });
+    const live = () => all.filter((u) => !u.dead && !u.fadingOut && !u.removed && !u.routed && bs.occByKey.get(ck(u.q, u.r)) === u);
+    const runCase = (ru, order, label, boardName) => {
+      ru.playerOrder = order;
+      const before = {
+        base: boardName, label, unit: key(ru), side: ru.side, order: orderJson(order),
+        playerSide: bs._deployPlayerSideOpt, wallCol: bs.siegeWallCol, wallEverBreached: !!bs.wallEverBreached,
+        units: { atk: bs.atk.map(uj), def: bs.def.map(uj) },
+        groupMeta: [...bs._groupMeta.entries()].map(([k, m]) => [k, { doctrine: m.doctrine, autoPlay: m.autoPlay }]),
+        occ: [...bs.occByKey.entries()].map(([k, u]) => [...k.split(',').map(Number), key(u)]),
+      };
+      rec = { kind: 'done', step: null, attack: null, exec: [], ret: null, refused: false };
+      let doneCalls = 0;
+      bs._activateUnit(ru, () => { doneCalls += 1; });
+      const ex = rec.exec;
+      let ok = false;
+      if (ex.some((x) => x === 'ranged' || x === 'melee')) dropped.inne += 1;
+      else if (ex.length > 1) dropped.drugie += 1;
+      else {
+        cases.push({
+          ...before,
+          expect: {
+            ret: rec.ret, doneCalls, kind: rec.kind, step: rec.step, attack: rec.attack, refused: rec.refused,
+            orderAfter: orderJson(ru.playerOrder),
+            lastAutoMoveFrom: ru.lastAutoMoveFrom ? [ru.lastAutoMoveFrom.q, ru.lastAutoMoveFrom.r] : null,
+            groupMetaAfter: [...bs._groupMeta.keys()],
+            pos: [ru.q, ru.r],
+          },
+        });
+        ok = true;
+      }
+      rec = null;
+      return ok;
+    };
+    const blockGreedy = (ru, tc, tr) => {
+      const dc = Math.sign(tc - ru.q);
+      const dr = Math.sign(tr - ru.r);
+      const want = [[ru.q + dc, ru.r], [ru.q, ru.r + dr], [ru.q + 2 * dc, ru.r], [ru.q + dc, ru.r + dr]].filter(([c, r]) => !(c === ru.q && r === ru.r));
+      const others = all.filter((u) => u !== ru);
+      for (const [c, r] of want) {
+        if (rnd() < 0.5 && !bs.occByKey.has(ck(c, r)) && c >= 0 && c < BF_COLS_PIN && r >= 0 && r < BF_ROWS_PIN) {
+          const b = pick(others);
+          if (bs.occByKey.get(ck(b.q, b.r)) === b) bs.occByKey.delete(ck(b.q, b.r));
+          b.q = c; b.r = r; b.dead = false; b.fadingOut = false; b.routed = false; b.removed = false;
+          bs.occByKey.set(ck(c, r), b);
+        }
+      }
+    };
+    const pickTarget = (ru) => {
+      const x = rnd();
+      let tc;
+      let tr;
+      if (x < 0.07) { tc = ru.q; tr = ru.r; }
+      else if (x < 0.6) { tc = ru.q + ri(-8, 8); tr = ru.r + ri(-8, 8); }
+      else if (x < 0.85) { tc = ru.q + pick([-1, 1]) * ri(1, 3); tr = ru.r + pick([-1, 1]) * ri(1, 3); }
+      else { tc = ru.q + ri(-25, 25); tr = ru.r + ri(-25, 25); }
+      return [Math.max(0, Math.min(BF_COLS_PIN - 1, tc)), Math.max(0, Math.min(BF_ROWS_PIN - 1, tr))];
+    };
+    // Dla `none` z doktryna AUTO tylko piechota wrecz (krok doktryny strzelcow, jazdy i falangi to osobne klocki K5DOC).
+    const meleeInfantry = (u) => !u.rangedBase && !u.mounted && !String(u.bu.nazwa).startsWith('Falanga');
+    const gen = (label, n, mk) => {
+      const per = Math.ceil(n / BASES.length);
+      let made = 0;
+      let guard = 0;
+      while (made < per && guard++ < per * 30) {
+        if (!layout()) continue;
+        const pool = live();
+        if (pool.length === 0) continue;
+        const spec = mk(pool);
+        if (!spec) continue;
+        if (runCase(spec.ru, spec.order, label, base.name)) made += 1;
+      }
+    };
+    gen('hold', N.hold, (pool) => { const ru = pick(pool); setState(ru, 'rand'); return { ru, order: { type: 'hold' } }; });
+    gen('none', N.none, (pool) => {
+      const ru = pick(pool);
+      const mode = pick(['manual', 'auto', 'auto', 'rand']);
+      if (mode === 'auto' && !meleeInfantry(ru)) return null;
+      setState(ru, mode);
+      if (bs._isUnitDoctrineAuto(ru) && bs._getEffectiveDoctrine(ru) !== 'manual' && !meleeInfantry(ru)) return null;
+      return { ru, order: { type: 'none' } };
+    });
+    gen('move', N.move, (pool) => {
+      const ru = pick(pool);
+      setState(ru, 'rand');
+      const [tc, tr] = pickTarget(ru);
+      if (rnd() < 0.5) blockGreedy(ru, tc, tr);
+      return { ru, order: { type: 'move', col: tc, row: tr } };
+    });
+    gen('attackMove', N.attackMove, (pool) => {
+      const ru = pick(pool);
+      setState(ru, 'rand');
+      const [tc, tr] = pickTarget(ru);
+      if (rnd() < 0.5) blockGreedy(ru, tc, tr);
+      return { ru, order: { type: 'attackMove', col: tc, row: tr } };
+    });
+    gen('attack', N.attack, (pool) => {
+      const ru = pick(pool);
+      setState(ru, 'rand');
+      const x = rnd();
+      const roster = rosterOf(ru);
+      const own = ru.side === 'atk' ? bs.atk : bs.def;
+      // Podprzyczyny celu: martwy / znikajacy / uciekajacy / usuniety (rozkaz `attack` pomija tylko pierwsze dwa, `_enemiesOf`
+      // `:8291` odfiltrowuje takze `routed`); w 30% przypadkow cel zywy stawiany obok aktora (cios bez ruchu).
+      const flagged = roster.filter((u) => u.dead || u.fadingOut || u.routed || u.removed);
+      const targetId = x < 0.35 && flagged.length ? pick(flagged).bu.id : x < 0.85 ? pick(roster).bu.id : x < 0.93 ? pick(own).bu.id : 'brak';
+      const tgt = roster.find((u) => u.bu.id === targetId);
+      if (tgt && rnd() < 0.3 && !tgt.dead && !tgt.fadingOut) {
+        const nb = [[ru.q + 1, ru.r], [ru.q - 1, ru.r], [ru.q, ru.r + 1], [ru.q, ru.r - 1]].filter(([c, r]) => c >= 0 && c < BF_COLS_PIN && r >= 0 && r < BF_ROWS_PIN && !bs.occByKey.has(ck(c, r)) && bs._passableForUnit(tgt, c, r));
+        if (nb.length) {
+          const [c, r] = pick(nb);
+          if (bs.occByKey.get(ck(tgt.q, tgt.r)) === tgt) bs.occByKey.delete(ck(tgt.q, tgt.r));
+          tgt.q = c; tgt.r = r;
+          bs.occByKey.set(ck(c, r), tgt);
+        }
+      } else if (tgt && rnd() < 0.5) blockGreedy(ru, tgt.q, tgt.r);
+      return { ru, order: { type: 'attack', targetId } };
+    });
+    // Warianty Z MUREM sceny (`siegeWallCol >= 0`): rozkaz `move` dowolnej strony (bramka oblezenia recznego `:18436` odrzuca
+    // `move`) oraz wszystkie rozkazy obroncy (bramka wymaga strony `atk`); oblezenie reczne atakujacego = r3.
+    wallOn = true;
+    const sideOk = (u, type) => type === 'move' || u.side === 'def';
+    const gw = (label, n, type, mk) => gen(label + '+mur', n, (pool) => {
+      const p = pool.filter((u) => sideOk(u, type));
+      return p.length ? mk(p) : null;
+    });
+    gw('move', N.wallMove, 'move', (pool) => {
+      const ru = pick(pool); setState(ru, 'rand');
+      const [tc, tr] = pickTarget(ru);
+      if (rnd() < 0.5) blockGreedy(ru, tc, tr);
+      return { ru, order: { type: 'move', col: tc, row: tr } };
+    });
+    gw('attackMove', N.wallAttack, 'attackMove', (pool) => {
+      const ru = pick(pool); setState(ru, 'rand');
+      const [tc, tr] = pickTarget(ru);
+      if (rnd() < 0.5) blockGreedy(ru, tc, tr);
+      return { ru, order: { type: 'attackMove', col: tc, row: tr } };
+    });
+    gw('attack', N.wallAttack, 'attack', (pool) => {
+      const ru = pick(pool); setState(ru, 'rand');
+      const roster = rosterOf(ru);
+      const tgt = pick(roster);
+      if (rnd() < 0.5) blockGreedy(ru, tgt.q, tgt.r);
+      return { ru, order: { type: 'attack', targetId: tgt.bu.id } };
+    });
+    gw('none', N.wallNone, 'none', (pool) => {
+      const ru = pick(pool);
+      const mode = pick(['manual', 'auto', 'rand']);
+      if (mode === 'auto' && !meleeInfantry(ru)) return null;
+      setState(ru, mode);
+      if (bs._isUnitDoctrineAuto(ru) && bs._getEffectiveDoctrine(ru) !== 'manual' && !meleeInfantry(ru)) return null;
+      return { ru, order: { type: 'none' } };
+    });
+    wallOn = false;
+    console.error(`${base.name}: przypadki ${cases.length} odrzucone ${JSON.stringify(dropped)} (${Date.now() - tS} ms)`);
+  }
+  const shaS = hash.digest('hex');
+  if (shaS !== EXPECTED_SHA256) throw new Error('straznik SHA-256 pinu: ' + shaS + ' != ' + EXPECTED_SHA256);
+  const txt = JSON.stringify({ pin: PIN, pinSha256: shaS, bfCols: BF_COLS_PIN, bfRows: BF_ROWS_PIN, dropped, inputs, cases }) + '\n';
+  const outPath = process.env.WIRING_A_OUT ?? join(here, 'p6_k5loop_wiring_a_pin_vectors', 'manual_body_step_vectors.json');
+  writeFileSync(outPath, txt);
+  console.log(createHash('md5').update(txt).digest('hex') + '  ' + outPath);
+  process.exit(0);
+}
+
 // R-RUSTPORT-P4-416 (K5EXEC-H3, D-416-3): wektory KROKU `_performSiegeManualOrder(ru, ord, done)` (`:18435-18475`) i
 // `_trySiegeTowerClimb(ru, done)` (`:8056-8084`). `WIRING_A_SIEGE_MANUAL_STEPS=1`: przypadki jednego wywolania na scenie
 // pinu z murem (konstruktor pinu: `_carveWallTiles`, `_placeSiegeTowers`) i ustawionym stanem (`towerAtWallRows`,
