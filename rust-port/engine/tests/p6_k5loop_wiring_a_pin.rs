@@ -1988,7 +1988,8 @@ fn apply_vector_doctrine(s: &mut SiegeBattleSession, sv: &Value, bv: &Value) {
         for i in 0..n {
             let x = if d.is_array() { &d[i] } else { d };
             let Some(name) = x.as_str() else { continue };
-            let doc = GroupDoctrine::parse(name).unwrap_or_else(|| panic!("doktryna wektora {name}"));
+            let doc =
+                GroupDoctrine::parse(name).unwrap_or_else(|| panic!("doktryna wektora {name}"));
             let id = format!("{pfx}{i}");
             let idx = ids[ix].iter().position(|r| *r == id).expect("id rosteru");
             s.battle_loop_mut().env.body.doctrine[ix][idx].unit_doctrine = Some(doc);
