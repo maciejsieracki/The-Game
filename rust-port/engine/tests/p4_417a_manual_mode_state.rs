@@ -14,7 +14,7 @@ use civ_engine::domain::player_order_move::PlayerOrder;
 use civ_engine::domain::player_order_queue::{
     execute_units_immediate, on_order_done, OrderQueueEvent,
 };
-use civ_engine::domain::siege_prod_manual::ManualRun;
+use civ_engine::domain::siege_prod_manual::{ManualRun, ManualState};
 use civ_engine::domain::siege_tactics_activate::{ActivateScene, ActivateUnit};
 use civ_engine::domain::siege_tactics_blow::SequenceRolls;
 use civ_engine::domain::siege_tactics_clock::VirtualClock;
@@ -618,4 +618,150 @@ fn oblezenie_move_idzie_zwykla_galezia() {
         last_run(&b),
         ManualRun::Move { tile: (31, 10), .. }
     ));
+}
+
+// --- (9) stan rozkazu: `finish` kroku doktryny (`:18073-18079`) --------------------------------------------------
+
+/// Callback `finish`: po ruchu `move(dest)` gdy jednostka nie stoi na celu, inaczej `none`; rozstrzyga go odczyt z
+/// aktualną pozycją (`order_at` bez zmiany stanu, `settle` ze zmianą).
+#[test]
+fn finish_kroku_doktryny_rozstrzyga_wg_pozycji() {
+    let u = A0;
+    let mut m = ManualState::new([1, 1]);
+    m.begin_doctrine_move(u, (5, 5));
+    assert_eq!(m.raw_order(u), PlayerOrder::Move { col: 5, row: 5 });
+    assert_eq!(m.order_at(u, (5, 5)), PlayerOrder::None, "na celu: none");
+    assert_eq!(
+        m.order_at(u, (4, 5)),
+        PlayerOrder::Move { col: 5, row: 5 },
+        "poza celem: move"
+    );
+    // `order_at` nie zmienia stanu; `settle` rozstrzyga i czyści `finish`.
+    assert_eq!(m.raw_order(u), PlayerOrder::Move { col: 5, row: 5 });
+    assert_eq!(m.settle(u, (5, 5)), PlayerOrder::None);
+    assert_eq!(m.raw_order(u), PlayerOrder::None);
+    m.begin_doctrine_move(u, (5, 5));
+    assert_eq!(m.settle(u, (4, 5)), PlayerOrder::Move { col: 5, row: 5 });
+    // Po rozstrzygnięciu `finish` nie działa drugi raz: nowa pozycja nie zdejmuje rozkazu.
+    assert_eq!(m.order_at(u, (5, 5)), PlayerOrder::Move { col: 5, row: 5 });
+    // Jawny zapis `ru.playerOrder` kasuje oczekujące `finish`.
+    m.begin_doctrine_move(u, (5, 5));
+    m.set_order(u, PlayerOrder::Hold);
+    assert_eq!(m.order_at(u, (5, 5)), PlayerOrder::Hold);
+}
+
+// --- (10) przypadki z mutantów ------------------------------------------------------------------------------------
+
+/// `_attackMovePath(..., allowEnemyCells = true)` (`:18356`, `:18556-18558`): pole wroga jest przejezdne dla trasy
+/// zagrożeń, więc wróg stojący NA punkcie trasy (cel `attackMove`) jest zagrożeniem na trasie (`routeTiles.has`) i
+/// rozkaz idzie krokiem ku niemu (`:18374-18381`), mimo że nie da się go jeszcze uderzyć.
+#[test]
+fn attack_move_wrog_na_trasie_jest_zagrozeniem() {
+    let (mut b, mut st) = setup(&[(10, 10)], &[(15, 10)], -1, true);
+    b.set_player_order(A0, PlayerOrder::AttackMove { col: 15, row: 10 });
+    activate(&mut b, &mut st, A0);
+    assert!(
+        matches!(last_run(&b), ManualRun::Move { tile: (11, 10), .. }),
+        "krok ku zagrożeniu na trasie: {:?}",
+        last_run(&b)
+    );
+    assert_eq!(pos(&b, A0), (11, 10));
+}
+
+/// Sojusznik NA trasie blokuje ją (`this._isPlayerSide(occupant.side)`, `:18557`): bez wroga na trasie i bez zagrożenia
+/// w zasięgu uderzenia krok po trasie omija sojusznika (`_firstStepOnAttackMovePath`, `allowEnemyCells = false`).
+#[test]
+fn attack_move_sojusznik_na_trasie_blokuje() {
+    let (mut b, mut st) = setup(&[(10, 10), (11, 10)], &[(40, 40)], -1, true);
+    b.set_player_order(A0, PlayerOrder::AttackMove { col: 12, row: 10 });
+    activate(&mut b, &mut st, A0);
+    let (q, r) = pos(&b, A0);
+    assert!(
+        (q, r) != (11, 10) && (q, r) != (10, 10),
+        "ruch musi omijać sojusznika na (11,10): {q},{r}"
+    );
+}
+
+/// `_canStrikeTargetFrom` (`:8487-8494`): zasięg wręcz = 1 (`1 <= dd <= reach`). Wróg w odległości 2 nie jest w zasięgu
+/// uderzenia (krok ku niemu), wróg w odległości 1 jest.
+#[test]
+fn zasieg_wrecz_to_dokladnie_jedno_pole() {
+    let (mut b, mut st) = setup(&[(10, 10)], &[(12, 10)], -1, true);
+    b.set_player_order(A0, PlayerOrder::Attack { target_id: 100 });
+    activate(&mut b, &mut st, A0);
+    assert!(matches!(
+        last_run(&b),
+        ManualRun::Move { tile: (11, 10), .. }
+    ));
+    activate(&mut b, &mut st, A0);
+    assert_eq!(
+        last_run(&b),
+        ManualRun::Attack(0),
+        "sąsiad (dd = 1) w zasięgu"
+    );
+}
+
+/// Rozkaz z czasem trwania nie kończy się synchronicznie (`completed = false`), `hold` tak (`:18282`).
+#[test]
+fn rozkaz_poza_aktywacja_ma_wlasciwy_completed() {
+    let (mut b, mut st) = setup(&[(10, 10), (10, 14)], &[(40, 40)], -1, true);
+    b.set_player_order(A0, PlayerOrder::Move { col: 12, row: 10 });
+    b.set_player_order(
+        UnitRef {
+            side: BattleSide::Attacker,
+            idx: 1,
+        },
+        PlayerOrder::Hold,
+    );
+    let mv = b.perform_order_direct(A0, &mut st);
+    assert!(mv.dur > 0.0 && !mv.completed, "krok ruchu trwa: {mv:?}");
+    let hold = b.perform_order_direct(
+        UnitRef {
+            side: BattleSide::Attacker,
+            idx: 1,
+        },
+        &mut st,
+    );
+    assert!(hold.completed && hold.dur == 0.0, "{hold:?}");
+}
+
+/// Kolejka: rozkaz z czasem trwania czeka na `done` (`awaiting`), jednostka dostaje `acted` dopiero po `on_order_done`.
+#[test]
+fn kolejka_move_czeka_na_done() {
+    let (mut b, mut st) = setup(&[(10, 10), (10, 14)], &[(40, 40)], -1, true);
+    b.set_player_order(A0, PlayerOrder::Move { col: 12, row: 10 });
+    let mut clock: VirtualClock<usize> = VirtualClock::new();
+    let ids = vec!["1".to_string(), "2".to_string()];
+    let (queue, step) = {
+        let mut q = ManualQueue {
+            body: &mut b,
+            st: &mut st,
+        };
+        execute_units_immediate(&mut q, &mut clock, &ids, false)
+    };
+    assert_eq!(step.awaiting, Some(0));
+    assert!(!st.atk[0].c.acted);
+    b.complete(A0, &mut st);
+    let step2 = {
+        let mut q = ManualQueue {
+            body: &mut b,
+            st: &mut st,
+        };
+        on_order_done(&mut q, &mut clock, &queue, 0, false)
+    };
+    assert!(st.atk[0].c.acted, "u.acted = true po done (:18609)");
+    assert!(step2.awaiting.is_some() || st.atk[1].c.acted);
+}
+
+/// `_effectiveMetaForUnit` (`:17633-17636`) dopisuje domyślny wpis grupy także w `_performSiegeManualOrder`
+/// (`doctrineAuto`, `:18443-18444`), nawet gdy rozkaz kończy się pomostem muru (bez kroku doktryny).
+#[test]
+fn oblezenie_none_z_grupa_dopisuje_wpis_grupy() {
+    let (mut b, mut st) = setup(&[(40, 10)], &[(10, 10)], 40, true);
+    b.units[0][0].activate.on_wall_walkway = true;
+    b.doctrine[0][0].group_id = Some("g1".to_string());
+    assert!(b.group_meta.is_empty());
+    activate(&mut b, &mut st, A0);
+    assert!(b.group_meta.contains_key("g1"), "`_ensureGroupMeta(g1)`");
+    assert_eq!(last_run(&b), ManualRun::Done);
 }
