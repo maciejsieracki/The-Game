@@ -1,0 +1,18 @@
+[tmpdir] TMPDIR_RUN_ID=27879-e60bb3f7 DIST=/tmp/aiempty-dist PROFILE=/tmp/aiempty-prof/C-s4242 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[readback] {"diplomacyWarLevel":"trudna","kulturaReligiaLevel":"trudny","kulturaReligiaLevelAI":"trudny","wzrostSurowcowZEpoka":false,"kosztJednostekPace":"wysoki","difficulty":"hard"} pace=wysoki resume=false
+[econ] seed=4242 tura=6 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=11s
+[econ] seed=4242 tura=11 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=20s
+[econ] seed=4242 tura=16 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=30s
+[econ] seed=4242 tura=21 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=41s
+[econ] PODSUMOWANIE {"seed":4242,"startTurn":1,"endTurn":25,"stop":null,"counters":{"gateActiveTurns":0,"bypassApplied":0,"stuckQueueHeals":0,"battlesAuto":0,"diploAudienceClosed":0,"armyMergeClosed":0,"techNoticeClosed":0,"aiOffersRejected":0,"aiOffersRejectAttempts":0,"forcedPeaceAccepted":0},"wallSec":51,"resumed":false,"rebalance":null,"unitCostPace":"wysoki"}
+[tmpdir] TMPDIR_RUN_ID=28457-b94757a9 DIST=/tmp/aiempty-dist PROFILE=/tmp/aiempty-prof/C-s4242 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[readback] {"diplomacyWarLevel":"trudna","kulturaReligiaLevel":"trudny","kulturaReligiaLevelAI":"trudny","wzrostSurowcowZEpoka":false,"kosztJednostekPace":"wysoki","difficulty":"hard"} pace=wysoki resume=true
+[econ] seed=4242 tura=25 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=18s
+[econ] seed=4242 tura=30 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=40s
+[econ] seed=4242 tura=35 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=61s
+[econ] seed=4242 tura=40 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=90s
+[econ] seed=4242 tura=45 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=131s
+[econ] seed=4242 tura=50 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=199s
+[econ] seed=4242 tura=55 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=289s
+[econ] seed=4242 tura=60 gateAktywna=0 dosypki=0 zamkniete(aud/armia/techn)=0/0/0 czas=397s
+[econ] PODSUMOWANIE {"seed":4242,"startTurn":20,"endTurn":60,"stop":null,"counters":{"gateActiveTurns":0,"bypassApplied":0,"stuckQueueHeals":0,"battlesAuto":0,"diploAudienceClosed":0,"armyMergeClosed":0,"techNoticeClosed":0,"aiOffersRejected":0,"aiOffersRejectAttempts":0,"forcedPeaceAccepted":0},"wallSec":397,"resumed":true,"rebalance":null,"unitCostPace":"wysoki"}

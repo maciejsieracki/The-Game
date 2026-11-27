@@ -1,0 +1,4 @@
+2026-11-27T18:00:14.954Z navigate file:///tmp/aiempty-dist/index.html?civTest=1&civSeed=7
+2026-11-27T18:00:19.037Z endturn-blocked [EndTurn] blocked: awaitingFirstPlayerCity
+2026-11-27T18:03:53.514Z endturn-blocked [EndTurn] blocked: endTurnInProgress
+2026-11-27T18:08:36.188Z close strona zamknieta
