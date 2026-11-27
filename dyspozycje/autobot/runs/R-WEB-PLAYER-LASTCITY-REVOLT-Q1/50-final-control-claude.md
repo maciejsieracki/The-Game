@@ -1,25 +1,21 @@
 STATUS: FAIL
 DOMAIN: GAME
-TEMAT: R-WEB-PLAYER-LASTCITY-REVOLT-Q1 (tag PLRREVOLT)
-GOAL: pomiar, czy gracz moze stracic OSTATNIE miasto przez bunt i jak czesto (bez zmiany balansu).
-ZMIANY/COMMIT: kandydat cd587eb82 (baza a9e68894e). Sprawdzone: `git merge-base --is-ancestor a9e68894e cd587eb82` = OK; `git diff --stat a9e68894e cd587eb82` = 5 plikow, 228 wstawien, 0 usuniec: dyspozycje/analizy/GRACZ-BUNT-OSTATNIE-MIASTO-2026-11-27.md, runs/.../10-operator-claude.md, 30-obrona-claude.md, analiza-zapisow-aibal2.txt, gra/tools/plrrevolt-analyze.cjs. Wszystko w allowliscie; gra/src i gra/data = 0 zmian; `git diff --check` czysty.
-TESTY (wlasne, z surowego wyjscia):
-- Kod na a9e68894e potwierdzony grepem: REVOLT_CRITICAL_POR_PCT=12 (society-breakdown.ts:218), REVOLT_GRACE_TURNS=3 (:219), REBEL_FACTION_OWNER_ID=-99 (:232), aiKeepsLastCity = ownerIsAi && ownerOtherCities<1 (:530), warunek `ownerIsHuman || (...)` (:532) => dla gracza brak ochrony ostatniego miasta; BARBARIAN_OWNER_ID=-1 (barbarians.ts:51); main.ts: rebelByPlayer :45254, shouldStartCityRebellion :45260, transfer :45272, galaz gracza :45287, transferCityToRebelFactionWithLedger :41833, pokazEkranPorazki :39043/:49553; victory.ts:215-217 zwraca 'przegrana'. Numeracja linii w poprawionym dokumencie zgodna.
-- node plrrevolt-analyze.cjs na danych AIBAL2: 10 wierszy zgodnych z analiza-zapisow-aibal2.txt (V4/4242 playerZeroFromTurn=29, brak cityTransfers z z=0).
-- Reczny odczyt V4/4242 t27-t31: t28 owner 0 miasta 1 porPctSuma 49; t29 owner -1 miasta 1 czlowiek 0, cityTransfers {z:21,na:25} (nie z gracza); t30-31 owner -1 "Bunt skrajny", krytyczne 1, osiedle 1. Zgodne z dokumentem. Nowa obserwacja: miasto -1 ma flage `osiedle`, mozliwy trop dla mechanizmu t29 i etykiety "Bunt skrajny" (nie dowod).
-- tsc / logic 213 / ai-test 297: NIE URUCHOMIONO (brak gra/node_modules w worktree; nie instalowalem). Kod gry bez zmian, wiec wynik rowny bazie, ale bramka formalnie niezamknieta.
-- Poziom maksymalny (zasada testowania): nie dotyczy, brak zywych biegow.
-OCENA ZARZUTOW:
-1. 9 zywych biegow do t60: NAPRAW. Kryterium binarne dispatchu wymaga tabeli 9 biegow; dane AIBAL2 (inne cele, inne ustawienia) jej nie zastepuja. Obrona sama to przyjmuje i odklada do osobnego tematu, co nie domyka tego tematu.
-2. Ziarno 778899 bez pokrycia: NAPRAW (jak 1).
-3. Porzadek gracza min: ODDAL - poprawione, kolumna z danych potwierdzona; to odczyt z zapisow, nie z zywej gry, dokument mowi to jawnie.
-4. Teza t29 = barbarzyncy: ODDAL - zdowngradowana do wniosku posredniego; kod dowodzi, ze petla buntu nie daje owner -1; mechanizm NIE ZMIERZONO uczciwie opisany. Etykieta "Bunt skrajny" przy -1 nadal niewyjasniona (trop: flaga osiedle).
-5. Cel 3 (odtworzenie + skutek w UI): NAPRAW w czesci zywej; czesc statyczna (victory.ts, main.ts) dodana i zweryfikowana, UI NIE ZMIERZONO.
-6. Numeracja linii: ODDAL - poprawione, zweryfikowane.
-7. Bramki tsc/logic/ai-test: NAPRAW (uruchomic w rundzie ze srodowiskiem z node_modules); uzasadnienie "kod bez zmian" przyjmuje, ale dispatch wymagal bramek.
-Wniosek merytoryczny (dokument jest uczciwy): w danych gracz nie stracil ostatniego miasta przez bunt; porzadek gracza min 26,1-49,0% wobec progu 12%; kod nie chroni gracza (aiKeepsLastCity tylko AI), wiec mozliwosc istnieje; czestosc NIE ZMIERZONO. Dokument i narzedzie moga zostac jako baza, ale kryterium binarne niespelnione.
-BLOKADY: (a) 9 zywych biegow t60 (kultura gracza x ziarna 4242/7/778899) NIE WYKONANO - brak node_modules, build vite w /tmp i niestabilny Chromium; blokada techniczna, wg procesu wraca do Operatora z tym samym ID; (b) odtworzenie i UI NIE ZMIERZONO; (c) mechanizm przejecia t29 NIE ZMIERZONO; (d) bramki tsc/logic/ai-test NIE URUCHOMIONO.
-RUNDY: 2/5 zuzyte (Evaluator FAIL, obecny FC FAIL). Pozostaja 3 rundy.
-UWAGI-DLA-ORKIESTRATORA: (1) przed runda 3 zapewnic srodowisko z gra/node_modules i dzialajacym Chromium albo zawezic zakres (runner zdarzen "miasto gracza -> -99/-1 z powodem" + 9 biegow); (2) sprawdzic w kodzie barbarians/osiedla, czy flaga osiedle przy owner -1 wyjasnia t29 i etykiete "Bunt skrajny"; (3) poprawic w rejestrze AIBAL2 opis "owner -1 = bunt" (owner -1 = barbarzyncy, bunt = -99); (4) pytanie ABC o ochrone ostatniego miasta gracza dopiero po pomiarze, wg zasad ABC.
-NASTEPNY KROK: runda 3 Operatora (ten sam ID, baza cd587eb82) z zywymi biegami i bramkami; potem Evaluator i FC.
+TEMAT: R-WEB-PLAYER-LASTCITY-REVOLT-Q1
+GOAL: pomiar, czy gracz moze stracic ostatnie miasto przez bunt i jak czesto; mechanizm t29 (V4/4242); skutek w UI; zero zmian gra/src.
+ZMIANY/COMMIT: kandydat f25457465d431e437edf5bdfbaebae5a36894f21, baza 2e50241cd38d3b031b97803c1286b4b183bb1ec1. `git merge-base --is-ancestor` baza->kandydat: OK. `git diff --stat baza kandydat -- gra/src gra/data`: 0 zmian. Diff = analiza (.md), runs/** (raporty, dane), gra/tools/plrrevolt-{run,summarize,table}.cjs: zgodne z allowlista.
+TESTY (wlasne uruchomienie na kandydacie, po npm ci --ignore-scripts): tsc --noEmit exit 0 (32,8 s); logic-test "LOGIC OK (213/213)"; ai-test "297 passed, 0 failed"; plrrevolt-table.cjs na dane/ odtwarza tabele z dokumentu (utrata miasta gracza: V4/4242 t29, latwy-s7 t59, normalny-s7 t58; 7 biegow bez utraty; owner -99 w ownersOfCities: 0 biegow). Pozostale bramki referencyjne nie byly przedmiotem zmian (kod gry bez zmian). Live Chromium: NIE URUCHAMIANO.
+
+OCENA ZARZUTOW (bez etykiet rol):
+- 1, 9: przyjete przez obrone, dokument poprawiony (przyczyna utraty NIE ROZSTRZYGNIETA; 0 z 10 zaobserwowanych buntow). Rzetelne.
+- 7: naprawione, bramki zielone (potwierdzone).
+- 6: naprawione, dokument istnieje i uczciwie opisuje braki.
+- 2, 3, 4, 5, 8: obrona je przyjela, ale NIE NAPRAWILA, tylko przeniosla do "NIE ZMIERZONO". To jest sedno FAIL: dispatch r2 stwierdza wprost, ze punkty 3 (mechanizm t29 z logiem zmiany wlasciciela) i 4 (skutek w UI na zywo; hak odczytu istnieje: victory.ts:215-217, main.ts:49495-49553) sa OBOWIAZKOWE, a "NIE WYKONANO bez opisanych prob = FAIL". Zadnej proby (poza rozbudowa konsoli) nie opisano; obrona sama pisze "Live ... NIE URUCHOMIONO". Odczyt stanu ekranu porazki i zmian ownerId przez page.evaluate nie wymaga zmiany gra/src. Dane z zapisow (liczniki) nie rozstrzygaja przyczyny utraty miasta w 3/10 biegach, a to jest centralne pytanie (bunt czy barbarzyncy).
+- 8: gracz pasywny (0 jednostek wojskowych) we wszystkich biegach; ustawienia maksimum nieweryfikowalne artefaktem (brak run.log w commicie). Wymog stalej zasady testowania (maksimum) nieudowodniony.
+
+WNIOSKI MERYTORYCZNE (rzetelnie ustalone): kod NIE chroni ostatniego miasta gracza przed buntem (society-breakdown.ts:522-533, ochrona tylko AI); progi 12% / 3 tury; w 10 biegach 0 buntow gracza ([Rebelia], owner -99). Czestosc buntu przy realnej grze, Porzadek gracza, mechanizm t29 i UI po utracie: NIE ZMIERZONO.
+
+BLOKADY (do naprawy w kolejnej rundzie, ten sam ID): (a) odtworzyc V4/4242 do t29 z logiem zmian ownerId miast gracza (stary->nowy, przyczyna: -1 barbarzyncy vs -99 bunt) przez page.evaluate/hooki odczytu, bez zmiany gra/src; (b) odczytac na zywo stan gameOver/ekran porazki po utracie ostatniego miasta (np. latwy-s7 do t59 lub normalny-s7 do t58); (c) zmierzyc Porzadek miast gracza (min/sr) dostepnym odczytem lub opisac konkretne proby, ktore zawiodly; (d) rozwazyc gracza nie calkiem pasywnego; (e) zapisac run.log z readbackiem ustawien maksimum w runs/.
+RUNDY: FC r2; wg dispatchu zuzyte 2/5 (dwie nieudane rundy Haiku -> dozwolony SONNET na Operatorze z pisemnym uzasadnieniem w dispatchu).
+NASTEPNY KROK: runda 3 Operatora tego samego ID z zadaniem (a)-(e); decyzja ABC o ochronie ostatniego miasta gracza dopiero po pomiarze.
+UWAGI-DLA-ORKIESTRATORA: runner plrrevolt-run.cjs to cienka kopia aibal2-measure-run.cjs, nie nakladka z dispatchu; plrrevolt-summarize.cjs czyta nieskompresowany katalog.
 DEPLOY/PUSH: NIE WYKONANO
