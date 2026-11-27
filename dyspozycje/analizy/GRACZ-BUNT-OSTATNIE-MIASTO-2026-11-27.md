@@ -23,24 +23,33 @@ A/B inercja haka, tail zmian właściciela. Nie powtarzano analizy kodu ani 9 bi
 3. **Porządek miasta gracza (`porPct`) do utraty:** 4242: min 52,9 / śr 52,9; 7: min 44,9 / śr 54,9; 778899: min 59,5 / śr 59,5.
    Żadne miasto gracza nie weszło w skrajny bunt (próg 12%). **Populacja miasta gracza: max 2 (4242), 3 (7), 1 (778899).**
 4. **NIE ZMIERZONO (zostaje):** bunt miasta gracza przy populacji **≥ 5** (w tych biegach miasto nie przekroczyło pop. 3).
-5. **Rozbieżność z REALDEF4 (pkt 4 §0 r3):** tury utraty 4242 (t16) i 778899 (t12) mieszczą się w przedziale REALDEF4
-   (t10–16). Ziarno 7 (t29) jest poza tym przedziałem. NIE ZWERYFIKOWANO, które ziarno REALDEF4 uznało za przeżywające
+5. **Rozbieżność z REALDEF4 (pkt 4 §0 r3; PRZYJĘTY zarzut Evaluatora r4, zob. §6):** różnice tur utraty (r4 minus REALDEF4):
+   4242: t16 vs t10 = **+6 tur**; 778899: t12 vs t13 = **−1 tura**; seed 7: t29 vs „ok. t14” = **ok. +15 tur** (przybliżenie,
+   REALDEF4 nie podał dokładnej tury). Ziarno 7 (t29) jest poza przedziałem REALDEF4 (t10–16), 4242 i 778899 mieszczą się w nim. NIE ZWERYFIKOWANO, które ziarno REALDEF4 uznało za przeżywające
    (brak jego danych w tym dokumencie), ani czy różnice kodu między commitami REALDEF4 a `bf299e885` wpływają na barbarzyńców.
    Różnica ustawień (barbarzyńcy Trudny, kultura AI Trudny) zweryfikowana readbackiem, a nie założeniem.
 6. **A/B inercja haka (`civTest`, ziarno 4242, kultura normalny, pasywny gracz, tury t2–t16):** bundle A (`909a057fa`, bez haka)
    i bundle B (`bf299e885`, z hakiem). `stateHash` identyczny w KAŻDEJ z 15 tur; digest bez pól `plr/sec/load1` identyczny
    w każdej turze. Tabela: `dane-r4/ab-compare.txt`. Hak jest inertny dla stanu gry (tylko odczyt i zapis do tablicy logu).
+   **Ograniczenia jawne:** 1 ziarno (4242), 15 tur (t2–t16). Bundle A (bez haka) ma w `ab-nohook/seed4242.summary.json`
+   `barbariansLevelGra = null` (brak haka odczytu). Poziom barbarzyńców w A wnioskowany WYŁĄCZNIE z identycznego stateHash z B,
+   którego readback = trudny (`ab-hook/seed4242.readback.txt`); nie jest to własny odczyt bundla A.
 7. **ownerChangesTail w summary.json** = ostatnie 3 zmiany właściciela WSZYSTKICH miast z `plr.ownerChanges` (nie tylko
    miast gracza). Dla gracza przydatne są pola `oldOwner: 0` w jsonl (pkt 2).
 8. **Chromium:** crashy SIGSEGV przy starcie / wczytaniu slotu. Wznowienie (`--resume-test`/slot) na 4242 padło 2×, na
    ab-nohook 2× przed sukcesem (3. próba). Wszystkie 5 końcowych biegów wykonano jako świeże (bez wznowienia), w segmentach
    ≤ 30 tur. Liczby z surowych wyjść: `run.txt` w każdym katalogu.
 9. **Baza bez łaski barbarzyńców:** w `gra/src/main.ts` bazy nie znaleziono okna łaski 15 tur (GRACE15). Pomiar dotyczy kodu bez
-   tej łaski. NIE ZWERYFIKOWANO, czy na origin/main jest późniejsza wersja tej funkcji.
+   tej łaski. NIE ZWERYFIKOWANO, czy na origin/main jest późniejsza wersja tej funkcji. Zarzut Evaluatora r4 (nr 5) PRZYJĘTY jako
+   ograniczenie, nie blokada. **Zalecenie dla orkiestratora (nie wykonano w r4):** przed pytaniem ABC o ochronę ostatniego miasta
+   gracza powtórzyć krótki pomiar na bazie z GRACE15, bo po łasce miasto przeżywa dłużej i bunt przy pop >= 5 staje się osiągalny.
 10. **Bramki (po `npm ci --ignore-scripts`, worktree r4):** `tsc --noEmit` exit 0; `logic-test` 213/213 OK; `ai-test` 297 passed,
     0 failed; `society-breakdown-test` 56 OK, 0 FAIL. `git diff bf299e885 -- gra/src` = 0 linii (zmiany gra/src w r4 zero).
 
 ## 0. STAN WIĄŻĄCY (wnioski runda 3)
+
+> **Dokument historyczny r3.** Punkty 1–4 i 7 poniżej są aktualne. Punkty 6 (readback „NIE w commicie”) i tabela r3 w §1
+> o kulturze AI NORMALNY są NIEAKTUALNE — obowiązuje §00 (r4), gdzie readback jest w commicie (`dane-r4/*.readback.txt`).
 
 1. **Utrata miasta gracza w tych biegach NIE jest buntem. To barbarzyńcy.** W 9 biegach (kultura gracza łatwy / normalny /
    trudny x ziarna 4242, 7, 778899; pasywny gracz, maksimum ustawień) gracz traci JEDYNE miasto: t16 / t29 / t12 (ziarno
@@ -77,6 +86,9 @@ A/B inercja haka, tail zmian właściciela. Nie powtarzano analizy kodu ani 9 bi
    żadnego komunikatu o przyczynie (barbarzyńcy vs bunt) na ekranie porażki.
 
 ## 1. Tabela 9 biegów (pasywny gracz, maksimum: Trudny, Koszty jednostek Wysoki x4, Dyplomacja trudna, barbarzyńcy Trudny; kultura AI NORMALNY, nie trudny: odstępstwo od maksimum, zob. §6)
+
+> Tabela r3 — kultura AI NORMALNY. W r4 kultura AI TRUDNY tylko w 3 biegach z readbackiem (§00 pkt 1); tury utraty z tej tabeli
+> pozostają w §00 pkt 2 jako dane r3 (nie powtarzane w r4 poza 3 biegami).
 
 Porządek = `porPct` miast gracza z `cityOrderState` (min / średnia po turach do utraty). Skrajny bunt = `porPct < 12`.
 Wszystkie biegi: 1 miasto, 0 jednostek wojskowych, populacja miasta 1-3 (osiedle = immunitet buntu).
@@ -167,6 +179,9 @@ miasta w 60 turach).
   jeśli bunt okaże się osiągalny przy populacji >= 5 (dziś niezmierzone).
 
 ## 6. Korekty po obronie r3 (zarzuty Evaluatora, commit e30c344 -> kolejny commit obrony)
+
+> Sekcja historyczna r3. Pozycje 1 (readback „NIE w commicie”) i 3 (A/B „NIE ZMIERZONO”) są NIEAKTUALNE: readback jest w commicie,
+> A/B wykonano (§00 pkt 6). Pozycja 2 zastąpiona liczbami w §00 pkt 5.
 
 Każdy zarzut: PRZYJĘTY (poprawka w tym dokumencie) albo ODRZUCONY z dowodem. Brak dowodu = przyjęty.
 

@@ -111,7 +111,7 @@ let SNAP_PREFIX = process.env.SNAP_DUMP || '';
 let RUN_START_TURN = 0;
 /** R4 (PLRREVOLT): readback ustawien z tego biegu (zapis do seed<S>.readback.txt i pole readback w summary.json). */
 let READBACK = null;
-/** R4: ostatnie niepuste zmiany wlasciciela miast gracza (z jsonl, pole rec.plr.ownerChanges). */
+/** R4: ostatnie 3 zmiany wlasciciela WSZYSTKICH miast (nie tylko gracza) z jsonl, pole rec.plr.ownerChanges; filtr po ownerId gracza nie jest stosowany. */
 function ownerChangesTailFromJsonl() {
   const p = path.join(OUT, `seed${SEED}.jsonl`);
   if (!fs.existsSync(p)) return null;
