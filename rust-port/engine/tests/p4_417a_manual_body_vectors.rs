@@ -253,7 +253,6 @@ fn order_json(o: PlayerOrder, ids: &[Vec<String>; 2], actor_side: BattleSide) ->
                 .unwrap_or_else(|| format!("?{target_id}"));
             format!("attack:{name}")
         }
-        other => format!("{other:?}"),
     }
 }
 
@@ -270,7 +269,12 @@ fn expected_order(o: &Value) -> String {
 
 /// Buduje scenę przypadku produkcyjną sesją, nadpisuje stan z migawki i wykonuje JEDNĄ aktywację jednostki w trybie
 /// ręcznym. `mutate` pozwala testom mutacyjnym zmienić stan między ustawieniem a aktywacją.
-fn run_case(c: &Value, inputs: &Value, data: &SessionData) -> Result<Outcome, String> {
+fn run_case(
+    c: &Value,
+    inputs: &Value,
+    data: &SessionData,
+    atomic: bool,
+) -> Result<Outcome, String> {
     let mut s =
         SiegeBattleSession::prepare_scene(&scene_input(&inputs[c["base"].as_str().unwrap()]), data)
             .map_err(|e| format!("sesja: {e:?}"))?;
@@ -365,6 +369,9 @@ fn run_case(c: &Value, inputs: &Value, data: &SessionData) -> Result<Outcome, St
     st.manual_mode = true;
     st.player_side = player_side;
     body.enable_manual_exec(player_side);
+    // Sesja produkcyjna ma marsz krokowy (`march_incremental`); `atomic` = marsz atomowy (jedna decyzja rozkazu = jeden krok
+    // rozstrzygnięty w `start`, `lastAutoMoveFrom` ustawione od razu).
+    body.march_incremental = !atomic;
     // Rozkaz gracza (`ru.playerOrder`), `target_id` = identyfikator `st` celu (nieznany = `u64::MAX`).
     let o = &c["order"];
     let opp = six(actor_side) ^ 1;
@@ -533,7 +540,12 @@ fn diff(a: &Outcome, b: &Outcome) -> Vec<String> {
 }
 
 /// Wszystkie przypadki równolegle (do 4 wątków, każdy z własnymi sesjami); wynik w kolejności przypadków.
-fn run_all(cases: &[Value], inputs: &Value, data: &SessionData) -> Vec<Result<Outcome, String>> {
+fn run_all(
+    cases: &[&Value],
+    inputs: &Value,
+    data: &SessionData,
+    atomic: bool,
+) -> Vec<Result<Outcome, String>> {
     let threads = std::thread::available_parallelism().map_or(2, |n| n.get().clamp(1, 4));
     let mut slots: Vec<Option<Result<Outcome, String>>> = (0..cases.len()).map(|_| None).collect();
     std::thread::scope(|sc| {
@@ -542,7 +554,7 @@ fn run_all(cases: &[Value], inputs: &Value, data: &SessionData) -> Vec<Result<Ou
                 sc.spawn(move || {
                     (t..cases.len())
                         .step_by(threads)
-                        .map(|i| (i, run_case(&cases[i], inputs, data)))
+                        .map(|i| (i, run_case(cases[i], inputs, data, atomic)))
                         .collect::<Vec<_>>()
                 })
             })
@@ -631,7 +643,8 @@ fn tryb_reczny_ciala_zgodny_z_pinem_na_wektorach_kroku() {
     let mut fails = Vec::new();
     let mut cov: BTreeMap<String, usize> = BTreeMap::new();
     // Każdy przypadek na ŚWIEŻEJ sesji (`prepare_scene` ~0,2 s w profilu dev): przypadki rozdzielone na wątki.
-    let results = run_all(cases, &v["inputs"], &data);
+    let refs: Vec<&Value> = cases.iter().collect();
+    let results = run_all(&refs, &v["inputs"], &data, false);
     for (i, (c, res)) in cases.iter().zip(results).enumerate() {
         match res {
             Err(e) => fails.push(format!("#{i} {} {}: {e}", c["unit"], c["order"])),
@@ -690,4 +703,56 @@ fn tryb_reczny_ciala_zgodny_z_pinem_na_wektorach_kroku() {
     at_least("attack/cel-nie-wrog", 10);
     at_least("attackMove/cel-pozycja", 10);
     at_least("move/cel-pozycja", 10);
+}
+
+/// Marsz ATOMOWY (`march_incremental = false`, konfiguracja ciała bez sesji): rozkazy `move` / `attack` / `attackMove` /
+/// `hold` (jeden krok rozkazu = jedna decyzja; `none` z doktryną AUTO maszeruje wielokrokowo, więc poza porównaniem) z
+/// pinem na co czwartym przypadku i na wszystkich odmowach bramki muru.
+#[test]
+fn tryb_reczny_ciala_marsz_atomowy_zgodny_z_pinem() {
+    let v = vectors();
+    let data = pin_session_data();
+    let cases: Vec<&Value> = v["cases"]
+        .as_array()
+        .expect("cases")
+        .iter()
+        .enumerate()
+        .filter(|(i, c)| {
+            !c["label"].as_str().unwrap().starts_with("none")
+                && (i % 4 == 0 || c["expect"]["refused"] == true)
+        })
+        .map(|(_, c)| c)
+        .collect();
+    assert!(cases.len() >= 250, "przypadków {}", cases.len());
+    assert!(
+        cases
+            .iter()
+            .filter(|c| c["expect"]["refused"] == true)
+            .count()
+            >= 6,
+        "odmowy bramki muru"
+    );
+    let results = run_all(&cases, &v["inputs"], &data, true);
+    let mut fails = Vec::new();
+    for (c, res) in cases.iter().zip(results) {
+        match res {
+            Err(e) => fails.push(format!("{} {}: {e}", c["unit"], c["order"])),
+            Ok(got) => {
+                let d = diff(&got, &expected(c));
+                if !d.is_empty() {
+                    fails.push(format!(
+                        "{} {} [{}]: {d:?}",
+                        c["unit"], c["order"], c["label"]
+                    ));
+                }
+            }
+        }
+    }
+    assert!(
+        fails.is_empty(),
+        "{} rozbieżności z {}, pierwsze: {:#?}",
+        fails.len(),
+        cases.len(),
+        &fails[..fails.len().min(10)]
+    );
 }
