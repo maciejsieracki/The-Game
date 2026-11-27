@@ -101,3 +101,28 @@ Zastrzeżenia do pomiaru:
 - Bieg „AI łatwy, gracz trudny” (seed 4242) — runner ustawia tylko poziom gracza (`startGame({kulturaReligiaLevel})`); poziom AI nie jest przekazywany przez hak `__nnsMeasureDebug`. Wymaga zmiany haka w `main.ts` poza zakresem tej rundy.
 - Bieg gracza (wartości gracza w grze pod nowymi plusami) — NIE ZMIERZONO.
 - Pozostałe poziomy (łatwy, normalny dla AI) — NIE ZMIERZONO (decyzja: maksymalny poziom).
+
+## Runda 3 — pomiar PRZED/PO z `--pace wysoki` (tabela domyka rundę 2)
+
+Warunki: runner `gra/tools/ai-cult-rel-measure-run.cjs --pace wysoki --koszt-jednostek wysoki --kr trudny --kr-ai trudny --city-state 1 --unit-flow 1 --difficulty trudny --turns 60`. `unitCostPace` w każdym rekordzie = `wysoki` (potwierdzone w jsonl). PRZED = baza `44649038c` (osobny build z `git archive`). PO = kandydat z merge `3aff4be25` (origin/main 99375f77e scalony; kod gry identyczny z `85b8e79a9`, różnica to tylko test kreatora). Surowe dane poza repo (scratchpad, `seed*.jsonl`). Liczby z jsonl przez `summ.py`: miasta AI = suma `miasta` właścicieli ≠ 0/−1; jednostki AI = suma `jednostkiWojskowe`; poniżej progu = suma `ponizejProgu` z `cityState` (AI); Porządek śr. = Σ`porPctSuma` / Σ`miasta` (AI).
+
+| Wielkość | s4242 PRZED t10/t30/t60 | s4242 PO t10/t30/t60 | s7 PRZED t10/t30/t60 | s7 PO t10/t30/t60 |
+|---|---|---|---|---|
+| Jednostki wojskowe AI | 57 / 118 / **159** | 57 / 172 / **214** | 57 / 111 / **138** | 56 / 190 / **262** |
+| Miasta AI | 42 / 68 / **153** | 42 / 126 / **187** | 42 / 71 / **149** | 44 / 127 / **184** |
+| Miasta AI poniżej 14% | 14 / 6 / **60** | 0 / 0 / **1** | 15 / 9 / **75** | 0 / 0 / **0** |
+| Porządek AI śr. (%) | 19,3 / 33,9 / **21,2** | 65,8 / 62,9 / **55,4** | 20,8 / 31,6 / **19,1** | 65,4 / 66,0 / **51,8** |
+
+Dodatkowy bieg „AI łatwy, gracz trudny” (PO, seed 4242, `--kr trudny --kr-ai latwy`): t10 57 jedn. / 0 poniżej / Porządek 68,7; t30 183 / 0 / 65,0; t60 **236** jedn., 193 miasta AI, 1 poniżej progu, Porządek 57,4. PRZED dla tego wariantu NIE ZMIERZONO (baza nie ma osobnego poziomu AI).
+
+Zastrzeżenia:
+- Baza `44649038c` nie zawiera FALI 928–929 (AIREBEL: bunt AI). Różnica PRZED/PO obejmuje więc także tę zmianę, której efekt na miasta poniżej progu nie został odizolowany.
+- Pomiar nie rozdziela wkładu plusa AI, minusa AI i addytywnej formuły gracza.
+- Wartości gracza w grze NIE ZMIERZONO (runner nie steruje ruchami gracza; brak haka odczytu breakdown).
+- Liczby poniżej progu zależą od wartości dzisiejszego progu 14% (bez zmian, zgodnie z dispatchem).
+
+## Runda 3 — weryfikacja żywa i zapis (stan)
+
+- Odczyt D/G (civTest) gracz/AI w żywej grze: NIE ZMIERZONO. Powód techniczny: brak istniejącego haka zwracającego rozbicie Kultury i Religii per miasto/właściciel; dodanie haka wymagałoby zmiany `gra/src` poza wykonaną tu zmianą. Wartości potwierdzone testami jednostkowymi (`ai-plus10-matrix` 190/0, `ai-plus10-culture` 72/0, `culture-religion-level` 108/0).
+- Round-trip zapisu/wczytania (`kulturaReligiaLevelAI`): kod sprawdzony przeglądem. `setCulturaReligiaLevel(gracz, AI)` zapisuje AI = poziom gracza, gdy pola brak; `null` (zgodność) zostaje `null`. Test żywy zapisu NIE ZMIERZONO.
+- Kreator w przeglądarce: zrzut i test wizard-UI 6/0 z poprzedniej rundy; ponowna weryfikacja po merge NIE ZMIERZONO.
