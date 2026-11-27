@@ -488,6 +488,19 @@ export function isOsiedleRevoltImmune(
   return p <= osiedlePopMax(society, difficulty);
 }
 
+/**
+ * AI-REBEL (decyzja właściciela 39B, 2026-11-27): miasto CYWILIZACJI AI może wejść w bunt skrajny
+ * tą samą ścieżką co miasto gracza (`updateRevoltGrace` → `transferCityToRebelFactionWithLedger`).
+ * Reguła AKTYWNA tylko gdy ustawienie „Kultura i religia” ma poziom (`level !== null`: nowe gry).
+ * Tryb zgodności (`null`: stare zapisy) zostaje dokładnie jak dziś — AI nie buntuje się wcale.
+ * EN: AI civ cities may rebel via the same path as player cities, only when the Culture/Religion
+ * setting has a level (null = compatibility mode, unchanged). Human/barbarian/rebel owners are
+ * decided by the caller (`isAiOwner`).
+ */
+export function aiCityRebellionEnabled(level: string | null, isAiOwnerCity: boolean): boolean {
+  return isAiOwnerCity && level !== null;
+}
+
 export function loadRevoltParams(
   society: SocietyParamsLike | null | undefined,
   difficulty: Difficulty = 'normal',
