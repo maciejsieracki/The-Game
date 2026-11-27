@@ -14,8 +14,9 @@ Start: `__settingsLive.startNewGame` z parametrami maksimum (jak w DEFEAT r2), b
 wymuszony fort przy mieście gracza (jak w DEFEAT — wspólna baza porównania). Seedy 4242 i 7. Maksimum poziomów
 wg zasady testowania właściciela (26.11): wszystkie suwaki ustawione na najwyższy poziom dostępny w kreatorze
 (barbarzyńcy trudny, dyplomacja trudna, kultura trudny, Koszty jednostek Wysoki ×4, Wzrost ludności Wysoki).
-Readback: w logu każdego przebiegu zapisany jest wysłany słownik `adv` oraz odczyt tury i skarbca po starcie;
-pełnego readbacku ustawień z gry runner nie wykonuje (NIE ZMIERZONO).
+Readback: runner od tej rundy zapisuje w linii `start` wysłany słownik `adv` ORAZ odczyt faktycznych ustawień z gry
+(`__settingsLive.getSettings`, pole `settingsReadback`). Serie P0 zebrane w r1 (40 wierszy) NIE mają pola `settingsReadback`
+— ich readback jest tylko wysłany słownik i tura/skarbiec po starcie (NIE ZMIERZONO dla tych przebiegów).
 
 ## Wyniki P0 (pasywny — kontrola), 20 przebiegów na seed, 20 tur
 Dane: `dyspozycje/autobot/runs/R-WEB-EARLY-DEFENSE-REALISTIC-Q1/dane/dane-p0-s4242-s7.jsonl` (40 wierszy).
@@ -32,8 +33,12 @@ w pierwszych 8–17 turach. Błędów pageerror: 0.
 
 ## P1 — „budowa jednostki obronnej” — NIE ZMIERZONO (BLOCK)
 Przyczyna (udokumentowana próba):
-1. Karta „Rekrutuj” w widoku miasta w tym harnessie nie pojawia się (w panelu miasta brak kart rekrutacji
-   `.unit-recruit-submit`; sprawdzone w turach 1–3, runner zapisuje diagnostykę w `tries`).
+1. Karta „Rekrutuj” w widoku miasta nie pojawiła się w próbie (brak `.unit-recruit-submit` w turach 1–3).
+   Diagnostyka prób (pole `tries`) NIE została zacommitowana: w `gra/tools/realdef-live.cjs` tego pola nie ma,
+   więc liczba prób i sprawdzanych kart nie jest dowiedziona w repo. Kod gry podaje możliwą przyczynę:
+   `gra/src/ui/cityPanel.ts` (~9604–9660) przy pustej liście kupowalnych jednostek pokazuje komunikat
+   „(brak jednostek do kupienia — zbadaj technologie / Koszary)”, czyli karta może nie istnieć, dopóki gracz nie ma
+   technologii lub Koszar. To wskazanie z kodu, NIE ZMIERZONO na żywo (nie sprawdzono, co widzi gracz w turze 1).
 2. Ścieżka `__empireRecruitTestDebug.order` wymaga wybranego generała rekrutującego; gracz na starcie ma tylko
    Zwiadowcę, więc generała nie ma (rekrutacja z panelu armii jest w grze wyłączona — to zgodne z regułą gry).
 3. Hak `__siegeBlockTestDebug.tryPurchase(cityId)` (realne `purchaseRecruitmentUnit`) nie przyjmuje identyfikatora
@@ -41,10 +46,23 @@ Przyczyna (udokumentowana próba):
    Wybór Łucznika (najtańszej wojskowej, koszt 12) wymagałby zmiany `gra/src/main.ts` (parametr hooka), co jest
    poza allowlistą tematu.
 Pomiar czasu budowy (ile tur do pierwszej jednostki) jest więc niemożliwy do wykonania bez decyzji o rozszerzeniu
-allowlisty. Obserwacja pomocnicza z próby (1 przebieg, seed 4242): skarbiec gracza na starcie to 0, przyrost
-około +2 na turę; Łucznik (koszt 12) byłby możliwy do opłacenia dopiero około tury 6–7 (wartość z logu prób:
-skarbiec 0,3,5,7,9,11,13 w turach 1–7). Ta obserwacja pochodzi z przebiegu, w którym kupiono Zwiadowcę, a nie
-Łucznika, więc nie jest pomiarem czasu budowy jednostki wojskowej.
+allowlisty. Obserwacji skarbca z próby NIE podaję: próba używała haku zakupu, który przed zakupem ustawia skarbiec
+na 999999 i manpower na 99999 (`gra/src/main.ts` ~30276–30290), więc wartości skarbca z tej próby nie są pomiarem
+gry bez zmian. Czas budowy jednostki wojskowej: NIE ZMIERZONO.
+
+## Test istotności (Fisher, dwustronny) — P0 r1 vs DEFEAT r2
+Tabela 2×2 (utrata / przeżycie miasta): P0 r1 = 39/40 (1 przeżycie), DEFEAT r2 = 34/37 (3 przeżycia).
+Wynik: p = 0,346 (obliczone stdlib, python `comb`, dwustronnie). Różnica NIE jest istotna przy α = 0,05.
+Zgodnie z tym wnioskiem P0 r1 nie wskazuje na różnicę względem DEFEAT r2.
+Uwaga: test porównuje dwa pomiary P0 tej samej polityki, a nie P0 z P1 — dla oceny wpływu budowy jednostki potrzebny
+jest P1, który NIE został zmierzony.
+
+## Metryki wymagane dispatchem, których NIE zebrano w P0
+- liczba jednostek barbarzyńców w pobliżu miasta w turze utraty (pole `barb` przy wierszu `turn` z haka cityThreatProbe):
+  NIE ZMIERZONO w wierszach result — runner zapisał `tracked` tylko w logach `realdef-*.txt`, poza repo;
+- tura pojawienia się pierwszej jednostki gracza (turn-to-first-defender): runner liczy `firstDefender`, ale nie zapisuje
+  go do wiersza result — NIE ZMIERZONO w danych;
+- siły (log bitew): NIE ZMIERZONO.
 
 ## P2 — „P1 + bitwy rozstrzygane przez gracza” — NIE ZMIERZONO
 Runner nie ma ścieżki ręcznej bitwy (`clearBattles` klika wyłącznie `data-act="auto"`). Próba nie została
@@ -62,7 +80,9 @@ Zależy od P1; dostępność murów w pierwszych 20 turach nie została sprawdzo
 ## Odchylenia od dispatchu
 - P1 zablokowany (patrz wyżej); P2/P3 NIE ZMIERZONO.
 - Wymuszony fort (`forceFortLive`) zostaje jako baza, jak w DEFEAT — to nie jest zachowanie gracza, lecz wspólna
-  baza porównania.
-- Readback ustawień: tylko wysłane parametry i odczyt tury/skarbca.
+  baza porównania. Hak `forceFortLive` ZMIENIA stan gry (stawia fort), więc wnioski dotyczą gry z wymuszonym fortem,
+  nie zwykłej gry bez tego zabiegu. Ograniczenie zakresu wniosków.
+- Runner przyjmuje tylko politykę p0 (walidacja argv) — konsekwencja blokady P1.
+- Readback ustawień: w r1 tylko wysłane parametry i odczyt tury/skarbca (patrz wyżej; poprawka w runnerze na przyszłe biegi).
 - Bramki: `tsc` = 0 (surowe wyjście: exit 0). `logic 213` i `ai-test 297/0` NIE URUCHOMIONO: zmiany dotyczą
   wyłącznie `gra/tools/realdef-live.cjs` (nie kod gry), więc bramki logiki nie były zmieniane.

@@ -133,7 +133,9 @@ async function main() {
     const c0 = await page.evaluate(() => window.__defeatTestDebug.cityThreatProbe().filter(c => c.ownerId === 0));
     trackIds = c0.map(c => c.id);
     const readback = await page.evaluate(() => ({ turn: window.__nnsMeasureDebug.gateInfo().turn, treasury: window.__nnsMeasureDebug.gateInfo().treasury }));
-    logLine({ kind: 'start', policy: POLICY, seed: SEED, adv: ADV, playerCities: c0.map(c => ({ id: c.id, q: c.q, r: c.r })), readback });
+    // Readback faktycznych ustawień z gry (hak __settingsLive.getSettings, tylko odczyt) — porównać z `adv`.
+    const settingsReadback = await page.evaluate(() => window.__settingsLive.getSettings());
+    logLine({ kind: 'start', policy: POLICY, seed: SEED, adv: ADV, settingsReadback, playerCities: c0.map(c => ({ id: c.id, q: c.q, r: c.r })), readback });
     const gate0 = await prepareEndTurnGate(page);
     logLine({ kind: 'gate0', gate0 });
     let result = null;
