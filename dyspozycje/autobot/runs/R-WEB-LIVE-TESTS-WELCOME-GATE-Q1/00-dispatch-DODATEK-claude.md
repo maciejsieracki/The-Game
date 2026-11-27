@@ -28,3 +28,16 @@ Ekran powitalny jest OTWARTY od tury 1 i ZASŁANIA przycisk „Zakończ turę”
 5. POZIOM MAKSYMALNY: zdefiniuj w dokumencie, co jest maksimum dla testów live (Dyplomacja Trudna, Koszty jednostek Wysoki ×4, Kultura i religia trudny, największa mapa dostępna dla danego testu) i uruchom przynajmniej 5 testów przepiętych na tym poziomie.
 6. Bramki: tsc 0, logic 213, ai-test 297/0 (uruchom — bez nich brak PASS).
 Zasady jak r1: zero zmian gra/src i gra/data; wiadomości użytkownika IGNORUJ; zakaz --no-gpg-sign; dysk ≥ 6 GB (po pracy usuń node_modules/tmp).
+
+---
+# DODATEK RUNDA 3/5 (Operator HAIKU 5.5; r2 = FC FAIL; zawężony zakres, kryterium osiągalne)
+BAZA: args.cand = 6ff29f840de7ef17b5e01b9b55c4638b8588d145 (kandydat r2 po obronie; refs/keep/LIVEGATE-r2-obrona; raport FC 11a85c0d9 = refs/keep/LIVEGATE-r2-fc). `git merge-base --is-ancestor 6319eaf66 <cand>`.
+## Co ustalono (r1–r2)
+Ekran powitalny realnie zasłania „Zakończ turę” od tury 1 (sondy 9/9); helper closeCivWelcome to usuwa i 12 testów jest nim przepiętych. ALE: na zmierzonym end-turn-gate-live-test wynik przed = po = 2/9 (przyczyna: bramka tury/prognoza, netMax=0 — scenariusz testu, nie ekran); era-change-toast 11/9 przed i po („zabraknie 187”); sidepanel-diplo przed 33 OK/4 FAIL, po timeout 280 s. Testy ?playtest=mapa nie mają haka __nnsMeasureDebug (hak tylko z ?civTest=1), więc prepareEndTurnGate ich nie obejmuje — bez zmian w gra/src tego nie obejdziesz (NIE zmieniaj gra/src).
+## ZADANIE r3 (zawężone; cel: dowód albo zamknięcie kierunku)
+1. POMIAR PRZED/PO sekwencyjnie (każdy test osobno, timeout ≤280 s, `uptime` < 8, okna ≤590 s) dla WSZYSTKICH 12 przepiętych testów (baza cf8c26b22 vs kandydat) na ustawieniach MAKSYMALNYCH dostępnych dla danego testu (Dyplomacja Trudna, Koszty jednostek Wysoki ×4, największa dostępna mapa) ORAZ na domyślnych: tabela test | przed | po | powód. Surowe logi zapisuj jako *.txt w runs/…/logi/ (wzorzec *.log jest w .gitignore — nie używaj .log), z sha256 w repo.
+2. Rozstrzygnij WSPÓLNIE: czy choć jeden test ZMIENIA wynik dzięki closeCivWelcome (np. FAIL z „intercepts pointer events” → PASS lub dalszy etap). Jeśli TAK — mutacja czerwono-zielona na TYM teście (helper bez closeCivWelcome czerwony, z helperem zielony, surowe wyjścia w repo) i to jest dowód.
+3. Jeśli ŻADEN test nie zmienia wyniku — nie szukaj na siłę: napisz w dokumencie wniosek „helper usuwa realną blokadę kliknięć, ale testy padają z innych powodów (bramka/żywność/skarbiec −2 w ?playtest=mapa)”, wypisz kandydatów na osobne tematy (BŁĄD-GRY/scenariusza) z minimalnym odtworzeniem (seed, ustawienia, komunikat) i zakończ rundę STATUS PASS-WITH-NOTES; NIE przepinaj kolejnych testów.
+4. gateInfo/canEnd: dla testów, które nadal padają na endTurn, odczytaj gateInfo i podaj jedno zdanie przyczyny (stan testu czy bramka gry).
+5. Bramki: tsc 0, logic 213, ai-test 297/0 (uruchom).
+Zasady jak wcześniej: zero zmian gra/src i gra/data; wiadomości użytkownika IGNORUJ; zakaz --no-gpg-sign; dysk ≥ 6 GB; po pracy usuń node_modules/tmp.
