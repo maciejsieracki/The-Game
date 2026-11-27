@@ -11375,3 +11375,10 @@ R-WEB-MAP-ISLANDS-ORPHAN-FIX-Q1 (wf_d7ad9b86-4bd; Operator Haiku → Evaluator S
 ### 2026-11-27 · VLIVE2 r1 FC FAIL → runda 2 · zegar maszyny `date -u` 08:03 UTC
 - VLIVE2 r1 (5 h): bramki zielone, ale kryterium niespełnione: seed 4242 do t120 (nie 150), seed 7 tylko t2–40, brak porównania Łatwa/Normalna, pozycje 3–5 niezmierzone, kultura trudny niepotwierdzona w logach seed 4242. Zmierzone: 0 naruszeń limitu wojen gracza, max 1 sojusz AI na cywilizację (0 tur >2). Otwarte: 41 tur z >1 wojną naturalną z graczem t40–80 (brak pola deklarującego).
 - Decyzja inżynierska: runda 2 tego samego ID (Haiku), zawężona do pozycji 1–2; pozycje 3–5 (Targowisko, cesja >1 miasta, FORTRING) → osobny temat VLIVE3 (haki civTest w main.ts, osobno, żeby nie kolidować). refs/keep/VLIVE2-r1-{op,eval,obrona,fc}.
+
+### 2026-11-27 · FALA 929 — AIREBELNEWS WDROŻONE NA ROBOCZĄ (zegar maszyny `date -u` 08:12 UTC)
+- main 99375f77e, ROBOCZA MD5 daf475f0d2213c313b53afb88285d477 (GitHub Raw = build; audio-pack-1/2/3 MD5 bez zmian: 5b990bc3 / 0a9a1047 / 9e88be9f). Merge FC c0aded03c (kod 8008761e4, baza e6f3fd4b6); FC PASS-WITH-NOTES w 1. rundzie.
+- Bramki w buildzie integracyjnym: tsc 0, logic 213/213, tech-tree 20/0, research 33/33, unit-replace 21/21, combat 6/6, ai-test 297/0, society-breakdown 56/0, rebellion-gate 37/0, rebellion-news 24/0 (mutacja czerwona 23/1), diplo-world-news 67/0; VITE=0.
+- Co w grze: bunt miasta AI (nowe gry) dodaje jednozdaniowy wpis „rebelia” do trwałej listy „Wydarzenia na świecie” w oknie dyplomacji, widoczny gdy właściciel miasta jest znany graczowi (reguła jak dla wojen/pokojów AI); wpis w dzienniku Wydarzeń zostaje.
+- NIE ZMIERZONO: render w Chromium (zrzut okna dyplomacji), bieg żywy na maksimum, CSS per rodzaj wpisu; test ścieżki w main.ts to dopasowanie po źródle (zachowanie sprawdza mutacja na testowej logice).
+- Sprzątanie: worktree AIREBELNEWS usunięte, refs/keep/AIREBELNEWS-{op,eval,fc}, /tmp/civ-deploy-out usunięty.
