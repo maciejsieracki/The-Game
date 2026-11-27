@@ -3,109 +3,128 @@
 Data: 2026-11-27. Baza: `bac0462be` (origin/main). Zmian w `gra/src` i `gra/data` NIE WPROWADZONO.
 Dane: `dyspozycje/autobot/runs/R-WEB-AI-EMPTY-BISECT-Q1/dane/*.jsonl.gz`. Logi: `.../logi/`.
 Narzędzia: `gra/tools/aiempty-analyze.cjs` (zestawienie), `gra/tools/aiempty-bisect-run-nns.cjs` (runner, patrz §2).
+Wersja po obronie r1 (zarzuty Evaluatora 1–6). Zmiany względem r0 są oznaczone **[r1]**.
 
 ## 1. Definicja metryki
 
 Bez zmian względem AIEMPTY: „puste miasto” = `owners[].miastaWojsko[].wojsko === 0`, właściciel ≠ 0 (gracz)
-i ≠ −1. Obie metryki (FALA 857 i AIBAL2) dają identyczne liczby (potwierdzone w AIEMPTY).
+i ≠ −1. Liczba = puste / miasta AI w turze 60 (`aiempty-analyze.cjs`, jedna metryka).
 
-## 2. Punkt zerowy i metoda
+## 2. Ustawienia i metoda — poprawione [r1]
 
-Rejestr (FALA 857) nie podaje ustawień pomiaru 167/193→16/188 w sposób odtwarzalny. Odtworzono metodę
-najbliższą FALI 857 z jej własnego kodu: **start przez `__nnsMeasureDebug.startGame`** (ta funkcja istnieje
-w FALI 857; w commicie 857 jest jedynym hakiem startu, bo `__settingsLive` pojawia się dopiero po FALI 874).
-Ustawienia twardo wpisane w tym haku w każdym commicie (sprawdzone w źródle 857 i bac): **Trudność Normalny,
-Koszty jednostek `niski`, Budowa `niski`**, dyplomacja i kultura na wartościach domyślnych gry.
-Runner: `aiempty-bisect-run-nns.cjs` = kopia `aibal2-measure-run.cjs`, z dwiema zmianami: start przez
-`__nnsMeasureDebug.startGame` oraz pominięcie `setUnitCostPace`, gdy hak nie istnieje (commity sprzed FALI 874).
-Gra: headless Chrome (`/usr/bin/google-chrome`), 60 tur, realny `endTurn` gracza, ziarna 4242 i 7.
-Każdy commit kodu zbudowany osobno (`git archive` → vite w katalogu roboczym poza repo, po buildzie usunięty).
+**Domyślna gra = Normalny (koszt jednostek = Normalny ×2).** Potwierdzone w kodzie kreatora: `kosztJednostekPace: 'normalny'`
+w `gra/src/ui/newGameFlow.ts` (domyślne ustawienia zaawansowane; linia 275 w 857, 282 w 883, 296 w 887, 312 w bac).
+Pole `kosztJednostekPace` w `playerState.ts:151` ma wartość startową `'niski'`, ale nowa gra zawsze przechodzi przez kreator.
 
-**Punkt zerowy odtworzony w przybliżeniu:** FALA 857 → t60 **12/188 (6,4%)** (ziarno 4242) i **7/191 (3,7%)**
-(ziarno 7). Rejestr podaje ~8% (16/188). Różnica wynika z harnessu/ziarna; kierunek i rząd wielkości się zgadzają.
+**Co robił runner r0 (poprawka, zarzut 1 i 6a):** `aiempty-bisect-run-nns.cjs` wołał `setUnitCostPace(PACE)` tylko wtedy,
+gdy hak istnieje, a gdy go nie było, zwracał `PACE` bez ustawiania (linia 562). Domyślne `--pace` = `normalny`.
+Skutek: w buildach sprzed FALI 874 (857, 868, d269, 874, 883, 887, których hak startu ma na stałe `kosztJednostekPace: 'niski'`)
+tempo było **niski**, mimo że runner deklarował `normalny`; bac0462be (ma setter) był mierzony przy **normalny**.
+Wiersz „main” z r0 (31/153) był więc poprawnym pomiarem przy Normalny, ale wiersze 857–887 były przy niski — tabela r0 mieszała metody.
+[r1] Runner: brak setera jest zgłaszany w logu linią `[pace] UWAGA ...` (nie jest cicho ignorowany). Pomiary r1 podają tempo jawnie.
 
-## 3. Tabela: puste miasta AI, t60 (wynik z `aiempty-analyze.cjs`, surowe liczby)
+**Punkt zerowy (zarzut 4) [r1]:** Rejestr podaje 167/193 → 16/188 dla FALI 857. Źródło w dyspozycjach to
+`R-WEB-AI-CITY-GARRISON-MIN-ONE-IMPL-Q1/30-obrona-claude.md` (r4), czysty świeży start na commicie **`28bace9bb`** (ziarno 4242,
+bez instrumentacji), a nie na `60bc97b60` (commit FALI 857 użyty w r0). `28bace9bb` jest przodkiem `60bc97b60` (43 commity wcześniej).
+W tamtym biegu nie zapisano tempa; przy świeżym starcie kreatora domyślnie byłby to Normalny, ale to NIE ZWERYFIKOWANE.
+Odtworzenie na `60bc97b60`: niski s4242 = 12/188 (6,4%), niski s7 = 7/191 (3,7%), normalny s7 = 22/192 (11,5%).
+Normalny s4242 na `60bc97b60` NIE ZMIERZONO. Kryterium „857 ≈ 8%” jest spełnione tylko luźno.
 
-Harness „NNS” = Normalny, koszt jednostek `niski` (jak haki FALI 857). Każdy punkt = 1 bieg.
+**Metoda r1:** Builds z `git archive` poza repo (`vite build`, `node_modules` ze wspólnej kopii), headless Chrome, 60 tur,
+realny `endTurn`, `--every 10`. Dla buildów bez setera tempo ustawiono patchem HAKA STARTU w kopii roboczej poza repo
+(zamiana `kosztJednostekPace: 'niski'` → `'normalny'` w bloku `__nnsMeasureDebug`; 1 miejsce w każdym buildzie, potwierdzone skryptem).
+Patch dotyczy wyłącznie `normalny`; commity w repo nie zmieniono. Oznaczenie: **[setter]** = `setUnitCostPace` w buildzie,
+**[patch-normalny]** = hak zmieniony na normalny, **[hak-niski]** = bez zmian (niski).
 
-| Commit | FALA | ziarno 4242 | ziarno 7 | uwagi |
+Chrome padał w kilku biegach (`Target page ... closed`, SIGSEGV): powtórzono ze startu (≤3 próby). Powtórka udanego biegu
+bac normalny s4242 dała wynik identyczny (31/153, dwa biegi); pozostałe biegi nie były powtarzane.
+
+## 3. Tabela: puste miasta AI, t60 (surowe liczby z `aiempty-analyze.cjs`) [r1]
+
+Każdy punkt = 1 bieg. Kolumny: tempo kosztu jednostek w grze; sposób ustawienia.
+
+**A. Tempo Normalny (domyślna gra):**
+
+| Commit | FALA | ziarno 4242 | ziarno 7 | tempo / sposób |
 |---|---|---|---|---|
-| 60bc97b60 | 857 | 12/188 (6,4%) | 7/191 (3,7%) | punkt zerowy |
-| 2be949df6 | 867 (merge) | — | 7/191 (3,7%) | jak 857 |
-| b7a2923be | 868 (merge) | — | 7/191 (3,7%) | jak 857 |
-| **d269541eb** | **R-WEB-ECONOMY-ERA-REBALANCE-ENABLE-Q1** | — | **39/181 (21,5%)** | **skok: +17,8 pkt** |
-| 76aa74e81 | 874 | 23/183 (12,6%) | 39/181 (21,5%) | — |
-| 141a2bc56 | 878 (merge) | 31/171 (18,1%) | 40/170 (23,5%) | — |
-| dc2f0fed0 | 883 (merge) | 40/173 (23,1%) | 51/172 (29,7%) | +6 pkt od 878 (s7) |
-| 13e869f51 | 887 | 40/173 (23,1%) | — | identyczny wynik z 883 (mnożnik „Koszty jednostek” nie działa przy `niski`) |
-| bac0462be | main | 31/153 (20,3%) | — | NNS; poza tym C-max w AIEMPTY: 43/181 (23,8%) |
+| 60bc97b60 | 857 | — (NIE ZMIERZONO) | 22/192 (11,5%) | normalny [patch-normalny] |
+| dc2f0fed0 | 883 | 32/172 (18,6%) | 55/174 (31,6%) | normalny [patch-normalny] |
+| 13e869f51 | 887 | 38/136 (27,9%) | 65/150 (43,3%) | normalny [patch-normalny] |
+| bac0462be | main | 31/153 (20,3%) (dwa biegi, identyczne) | 64/169 (37,9%) | normalny [setter] |
 
-Liczby t30 (dla kontroli): 857 s7 35/89; 868 s7 35/89; d269 s7 35/68; 874 s7 35/68; 883 s7 23/53; 878 s7 26/53.
-W t30 różnice są zbyt małe i zbyt zaszumione, by wskazywać FALĘ.
+**B. Tempo Niski (ta sama metoda co punkt zerowy):**
 
-**Punkty NIE zmierzone:** 874 s4242 i d269 s4242 (jest tylko s7 dla d269); 879–882 pojedynczo (rozdział
-878→883 nieprzeprowadzony); 884–926 i 890, 926 (nie mierzono — bisekcja zatrzymana po zlokalizowaniu skoku).
+| Commit | FALA | ziarno 4242 | ziarno 7 | tempo / sposób |
+|---|---|---|---|---|
+| 60bc97b60 | 857 | 12/188 (6,4%) | 7/191 (3,7%) | niski [hak-niski] |
+| 2be949df6 | 867 (merge) | — | 7/191 (3,7%) | niski [hak-niski], z r0 |
+| b7a2923be | 868 (merge) | — | 7/191 (3,7%) | niski [hak-niski], z r0 |
+| d269541eb | rebalans epok ON | 23/183 (12,6%) [r1 nowe] | 39/181 (21,5%) | niski [hak-niski] |
+| 76aa74e81 | 874 | 23/183 (12,6%) | 39/181 (21,5%) | niski [hak-niski], z r0 |
+| 141a2bc56 | 878 (merge) | 31/171 (18,1%) | 40/170 (23,5%) | niski [hak-niski], z r0 |
+| dc2f0fed0 | 883 | 40/173 (23,1%) | 51/172 (29,7%) | niski [hak-niski], z r0 |
+| 13e869f51 | 887 | 40/173 (23,1%) | — | niski [hak-niski], z r0 (= 883) |
+| bac0462be | main | 45/160 (28,1%) [r1 nowe] | 47/167 (28,1%) [r1 nowe] | niski [setter] |
 
-## 4. Zlokalizowany skok
+**C. Maksimum (zasada testowania, pkt 3 Evaluatora):** z r0 tylko trzy punkty, ziarno 7, patch kopii roboczej
+(Trudny, Koszty `wysoki`, dyplomacja `trudna`, kultura `trudny`): 857 33/200 (16,5%); 868 34/199 (17,1%);
+d269541eb 46/192 (24,0%); bac0462be na __settingsLive s4242 43/181 (23,8%, z AIEMPTY). **NIE ZMIERZONO [r1]:** maksimum dla
+874, 883, 887 i main; maksimum dla s4242 w d269 i 857. Kierunek z trzech punktów (skok 857→d269 na s7) jest w danych,
+ale wielkość nie jest pewna (jeden bieg na punkt).
 
-Ciąg commitów dla ziarna 7: 868 (3,7%) → **d269541eb (21,5%)**. Między nimi jest jeden commit gra/src
-(`b7a2923be..d269541eb`, lista `git log -- gra/src gra/data` pokazuje tylko d269541eb). Commit zmienia
-`gra/data/econ-era-rebalance-params.json`:
+**Maksimum — wyjaśnienie poziomu:** „najwyższy poziom” w tej tabeli = Trudny, Koszty jednostek `wysoki` (×4), dyplomacja `trudna`,
+kultura `trudny`, zgodnie z zasadą właściciela. Tabele A i B mierzą tylko poziom Normalny i Niski, nie maksimum.
 
-- `eraRebalansAktywny`: `false` → **`true`** (rebalans ekonomii wg epok domyślnie WŁĄCZONY),
-- `zywnoscWojskaSkalaNaEpoke`: 3 (żywność wojska ×3 na epokę: 4/12/36),
-- `racjeObywateliMnoznikNaEpoke`: 2, `przychodyUlepszenStałeEpoka1`: true.
+Punkty t30 (kontrola): 857 niski s7 35/89; d269 niski s7 35/68; main niski s4242 17/62 (27,4%); main normalny s4242 24/66 (36,4%);
+main normalny s7 36/79 (45,6%); 887n s7 26/45 (57,8%); 883n s7 30/55 (54,5%). W t30 różnice są zaszumione.
 
-Opis w pliku: „decyzja właściciela 2026-11-19, ABC A: włączyć na ROBOCZEJ i zobaczyć w grze”.
+## 4. Lokalizacja skoku — wnioski z danych [r1]
 
-Mechanizm (dane z rekordów tury, ziarno 7, t60, NNS): jednostki wojskowe AI **504 → 270 (−46%)**, miasta AI
-191 → 181, skarbiec AI sumarycznie **41 228 → 25 624 (−38%)**. Armia spada, więc miasta zostają puste.
-Potwierdzone liczbowo; że bezpośrednią przyczyną jest utrzymanie żywności wojska (×3/epokę), NIE ZMIERZONO
-osobno (nie rozdzielono składników utrzymania).
+**Przy tempie niski** (metoda zerowa): skok w **d269541eb** (rebalans epok ON, `eraRebalansAktywny` false→true):
+s7 3,7% → 21,5% (+17,8 pkt, ten sam bieg). Na s4242 skok 857→d269 to 6,4% → 12,6% (+6,2 pkt).
+Mechanizm (ziarno 7, z r0, rekordy tury): jednostki wojskowe AI 504 → 270 (−46%), skarbiec AI 41 228 → 25 624 (−38%).
+Ten sam commit na s4242 zmierzony w r1 (23/183) — identyczny z 874 s4242, więc 874 i d269 nie różnią się na s4242.
 
-## 5. Maksimum (reguła właściciela 2026-11-26)
+**Przy tempie Normalny (domyślna gra):** pomiary są tylko dla 857, 883, 887 i main (brak d269 i 868/874/878 przy normalny).
+- 857 → 883 (s7): 11,5% → 31,6% (+20,1 pkt). Nie rozdzielono, który commit w tym przedziale (868, 874, d269, 878) to daje.
+- 883 → 887 (s7): 31,6% → 43,3% (+11,7 pkt); (s4242): 18,6% → 27,9% (+9,3 pkt). Spójny kierunek na dwóch ziarnach.
+- Mechanizm 887 (z dispatchu i diffu): „Koszty jednostek” mnoży także utrzymanie jednostek (Pieniądz, surowce, żywność).
+  Przy niski mnożnik = ×1 i 883 = 887 (identyczne na s4242). Przy Normalny ×2 wzrost kosztu utrzymania AI.
+- 887 → main (s7): 43,3% → 37,9% (−5,4 pkt); (s4242): 27,9% → 20,3% (−7,6 pkt). Późniejsze FALE (m.in. 890: darmowe utrzymanie AI
+  t1–40) obniżają wynik w domyślnej grze; NIE ZMIERZONO osobno.
 
-W harnessie „NNS” nie da się ustawić maksimum. Dla trzech commitów zbudowano kopię roboczą (poza repo) z
-podmienionym hakiem startu: Trudny, Koszty jednostek `wysoki`, dyplomacja `trudna`, kultura `trudny`
-(`run-max.sh`; to jest poziom maksymalny w rozumieniu ustawień nowej gry). Ziarno 7, t60:
+## 5. Wynik „25% vs 20,3%” (zarzut 2) [r1]
 
-| Commit | puste/miasta t60 |
-|---|---|
-| 857 | 33/200 (16,5%) |
-| 868 | 34/199 (17,1%) |
-| d269541eb (rebalans ON) | 46/192 (24,0%) |
+Dokument AIEMPTY podał dla tego samego kodu i ziarna 4242 wynik 39/155 (25%); r0 zmierzył 31/153 (20,3%).
+**Wyjaśnienie [r1]:** powtórka biegu w r1 dała ten sam wynik (31/153, deterministycznie). Różnica nie wynika więc z losowości
+harnessu r1. Źródło 39/155 (inny runner AIEMPTY / inne ustawienia startu) NIE SPRAWDZONO. Traktować 20,3% jako wynik tego harnessu.
 
-Na maksimum baza jest wyższa (16–17% zamiast 4%), a skok od rebalansu jest mniejszy (+7 pkt zamiast +18),
-ale występuje. Skok w FALI 857→868 na maksimum nie występuje (33 → 34).
-Hak __settingsLive (żywe ustawienia) nie istnieje przed FALĄ 874–d269, więc maksimum nie było mierzone
-bez patcha; bac0462be na maksimum (runner z __settingsLive, s4242): 43/181 (23,8%).
+## 6. Ocena: regresja czy zamierzone? [r1]
 
-## 6. Ocena: regresja czy zamierzone?
+- **Źródło skoku przy niski (d269541eb):** zamierzone wobec decyzji właściciela (ABC A, 2026-11-19: włączyć rebalans epok na ROBOCZEJ).
+  Skutek dla garnizonów AI (−46% jednostek; puste miasta 3,7% → 21,5% na s7) NIE był zapisany jako cel tej decyzji — skutek uboczny.
+  Kod robi to, co opisano w pliku danych. Nie jest to błąd implementacji.
+- **Źródło skoku przy Normalny (FALA 887, UPKEEPPACE):** mnożnik „Koszty jednostek” na utrzymaniu był częścią zamierzonej zmiany
+  (#50 w kolejce). Wzrost pustych miast AI (+9…+12 pkt) jest skutkiem tego mnożnika na garnizony AI. Czy AI ma taki koszt
+  utrzymania — decyzja właściciela.
+- **Wniosek:** NIEJEDNOZNACZNE, z przewagą „zamierzone mechanicznie, skutek uboczny dla AI”. Nie ma dowodu na błąd kodu.
+  Nie proponuję zmiany balansu (zakaz z dispatchu). Decyzja = pytanie ABC właściciela po turnieju.
 
-- **Źródło skoku (d269541eb):** zamierzone wobec decyzji właściciela (włączenie rebalansu „zobaczyć w grze”,
-  2026-11-19). Skutek dla garnizonów AI (−46% jednostek wojskowych AI, puste miasta ×4 w default) **nie był
-  zapisany jako cel decyzji**. NIE SPRAWDZONO, czy model PRZED/PO z FALI 15 (`dyspozycje/` rebalans) obejmował
-  AI. To nie jest błąd kodu (kod robi to, co opisano w pliku), ale jest to skutek uboczny wobec celu graczy AI.
-- **Drugi człon (883, UPKEEPMULT: żywność jednostek 4/16/64):** +6 pkt (s7, 878→883). Zamierzone wg rejestru
-  (kurs 0,2, mnożniki żywności jednostek). Rozdział 879–882 NIE ZMIERZONO.
-- **Wniosek:** NIEJEDNOZNACZNE, z przewagą „zamierzone wobec decyzji o rebalansie”. Decyzja o balansie
-  (czy AI ma mieć mniej jednostek przy rebalansie, czy zwiększyć ich dochód) należy do właściciela — pytanie ABC
-  po turnieju. Nie proponuję zmiany balansu (zakaz z dispatchu).
+## 7. Ograniczenia [r1]
 
-## 7. Ograniczenia
-
-- Dwa ziarna, jeden bieg na punkt (ziarno 4242 tylko dla 857, 874, 878, 883, 887, bac; ziarno 7 dla 857, 867,
-  868, 874, 878, 883, d269, mx-serii). Brak powtórzeń → wariancja między biegami nieznana. Różnice rzędu
-  2–3 pkt traktować jako szum.
-- Harness „NNS” ma twardo wpisane Normalny/koszt niski, więc tabela §3 NIE jest pomiarem maksimum (zasada
-  testowania: maksimum = §5, tylko 3 punkty).
-- Chromium padał w 3 biegach (`Target page ... closed` w t45, t57); powtórzono do skutku (≤2 powtórzenia na punkt).
-- Rozbieżność z AIEMPTY: C-max bac s4242 wyszło 23,8% wobec 31,6% w AIBAL2 (ten sam kod src). NIE WYJAŚNIONO
-  (inna wersja runnera / ziarno / losowość). Nie wpływa na wniosek, bo porównania są robione w ramach jednej metody.
+- Dwa ziarna (4242, 7), jeden bieg na punkt, poza powtórką bac normalny s4242 (identyczna). Wariancja między ziarnami
+  (np. 857 niski s4242 vs s7) jest rzędu kilku punktów procentowych; różnice <5 pkt traktować jako szum.
+- Maksimum: tylko trzy punkty z r0 (§3C), bez powtórek. Nie ma maksimum dla 874–main.
+- 857 normalny na s4242 i 868/874/878/d269 na normalny: NIE ZMIERZONO.
+- `ecoRebalance` w rekordach = `null` dla wszystkich biegów, bo runner był wywołany bez `--rebalance` (flaga nie była ustawiana
+  przez harness). Stan rebalansu potwierdza wyłącznie diff `gra/data/econ-era-rebalance-params.json` (d269541eb: `eraRebalansAktywny` → true).
+- Składników utrzymania (jedzenie vs pieniądz vs surowce) nie rozdzielono: mechanizm jest hipotezą.
+- Chrome: kilka biegów padło (t45–t59), powtórzono ze startu.
 
 ## 8. Otwarte
 
-- Decyzja właściciela (ABC): czy skutek rebalansu na garnizony AI jest akceptowalny; czy AI ma kompensację
-  (np. pula utrzymania) — DO ZADANIA PO TURNIEJU, nie tu.
-- Rozdział 878→883 (879–882) i 884–926 — NIE ZMIERZONO.
-- PRZED/PO rebalans dla AI (model z FALI 15) — NIE SPRAWDZONO.
+- Decyzja właściciela (ABC po turnieju): czy koszt utrzymania jednostek AI przy Normalny ×2 (FALA 887) jest akceptowalny; czy AI ma kompensację.
+- Rozdział 857→883 przy normalny (868, 874, d269, 878) — NIE ZMIERZONO.
+- Maksimum dla 874–main — NIE ZMIERZONO.
+- Źródło 39/155 (AIEMPTY, 25%) — NIE SPRAWDZONO.
+- Zero punkt 16/188 (`28bace9bb`): tempo nieznane — NIE ZWERYFIKOWANO.

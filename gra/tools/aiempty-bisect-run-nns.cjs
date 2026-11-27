@@ -558,9 +558,16 @@ async function runSeries(ctx, { resumeFromSlot, stopAt }) {
   const ctxState = newCtx(st.slotCounters || null);
   if (resumeFromSlot) { await page.evaluate(slot => window.__aiTradeWiringTestDebug.loadSlot(slot), SLOT); await suppressVictory(page); }
   // R-WEB-VERIFY-LIVE-A: tempo kosztow jednostek. Nowa gra -> ustawiamy PACE; wznowienie -> stan z zapisu musi byc rowny PACE.
+  // R-WEB-AI-EMPTY-BISECT-Q1 (obrona r1, zarzut 1): brak setera NIE jest cicho ignorowany. Build bez setUnitCostPace
+  // (np. FALA 857/887 w tej wersji) zachowuje tempo wpisane w haku; --pace nie jest wtedy zastosowany -> jawna linia w logu.
   if (!resumeFromSlot) {
-    const got = await page.evaluate(p => window.__aiEconomyMeasure.setUnitCostPace ? window.__aiEconomyMeasure.setUnitCostPace(p) : p, PACE);
-    if (got !== PACE) throw new Error('setUnitCostPace: oczekiwano ' + PACE + ', jest ' + got);
+    const hasSetter = await page.evaluate(() => !!(window.__aiEconomyMeasure && window.__aiEconomyMeasure.setUnitCostPace));
+    if (hasSetter) {
+      const got = await page.evaluate(p => window.__aiEconomyMeasure.setUnitCostPace(p), PACE);
+      if (got !== PACE) throw new Error('setUnitCostPace: oczekiwano ' + PACE + ', jest ' + got);
+    } else {
+      console.log('[pace] UWAGA: build bez setUnitCostPace; --pace=' + PACE + ' NIE zastosowano, tempo = wartosc wpisana w haku (sprawdz pole unitCostPace w rekordach)');
+    }
   } else {
     const got = await page.evaluate(() => window.__aiEconomyMeasure.unitCostPaceState());
     if (got !== PACE) throw new Error('wznowienie: tempo w zapisie=' + got + ' != --pace ' + PACE);
