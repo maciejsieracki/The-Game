@@ -1,54 +1,59 @@
 # AI-REBELIA — weryfikacja na żywo (R-WEB-AI-REBEL-VERIFY-LIVE-Q1, tag AIREBELVER)
 
-Data: 2026-11-27. Baza kodu: `99375f77e` (origin/main, FALE 928–929). Operator: runda 2 (obrona po zarzutach Evaluatora; runda 1 = commit `1b22830d9`).
-Surowe dane: `dyspozycje/autobot/runs/R-WEB-AI-REBEL-VERIFY-LIVE-Q1/dane/`. Raport: `runs/.../10-operator-claude.md` i `runs/.../30-obrona-claude.md`.
+Data: 2026-11-27. Baza kodu: `025046346` (kandydat rundy 2, gra/src bez zmian względem `99375f77e`, FALE 928–929). Operator: runda 2/5 (obrona po zarzutach Evaluatora, raport `30-obrona-claude.md`).
+Surowe dane: `dyspozycje/autobot/runs/R-WEB-AI-REBEL-VERIFY-LIVE-Q1/dane/` (pliki `*-r3*` z tej rundy). Raporty: `runs/.../10-operator-claude.md` (runda 1, przywrócona), `runs/.../30-obrona-claude.md` (runda 2/5, obrona).
 
-Ustawienia maksymalne: Trudny, „Kultura i religia” trudny, „Koszty jednostek” Wysoki ×4 (`--pace wysoki`), `--city-state 1`.
-Wyjątek poziomu: pozycja 1 (sandbox `?playtest=mapa`) działa na poziomie „normalny” — patrz niżej, dlaczego.
+Ustawienia maksymalne (potwierdzone odczytem `__settingsLive.getSettings()` po starcie, każdy bieg): poziom trudności „Trudny” (`difficulty` = hard), „Kultura i religia” = trudny, „Koszty jednostek” = wysoki (×4), „Dyplomacja i wojna” = trudna. Start przez `__settingsLive.startNewGame` (realny `doStartGame`). Wcześniejsze biegi rundy 2 z `kosztJednostekPace` = niski są NIEAKTUALNE dla pozycji 1.
+
+## Tabela wyników
 
 | Pozycja | Wynik | NIE ZMIERZONO + powód techniczny |
 |---|---|---|
-| 1. Ochrona ostatniego miasta AI (wymuszenie buntu) | ZMIERZONO na żywym silniku, poziom NORMALNY (nie maksimum): w t1 jedyne miasto AI wymuszone do buntu (`forceRevoltEligible`, grace=0, próg 95%) zostało przy właścicielu (`ownerId` = AI, `rebelState` = false). Kontrola na tym samym haku, na jedynym mieście GRACZA: bunt w t1 (`ownerId` = −99). Zob. `dane/last-city-ai-t6.txt`, `dane/last-city-player-kontrola-t6.txt`. | (a) Poziom maksymalny (Trudny) NIE osiągnięty w tym scenariuszu: `_menuDifficulty` ustawia się wyłącznie w `doStartGame` (`gra/src/main.ts`, ok. l.50375); `?playtest=mapa` tego nie wywołuje, więc zostaje „normal”. Start nowej gry z Trudnym (`__nnsMeasureDebug.startGame`) wymaga obsługi blokad modalnych jak w `ai-cult-rel-measure-run.cjs` — NIE ZROBIONE w tej rundzie. (b) Po t1 miasto AI rośnie (1→2→3→4 miasta w t2–t6), więc t2–t6 NIE są scenariuszem „ostatniego miasta”; dowód ochrony to wyłącznie tura 1. (c) Dowód wejść bramki: `ai-city-rebellion-gate-test.cjs` 37/0 (nie zastępuje żywego pomiaru). |
-| 2. Stolica AI w buncie przy ≥2 miastach (flaga/efekty, Mennica, zwycięstwo) | NIE ZMIERZONO | Stolica nie jest eksportowana przez żaden hak pomiarowy: `capitalCityIdForOwner` (gra/src/main.ts) to funkcja wewnętrzna; `__aiEconomyMeasure.metrics`/`cityStateTurn` nie zawierają pola stolicy (sprawdzone grepem: brak `capital`/`stolic`/`mennic` w zakresie `__aiEconomyMeasure`). Odczyt wymaga nowego, tylko-odczytowego haka w `gra/src/main.ts` — poza allowlistą. DECISION_REQUIRED: czy dodać hak odczytu stolicy/Mennicy (jedno zdanie: „odczyt stanu stolicy AI do pomiaru buntu”). |
-| 3. Round-trip zapisu z buntami AI i wpisem „rebelia” w „Wydarzeniach na świecie” | NIE ZMIERZONO | Lista trwała `worldDiploNewsList` nie ma haka odczytu; jedyny odczyt to `getWorldNews` przekazywany do okna dyplomacji (`gra/src/main.ts` ok. l.29492). Porównanie przed/po wczytaniu wymaga odczytu listy z DOM okna dyplomacji (otwarcie okna, selektory klas `dl-wn-*`) — NIE ZROBIONE w tej rundzie. Zapis/wczytanie w grze jest dostępne (`__truceTestDebug.saveForTest`, `loadGameFromSlot`), brakuje tylko odczytu listy. Hotseat nie sprawdzany. |
-| 4. Zrzut okna dyplomacji z wpisem „rebelia” (Chromium) | NIE ZMIERZONO | Wpis powstaje tylko, gdy gracz ma kontakt z właścicielem (`recordAiCityRebellionNews`: `getDiplomaticContacts().has(prevOwnerId)`), a zrzut wymaga otwarcia okna dyplomacji w żywej grze z tym kontaktem. Ani scenariusz playtest (brak potwierdzonego kontaktu z AI), ani bieg 60-turowy (runner nie otwiera okna) tego nie wykonują. NIE ZROBIONE w tej rundzie. |
-| 5. Bieg żywy 60+ tur na maksimum, seed 4242 i 7 | ZMIERZONO liczby miast w buncie i miast AI (poniżej). Liczby wpisów „rebelia” na liście i widocznych cywilizacji — NIE ZMIERZONO. | Runner eksportuje `cityState`/`owners`, nie listę wydarzeń (patrz pozycja 3). Zgodność z kodem NIE została sprawdzona; „−99” to miasta we frakcji rebelianckiej wg `cityState`, a nie licznik wpisów. |
+| 1. Ochrona ostatniego miasta AI (bunt skrajny wymuszony, maksimum) | ZMIERZONO: OCHRONA-DZIALA na dwóch ziarnach. s4242: właściciel AI 8 (miasto city11), tury 2–7: `rebelState` = false, miasto przy właścicielu. s7: właściciel AI 21 (city24), tury 2–7: `rebelState` = false. Metryka „AI z 0 miast” = 0 w każdej turze (liczona po 29 właścicielach AI, którzy w t1 mieli miasto). Dane: `dane/max-ai-s4242-r3.txt`, `dane/max-ai-s7-r3.txt`. | — |
+| 1a. Kontrola (ten sam hak, jedyne miasto GRACZA, maksimum) | ZMIERZONO: KONTROLA-ZBUNTOWANA. s4242: tura 1 właściciel 0; od tury 2 właściciel −99, `rebelState` = true, utrzymane do t7. Dane: `dane/max-control-player-s4242-r3.txt`. | — |
+| 2. Stolica AI w buncie przy ≥2 miastach | CZĘŚCIOWO ZMIERZONO (seed 4242): bunt wymuszony na stolicy właściciela 13 (dwa miasta, stolica city16). Po buncie stolica przeniesiona na city17 (najstarsze pozostałe miasto, zgodnie z fallbackiem w komentarzu `capitalCityIdForOwner`, `gra/src/main.ts` l.2478), właściciel 13 zachowuje 1 miasto. Odczyt przez istniejący hak `__cityCessionTestDebug.capitalOf` / `ownerCityIds`. Dane: `dane/stolica-s4242-r3.txt/.json`. | Efekty stolicy w ekonomii, Mennica i warunki zwycięstwa przy buncie stolicy: NIE ZMIERZONO (brak odczytu Mennicy i stanu zwycięstwa w tej rundzie; poza zakresem). Hak odczytu stolicy już istnieje, więc DECISION_REQUIRED z rundy 1 nie jest potrzebny. |
+| 3. Round-trip zapisu z buntami AI i wpisem „rebelia” | ZMIERZONO: seed 4242, tura 7 zapis (`__truceTestDebug.saveForTest`) z 1 wpisem na liście „Wydarzenia na świecie”; w NOWYM procesie Chromium wczytanie (`loadForTest`), tura po wczytaniu = 7, lista po wczytaniu identyczna (`roundTrip` = true), potem 6 tur do t13 bez zmian. Dane: `dane/news-s4242-r3*.txt/.json`. | Wariant hotseat: NIE ZMIERZONO. |
+| 4. Zrzut okna dyplomacji z wpisem „rebelia” | ZMIERZONO: `dane/news-s4242-r3-first.png` (Chromium, viewport 1600×1000, deviceScaleFactor 1). Okno „Dyplomacja” otwarte przyciskiem paska (`.tb[data-act="diplo"]`), w sekcji „Wydarzenia na świecie” wpis „Bunt miasta: Harappa”. | Wpis leży przy dolnej krawędzi okna i jest częściowo przycięty wysokością viewportu (bez przewijania). |
+| 5. Bieg żywy 60+ tur na maksimum (seed 4242 i 7): liczba buntów, wpisów „rebelia”, widocznych cywilizacji | CZĘŚCIOWO: 13 tur, seed 4242, 1 bunt wymuszony: 1 wpis „rebelia” na liście widocznej graczowi (kontakt z właścicielem ustawiony hakiem `__dyploMapaOdkrycieTestDebug.prepareContact`). Szum: dwa przebiegi tego samego ziarna (6 tur) dały identyczne wiersze tur 2–7 (`dane/max-ai-s4242-r3.txt` vs `-r3-b.txt`). | Bieg naturalny 60 tur z kontaktem ze wszystkimi cywilizacjami: NIE ZMIERZONO. Próba 1 (kontakt z 29 AI): tura 2 nie zakończyła się (ekrany powitalne kolejnych cywilizacji, `nieSettled`). Próba 2 (z diagnostyką i zamykaniem ekranów): limit 585 s bez wyniku, log `dane/natural-s4242-r3-ostatnia-proba.txt`. Seed 7 z wpisami: NIE ZMIERZONO (czas). Liczba widocznych cywilizacji: NIE ZMIERZONO. |
 
-## Pozycja 1 — szczegóły (playtest, poziom normalny)
+## Pozycja 1 — szczegóły i poprawki runnera
 
-Hak: `window.__rebelNotifyTestDebug.forceRevoltEligible(cityId)` (istnieje w `gra/src/main.ts`, blok `__rebelNotifyTestDebug`, ok. l.31476–31530). Ustawia populację ≥ 5, `revoltGraceRemaining = 0` i próg „bunt skrajny” = 95% dla bieżącego poziomu. Hak nie zmienia logiki buntu; wejścia (kwalifikacja) są wymuszone, decyzję podejmuje silnik.
+Runner: `gra/tools/ai-rebel-verify-max-live.cjs` (przepisany w rundzie 3).
+- Start przez `__settingsLive.startNewGame` z parametrami maksymalnymi (wcześniej `__nnsMeasureDebug.startGame`, który na sztywno ustawiał koszty „niski”).
+- Wybór AI z 1 miastem zależy od ziarna (`kandydaci[seed mod N]`). Wcześniej seed 7 wybierał tego samego właściciela co seed 4242 (owner 40).
+- Metryka „AI z 0 miast” liczy wszystkich właścicieli AI, którzy w t1 mieli miasto (brak wiersza = 0 miast). Wcześniej metryka była ślepa na właściciela bez miast.
+- Opcja `--target player` = kontrola na jedynym mieście gracza.
+- Mutacja z raportu Evaluatora (`aiKeepsLastCity=false`) NIE została powtórzona w rundzie 3: skuteczność nowej metryki w wykrywaniu utraty miasta NIE ZWERYFIKOWANA mutacją.
 
-Skrypt: `gra/tools/ai-rebel-verify-last-city-live.cjs` (nowy, w allowlistcie). Bundle budowany poza repo (`vite build --outDir <scratchpad>/rebel-dist`).
+## Pozycje 3–5 — szczegóły i runner
 
-- `--target ai` (jedyne miasto AI w sandboxie, właściciel 1, miasto `city_enemy_1`): tura 0 po wymuszeniu: owner 1, grace 0, miasta AI = 1. Tury 1–6 (realne `endTurn`, `settled` we wszystkich): owner 1, `rebelState` false we wszystkich. Liczba miast AI: 1, 2, 3, 3, 4, 4 (ekspansja od t2).
-- `--target player` (kontrola, jedyne miasto gracza `city0`): tura 1 po wymuszeniu: owner −99, `rebelState` true, utrzymane do t6.
+Runner: `gra/tools/ai-rebel-verify-news-live.cjs` (nowy). Fazy `first` i `resume` działają w osobnych procesach, a stan trzyma trwały profil przeglądarki w scratchpadzie (`launchPersistentContext`). Wcześniej `launch()` tworzył pusty profil, więc zapis z poprzedniego procesu nie był widoczny.
+- Lista „Wydarzenia na świecie” czytana z DOM: `.dl-world-news` / `.dl-world-news-row` / klasa `.dl-wn-rebelia`, po otwarciu listy „all” przyciskiem paska.
+- Kontakt z właścicielem warunkuje wpis (`recordAiCityRebellionNews`: `getDiplomaticContacts().has(prevOwnerId)`); ustawiany hakiem `__dyploMapaOdkrycieTestDebug.prepareContact`.
+- Chromium: jedno zamknięcie strony przy wczytaniu w fazie resume (ponowienie 1/3 przeszło). Logi w `dane/news-s4242-r3-resume.txt`.
 
-Wniosek ostrożny: w t1 ochrona ostatniego miasta AI działa żywo (kontrola pokazuje, że ten sam hak bez ochrony prowadzi do buntu w t1). Poza t1 scenariusz nie jest czysty (AI rośnie). Pełne 60-turowe wymuszenie na maksimum to kolejny krok (zob. „NIE ZROBIONE”).
+## Bramki (ta runda)
 
-## Pomiar pozycji 5 (maksimum, 60 tur, 1 przebieg na ziarno)
+- `tsc --noEmit` (gra/): exit 0.
+- `ai-city-rebellion-gate-test.cjs`: PASS=37 FAIL=0.
+- `ai-city-rebellion-news-test.cjs`: PASS 24/0.
+- `ai-test` (297/0) i `logic-test` (213/213): NIE RE-RUN w tej rundzie (gra/src bez zmian od kandydata); wyniki z raportu Evaluatora rundy 2.
 
-Liczby z `dane/seed4242-maks.txt` i `dane/seed7-maks.txt` (pola `owners` i `cityState`). Jeden przebieg na ziarno: zmienność między przebiegami NIE ZMIERZONA, więc różnic rzędu kilku miast nie należy interpretować.
+## Pozycja 5 — dane z rundy 2 (NIEAKTUALNE co do ustawień, tylko liczby miast)
 
-„Bunt” = miasta we frakcji −99 (`cityState`). „AI” = właściciele > 0 (bez gracza 0; bez −1 barbarzyńców).
+Pliki `dane/seed4242-maks.txt`, `dane/seed7-maks.txt` (summary: `unitCostPace` = wysoki) z biegów 60-turowych rundy 1/2. Nie były ponownie mierzone w rundzie 3 i liczą tylko miasta w buncie (`cityState`), nie wpisy na liście. Pole `lacznaZero` to liczba MIAST z łaską 0, a nie cywilizacji bez miast; nie dowodzi ochrony ostatniego miasta.
 
-| Tura | s4242: bunt (miasta) | s4242: miasta AI | s4242: AI z 0 miast | s7: bunt (miasta) | s7: miasta AI | s7: AI z 0 miast |
-|---|---|---|---|---|---|---|
-| t2 | 0 | 42 | 0 | 0 | 42 | 0 |
-| t10 | 0 | 42 | 0 | 0 | 42 | 0 |
-| t20 | 0 | 48 | 0 | 0 | 50 | 0 |
-| t30 | 0 | 68 | 0 | 0 | 71 | 0 |
-| t40 | 1 | 114 | 0 | 1 | 116 | 0 |
-| t50 | 7 | 130 | 0 | 9 | 128 | 0 |
-| t60 | 7 | 149 | 0 | 13 | 142 | 0 |
-
-- Bunt startuje po ok. 30–40 turach i rośnie; w t60: 7 miast (s4242) i 13 miast (s7).
-- Pole `lacznaZero` w `cityState` to liczba MIAST z łaską = 0, a nie liczba cywilizacji bez miast; w t60 wynosi 10 (s7). Nie dowodzi ochrony ostatniego miasta.
-- „AI z 0 miast = 0” to wynik biegu naturalnego: nie dowodzi działania ochrony (ochrony nie wywołano w tym biegu).
-- Wojsko AI w t60: 148 (s4242), 134 (s7). Brak porównania z biegiem PRZED.
-- Wcześniejsze zdanie o „zgodności 149 z dokumentem AI-REBELIA-WDROZENIE (148 + 10)” WYCOFANE: porównanie nie zostało zmierzone (nie ma wartości z tego dokumentu w danych tej rundy) i nie wolno nazywać rozbieżności „szumem” bez zmierzonego szumu.
+| Tura | s4242: miasta w buncie | s4242: miasta AI | s7: miasta w buncie | s7: miasta AI |
+|---|---|---|---|---|
+| t2 | 0 | 42 | 0 | 42 |
+| t20 | 0 | 48 | 0 | 50 |
+| t40 | 1 | 114 | 1 | 116 |
+| t60 | 7 | 149 | 13 | 142 |
 
 ## Wnioski ostrożne
 
-- Bunt AI działa na żywo na poziomie maksymalnym: 0 buntów do t30; 7 (s4242) i 13 (s7) miast w buncie w t60 (1 przebieg na ziarno).
-- Ochrona ostatniego miasta AI: żywo potwierdzona tylko w t1 scenariusza wymuszonego, na poziomie normalnym (kontrola: gracz buntuje się przy tym samym haku).
-- Pozycje 2–4 i liczby wpisów z pozycji 5 wymagają odczytu listy wydarzeń/stolicy (haki lub odczyt DOM okna dyplomacji); NIE ZROBIONE w tej rundzie.
+- Ochrona ostatniego miasta AI na maksimum: działa w 6 turach na dwóch ziarnach (s4242, s7). Kontrola na tym samym haku (miasto gracza) prowadzi do buntu już w t2.
+- Stolica AI: po buncie stolicy właściciel dostaje nową stolicę (najstarsze pozostałe miasto) i nie traci wszystkich miast. Efekty ekonomiczne i zwycięstwo NIE ZMIERZONO.
+- Round-trip listy wpisów „rebelia” przechodzi (seed 4242, 1 wpis).
+- Zakres 60 tur i liczby wpisów przy wielu cywilizacjach: NIE ZMIERZONO (kontakt ze wszystkimi cywilizacjami blokuje zakończenie tury w bieżącym runnerze).
+- Szum: dwa przebiegi tego samego ziarna dały identyczne wiersze (seed 4242, pozycja 1); dla seed 7 i dla 60 tur szum NIE ZMIERZONY.

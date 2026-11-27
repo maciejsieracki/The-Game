@@ -1,0 +1,151 @@
+{
+ "seed": 4242,
+ "faza": [
+  {
+   "faza": "first",
+   "turnsRequested": 6,
+   "slot": "airebel-news-s4242",
+   "rows": [
+    {
+     "tura": 2,
+     "ownerId": -99,
+     "rebelState": true,
+     "miastaFrakcjiBuntu": 1
+    },
+    {
+     "tura": 3,
+     "ownerId": -99,
+     "rebelState": true,
+     "miastaFrakcjiBuntu": 1
+    },
+    {
+     "tura": 4,
+     "ownerId": -99,
+     "rebelState": true,
+     "miastaFrakcjiBuntu": 1
+    },
+    {
+     "tura": 5,
+     "ownerId": -99,
+     "rebelState": true,
+     "miastaFrakcjiBuntu": 1
+    },
+    {
+     "tura": 6,
+     "ownerId": -99,
+     "rebelState": true,
+     "miastaFrakcjiBuntu": 1
+    },
+    {
+     "tura": 7,
+     "ownerId": -99,
+     "rebelState": true,
+     "miastaFrakcjiBuntu": 1
+    }
+   ],
+   "settings": {
+    "diplomacyWarLevel": "trudna",
+    "kulturaReligiaLevel": "trudny",
+    "wzrostSurowcowZEpoka": false,
+    "kosztJednostekPace": "wysoki",
+    "difficulty": "hard"
+   },
+   "kandydaciDwaMiasta": [
+    1,
+    4,
+    7,
+    10,
+    13,
+    16,
+    19,
+    22,
+    25,
+    28,
+    31,
+    34,
+    37
+   ],
+   "wymuszenie": {
+    "ownerId": 13,
+    "cityId": "city16",
+    "forced": {
+     "criticalPorPctBefore": 14,
+     "graceTurns": 2
+    }
+   },
+   "rebelCountStart": 0,
+   "turnEnd": 7,
+   "listaPrzedZapisem": {
+    "sekcja": true,
+    "wpisy": [
+     "Bunt miasta: Harappa | Miasto Harappa zbuntowało się i ogłosiło niepodległość · tura 2"
+    ],
+    "rebelia": 1
+   },
+   "zapisOk": true,
+   "errors": []
+  },
+  {
+   "faza": "resume",
+   "turnsRequested": 6,
+   "slot": "airebel-news-s4242",
+   "rows": [
+    {
+     "tura": 8,
+     "ownerId": -99,
+     "rebelState": true,
+     "miastaFrakcjiBuntu": 1
+    },
+    {
+     "tura": 9,
+     "ownerId": -99,
+     "rebelState": true,
+     "miastaFrakcjiBuntu": 1
+    },
+    {
+     "tura": 10,
+     "ownerId": -99,
+     "rebelState": true,
+     "miastaFrakcjiBuntu": 1
+    },
+    {
+     "tura": 11,
+     "ownerId": -99,
+     "rebelState": true,
+     "miastaFrakcjiBuntu": 1
+    },
+    {
+     "tura": 12,
+     "ownerId": -99,
+     "rebelState": true,
+     "miastaFrakcjiBuntu": 1
+    },
+    {
+     "tura": 13,
+     "ownerId": -99,
+     "rebelState": true,
+     "miastaFrakcjiBuntu": 1
+    }
+   ],
+   "turnLoaded": 7,
+   "listaPoWczytaniu": {
+    "sekcja": true,
+    "wpisy": [
+     "Bunt miasta: Harappa | Miasto Harappa zbuntowało się i ogłosiło niepodległość · tura 2"
+    ],
+    "rebelia": 1
+   },
+   "listaPrzedZapisem": {
+    "sekcja": true,
+    "wpisy": [
+     "Bunt miasta: Harappa | Miasto Harappa zbuntowało się i ogłosiło niepodległość · tura 2"
+    ],
+    "rebelia": 1
+   },
+   "roundTripListaIdentyczna": true,
+   "turnEnd": 13,
+   "zapisOk": true,
+   "errors": []
+  }
+ ]
+}

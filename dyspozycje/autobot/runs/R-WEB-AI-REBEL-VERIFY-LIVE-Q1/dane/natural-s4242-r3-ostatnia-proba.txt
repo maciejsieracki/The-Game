@@ -1,0 +1,2 @@
+FAIL page.evaluate: Target page, context or browser has been closed
+    at main (/home/user/The-Game/.claude/worktrees/wf_cab575a2-79b-3/gra/tools/ai-rebel-verify-news-live.cjs:203:31)
