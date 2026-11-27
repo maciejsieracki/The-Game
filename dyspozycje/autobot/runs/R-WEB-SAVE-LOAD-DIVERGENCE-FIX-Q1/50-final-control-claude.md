@@ -1,32 +1,27 @@
-STATUS: FAIL
-DOMAIN: GAME (integralność zapisu)
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
 TEMAT: R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1
-GOAL: Po wczytaniu zapisu stan B ma być równy stanowi A (ciągłość zapis-wczytanie). NIE OSIĄGNIĘTE.
-
-ZMIANY-COMMIT: kandydat cbeddd1fdab6379abc9550ddfcfab417e049fbb9, baza 31a1ad39d93e2f8b64ef37fc6cca974fb2849e63.
-- `git merge-base --is-ancestor` baza -> kandydat: ANC_OK.
-- `git diff --stat` baza..kandydat: 4 pliki (dokument stanu ZAPIS-WCZYTANIE-ROZBIEZNOSC-NAPRAWA-2026-11-27.md, 10-operator-claude.md, 30-obrona-claude.md, diag-savefix-r2-main.patch), 220+/91-. Wszystko dokumentacja/run-dir; w allowliście.
-- `git diff --name-only baza..kandydat -- gra` = 0 plików. Zero zmian w kodzie gry.
-- savedigest-run.cjs: zgodny z bazą (zarzut 7 naprawiony). `grep -c __savefixDiag gra/src/main.ts` = 0.
-- Brak plików `gra/tools/save-load-continuity-*` (0).
-
-OCENA ZARZUTÓW (bez etykiet ról):
-1 (brak poprawki): POTWIERDZONY, git diff -- gra = 0. Obrona przyjęła.
-2 (przyczyna nieznana): POTWIERDZONY, dokument stanu sam to deklaruje.
-3 (brak testu ciągłości, zgodności wstecznej, mutacji czerwonej): POTWIERDZONY.
-4 (brak dokumentu): ODDALONY formalnie (dokument istnieje), ale to dokument stanu bez przyczyny, nie naprawy.
-5 (pokrycie 1/16): POTWIERDZONY, reszta NIE ZMIERZONO.
-6 (ścieżka harnessu): obrona częściowo słuszna (restoreJson przechodzi przez restoreGameFromSave z mapSnapshot); pozostaje niezmierzona ścieżka UI (loadNeedsMapRebuild, regenerateWorldForLoad, wczytanie z pauzy). Zarzut w części o niemierzonej ścieżce UI utrzymany.
-7 (higiena): NAPRAWIONY w kandydacie (potwierdzone diffem i grep-em).
-
-TESTY: Bramki (tsc, 5 referencyjnych, testy tematu) NIE URUCHOMIONE przeze mnie: kandydat nie zmienia gra/, więc nie ma czego bramkować, a testu tematu nie ma. Wyniki liczbowe: NIE ZMIERZONO. Poziom maks. wg zasady testowania: nie dotyczy (brak pomiarów w tej rundzie).
-
-BLOKADY: brak poprawki w gra/src; przyczyna B != A nieznana; brak testu regresji i mutacji; pomiar tylko dla cfg max/seed 4242/t3; ścieżka UI niezmierzona.
-
-RUNDY: 2/5 zużyte po FC; ten werdykt = FAIL, wraca do Operatora tego samego ID (runda 3). Decyzja właściciela: niewymagana.
-
-NASTĘPNY KROK: runda 3 (Operator): zrzut ownerBonusy/ownerCivKey/mpMults i pól miasta 26 w A@t3 vs B po restore; bisekcja po kolejności Map i zmiennych let; pomiar ścieżki UI (regenerateWorldForLoad, wczytanie z pauzy); potem poprawka + test save-load-continuity + zgodność wsteczna + mutacja czerwona. Patch diag-savefix-r2-main.patch NIE integrować (poza main.ts zależny od __savefixDiag).
-
-UWAGI-DLA-ORKIESTRATORA: kandydat nadaje się do integracji WYŁĄCZNIE jako dokumentacja stanu (bez gra/), ale nie jest READY_FOR_DEPLOY. Kandydat BŁĄD-GRY (z obrony): wczytanie z pauzy nie odbudowuje mapy, do potwierdzenia testem.
-
+GOAL: wczytanie zapisu z pauzy daje przebieg B==A co najmniej 6 tur; zgodnosc wsteczna; mutacja czerwona.
+ZMIANY-COMMIT: kandydat 51d7b0b3bb1760e21771b0a16f5fd8e4da3878b2; baza 87a8d6e81 jest przodkiem (merge-base --is-ancestor OK). diff --stat: 16 plikow, +1480/-129; kod gry tylko gra/src/main.ts (+37/-?, nowa liczba: funkcja liveMapDiffersFromSave, klauzula w loadGameFromSlot, hak civTest loadJsonAsPauseLoad), reszta: tools/save-load-continuity-live.cjs, dokument analizy, run-dir (10/30, dane/*.json). Allowlista zachowana (gra/data, rust-port, WERSJE.md nietkniete). Przyczyna: przy wczytaniu z pauzy zostawala ZYWA mapa (zmieniona po zapisie) zamiast mapSnapshot.
+TESTY (wlasne, surowe wyjscia, node_modules z npm ci, tsc 5.9.3):
+- tsc --noEmit: 0 bledow
+- logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6
+- ai-test 297 passed 0 failed; ai-city-order-need-wiring-test 267/0 (= "wiring 267/0")
+- society-breakdown 56/0; culture-religion-level 108/0; ai-plus10-culture 72/0; ai-plus10-matrix 190/0; ai-city-rebellion-gate 37/0; ai-city-rebellion-news 24/0; diplo-world-news 67/0
+- Test ciaglosci live (build vite do /tmp, maks. poziom: cfg max = Trudny, Wysoki x4, dyplomacja trudna, kultura trudny/AI trudny), max/4242/zapis po t3/K=6: PASS, 6/6 tur OK, pageErrors 0, sciezka produkcyjna loadGameFromSlot(slot,true), rebuild=false (przebudowa z powodu liveMapDiffersFromSave).
+- Mutacja 1 (--restore plain = restoreJson bez mapy): 6/6 ROZJAZD (expect=diff PASS).
+- Mutacja 2 NIEZALEZNA, wlasna: usunieta w loadGameFromSlot klauzula liveMapDiffersFromSave, przebudowa dist: 6/6 ROZJAZD (expect=diff PASS; pierwsze uruchomienie SIGSEGV Chromium, ponowienie OK). To zamyka zarzut 2: mutacja produkcyjnego warunku CZERWIENI test, bo hak wola produkcyjne loadGameFromSlot (nie duplikuje warunku; diff pokazuje hak liczy warunek tylko do raportu).
+- Zrodlo po mutacji przywrocone (git checkout), drzewo czyste.
+- Dane Operatora/Obrony (r4-*.json) nie powtorzone w calosci: seed 4242 t10 i aionly/7/t3, legacy bez mapSnapshot -> przyjete z raportow 10/30, NIE ZMIERZONO przeze mnie.
+OCENA ZARZUTOW EVALUATORA:
+1 (macierz 4 z 16): ODDAL/uwaga - przyczyna wspolna (zywa mapa), 3 komorki + mutant Operatora/Obrony i 1 komorka moja; ryzyko niskie, NIE ZMIERZONO reszta.
+2 (hak duplikuje warunek): ODRZUCONY dla wersji 51d7b0b3b - hak wola produkcyjne loadGameFromSlot; wlasna mutacja produkcyjnego warunku zaczerwienila test. Zostaje: klik UI menu i render NIE ZMIERZONO.
+3 (brak pola w serializacji): ODRZUCONY - przyczyna to zywa mapa, mapSnapshot juz jest w zapisie; poprawka bez zmiany formatu = zgodnosc wsteczna z definicji.
+4 (wiring 267): ROZSTRZYGNIETY - ai-city-order-need-wiring-test 267/0 uruchomiony, zielony.
+5 (test live poza bramka): uwaga, nie blokuje; dluzszy test (~4 min/komorka) - propozycja wpiecia w bramki dla orkiestratora.
+6 (A==A'): uwaga; ai-test 297/0 bez zmian, determinizm ciagly NIE ZMIERZONO osobno.
+BLOKADY: brak blokujacych. NIE ZMIERZONO: pelna macierz 16 komorek, klik UI pauzy, render 3D, A==A' osobno, determinism-save-load-resume-live i ai-plus10-live-roundtrip (nie uruchomione przeze mnie; Operator/Obrona raportuja zielone).
+RUNDY: FC r4 (po FC r3 FAIL); zuzyte 4/5 rund.
+NASTEPNY KROK: integracja orkiestratora (merge 51d7b0b3b, ewentualnie FALA); decyzja czy wpiac save-load-continuity-live w bramki.
+UWAGI-DLA-ORKIESTRATORA: (a) wpiecie testu live w R-PROC-AUTOBOT sec.6 (poza allowlista); (b) kandydat BLAD-GRY zamkniety: gra z pauzy wczytywala zywa mape.
 DEPLOY/PUSH: NIE WYKONANO
