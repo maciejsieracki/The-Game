@@ -1,0 +1,19 @@
+READBACK USTAWIEN (WEJSCIE pomiaru, nie odczyt z ekranu gry)
+Zrodlo: gra/tools/endturn-click-live.cjs, MAX_PARAMS, przekazane do window.__settingsLive.startNewGame(); seed podstawiany 4242 lub 7.
+Uwaga: odczytu z interfejsu gry NIE ZMIERZONO (brak zrzutu ekranu ustawien).
+Maksimum uznane: Trudny (poziom gry), barbarzyncy trudny, dyplomacja i wojna trudna, kultura i religia trudny, Wysoki x4 (koszt jednostek, wzrost ludnosci, jakosc mapy, jakosc renderu/szczegolow). buildingCostPace=niski i ruchSwiataPace=krotki zostaly z sondy ENDPERF (nie wymienione w dispatchu; niejednoznaczne, zapisane tu).
+
+{
+  civId: 'rzymianie', civName: 'Rzymianie', epoch: 'Epoka Brązu', epochId: 'braz', difficulty: 'Trudny',
+  mapSize: 'Maly', rivals: '2', speed: 'Normalna', worldType: 'Kontynenty', typSwiata: 'kontynenty', seed: SEED,
+  mapQualityLabel: 'Wysoka', mapQuality: 'high', renderQualityLabel: 'Wysoka', mapDetailQualityLabel: 'Wysoka',
+  renderQuality: 'high', mapDetailQuality: 'high', civTypesCount: 4, cityStatesCount: 2,
+  worldDensityLabels: { resources: 'Normalnie', rivers: 'Normalnie', desert: 'Normalnie', forest: 'Normalnie', relief: 'Normalnie' },
+  advanced: {
+    barbariansLevel: 'trudny', battleAlwaysManual: false, victoryMode: 'moc_i_dominacja', buildingCostPace: 'niski',
+    kosztJednostekPace: 'wysoki', wzrostLudnosciPace: 'wysoki', ruchSwiataPace: 'krotki', landFractionPercent: 30,
+    landFractionCustom: false, cityStateDifficultyOverride: 'normal', cityLimitBase: 10,
+    diplomacyWarLevel: 'trudna', kulturaReligiaLevel: 'trudny',
+  },
+  villageRewardsEnabled: true,
+}
