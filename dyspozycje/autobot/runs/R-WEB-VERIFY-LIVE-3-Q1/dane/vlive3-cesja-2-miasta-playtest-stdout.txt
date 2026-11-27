@@ -1,0 +1,41 @@
+[city-cession-live] vite build do katalogu tymczasowego: /tmp/claude-0/vlive3/cession-dist
+      świat (właściciel → miasta, stolica): {"0":{"cities":["city0"],"cap":"city0"},"1":{"cities":["city_enemy_1"],"cap":null},"2":{"cities":[],"cap":null},"3":{"cities":[],"cap":null},"4":{"cities":[],"cap":null},"5":{"cities":[],"cap":null},"6":{"cities":[],"cap":null},"7":{"cities":[],"cap":null},"8":{"cities":[],"cap":null}}
+      setup właściciel 1: {"0":{"cities":["city0"],"cap":"city0"},"1":{"cities":["city_enemy_1","city2","city3"],"cap":"city_enemy_1"},"2":{"cities":[],"cap":null},"3":{"cities":[],"cap":null},"4":{"cities":[],"cap":null},"5":{"cities":[],"cap":null},"6":{"cities":[],"cap":null},"7":{"cities":[],"cap":null},"8":{"cities":[],"cap":null}}
+  OK  T1: świat ma niestołeczne miasto AI
+      T1 wynik: {"res":{"converted":true,"accepted":true,"reason":"Pokój zawarty"},"after":{"owner":0,"status":"pokoj","playerCities":["city0","city2"],"aiCount":2},"aiCountBefore":3,"pn":1010}
+  OK  T1: komenda AI skonwertowana i zaakceptowana
+  OK  T1: własność miasta przeszła AI → gracz
+  OK  T1: miasto na liście miast gracza
+  OK  T1: AI straciło dokładnie jedno miasto
+  OK  T1: status pary po pokoju = pokoj
+      świat (właściciel → miasta, stolica): {"0":{"cities":["city0"],"cap":"city0"},"1":{"cities":["city_enemy_1"],"cap":null},"2":{"cities":[],"cap":null},"3":{"cities":[],"cap":null},"4":{"cities":[],"cap":null},"5":{"cities":[],"cap":null},"6":{"cities":[],"cap":null},"7":{"cities":[],"cap":null},"8":{"cities":[],"cap":null}}
+      setup właściciel 0: {"0":{"cities":["city0","city2"],"cap":"city0"},"1":{"cities":["city_enemy_1"],"cap":null},"2":{"cities":[],"cap":null},"3":{"cities":[],"cap":null},"4":{"cities":[],"cap":null},"5":{"cities":[],"cap":null},"6":{"cities":[],"cap":null},"7":{"cities":[],"cap":null},"8":{"cities":[],"cap":null}}
+  OK  T2: gracz ma niestołeczne miasto
+      T2 wynik: {"res":{"converted":true,"accepted":true,"reason":"Pokój zawarty"},"after":{"owner":1,"status":"pokoj"},"pn":860}
+  OK  T2: komenda AI skonwertowana i zaakceptowana
+  OK  T2: własność miasta gracza przeszła do AI (kierunek receiveItems)
+  OK  T2: status pary po pokoju = pokoj
+      świat (właściciel → miasta, stolica): {"0":{"cities":["city0"],"cap":"city0"},"1":{"cities":["city_enemy_1"],"cap":null},"2":{"cities":[],"cap":null},"3":{"cities":[],"cap":null},"4":{"cities":[],"cap":null},"5":{"cities":[],"cap":null},"6":{"cities":[],"cap":null},"7":{"cities":[],"cap":null},"8":{"cities":[],"cap":null}}
+      setup właściciel 1: {"0":{"cities":["city0"],"cap":"city0"},"1":{"cities":["city_enemy_1","city2"],"cap":"city_enemy_1"},"2":{"cities":[],"cap":null},"3":{"cities":[],"cap":null},"4":{"cities":[],"cap":null},"5":{"cities":[],"cap":null},"6":{"cities":[],"cap":null},"7":{"cities":[],"cap":null},"8":{"cities":[],"cap":null}}
+  OK  T3: AI ma stolicę
+      T3 wynik: {"res":{"converted":true,"accepted":true,"reason":"Pokój zawarty"},"before":{"owner":1,"count":2},"after":{"owner":1,"count":2,"status":"wojna"},"hint":"Pokój nie zawarty — żadne miasto w propozycji nie może przejść: Ateny (Stolicy nie można oddać w pokoju)","warnedBlock":true}
+  OK  T3: komenda AI skonwertowana, akceptacja gracza przeszła do obsługi
+  OK  T3: stolica nie zmieniła właściciela
+  OK  T3: AI nie straciło miast
+  OK  T3: pokój NIE zawarty (status nadal wojna)
+  OK  T3: komunikat „Pokój nie zawarty” w toaście lub logu
+      świat (właściciel → miasta, stolica): {"0":{"cities":["city0"],"cap":"city0"},"1":{"cities":["city_enemy_1"],"cap":null},"2":{"cities":[],"cap":null},"3":{"cities":[],"cap":null},"4":{"cities":[],"cap":null},"5":{"cities":[],"cap":null},"6":{"cities":[],"cap":null},"7":{"cities":[],"cap":null},"8":{"cities":[],"cap":null}}
+      setup właściciel 1: {"0":{"cities":["city0"],"cap":"city0"},"1":{"cities":["city_enemy_1","city2","city3"],"cap":"city_enemy_1"},"2":{"cities":[],"cap":null},"3":{"cities":[],"cap":null},"4":{"cities":[],"cap":null},"5":{"cities":[],"cap":null},"6":{"cities":[],"cap":null},"7":{"cities":[],"cap":null},"8":{"cities":[],"cap":null}}
+  OK  T4: AI ma dwa niestołeczne miasta
+      T4 wynik: {"res":{"converted":true,"accepted":true,"reason":"Pokój zawarty"},"after":{"ownerA":0,"ownerB":0,"aiCount":1,"status":"pokoj"},"aiBefore":3,"pn1":1010,"pn2":960}
+  OK  T4: komenda z 2 miastami skonwertowana i zaakceptowana
+  OK  T4: miasto główne przeszło AI → gracz
+  OK  T4: miasto dodatkowe przeszło AI → gracz
+  OK  T4: AI straciło dokładnie dwa miasta
+  OK  T4: status pary po pokoju = pokoj
+  OK  C: zero pageerror / console.error w scenariuszu
+city-cession-live-test: 23 pass, 0 fail
+
+real	3m4.260s
+user	0m22.963s
+sys	0m2.772s

@@ -1,0 +1,31 @@
+CZĘŚĆ A — wpis o buncie (worldDiploNewsRebellionEntry)
+  [OK] właściciel odkryty → wpis powstaje
+  [OK] newsKind = 'rebelia'
+  [OK] tytuł zawiera nazwę miasta
+  [OK] treść jednym zdaniem z nazwą cywilizacji
+  [OK] kind diplo, tura, ikona
+  [OK] id = tura + miasto (dedup)
+  [OK] właściciel nieodkryty (filtr widoczności) → brak wpisu
+  [OK] pusty zbiór odkrytych → brak wpisu
+CZĘŚĆ A — trwała lista (worldDiploNewsPush) i przycięcie
+  [OK] wpis trafia na listę
+  [OK] powtórne dopisanie tego samego id nie duplikuje
+  [OK] lista przycięta do WORLD_DIPLO_NEWS_MAX
+CZĘŚĆ A — round-trip zapisu (worldDiploNewsSanitize)
+  [OK] stary zapis (bez rebelii) wczytuje się bez zmian
+  [OK] brak pola w zapisie → pusta lista
+  [OK] nowy zapis z rebelią wczytuje się i zachowuje rodzaj
+  [OK] nieznany rodzaj jest pomijany (bez wywrócenia listy)
+CZĘŚĆ A — tryb zgodności: istniejące decyzje wojen/pokojów bez zmian
+  [OK] worldDiploNewsKind nie zmieniony (wojna)
+  [OK] worldDiploNewsKind nie zmieniony (pokój)
+CZĘŚĆ B — źródło (main.ts, diploListHud.ts)
+  [OK] znaleziono recordAiCityRebellionNews
+  [OK] recordAiCityRebellionNews buduje wpis przez worldDiploNewsRebellionEntry
+  [OK] wpis trafia do TRWAŁEJ listy (worldDiploNewsPush) — mutacja: usunięcie = CZERWONY
+  [OK] dopisanie do trwałej listy przed dziennikiem (dziennik nie zastępuje listy)
+  [OK] bramka odkrycia właściciela zachowana
+  [OK] id wpisu listy odróżnione od dziennika
+  [OK] diploListHud renderuje rodzaj wpisu (klasa dl-wn-<rodzaj>)
+
+WYNIK: PASS 24/0

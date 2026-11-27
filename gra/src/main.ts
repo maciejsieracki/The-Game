@@ -34547,6 +34547,58 @@ async function boot(): Promise<void> {
             _menuDifficulty);
           return { ...convertFoodReserveToTax(reserve, foodAmount, rate, enabled), enabled, rate };
         },
+        /** VLIVE3 (tylko ?civTest=1): REALNA ścieżka zamiany Żywności na Podatek z UI (ta sama wiązka io
+         * co onConvertOwnerFoodToTax w adapterze panelu) — zmienia stan tury (zapas, kolejka podatku). */
+        convertOwnerFoodToTaxLive: (ownerId: number, requested: number) => {
+          const enabled = ownerCanConvertWorkToTax(ownerId, isHuman(ownerId), cities, cityBuilt);
+          const rate = resolveFoodTaxRate(
+            (data.econParams as unknown as { budynki?: Record<string, Record<string, number>> }).budynki,
+            _menuDifficulty);
+          return runManualFoodTaxAction(ownerId, requested, rate, enabled, createFoodTaxIo({
+            states: empireFoodStates,
+            createFresh: () => freshEmpireFoodState(),
+            pendingTaxByOwner: pendingManualWorkTaxByOwner,
+            refreshRates: () => refreshLiveEmpireRates(),
+            markDirty: () => markCityStateDirty(),
+            readRates: () => ({ skarb: _lastPieniadzRate, nauka: _lastNaukaRate }),
+            showMessage: (msg) => showHintMessage(msg, 6000),
+            updateHud: () => updateHud(),
+          }));
+        },
+        /** VLIVE3 odczyty stanu (realne funkcje/mapy gry). */
+        ownerFoodReserveLive: (ownerId: number): number => getEmpireFoodReserve(ownerId),
+        ownerTaxPendingLive: (ownerId: number): number => pendingManualWorkTaxByOwner.get(ownerId) ?? 0,
+        ownerTreasuryLive: (ownerId: number): number => ownerTreasury(ownerId),
+        /** VLIVE3 odczyt: udział Pieniądza (skarbu) i Nauki gracza w ostatnim ticku (ta sama zmienna co HUD). */
+        ownerRatesLive: (): { pieniadz: number; nauka: number } => ({ pieniadz: _lastPieniadzRate, nauka: _lastNaukaRate }),
+        /** VLIVE3 SETUP (nie zmienia reguły): ustawia rezerwę Żywności imperium właściciela (zapasyPanstwa). */
+        setOwnerFoodReserveLive: (ownerId: number, amount: number): number => {
+          let st = empireFoodStates.get(ownerId);
+          if (!st) { st = freshEmpireFoodState(); empireFoodStates.set(ownerId, st); }
+          st.zapasyPanstwa = Math.max(0, amount);
+          markCityStateDirty();
+          return st.zapasyPanstwa;
+        },
+        /** VLIVE3 FORTRING: wymuszenie postawienia fortu na heksie (ta sama rejestracja co budowa: registerFortNodeIfNeeded). */
+        forceFortLive: (ownerId: number): { q: number; r: number; fortCount: number } | null => {
+          // Pierwszy wolny heks (bez miasta i bez fortu) w pierścieniu 2–6 od pierwszego miasta właściciela.
+          const anchor = cities.find(c => c.ownerId === ownerId);
+          if (!anchor) return null;
+          const taken = new Set<string>([...cities.map(c => c.q + ',' + c.r), ...fortNodes.map(f => f.q + ',' + f.r)]);
+          for (let ring = 2; ring <= 6; ring++) {
+            for (let dq = -ring; dq <= ring; dq++) {
+              for (let dr = -ring; dr <= ring; dr++) {
+                if (Math.max(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr)) !== ring) continue;
+                const q = anchor.q + dq;
+                const r = anchor.r + dr;
+                if (!map.hexes[q + ',' + r] || taken.has(q + ',' + r)) continue;
+                registerFortNodeIfNeeded('fort', q, r, ownerId);
+                return { q, r, fortCount: fortNodes.length };
+              }
+            }
+          }
+          return null;
+        },
         /** Zapis i wczytanie w TEJ SAMEJ stronie (persistSaveToSlot / loadGameFromSlot); zwraca ustawienia przed i po.
          * ŚWIADOME ODSTĘPSTWO od „tylko odczyt": dispatch (ZADANIE 1) wymaga round-trip zapisu, a zapis idzie do
        * slotu testowego 'civtest-settings-live-roundtrip' (localStorage) — dostępnego TYLKO pod ?civTest=1. */

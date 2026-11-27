@@ -17,6 +17,7 @@
  *      status nadal 'wojna', komunikat „Pokój nie zawarty — …" (zarzut 3: brak cichego pokoju).
  *  C.  Zero pageerror / console.error w całym scenariuszu.
  *
+ * T4 (VLIVE3): cesja dwóch miast w jednym pokoju (dodatkoweMiasta); oba przechodzą do gracza.
  * Zrzuty: <evidenceDir>/cession-T*.png
  * Usage (z gra/): node tools/diplomacy-city-cession-live-test.cjs [scratchDirAbs] [evidenceDirAbs]
  */
@@ -237,6 +238,44 @@ async function main() {
         assert('T3: pokój NIE zawarty (status nadal wojna)', after.status !== 'pokoj', after.status);
         assert('T3: komunikat „Pokój nie zawarty” w toaście lub logu', hint.includes('Pokój nie zawarty') || warnedBlock, { hint, warnedBlock });
         await page.screenshot({ path: path.join(EVIDENCE, 'cession-T3-odmowa-stolica.png') });
+      }
+      await page.close();
+    }
+
+    // ---- T4 (VLIVE3 pozycja 2): cesja >1 miasta w jednym pokoju ----
+    // Komenda AI niesie miasto główne (cityId) + dodatkoweMiasta (kolejne miasta planu). Oba muszą
+    // przejść do gracza w tej samej akceptacji; stolica AI nie może trafić do cesji.
+    {
+      const page = await openFresh();
+      await page.evaluate((ai) => window.__peaceRulesTestDebug.setPlayerWarWithAi(ai, 10), AI);
+      // SETUP: AI ma 3 miasta (stolica + 2 niestołeczne).
+      await setupCities(page, AI, 2);
+      const cap = await page.evaluate((ai) => window.__cityCessionTestDebug.capitalOf(ai), AI);
+      const nonCap = await page.evaluate(([ai, c]) => window.__cityCessionTestDebug.ownerCityIds(ai).filter(id => id !== c), [AI, cap]);
+      assert('T4: AI ma dwa niestołeczne miasta', nonCap.length >= 2, nonCap);
+      if (nonCap.length >= 2) {
+        const [m1, m2] = nonCap;
+        const pn1 = await page.evaluate((cid) => window.__cityCessionTestDebug.cityPnOf(cid), m1);
+        const pn2 = await page.evaluate((cid) => window.__cityCessionTestDebug.cityPnOf(cid), m2);
+        const aiBefore = await page.evaluate((ai) => window.__cityCessionTestDebug.ownerCityIds(ai).length, AI);
+        const res = await page.evaluate(([ai, a, pa, b, pb]) => window.__cityCessionTestDebug.acceptAiCommandForTest(ai, {
+          type: 'oferuj_miasto_za_pokoj', targetId: '0', powod: 'test T4 (2 miasta)', cityId: a, cityPn: pa, cityWeight: 1.5,
+          dodatkoweMiasta: [{ cityId: b, cityPn: pb }],
+        }), [AI, m1, pn1, m2, pn2]);
+        await wait(300);
+        const after = await page.evaluate(([ai, a, b]) => ({
+          ownerA: window.__cityCessionTestDebug.cityOwner(a),
+          ownerB: window.__cityCessionTestDebug.cityOwner(b),
+          aiCount: window.__cityCessionTestDebug.ownerCityIds(ai).length,
+          status: window.__peaceRulesTestDebug.getStatus(ai),
+        }), [AI, m1, m2]);
+        console.log('      T4 wynik:', JSON.stringify({ res, after, aiBefore, pn1, pn2 }));
+        assert('T4: komenda z 2 miastami skonwertowana i zaakceptowana', res.converted && res.accepted, res);
+        assert('T4: miasto główne przeszło AI → gracz', after.ownerA === PLAYER, after);
+        assert('T4: miasto dodatkowe przeszło AI → gracz', after.ownerB === PLAYER, after);
+        assert('T4: AI straciło dokładnie dwa miasta', after.aiCount === aiBefore - 2, { before: aiBefore, after: after.aiCount });
+        assert('T4: status pary po pokoju = pokoj', after.status === 'pokoj', after.status);
+        await page.screenshot({ path: path.join(EVIDENCE, 'cession-T4-ai-oddaje-2-miasta.png') });
       }
       await page.close();
     }
