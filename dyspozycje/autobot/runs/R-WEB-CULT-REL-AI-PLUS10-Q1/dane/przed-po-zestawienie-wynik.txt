@@ -1,0 +1,20 @@
+prz-s4242/seed4242.jsonl
+t10: jedn. AI 57, miasta AI 42, por.sr 19.3%, ponizej 14% 14, unitCostPace=wysoki
+t30: jedn. AI 118, miasta AI 68, por.sr 34.2%, ponizej 14% 5, unitCostPace=wysoki
+t58: jedn. AI 143, miasta AI 157, por.sr 20.1%, ponizej 14% 66, unitCostPace=wysoki
+t60: jedn. AI 142, miasta AI 160, por.sr 19.3%, ponizej 14% 67, unitCostPace=wysoki
+po-s4242/seed4242.jsonl
+t10: jedn. AI 57, miasta AI 42, por.sr 65.8%, ponizej 14% 0, unitCostPace=wysoki
+t30: jedn. AI 172, miasta AI 126, por.sr 62.9%, ponizej 14% 0, unitCostPace=wysoki
+t58: jedn. AI 211, miasta AI 187, por.sr 55.3%, ponizej 14% 1, unitCostPace=wysoki
+t60: jedn. AI 214, miasta AI 188, por.sr 55.4%, ponizej 14% 1, unitCostPace=wysoki
+prz-s7/seed7.jsonl
+t10: jedn. AI 57, miasta AI 42, por.sr 20.8%, ponizej 14% 15, unitCostPace=wysoki
+t30: jedn. AI 111, miasta AI 71, por.sr 31.6%, ponizej 14% 9, unitCostPace=wysoki
+t58: jedn. AI 133, miasta AI 151, por.sr 19.8%, ponizej 14% 75, unitCostPace=wysoki
+t60: brak
+po-s7/seed7.jsonl
+t10: jedn. AI 56, miasta AI 44, por.sr 65.4%, ponizej 14% 0, unitCostPace=wysoki
+t30: jedn. AI 190, miasta AI 127, por.sr 66.0%, ponizej 14% 0, unitCostPace=wysoki
+t58: jedn. AI 259, miasta AI 183, por.sr 52.4%, ponizej 14% 1, unitCostPace=wysoki
+t60: brak

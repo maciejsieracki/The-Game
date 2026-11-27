@@ -1033,7 +1033,7 @@ import { getWzrostSurowcowZEpoka, isEraRebalanceEnabled, normalizeWzrostSurowcow
 // R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1: poziom „Dyplomacja i wojna” (ustawienie nowej gry / zapis).
 import { setDiplomacyWarLevel } from './game/diplomacy-war-level';
 // R-WEB-CULT-REL-IMPL-Q1 (CULTIMPL): ustawienie „Kultura i religia” (nowa gra / zapis).
-import { getCulturaReligiaLevel, setCulturaReligiaLevel } from './game/culture-religion-level';
+import { getCulturaReligiaLevel, getCulturaReligiaLevelAi, setCulturaReligiaLevel } from './game/culture-religion-level';
 import { aiCityGarrisonNeedFromOrder, aiGarrisonNeedApplies } from './game/ai-city-order-need';
 import {
   resolveAutoBattleByPower,
@@ -34499,6 +34499,7 @@ async function boot(): Promise<void> {
         getSettings: () => ({
           diplomacyWarLevel: getDiplomacyWarLevel(),
           kulturaReligiaLevel: getCulturaReligiaLevel(),
+          kulturaReligiaLevelAI: getCulturaReligiaLevelAi(),
           wzrostSurowcowZEpoka: getWzrostSurowcowZEpoka(),
           kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
           difficulty: _menuDifficulty,
@@ -34915,16 +34916,17 @@ async function boot(): Promise<void> {
       (window as any).__nnsMeasureDebug = {
         // R-WEB-ERA-WAR-PLAYER-IN-ALL-ERAS-AND-MEASURE-Q1: epochId (opcjonalnie; brak = 'braz' jak dotąd) -- pomiar
         // wojen epoki startuje z Kamienia ('kamien'), bo przejście Kamień→Brąz jest jedynym wyzwalaczem puli Brązu.
-        startGame: (o: { seed: number; mapSize?: string; civTypes?: number; cityStates?: number; typSwiata?: string; epochId?: string; kulturaReligiaLevel?: 'latwy' | 'normalny' | 'trudny'; difficulty?: 'latwy' | 'normalny' | 'trudny' }): void => {
+        startGame: (o: { seed: number; mapSize?: string; civTypes?: number; cityStates?: number; typSwiata?: string; epochId?: string; kulturaReligiaLevel?: 'latwy' | 'normalny' | 'trudny'; kulturaReligiaLevelAI?: 'latwy' | 'normalny' | 'trudny'; kosztJednostekPace?: 'niski' | 'normalny' | 'wysoki'; difficulty?: 'latwy' | 'normalny' | 'trudny' }): void => {
           const startEpochId = o.epochId ?? 'braz';
           const mqTier = mapQualityTierFromQuery('high');
           const mqBundle = bundledMapQualityPreset(mqTier);
           const advanced: NewGameAdvancedOptions = {
             barbariansLevel: 'normalny', battleAlwaysManual: false, victoryMode: 'moc_i_dominacja',
-            buildingCostPace: 'niski', kosztJednostekPace: 'niski', wzrostLudnosciPace: 'wysoki', ruchSwiataPace: 'krotki',
+            buildingCostPace: 'niski', kosztJednostekPace: o.kosztJednostekPace ?? 'niski', wzrostLudnosciPace: 'wysoki', ruchSwiataPace: 'krotki',
             landFractionPercent: 30, landFractionCustom: false, cityStateDifficultyOverride: 'normal', cityLimitBase: 10,
             // R-WEB-CULT-REL-IMPL-Q1 (obrona r2): pomiar na poziomie „Kultura i religia”; brak = zgodność (jak dotąd).
             kulturaReligiaLevel: o.kulturaReligiaLevel,
+            kulturaReligiaLevelAI: o.kulturaReligiaLevelAI,
           };
           void doStartGame({
             civId: 'rzymianie', civName: 'Rzymianie',
@@ -35807,6 +35809,7 @@ async function boot(): Promise<void> {
       getCivBonusy: (ownerId: number) => civBonusyForOwnerId(ownerId),
       getCivKey: (ownerId: number) => civKeyForOwnerId(ownerId),
       getOrderState: (cityId: string) => cityOrderState.get(cityId) ?? null,
+      isHumanOwner: (oid: number) => isHuman(oid),
       getTurn: () => turn,
       getCityHealth: (cityId: string) => {
         const city = cities.find(c => c.id === cityId);
@@ -45109,6 +45112,8 @@ async function boot(): Promise<void> {
                   hasSwiatynia: builtIds.includes('swiatynia'),
                   hasAmfiteatr: builtIds.includes('teatr') || builtIds.includes('akademia'),
                   ownCultureShare: cultureMixActive ? ownCultureShare : undefined,
+                  // R-WEB-CULT-REL-AI-PLUS10-Q1: właściciel AI dostaje plus AI (G_ai) w Kulturze i Religii.
+                  ownerIsHuman: isHuman(city.ownerId),
                   foreignReligionDominant,
                   conquestUnstablePenalty: conquestUnstablePen,
                   stolicaEasyBonus: stolicaBonus,
@@ -45160,7 +45165,7 @@ async function boot(): Promise<void> {
                 : ordPctRaw;
               // AICULT (#189): potrzeba garnizonu z TEGO Porzadku, ktory faktycznie wchodzi w bunt
               // (po macierzy cywilizacji i ewentualnym nadpisaniu po podboju).
-              if (aiGarrisonNeedApplies(getCulturaReligiaLevel())) {
+              if (aiGarrisonNeedApplies(getCulturaReligiaLevelAi())) {
                 aiCityGarrisonNeedByCityId.set(
                   city.id, aiCityGarrisonNeedFromOrder(ordPct, data.societyParams, difficulty),
                 );
@@ -46810,7 +46815,7 @@ async function boot(): Promise<void> {
               forcedWar: forcedWarDirective,
               powerRank: powerRankInfo.rank,
               powerOfOwner: (oid: number) => objectivePowerByOwner.get(oid)?.power ?? 0,
-              cityGarrisonNeed: aiGarrisonNeedApplies(getCulturaReligiaLevel())
+              cityGarrisonNeed: aiGarrisonNeedApplies(getCulturaReligiaLevelAi())
                 ? Object.fromEntries(
                   [...aiCityGarrisonNeedByCityId.entries()]
                     .filter(([cid]) => cities.find(c => c.id === cid && c.ownerId === ownerId)),
@@ -50405,7 +50410,7 @@ async function boot(): Promise<void> {
       // R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1: brak pola = Łatwa (dziś).
       setDiplomacyWarLevel(params.advanced?.diplomacyWarLevel);
       // R-WEB-CULT-REL-IMPL-Q1: brak pola = tryb zgodności (dzisiejsze Szczęście, bez linii Prawa).
-      setCulturaReligiaLevel(params.advanced?.kulturaReligiaLevel);
+      setCulturaReligiaLevel(params.advanced?.kulturaReligiaLevel, params.advanced?.kulturaReligiaLevelAI);
       const VALID_TYP: TypSwiata[] = ['kontynenty', 'pangea', 'wyspy', 'ziemia'];
       const resolveTypSwiata = (): TypSwiata => {
         const raw = params.typSwiata || typSwiataFromMenuLabel(params.worldType || 'Kontynenty');
@@ -50727,6 +50732,7 @@ async function boot(): Promise<void> {
         getCivBonusy: (ownerId: number) => civBonusyForOwnerId(ownerId),
         getCivKey: (ownerId: number) => civKeyForOwnerId(ownerId),
         getOrderState: (cityId: string) => cityOrderState.get(cityId) ?? null,
+        isHumanOwner: (oid: number) => isHuman(oid),
       getTurn: () => turn,
         getCityHealth: (cityId: string) => {
           const city = cities.find(c => c.id === cityId);
@@ -52331,7 +52337,10 @@ async function boot(): Promise<void> {
       // R-WEB-DIPLO-WAR-LEVEL-SETTING-IMPL-Q1: stary zapis bez pola -> Łatwa (zachowanie bez zmian).
       setDiplomacyWarLevel((saved.meta?.newGameParams as NewGameParams | undefined)?.advanced?.diplomacyWarLevel);
       // R-WEB-CULT-REL-IMPL-Q1: stary zapis bez pola -> tryb zgodności (bit-w-bit jak dziś).
-      setCulturaReligiaLevel((saved.meta?.newGameParams as NewGameParams | undefined)?.advanced?.kulturaReligiaLevel);
+      setCulturaReligiaLevel(
+        (saved.meta?.newGameParams as NewGameParams | undefined)?.advanced?.kulturaReligiaLevel,
+        (saved.meta?.newGameParams as NewGameParams | undefined)?.advanced?.kulturaReligiaLevelAI,
+      );
       if (typeof saved.seed === 'number' && saved.seed > 0) {
         _gameSeed = saved.seed;
       }
