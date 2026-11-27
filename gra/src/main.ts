@@ -1371,7 +1371,7 @@ import {
   type SaveToLocalResult,
   type GraczSaveV3,
 } from './game/save';
-import { serializeMapForSave } from './map/mapSnapshot';
+import { serializeMapForSave, isValidMapSnapshot } from './map/mapSnapshot';
 import { loadMapForSave } from './game/load-map-source';
 import {
   ensureFsaAutosaveReady, fsaRotatingAutosaveWrite, getFsaReadinessState,
@@ -10592,6 +10592,22 @@ async function boot(): Promise<void> {
         ?? typSwiataFromMenuLabel(loadParams.worldType || 'Kontynenty');
       if (ts !== _menuTypSwiata) return true;
       return false;
+    }
+    /**
+     * R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1: czy ZYWA mapa roznic sie od `mapSnapshot` zapisu. `loadNeedsMapRebuild` dla wczytania
+     * z menu pauzy (ten sam seed/rozmiar/typ) zwraca false i mapa zostawala ZYWA -- ze zmianami po zapisie (np. las wyciety przez AI
+     * po zapisie wracal do zapisanego stanu gry bez zapisanej mapy, plony drewna miast liczone z lasu, ktorego w zapisie nie ma).
+     * Porownanie serializacji (ta sama funkcja co przy zapisie). Zapis bez poprawnego `mapSnapshot` (legacy) = false (zachowanie bez zmian).
+     * Blad serializacji = true (bezpiecznie: odbudowa z zapisu).
+     */
+    function liveMapDiffersFromSave(saved: SaveGame): boolean {
+      const snap = saved.mapSnapshot;
+      if (!snap || !isValidMapSnapshot(snap)) return false;
+      try {
+        return JSON.stringify(serializeMapForSave(map)) !== JSON.stringify(snap);
+      } catch {
+        return true;
+      }
     }
     function civKeyForOwnerId(ownerId: number): string {
       // Gameplay effects require a real owner-to-civ mapping. Keep civTypeForOwner's
@@ -33721,6 +33737,22 @@ async function boot(): Promise<void> {
     if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
       (window as any).__detHarness = {
         snapshotJson: (): string => JSON.stringify(buildSaveGameSnapshot('det-harness')),
+        /**
+         * R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1 (r4): wczytanie z menu pauzy PRODUKCYJNĄ ścieżką `loadGameFromSlot(slot, true)`
+         * (ta sama funkcja, ta sama decyzja `loadNeedsMapRebuild` + `liveMapDiffersFromSave`, ta sama odbudowa
+         * `regenerateWorldForLoad`). Hak tylko zapisuje JSON do slotu (saveToLocal) i woła produkcyjną funkcję; NIE powtarza
+         * warunku. Zwraca wartości decyzji policzone WYŁĄCZNIE do raportu (odczyt). Tylko civTest.
+         */
+        loadJsonAsPauseLoad: async (s: string, slot: string): Promise<{ rebuildByMode: boolean; mapDiffers: boolean }> => {
+          const o = JSON.parse(s);
+          const lp = newGameParamsForLoad(o);
+          const ls = o.seed ?? lp?.seed ?? _gameSeed;
+          const report = { rebuildByMode: loadNeedsMapRebuild(lp, ls, true), mapDiffers: !!lp && liveMapDiffersFromSave(o) };
+          const w = await saveToLocal(slot, o);
+          if (!w.ok) throw new Error('saveToLocal failed: ' + w.reason);
+          await loadGameFromSlot(slot, true);
+          return report;
+        },
         restoreJson: (s: string): void => { restoreGameFromSave(JSON.parse(s)); },
         dropMetaKeys: (s: string, keys: string[]): string => { const o = JSON.parse(s); for (const k of keys) delete (o.meta as any)[k]; return JSON.stringify(o); },
         counters: () => ({ turn, detIdSeq: _detIdSeq, abTurn: _autoBattleSeqTurn, abSeq: _autoBattleSeq, dipSeq: _dipUnitSeq }),
@@ -52174,7 +52206,8 @@ async function boot(): Promise<void> {
         const loadParams = newGameParamsForLoad(saved);
         const loadSeed = saved.seed ?? loadParams?.seed ?? _gameSeed;
 
-        const mustRebuildMap = loadNeedsMapRebuild(loadParams, loadSeed, fromInGamePause);
+        const mustRebuildMap = loadNeedsMapRebuild(loadParams, loadSeed, fromInGamePause)
+          || (fromInGamePause && !!loadParams && liveMapDiffersFromSave(saved));
 
         if (!mustRebuildMap && loadParams) {
           applyMenuParams({ ...loadParams, seed: loadSeed });
