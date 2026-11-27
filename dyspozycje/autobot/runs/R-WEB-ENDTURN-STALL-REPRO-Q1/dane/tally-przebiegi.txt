@@ -1,0 +1,36 @@
+d2-4242-r1 |  | turns=8/20 | stop=true | stopTurn=9 | lastBlock=gameOver | inProg=false | gameOver=true | defeat=PRZEGRANA (tura 9) gracz=0 rodzaj=przegrana | rt=true | err=0
+d2-4242-r2 |  | turns=8/20 | stop=true | stopTurn=9 | lastBlock=gameOver | inProg=false | gameOver=true | defeat=PRZEGRANA (tura 9) gracz=0 rodzaj=przegrana | rt=true | err=0
+d2-4242-r3 |  | turns=8/20 | stop=true | stopTurn=9 | lastBlock=gameOver | inProg=false | gameOver=true | defeat=PRZEGRANA (tura 9) gracz=0 rodzaj=przegrana | rt=true | err=0
+d2-4242-r4 |  | turns=20/20 | stop=false | stopTurn=- | lastBlock= | inProg=- | gameOver=- | defeat=- | rt=true | err=0
+d2-4242-r5 |  | turns=15/20 | stop=true | stopTurn=16 | lastBlock=gameOver | inProg=false | gameOver=true | defeat=PRZEGRANA (tura 16) gracz=0 rodzaj=przegrana | rt=true | err=0
+d2-4242-r6 |  | turns=20/20 | stop=false | stopTurn=- | lastBlock= | inProg=- | gameOver=- | defeat=- | rt=true | err=0
+d2-4242-r7 |  | turns=9/20 | stop=true | stopTurn=10 | lastBlock=gameOver | inProg=false | gameOver=true | defeat=PRZEGRANA (tura 10) gracz=0 rodzaj=przegrana | rt=true | err=0
+d2-4242-r8 |  | turns=20/20 | stop=false | stopTurn=- | lastBlock= | inProg=- | gameOver=- | defeat=- | rt=true | err=0
+d3-4242-r1 |  | turns=8/20 | stop=true | stopTurn=9 | lastBlock=gameOver | inProg=false | gameOver=true | defeat=PRZEGRANA (tura 9) gracz=0 rodzaj=przegrana | rt=true | err=0
+d3-4242-r2 |  | turns=20/20 | stop=false | stopTurn=- | lastBlock= | inProg=- | gameOver=- | defeat=- | rt=true | err=0
+d3-4242-r3 |  | turns=11/20 | stop=true | stopTurn=12 | lastBlock=gameOver | inProg=false | gameOver=true | defeat=PRZEGRANA (tura 12) gracz=0 rodzaj=przegrana | rt=true | err=0
+diag4242-r1 |  | turns=10/20 | stop=true | stopTurn=11 | lastBlock=gameOver | inProg=undefined | gameOver=undefined | defeat=PRZEGRANA (tura 11) gracz=0 rodzaj=przegrana | rt=true | err=0
+diag4242-r2 |  | turns=20/20 | stop=false | stopTurn=- | lastBlock= | inProg=- | gameOver=- | defeat=- | rt=true | err=0
+diag4242-r3 |  | turns=7/20 | stop=true | stopTurn=8 | lastBlock=gameOver | inProg=undefined | gameOver=undefined | defeat=PRZEGRANA (tura 8) gracz=0 rodzaj=przegrana | rt=true | err=0
+diag4242-r4 |  | turns=8/20 | stop=true | stopTurn=9 | lastBlock=gameOver | inProg=undefined | gameOver=undefined | defeat=PRZEGRANA (tura 9) gracz=0 rodzaj=przegrana | rt=true | err=0
+off4242-r1 |  | turns=11/20 | stop=true | stopTurn=12 | lastBlock=gameOver | inProg=false | gameOver=true | defeat=PRZEGRANA (tura 12) gracz=0 rodzaj=przegrana | rt=true | err=0
+off4242-r2 |  | turns=20/20 | stop=false | stopTurn=- | lastBlock= | inProg=- | gameOver=- | defeat=- | rt=true | err=0
+off4242-r3 |  | turns=12/20 | stop=true | stopTurn=13 | lastBlock=gameOver | inProg=false | gameOver=true | defeat=PRZEGRANA (tura 13) gracz=0 rodzaj=przegrana | rt=true | err=0
+off4242-r4 |  | turns=12/20 | stop=true | stopTurn=13 | lastBlock=gameOver | inProg=false | gameOver=true | defeat=PRZEGRANA (tura 13) gracz=0 rodzaj=przegrana | rt=true | err=0
+run1 | on | turns=20/20 | stop=false | stopTurn=- | lastBlock= | inProg=- | gameOver=- | defeat=- | rt=true | err=0
+s4242-r1 | on | turns=20/20 | stop=false | stopTurn=- | lastBlock= | inProg=- | gameOver=- | defeat=- | rt=true | err=0
+s4242-r2 | on | turns=9/20 | stop=true | stopTurn=10 | lastBlock=gameOver | inProg=undefined | gameOver=undefined | defeat=- | rt=true | err=0
+s4242-r3 | on | turns=20/20 | stop=false | stopTurn=- | lastBlock= | inProg=- | gameOver=- | defeat=- | rt=true | err=0
+s4242-r4 | on | turns=8/20 | stop=true | stopTurn=9 | lastBlock=gameOver | inProg=undefined | gameOver=undefined | defeat=- | rt=true | err=0
+s4242-r5 | on | turns=20/20 | stop=false | stopTurn=- | lastBlock= | inProg=- | gameOver=- | defeat=- | rt=true | err=0
+s4242-r6 | on | turns=8/20 | stop=true | stopTurn=9 | lastBlock=gameOver | inProg=undefined | gameOver=undefined | defeat=- | rt=true | err=0
+s4242-r7 | on | turns=9/20 | stop=true | stopTurn=10 | lastBlock=gameOver | inProg=undefined | gameOver=undefined | defeat=- | rt=true | err=0
+s4242-r8 | on | turns=7/20 | stop=true | stopTurn=8 | lastBlock=gameOver | inProg=undefined | gameOver=undefined | defeat=- | rt=true | err=0
+seed7-r1 |  | turns=12/20 | stop=true | stopTurn=13 | lastBlock=gameOver | inProg=false | gameOver=true | defeat=PRZEGRANA (tura 13) gracz=0 rodzaj=przegrana | rt=true | err=0
+seed7-r2 |  | turns=20/20 | stop=false | stopTurn=- | lastBlock= | inProg=- | gameOver=- | defeat=- | rt=true | err=0
+seed7-r3 |  | turns=20/20 | stop=false | stopTurn=- | lastBlock= | inProg=- | gameOver=- | defeat=- | rt=true | err=0
+seed7-r4 |  | turns=9/20 | stop=true | stopTurn=10 | lastBlock=gameOver | inProg=false | gameOver=true | defeat=PRZEGRANA (tura 10) gracz=0 rodzaj=przegrana | rt=true | err=0
+seed778899-r1 |  | turns=20/20 | stop=false | stopTurn=- | lastBlock= | inProg=- | gameOver=- | defeat=- | rt=true | err=0
+seed778899-r2 |  | turns=20/20 | stop=false | stopTurn=- | lastBlock= | inProg=- | gameOver=- | defeat=- | rt=true | err=0
+seed778899-r3 |  | turns=12/20 | stop=true | stopTurn=13 | lastBlock=gameOver | inProg=false | gameOver=true | defeat=PRZEGRANA (tura 13) gracz=0 rodzaj=przegrana | rt=true | err=0
+seed778899-r4 |  | turns=11/20 | stop=true | stopTurn=12 | lastBlock=gameOver | inProg=false | gameOver=true | defeat=PRZEGRANA (tura 12) gracz=0 rodzaj=przegrana | rt=true | err=0

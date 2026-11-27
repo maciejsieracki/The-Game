@@ -1,0 +1,101 @@
+VLIVE3-FORT {"kind":"console","type":"error","text":"Failed to load resource: net::ERR_FILE_NOT_FOUND"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Diag:boot] start"}
+VLIVE3-FORT {"kind":"console","type":"startGroup","text":"[The Game] Dane wczytane"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"Jednostki: 75, Technologie: 32"}
+VLIVE3-FORT {"kind":"console","type":"endGroup","text":"console.groupEnd"}
+VLIVE3-FORT {"kind":"console","type":"info","text":"[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"}
+VLIVE3-FORT {"kind":"console","type":"info","text":"[civ] mapGen ms | prep=4 terrain=26 landSea=243 relief=364 coast=26 riversMain=591 riversFill=238 forest=5 deposits=29 starts=122 total=1648"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[.WebGL-0x171400196000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"}
+VLIVE3-FORT {"kind":"console","type":"info","text":"[civ] riverRenderStage 3"}
+VLIVE3-FORT {"kind":"console","type":"info","text":"[civ] buildScene ms | hexes=29 coast=49 overlays=6 rivers=51 tail=11 total=146 | hexCount=1008 overlaysN=12 riverStage=3"}
+VLIVE3-FORT {"kind":"console","type":"info","text":"[civ] buildScene detail heksy | alokacja=20 pryzmy=10 instancjeReliefu=1 styledWPetli=0 brzegWPetli=4 pustynia=7 finalizacja=0"}
+VLIVE3-FORT {"kind":"console","type":"info","text":"[civ] buildScene detail nakladki | scalMerge=6 instancjePlazaWydmy=0 collapsed=3 skipMerged=0 skipLight=9"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[main] hodowla złoże meshes synced · resource overlays: 64"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: awaitingFirstPlayerCity"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: awaitingFirstPlayerCity"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: awaitingFirstPlayerCity"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Diag:session] resetStuckInteractiveState"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[.WebGL-0x171400196000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"}
+VLIVE3-FORT {"kind":"console","type":"info","text":"[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)"}
+VLIVE3-FORT {"kind":"start","variant":"on","ringOff":false,"settings":{"diplomacyWarLevel":"trudna","kulturaReligiaLevel":"trudny","kulturaReligiaLevelAI":"trudny","wzrostSurowcowZEpoka":false,"kosztJednostekPace":"wysoki","difficulty":"hard"},"errors":0}
+VLIVE3-FORT {"kind":"forced","variant":"on","forced":{"q":11,"r":17,"fortCount":1}}
+VLIVE3-FORT {"kind":"gate0","variant":"on","gate0":{"changed":false,"canEnd":true,"turn":1}}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 1"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Ekonomia] Tura 2: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(1 os.) ¤=3 N=5 Praca=3 wzrost=0 głód=0"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Autosave] rotacyjny slot=autosave-1 tura=2"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 2"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":2,"fortsBefore":1,"forts":1,"endTurnMs":868,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 2"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Autosave] rotacyjny slot=autosave-2 tura=3"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Ekonomia] Tura 3: gracz(1 os.) ¤=2 N=4 Praca=2 | mapa(1 os.) ¤=2 N=4 Praca=2 wzrost=0 głód=0"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 3"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":3,"fortsBefore":1,"forts":1,"endTurnMs":474,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 3"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Autosave] rotacyjny slot=autosave-3 tura=4"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Ekonomia] Tura 4: gracz(1 os.) ¤=2 N=4 Praca=2 | mapa(1 os.) ¤=2 N=4 Praca=2 wzrost=0 głód=0"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 4"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":4,"fortsBefore":1,"forts":1,"endTurnMs":695,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 4"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Ekonomia] Tura 5: gracz(1 os.) ¤=2 N=4 Praca=2 | mapa(1 os.) ¤=2 N=4 Praca=2 wzrost=0 głód=0"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Barbarzyncy] Tura 5: nowe obozy: 2"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik szekelesz @ (25,8)"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik szekelesz @ (9,4)"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Autosave] rotacyjny slot=autosave-4 tura=5"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 5"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":5,"fortsBefore":1,"forts":1,"endTurnMs":473,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 5"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Autosave] rotacyjny slot=autosave-5 tura=6"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Ekonomia] Tura 6: gracz(1 os.) ¤=2 N=4 Praca=2 | mapa(1 os.) ¤=2 N=4 Praca=2 wzrost=0 głód=0"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 6"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":6,"fortsBefore":1,"forts":1,"endTurnMs":807,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 6"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Ekonomia] Tura 7: gracz(1 os.) ¤=2 N=4 Praca=2 | mapa(1 os.) ¤=2 N=4 Praca=2 wzrost=0 głód=0"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Autosave] rotacyjny slot=autosave-6 tura=7"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 7"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":7,"fortsBefore":1,"forts":1,"endTurnMs":707,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 7"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Autosave] rotacyjny slot=autosave-7 tura=8"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Ekonomia] Tura 8: gracz(1 os.) ¤=2 N=4 Praca=2 | mapa(1 os.) ¤=2 N=4 Praca=2 wzrost=0 głód=0"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 8"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":8,"fortsBefore":1,"forts":1,"endTurnMs":258,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 8"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Autosave] rotacyjny slot=autosave-8 tura=9"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Ekonomia] Tura 9: gracz(1 os.) ¤=2 N=4 Praca=2 | mapa(1 os.) ¤=2 N=4 Praca=2 wzrost=0 głód=0"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 9"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":9,"fortsBefore":1,"forts":1,"endTurnMs":853,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 9"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Ekonomia] Tura 10: gracz(1 os.) ¤=2 N=4 Praca=2 | mapa(1 os.) ¤=2 N=4 Praca=2 wzrost=0 głód=0"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Autosave] rotacyjny slot=autosave-9 tura=10"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 10"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":10,"fortsBefore":1,"forts":1,"endTurnMs":696,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 10"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Ekonomia] Tura 11: gracz(1 os.) ¤=2 N=4 Praca=2 | mapa(1 os.) ¤=2 N=4 Praca=2 wzrost=0 głód=0"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Autosave] rotacyjny slot=autosave-10 tura=11"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 11"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":11,"fortsBefore":1,"forts":1,"endTurnMs":466,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 11"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Ekonomia] Tura 12: gracz(1 os.) ¤=2 N=4 Praca=2 | mapa(1 os.) ¤=2 N=4 Praca=2 wzrost=0 głód=0"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Autosave] rotacyjny slot=autosave-1 tura=12"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 12"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":12,"fortsBefore":1,"forts":1,"endTurnMs":496,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 12"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Autosave] rotacyjny slot=autosave-2 tura=13"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Ekonomia] Tura 13: gracz(1 os.) ¤=2 N=4 Praca=2 | mapa(1 os.) ¤=2 N=4 Praca=2 wzrost=0 głód=0"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Victory] PRZEGRANA (tura 13) gracz=0 rodzaj=przegrana"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 13"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":13,"fortsBefore":1,"forts":1,"endTurnMs":753,"errors":0}
+VLIVE3-FORT {"kind":"stop","variant":"on","turn":13,"reason":"cannot-end","battles":1,"offers":{"attempts":0,"confirmed":0},"forcedPeace":0,"endTurnBlocks":["[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver"],"state":{"g":{"gate":{"blokada":false,"komunikat":"","dzwignie":[],"zasob":null,"prognoza":null,"propozycjaPodatku":null,"automatPoprawil":false,"niewystarczajace":false},"canEnd":false,"turn":13,"forecast":null,"treasury":5000,"granary":999,"podatekPunkty":0,"podatekZysk":0,"racjeZysk":0,"autoSpichlerzDelta":null,"taxSteps":[]},"battle":{"preBattleOpen":false,"pendingAuto":false,"sceneOpen":false,"summaryOpen":false,"resolving":false},"inProg":false,"gameOver":true,"snap":"{\"turn\":13,\"owners\":[]}"}}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Diag:session] resetStuckInteractiveState"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Diag:session] prepareSessionForLoad"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Diag:load] slot=civtest-settings-live-roundtrip pause=false"}
+VLIVE3-FORT {"kind":"console","type":"info","text":"[civ] riverRenderStage 3"}
+VLIVE3-FORT {"kind":"console","type":"info","text":"[civ] buildScene ms | hexes=40 coast=82 overlays=2 rivers=92 tail=5 total=220 | hexCount=1008 overlaysN=12 riverStage=3"}
+VLIVE3-FORT {"kind":"console","type":"info","text":"[civ] buildScene detail heksy | alokacja=8 pryzmy=18 instancjeReliefu=1 styledWPetli=0 brzegWPetli=9 pustynia=4 finalizacja=0"}
+VLIVE3-FORT {"kind":"console","type":"info","text":"[civ] buildScene detail nakladki | scalMerge=2 instancjePlazaWydmy=0 collapsed=3 skipMerged=0 skipLight=9"}
+VLIVE3-FORT {"kind":"console","type":"info","text":"[civ-perf] wall-clock Nowa gra → hide overlay: 278 ms (postScene/finishLoading=19 ms)"}
+VLIVE3-FORT {"kind":"console","type":"info","text":"[civ-perf] === Civ — raport czasów ładowania mapy ===\nData: 27.11.2026, 11:20:14\nrozmiar: Maly · kształt: Kontynenty\n1008 heksów · nakładek 12\n\nGENERATOR (ms):\n  Rzeki (gen): GŁÓWNE + ŚREDNIE (riverGenPhase=main+medium)\n"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Load] slot=civtest-settings-live-roundtrip tura=13"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Diag:load] OK tura=13 miasta=1 seed=778899"}
+VLIVE3-FORT {"kind":"roundtrip","variant":"on","saved":true,"fortsBeforeRt":1,"fortsAfterRt":1,"equal":true}
+VLIVE3-FORT {"kind":"done","variant":"on","turnsRequested":20,"turnsCompleted":12,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[.WebGL-0x171400196000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"}

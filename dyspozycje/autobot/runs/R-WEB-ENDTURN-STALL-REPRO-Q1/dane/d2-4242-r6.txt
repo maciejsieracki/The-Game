@@ -1,0 +1,76 @@
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: awaitingFirstPlayerCity"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: awaitingFirstPlayerCity"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: awaitingFirstPlayerCity"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[NewGame] tempoGry = standardowa · kosztJednostekPace = wysoki · buildingCostPace = niski · wzrostLudnosciPace = wysoki · ruchSwiataPace = krotki · epoka= 2 (braz) · typSwiata= kontynenty (Kontynenty) · jakoscMapy= Wysoka → render=high, mapDetail=high · advanced={\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":false,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"niski\",\"kosztJednostekPace\":"}
+VLIVE3-FORT {"kind":"start","variant":"on","ringOff":false,"settings":{"diplomacyWarLevel":"trudna","kulturaReligiaLevel":"trudny","kulturaReligiaLevelAI":"trudny","wzrostSurowcowZEpoka":false,"kosztJednostekPace":"wysoki","difficulty":"hard"},"errors":0}
+VLIVE3-FORT {"kind":"forced","variant":"on","forced":{"q":13,"r":9,"fortCount":1}}
+VLIVE3-FORT {"kind":"gate0","variant":"on","gate0":{"changed":false,"canEnd":true,"turn":1}}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 1"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 2"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":2,"fortsBefore":1,"forts":1,"endTurnMs":455,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 2"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 3"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":3,"fortsBefore":1,"forts":1,"endTurnMs":1146,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 3"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 4"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":4,"fortsBefore":1,"forts":1,"endTurnMs":721,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 4"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Barbarzyncy] Tura 5: nowe obozy: 2"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik szekelesz @ (25,22)"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik szekelesz @ (6,20)"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 5"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":5,"fortsBefore":1,"forts":1,"endTurnMs":757,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 5"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 6"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":6,"fortsBefore":1,"forts":1,"endTurnMs":544,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 6"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 7"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":7,"fortsBefore":1,"forts":1,"endTurnMs":529,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 7"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 8"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":8,"fortsBefore":1,"forts":1,"endTurnMs":1218,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 8"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 9"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":9,"fortsBefore":1,"forts":1,"endTurnMs":493,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 9"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 10"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":10,"fortsBefore":1,"forts":1,"endTurnMs":1275,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 10"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 11"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":11,"fortsBefore":1,"forts":1,"endTurnMs":763,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 11"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 12"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":12,"fortsBefore":1,"forts":1,"endTurnMs":976,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 12"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 13"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":13,"fortsBefore":1,"forts":1,"endTurnMs":452,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 13"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik Sherden @ (26,23)"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik Sherden @ (4,20)"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik Sherden @ (28,21) [na wodzie]"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 14"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":14,"fortsBefore":1,"forts":1,"endTurnMs":498,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 14"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 15"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":15,"fortsBefore":1,"forts":1,"endTurnMs":475,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 15"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 16"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":16,"fortsBefore":1,"forts":1,"endTurnMs":468,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 16"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 17"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":17,"fortsBefore":1,"forts":1,"endTurnMs":439,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 17"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 18"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":18,"fortsBefore":1,"forts":1,"endTurnMs":604,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 18"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 19"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":19,"fortsBefore":1,"forts":1,"endTurnMs":895,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 19"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 20"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":20,"fortsBefore":1,"forts":1,"endTurnMs":571,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 20"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 21"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":21,"fortsBefore":1,"forts":1,"endTurnMs":500,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[NewGame] tempoGry = standardowa · kosztJednostekPace = wysoki · buildingCostPace = niski · wzrostLudnosciPace = wysoki · ruchSwiataPace = krotki · epoka= 2 (braz) · typSwiata= kontynenty (Kontynenty) · jakoscMapy= Wysoka → render=high, mapDetail=high · advanced={\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":false,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"niski\",\"kosztJednostekPace\":"}
+VLIVE3-FORT {"kind":"roundtrip","variant":"on","saved":true,"fortsBeforeRt":1,"fortsAfterRt":1,"equal":true}
+VLIVE3-FORT {"kind":"done","variant":"on","turnsRequested":20,"turnsCompleted":20,"errors":0}

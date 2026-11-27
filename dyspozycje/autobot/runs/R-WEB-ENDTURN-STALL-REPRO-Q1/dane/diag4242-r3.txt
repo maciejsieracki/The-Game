@@ -1,0 +1,67 @@
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: awaitingFirstPlayerCity"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: awaitingFirstPlayerCity"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: awaitingFirstPlayerCity"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[NewGame] tempoGry = standardowa · kosztJednostekPace = wysoki · buildingCostPace = niski · wzrostLudnosciPace = wysoki · ruchSwiataPace = krotki · epoka= 2 (braz) · typSwiata= kontynenty (Kontynenty) · jakoscMapy= Wysoka → render=high, mapDetail=high · advanced={\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":false,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"niski\",\"kosztJednostekPace\":"}
+VLIVE3-FORT {"kind":"start","variant":"on","ringOff":false,"settings":{"diplomacyWarLevel":"trudna","kulturaReligiaLevel":"trudny","kulturaReligiaLevelAI":"trudny","wzrostSurowcowZEpoka":false,"kosztJednostekPace":"wysoki","difficulty":"hard"},"errors":0}
+VLIVE3-FORT {"kind":"forced","variant":"on","forced":{"q":14,"r":14,"fortCount":1}}
+VLIVE3-FORT {"kind":"gate0","variant":"on","gate0":{"changed":false,"canEnd":true,"turn":1}}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 1"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 2"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":2,"fortsBefore":1,"forts":1,"endTurnMs":949,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 2"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 3"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":3,"fortsBefore":1,"forts":1,"endTurnMs":1309,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 3"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 4"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":4,"fortsBefore":1,"forts":1,"endTurnMs":855,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 4"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 5"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":5,"fortsBefore":1,"forts":1,"endTurnMs":827,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 5"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 6"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":6,"fortsBefore":1,"forts":1,"endTurnMs":905,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 6"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 7"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":7,"fortsBefore":1,"forts":1,"endTurnMs":1359,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: START tura 7"}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[Victory] PRZEGRANA (tura 8) gracz=0 rodzaj=przegrana"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] triggerPlayerEndTurn: DONE tura 8"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"turn","variant":"on","turn":8,"fortsBefore":1,"forts":1,"endTurnMs":1282,"errors":0}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"console","type":"warning","text":"[EndTurn] blocked: gameOver"}
+VLIVE3-FORT {"kind":"stop","variant":"on","turn":8,"reason":"cannot-end","battles":1,"offers":{"attempts":0,"confirmed":0},"forcedPeace":0,"endTurnBlocks":["[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] blocked: awaitingFirstPlayerCity","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: endTurnInProgress","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver","[EndTurn] blocked: gameOver"],"state":{"g":{"gate":{"blokada":false,"komunikat":"","dzwignie":[],"zasob":null,"prognoza":null,"propozycjaPodatku":null,"automatPoprawil":false,"niewystarczajace":false},"canEnd":false,"turn":8,"forecast":null,"treasury":5000,"granary":999,"podatekPunkty":0,"podatekZysk":0,"racjeZysk":0,"autoSpichlerzDelta":null,"taxSteps":[]},"battle":{"preBattleOpen":false,"pendingAuto":false,"sceneOpen":false,"summaryOpen":false,"resolving":false}}}
+VLIVE3-FORT {"kind":"console","type":"log","text":"[NewGame] tempoGry = standardowa · kosztJednostekPace = wysoki · buildingCostPace = niski · wzrostLudnosciPace = wysoki · ruchSwiataPace = krotki · epoka= 2 (braz) · typSwiata= kontynenty (Kontynenty) · jakoscMapy= Wysoka → render=high, mapDetail=high · advanced={\"barbariansLevel\":\"normalny\",\"battleAlwaysManual\":false,\"victoryMode\":\"moc_i_dominacja\",\"buildingCostPace\":\"niski\",\"kosztJednostekPace\":"}
+VLIVE3-FORT {"kind":"roundtrip","variant":"on","saved":true,"fortsBeforeRt":1,"fortsAfterRt":1,"equal":true}
+VLIVE3-FORT {"kind":"done","variant":"on","turnsRequested":20,"turnsCompleted":7,"errors":0}
