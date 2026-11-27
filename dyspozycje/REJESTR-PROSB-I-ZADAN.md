@@ -11406,3 +11406,10 @@ R-WEB-MAP-ISLANDS-ORPHAN-FIX-Q1 (wf_d7ad9b86-4bd; Operator Haiku → Evaluator S
 
 ### 2026-11-27 · VLIVE3 start (R-WEB-VERIFY-LIVE-3-Q1) · zegar maszyny `date -u` 09:24 UTC
 - Wolny slot po integracji LIVEGATE2 (main 3608af1ce). Priorytet 2 (pomiary): Targowisko Żywność→Podatek, cesja >1 miasta, FORTRING na maksimum (wydzielone z VLIVE2). Operator HAIKU, cand = origin/main 3608af1ce2aae306c6fa2f77413f8817d2c7bed0. Hak civTest w main.ts tylko minimalnie.
+
+### 2026-11-27 · VLIVE3 r1 FC PASS-WITH-NOTES → ZINTEGROWANE do main 3218654a1 (bez deployu; haki civTest tylko za ?civTest=1) · zegar maszyny `date -u` 10:49 UTC
+- Kod FC 469213cdd (raport 193f92bf7), baza 3608af1ce; 22 plików, w main.ts +52 linii wyłącznie haków w bloku __settingsLive (?civTest=1). Merge-tree z AIPLUS10 r2 (c67af3665) czysty. Bramki FC zielone: tsc 0, logic 213, tech-tree 20, research 33, combat 6, unit-replace 45/0, ai-test 297/0, gate 37/0, news 24/0.
+- Zmierzone na maksimum (Trudny/trudna/Wysoki ×4/Kultura trudny): Targowisko 100 Żywności → 20 Podatku w kolejce (kurs 0,2 OK), ale netto skarbca po jednej turze +6 (nie +20) — rozkład niezbadany → temat TAXNET; cesja 2 miast w pokoju PASS (3→1 u AI, 23/0; scenariusz playtest, ceny pokoju na maksimum NIE ZMIERZONO); FORTRING round-trip OK (ON i OFF 20/20 tur, fort 1→1), czas tury ON 485 ms vs OFF 511 ms; wpływ pierścienia NIE ZMIERZONO (AI nie stawia fortów, brak obserwowalnej różnicy).
+- Otwarte: jeden przebieg ON zatrzymał się w t12 (endTurnInProgress, bez modala) — kandydat na osobny temat; netto 30% Targowiska → TAXNET (analiza, potem ewentualnie ABC).
+- refs/keep/VLIVE3-r1-{op,eval,obrona,fc}; worktree VLIVE3 usunięte.
+- TAXNET start (R-WEB-TAX-NET-DECOMPOSE-Q1): analiza rozkładu 20→+6, bez zmian gra/src; cand = origin/main 3218654a1f8203a3ecf57b2efdb6127915efa355; Operator HAIKU.
