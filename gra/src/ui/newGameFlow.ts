@@ -1918,7 +1918,7 @@ function advancedSettingRows(): AdvSettingRow[] {
     {
       key: 'kulturaReligiaLevel',
       lbl: 'Kultura i religia — dla gracza',
-      hint: 'Ile kultura i religia wpływają na Szczęście i Prawo Twoich miast (każda linia osobno). Mały wpływ (łatwy, domyślnie): od −10 do +10 na linię. Neutralny (normalny): od −15 do +5. Duży wpływ (trudny): od −20 do 0 (bez plusów). Stawki rosną proporcjonalnie w kolejnych epokach.',
+      hint: 'Ile kultura i religia wpływają na Szczęście i Prawo Twoich miast (każda linia osobno; epoka 1 → epoka 3). Mały wpływ (łatwy, domyślnie): od −10 do +10 → od −23 do +23. Neutralny (normalny): od −15 do +5 → od −28 do +18. Duży wpływ (trudny): od −20 do 0 → od −33 do +13. Minus i plus rosną o tę samą wartość w każdej epoce. Ustawienie dla komputera jest osobne.',
       opts: ['Mały wpływ (łatwy)', 'Neutralny (normalny)', 'Duży wpływ (trudny)'],
       getIdx: () => (advOpts.kulturaReligiaLevel === 'trudny' ? 2 : advOpts.kulturaReligiaLevel === 'normalny' ? 1 : 0),
       setIdx: (i) => { advOpts.kulturaReligiaLevel = i === 2 ? 'trudny' : i === 1 ? 'normalny' : 'latwy'; },
@@ -1926,7 +1926,7 @@ function advancedSettingRows(): AdvSettingRow[] {
     {
       key: 'kulturaReligiaLevelAI',
       lbl: 'Kultura i religia — dla komputera (AI)',
-      hint: 'Ten sam wybór co dla gracza, ale dla miast komputera (AI). Wybiera wielkość minusów (od −10/−15/−20 w epoce 1). Komputer zawsze dostaje plus +10 za własną kulturę i religię, rosnący z epoką (+16, +23). Pozwala ustawić np. trudny poziom dla gracza i łatwy dla komputera.',
+      hint: 'Ten sam wybór co dla gracza, ale dla miast komputera (AI). Wybiera wielkość minusów (w epoce 1: od −10/−15/−20; w epoce 3: od −23/−28/−33). Komputer zawsze dostaje plus za własną kulturę i religię: +10 w epoce 1, +16 w epoce 2, +23 w epoce 3, na każdym poziomie. Pozwala ustawić np. trudny poziom dla gracza i łatwy dla komputera.',
       opts: ['Mały wpływ (łatwy)', 'Neutralny (normalny)', 'Duży wpływ (trudny)'],
       getIdx: () => (advOpts.kulturaReligiaLevelAI === 'trudny' ? 2 : advOpts.kulturaReligiaLevelAI === 'normalny' ? 1 : 0),
       setIdx: (i) => { advOpts.kulturaReligiaLevelAI = i === 2 ? 'trudny' : i === 1 ? 'normalny' : 'latwy'; },

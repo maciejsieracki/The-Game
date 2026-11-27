@@ -81,6 +81,30 @@ function orderFor(M, level, diff, builtGarnizon, garn = 0) {
 }
 
 function runAll(M) {
+  // T0 -- R-WEB-CULT-REL-AI-PLUS10-Q1 (zarzut Evaluatora nr 4): wpiecie TYPU WLASCICIELA.
+  // Miasto AI liczy potrzebe garnizonu z poziomu AI, nie gracza. Dzieki temu mutacja
+  // "typ wlasciciela ignorowany" (AI czyta gracza) albo "AI czyta poziom gracza" lamie test.
+  const orderOwner = (M2, playerLvl, aiLvl, ownerHuman, diff, share = 0) => {
+    M2.setCulturaReligiaLevel(playerLvl, aiLvl);
+    const inp = { difficulty: diff, era: 1, population: 5, buildingZadowolenie: 0, ownCultureShare: share, ownReligionShare: share, ownerIsHuman: ownerHuman };
+    return M2.evaluateOrderFromBreakdown(inp,
+      { difficulty: diff, era: 1, population: 5, garnizonCount: 0, hasGarnizonBudynek: false, ownerIsHuman: ownerHuman },
+      SOCIETY, diff);
+  };
+  const needAi = (M2, playerLvl, aiLvl, share = 0) => M2.aiCityGarrisonNeedFromOrder(orderOwner(M2, playerLvl, aiLvl, false, "hard", share), SOCIETY, "hard");
+  const needAiTrudny = needAi(M, 'trudny', 'trudny');
+  const needAiLatwy = needAi(M, 'trudny', 'latwy');
+  const needAiLatwyPlayerLatwy = needAi(M, 'latwy', 'latwy');
+  eq('T0 AI trudny (gracz trudny) = 4 jak tabela', needAiTrudny, 4);
+  eq('T0 AI latwy niezaleznie od poziomu gracza (trudny = latwy/latwy)', needAiLatwy, needAiLatwyPlayerLatwy);
+  check('T0 AI latwy < AI trudny (poziom AI steruje potrzeba)', needAiLatwy < needAiTrudny, { needAiLatwy, needAiTrudny });
+  // T0b -- udział własnej 100%: wartość linii = plus AI (+10 na KAŻDYM poziomie AI), więc potrzeba
+  // garnizonu AI nie może zależeć od poziomu AI przy 100%. Mutacja „plus AI bierze G poziomu/gracza” łamie to.
+  const needAiS1Latwy = needAi(M, 'trudny', 'latwy', 1);
+  const needAiS1Trudny = needAi(M, 'trudny', 'trudny', 1);
+  eq('T0b AI, udział 100%: plus AI jednakowy na każdym poziomie AI', needAiS1Trudny, needAiS1Latwy);
+  M.setCulturaReligiaLevel(undefined);
+
   // T1 -- tabela CULTMODEL2 z pelnego wejscia silnika.
   const n3 = M.aiCityGarrisonNeedFromOrder(orderFor(M, 'normalny', 'normal', false), SOCIETY, 'normal');
   eq('T1 normalny pop5 ep1 obca+obca = 3', n3, 3);

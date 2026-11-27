@@ -268,6 +268,64 @@ eq('normalny Szczescie: kultura 100% epoka2 = +11', lineOf(nSz2, 'kultura'), 11)
 const nPr = M.evaluateOrderFromBreakdown({ ...happyBase, era: 2, ownCultureShare: 1, ownReligionShare: 1 }, lawInp({ era: 2 }), SOCIETY, 'hard');
 eq('normalny Prawo: kultura 100% epoka2 = +11', lawLine(nPr, 'kultura_prawo'), 11);
 
+// ---------------------------------------------------------------------------
+// 8. R-WEB-CULT-REL-AI-PLUS10-Q1 (runda 3, zarzut Evaluatora nr 4): tabela AI i rozdział
+//    poziomu gracza/AI. Każda mutacja tutaj MUSI być czerwona:
+//    (a) AI liczy plus gracza (G), (b) AI czyta poziom gracza, (c) typ właściciela zignorowany.
+// ---------------------------------------------------------------------------
+const AI_PLUS = [10, 16, 23];          // plus AI: stały na każdym poziomie (epoka 1/2/3)
+const AI_MINUS = { latwy: [-10, -16, -23], normalny: [-15, -21, -28], trudny: [-20, -26, -33] };
+const PLAYER_PLUS = { latwy: [10, 16, 23], normalny: [5, 11, 18], trudny: [0, 6, 13] };
+const eraScale = [1, 1.6, 2.3];
+const lvls = ['latwy', 'normalny', 'trudny'];
+
+// 8a. Czysta funkcja: AI (ownerIsHuman=false) — plus stały, minus wg poziomu; gracz — tabela gracza.
+for (const lvl of lvls) {
+  for (let i = 0; i < 3; i++) {
+    const k = eraScale[i];
+    eq(`AI ${lvl} epoka${i + 1}: udział 100% = +${AI_PLUS[i]}`,
+      M.cultureReligionLineValue(lvl, k, 1, undefined, false), AI_PLUS[i]);
+    eq(`AI ${lvl} epoka${i + 1}: udział 0% = ${AI_MINUS[lvl][i]}`,
+      M.cultureReligionLineValue(lvl, k, 0, undefined, false), AI_MINUS[lvl][i]);
+    eq(`gracz ${lvl} epoka${i + 1}: udział 100% = +${PLAYER_PLUS[lvl][i]}`,
+      M.cultureReligionLineValue(lvl, k, 1, undefined, true), PLAYER_PLUS[lvl][i]);
+    eq(`gracz ${lvl} epoka${i + 1}: udział 0% = ${AI_MINUS[lvl][i]}`,
+      M.cultureReligionLineValue(lvl, k, 0, undefined, true), AI_MINUS[lvl][i]);
+  }
+}
+
+// 8b. Silnik: AI z poziomem AI latwy, gracz trudny (rozdział poziomów, udział 0% i 100%).
+M.setCulturaReligiaLevel('trudny', 'latwy');
+const aiOwnerAt = (cs, era) => M.computeHappinessBreakdown(
+  { ...happyBase, era, ownCultureShare: cs, ownReligionShare: cs, ownerIsHuman: false }, SOCIETY);
+const plOwnerAt = (cs, era) => M.computeHappinessBreakdown(
+  { ...happyBase, era, ownCultureShare: cs, ownReligionShare: cs, ownerIsHuman: true }, SOCIETY);
+eq('AI latwy (gracz trudny) epoka1 kultura 100% = +10 (a nie gracza 0)', lineOf(aiOwnerAt(1, 1), 'kultura'), 10);
+eq('AI latwy (gracz trudny) epoka1 kultura 0% = −10 (a nie gracza −20)', lineOf(aiOwnerAt(0, 1), 'kultura'), -10);
+eq('AI latwy epoka3 kultura 0% = −23 (mutacja: AI czyta gracza → −33)', lineOf(aiOwnerAt(0, 3), 'kultura'), -23);
+eq('AI latwy epoka3 kultura 100% = +23', lineOf(aiOwnerAt(1, 3), 'kultura'), 23);
+// (linia o wartości 0 nie trafia do rozpiski — `if (kultV)` w society-breakdown; brak = 0)
+eq('gracz trudny epoka1 kultura 100% = 0', lineOf(plOwnerAt(1, 1), 'kultura') ?? 0, 0);
+eq('gracz trudny epoka2 kultura 100% = +6', lineOf(plOwnerAt(1, 2), 'kultura'), 6);
+eq('gracz trudny epoka3 kultura 100% = +13', lineOf(plOwnerAt(1, 3), 'kultura'), 13);
+eq('gracz trudny epoka3 kultura 0% = −33', lineOf(plOwnerAt(0, 3), 'kultura'), -33);
+// Prawo dla AI: ta sama tabela (typ właściciela w computeLawBreakdown).
+const aiLaw = M.computeLawBreakdown(lawInp({ era: 3, ownCultureShare: 0, ownerIsHuman: false }), SOCIETY);
+eq('AI latwy Prawo epoka3 kultura 0% = −23', lawLine({ prawo: aiLaw }, 'kultura_prawo'), -23);
+const plLaw = M.computeLawBreakdown(lawInp({ era: 3, ownCultureShare: 0, ownerIsHuman: true }), SOCIETY);
+eq('gracz trudny Prawo epoka3 kultura 0% = −33', lawLine({ prawo: plLaw }, 'kultura_prawo'), -33);
+
+// 8d. AI na trudnym przy 100% własnej = +10 (plus AI), NIE 0 (plus gracza trudnego). Wykrywa
+//     mutację „kultReligLinePoints przekazuje typ właściciela jako gracza”.
+M.setCulturaReligiaLevel('trudny', 'trudny');
+eq('AI trudny epoka1 kultura 100% = +10 (plus AI, nie gracza)', lineOf(aiOwnerAt(1, 1), 'kultura'), 10);
+eq('AI trudny epoka3 religia 100% = +23', lineOf({ ...aiOwnerAt(1, 3) }, 'religia'), 23);
+
+// 8c. Zgodność (poziom null) dla AI też bez linii (tryb zgodności nietknięty).
+M.setCulturaReligiaLevel(undefined, 'trudny');
+const aiLegacy = M.computeHappinessBreakdown({ ...happyBase, ownCultureShare: 0, ownerIsHuman: false }, SOCIETY);
+eq('zgodność AI: kultura 0% = −10 (dziś, bit-w-bit)', lineOf(aiLegacy, 'kultura'), -10);
+
 // Mutacje czerwone uruchomione na źródle: patrz raport obrony (30-obrona-claude.md).
 M.setCulturaReligiaLevel('trudny');
 

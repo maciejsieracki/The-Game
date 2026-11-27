@@ -303,7 +303,7 @@ async function openGame(ctx, { fresh }) {
     REBALANCE_FLAG_STATE = await page.evaluate((on) => window.__econRebalanceMeasure.setEnabled(on), REBALANCE_ARG);
   }
   if (START === 'newgame') {
-    await page.evaluate(([seed, kr, diff]) => window.__nnsMeasureDebug.startGame(kr === 'zgodnosc' ? { seed, difficulty: diff } : { seed, kulturaReligiaLevel: kr, difficulty: diff }), [SEED, arg('kr', 'trudny'), arg('difficulty', 'trudny')]);
+    await page.evaluate(([seed, kr, diff, kai, kj]) => window.__nnsMeasureDebug.startGame(kr === 'zgodnosc' ? { seed, difficulty: diff } : { seed, kulturaReligiaLevel: kr, kulturaReligiaLevelAI: kai || undefined, kosztJednostekPace: kj, difficulty: diff }), [SEED, arg('kr', 'trudny'), arg('difficulty', 'trudny'), arg('kr-ai', ''), arg('koszt-jednostek', 'niski')]);
     await page.waitForFunction(() => { try { return window.__aiTradeWiringTestDebug.state().turn >= 1; } catch (_) { return false; } }, null, { timeout: 180000 });
     // r3: doStartGame jest asynchroniczny -- klastry AI/miasta-panstwa powstaja DOPIERO po zniknieciu nakladki
     // „Tworzenie swiata”. Zalozenie miasta gracza przed tym (r1/r2) dawalo AI = 0 miast. Czekamy jak ai-army-live-measure.cjs.
