@@ -10,7 +10,7 @@ W VLIVE3 jeden przebieg FORTRING ON na maksimum (seed 4242, Trudny / trudna / Wy
 
 ## Wynik w jednym zdaniu
 
-Zatrzymanie NIE jest zawieszeniem końca tury: każde zatrzymanie to **przegrana gracza** (utrata jedynego miasta, `[Victory] PRZEGRANA ... rodzaj=przegrana`), po której gra blokuje zakończenie tury powodem `gameOver`. W chwili zatrzymania `endTurnInProgress = false`. Wpisy `endTurnInProgress` poprzedzają koniec gry i nie są przyczyną. Błąd gry w sensie „koniec tury się nie domyka" NIE został potwierdzony.
+Zatrzymanie NIE jest zawieszeniem końca tury. We wszystkich 15 zatrzymaniach seed 4242 ostatnią blokadą jest `gameOver` (tally: `lastBlock=gameOver`, 15/15). Dla 10 z 15 zarejestrowano w konsoli `[Victory] PRZEGRANA ... rodzaj=przegrana` (utrata jedynego miasta). Dla pozostałych 5 (przebiegi `s4242-r2/r4/r6/r7/r8`, runner bez przechwytywania konsoli) dowodem jest wyłącznie `lastBlock=gameOver`; przyczyna tych 5 nie jest potwierdzona jako przegrana. W chwili zatrzymania `endTurnInProgress = false` w 7 zatrzymaniach z pomiarem pola (`d2`, `d3`); w 8 zatrzymaniach (`s4242`, `diag4242`) pole nie było zapisywane (`undefined`). Wpisy `endTurnInProgress` poprzedzają koniec gry i nie są przyczyną. Błąd gry w sensie „koniec tury się nie domyka" NIE został potwierdzony.
 
 ## Metoda
 
@@ -37,7 +37,7 @@ Wniosek z liczb: zatrzymanie przy tym ustawieniu jest powtarzalne (≈ 60% przeb
 
 Uwaga dotycząca zakresu: dispatch prosił także o „niższy poziom kosztów" jako porównanie. NIE ZMIERZONO, bo właściciel (2026-11-26) wymaga pomiarów wyłącznie na poziomie maksymalnym; poziomy niższe nie były potrzebne do tej diagnozy.
 
-## Stan gry w chwili zatrzymania (dowód z haków, nowszy runner: 4 przebiegi z polem `inProg`/`gameOver`/`snap`)
+## Stan gry w chwili zatrzymania (dowód z haków: 7 przebiegów `d2`/`d3` z polami `inProg`, `gameOver` i `snap`; w `diag` i `s4242` te pola nie były zapisywane)
 
 Przykład `d2-4242-r1` (zatrzymanie po turze 9):
 
@@ -54,11 +54,11 @@ Gate: `canEnd=false` wynika wyłącznie z `gameOver` (kolejność sprawdzeń w `
 
 ## Przyczyna utraty miasta — NIE ZMIERZONO
 
-Log konsoli nie zawiera zdarzeń bitew ani zdobycia miasta (tylko `[Ekonomia]`, `[Autosave]`, `[Victory]`). Najprostsza hipoteza zgodna z danymi: runner gra pasywnie (`clearBattles` zamyka bitwy w trybie auto, brak obrony budowanej przez gracza), więc jedyne miasto gracza (z wymuszonym fortem) zostaje zdobyte przez AI lub barbarzyńców w turze 8→9. Nie zweryfikowano tego logiem bitwy ani stanem jednostek — to wymaga osobnego pomiaru (log bitew / stan jednostek wroga w turze przegranej).
+Log konsoli nie zawiera zdarzeń bitew ani zdobycia miasta (tylko `[Ekonomia]`, `[Autosave]`, `[Victory]`). HIPOTEZA NIEPRZETESTOWANA (brak dowodu w danych; zostaje do pomiaru): runner gra pasywnie (`clearBattles` zamyka bitwy w trybie auto, brak obrony budowanej przez gracza), więc jedyne miasto gracza (z wymuszonym fortem) zostaje zdobyte przez AI lub barbarzyńców w turze 8→9. Nie zweryfikowano tego logiem bitwy ani stanem jednostek — to wymaga osobnego pomiaru (log bitew / stan jednostek wroga w turze przegranej).
 
 ## Ocena
 
-- **Błąd gry (zawieszenie końca tury): NIE POTWIERDZONY.** Brak przypadku, w którym `endTurnInProgress` pozostaje `true` po zakończeniu tury. We wszystkich zatrzymaniach `inProg=false` i `gameOver=true`.
+- **Błąd gry (zawieszenie końca tury): NIE POTWIERDZONY.** Brak przypadku, w którym `endTurnInProgress` pozostaje `true` po zakończeniu tury. We wszystkich 7 zatrzymaniach z zapisanym polem `inProg` (`d2`, `d3`) jest `inProg=false`, a `gameOver=true`; w pozostałych 8 zatrzymaniach pole nie zostało zapisane, a ostatnią blokadą jest `gameOver`.
 - **Harness: DEFEKT KLASYFIKACJI** (nie zawieszenia). Runner traktuje `gameOver` jako `cannot-end` i zatrzymuje przebieg. Dla testów 20-turowych na maksimum przy pasywnym graczu oznacza to przedwczesny koniec przebiegu. Poprawka runnera (rozpoznać `gameOver` jako koniec gry i zapisać go jako wynik) jest po stronie testów — nie wymaga zmian gry.
 - **Do sprawdzenia przez orkiestratora (poza zakresem tego tematu):** pomiar po `saveRoundTrip` w przegranej grze pokazuje `[Diag:load] OK tura=9 miasta=1` (`d3-4242-r1`), czyli wczytanie zapisu po przegranej odtwarza stan z jednym miastem, mimo że przed zapisem `owners` jest puste. Nie zbadano, czy to kwestia snapshotu w hakach testowych, czy realny błąd zapisu/odczytu po porażce. Zapisane w UWAGI-DLA-ORKIESTRATORA raportu.
 
@@ -71,4 +71,4 @@ Nie ma kandydata na naprawę końca tury. Są dwa kandydaty na tematy pomiarowe:
 ## Bramki
 
 - `npx tsc --noEmit` (gra/): rc=0.
-- Bramki logic (213) i ai-test (297/0): NIE URUCHOMIONO. Brak zmian w kodzie gry; w `gra/package.json` nie ma skryptów o tych nazwach (jedyny skrypt testowy to `typecheck`).
+- Bramki logic (213) i ai-test (297/0): URUCHOMIONE w obronie (poprawka po zarzucie Evaluatora): `node tools/logic-test.cjs` → `LOGIC OK (213/213)`, rc=0; `node tools/ai-test.cjs` → `ai-test: 297 passed, 0 failed`. Skrypty są w `gra/tools/`, a nie w `package.json`.
