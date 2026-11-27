@@ -1,3 +1,9 @@
+## ROBOCZA 60d54c64 -- 2026-11-27 -- FALA 933: Przycisk Zakończ turę: stan przycisku (aktywny/nieaktywny) nadąża za faktyczną możliwością zakończenia tury (testowa)
+
+- przycisk Zakończ turę zostawał oznaczony jako nieaktywny (aria-disabled i klasa is-disabled), gdy tura już dawała się zakończyć; stan przycisku odświeżany był tylko przy przerysowaniu HUD; dodano cykl synchronizacji co 500 ms (bottomBarHud.ts), render tylko przy zmianie stanu przycisku; zero zmian logiki bramek tury
+- Weryfikacja: tsc 0; logic 213/213; endturn-aria-sync 5/0 (na kodzie bazowym 3 PASS / 2 FAIL); society-breakdown 56/0; FC: tech-tree 20/0, research 33/0, unit-replace 45/0, combat 6/6, ai-test 297/0, wiring 267/0; live seed 7 maksimum 8 tur: stan przycisku podąża za canEnd w ≤500 ms, klik skuteczny 8/8
+- Limity: NIE ZMIERZONO: koszt wydajnościowy cyklu 500 ms (canEndTurn poza updateHud), zawieszony activeEndTurnPointers, odwrotny przypadek (aria=false przy canEnd=false), ręczne zamknięcie modali; pełna tabela przed poprawką dla dwóch ziaren
+
 ## ROBOCZA 4bd55c32 -- 2026-11-27 -- FALA 932: Wczytanie zapisu z menu pauzy: gra odtwarza mapę z zapisu i przebieg po wczytaniu jest taki sam jak bez wczytania (testowa)
 
 - wczytanie zapisu z menu pauzy w tej samej grze (ten sam seed, rozmiar, typ mapy) zostawiało mapę ze zmianami po zapisie (nakładki, lasy); teraz gdy mapa żywa różni się od zapisanej, jest odbudowywana z zapisu jak przy wczytaniu z menu głównego; zapisy bez mapSnapshot bez zmian; dodatkowy hak testowy civTest
