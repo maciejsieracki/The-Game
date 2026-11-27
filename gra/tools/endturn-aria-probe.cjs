@@ -12,7 +12,11 @@
 //         Panel NIE jest otwierany w turach, w ktorych zakup nie jest mozliwy (brak czasu-rzeczywistego/bezczynnosci).
 //
 //  - p3 = jak p1, ale w turze 1 suwak Skarb ustawiany fizycznym kliknieciem myszy (page.mouse) w prawy kraniec suwaka (bez haku setTaxSplit/dispatchEvent).
-//  - p4 = jak p3, ale 'Zakoncz ture' w kazdej turze to fizyczny klik przycisku button.end-turn[data-end] (bez __civTest.endTurn), z fallbackiem na hak tylko gdy klik sie nie powiedzie (flaga endClick w wierszu).
+//  - p4 = jak p3, ale 'Zakoncz ture' w kazdej turze to fizyczny klik (page.mouse) przycisku button.end-turn[data-end].
+//         BRAK fallbacku na hak w tym pliku (ENDARIA, poprawka dokumentacji): wiersz niesie clickEffective (true/false)
+//         i clickNote (tekst strony, gdy klik nie zadzialal). W biegach ENDARIA wszystkie kliki byly skuteczne (clickNote=null).
+//  - Haki SETUP (wywolywane przed pomiarem tury, nie sa to akcje gracza w turze): closeModals, clearBattles,
+//         rejectAwaitingAiOffers, acceptForcedPeace (ten ostatni akceptuje wymuszony pokoj blokujacy ture — ograniczenie pomiaru).
 //  - p2 = jak p1, ale dodatkowo w turze 1 gracz przesuwa suwak podzialu Handlu na 100% Pieniadz (ta sama funkcja co suwak
 //         w UI: applyPodzialHandluGracza) -- poziom MAKSYMALNY dzwigni dochodu Skarbu (regula „testuj na maksimum”).
 //  - dopen / dclose / didle = DIAGNOZA artefaktu `owner=null` z r2 (pasywne jak p0 + jedna zmiana harnessu):
@@ -47,7 +51,7 @@ const SEED = parseInt(process.argv[4] || '4242', 10);
 const TURNS = parseInt(process.argv[5] || '20', 10);
 const RUN = parseInt(process.argv[6] || '1', 10);
 if (!process.argv[2] || OUT.startsWith(path.resolve(GRA, '..')) || !['p0', 'p1', 'p2', 'p3', 'p4', 'dopen', 'dclose', 'didle'].includes(POLICY) || !Number.isFinite(SEED)) {
-  console.error('Uzycie: <katalog_poza_repo> <p0|p1|p2|p3|dopen|dclose|didle> <seed> [tury=12] [run=1]'); process.exit(2);
+  console.error('Uzycie: <katalog_poza_repo> <p0|p1|p2|p3|p4|dopen|dclose|didle> <seed> [tury=12] [run=1]'); process.exit(2);
 }
 const LIVE_TOOL = path.join(GRA, 'tools', 'test-hook-setcitylimit-live-bundle.cjs');
 const LOG = path.join(OUT, `econ-${POLICY}-s${SEED}-r${RUN}.txt`);
