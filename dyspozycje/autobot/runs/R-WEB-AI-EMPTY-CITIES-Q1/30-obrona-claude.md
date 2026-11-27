@@ -1,0 +1,24 @@
+STATUS: BLOCK
+DOMAIN: GAME (diagnoza pomiarowa; zero zmian gra/src)
+TEMAT: R-WEB-AI-EMPTY-CITIES-Q1 (tag AIEMPTY), obrona runda 2/5
+GOAL: ustalić liczbami, co znaczy „puste miasto” i dlaczego jest wysokie w t60; rozstrzygnąć regresja czy zamierzone.
+ZMIANY/COMMIT: nowe pliki: gra/tools/aiempty-reason.cjs (rozkład pustych miast wg powodu z rekordu tury, tylko odczyt); dyspozycje/analizy/AI-PUSTE-MIASTA-DIAGNOZA-2026-11-27.md (korekta sekcji 3 i nowa sekcja 6); dyspozycje/autobot/runs/R-WEB-AI-EMPTY-CITIES-Q1/dane/aiempty-reason-*.txt (3 wyjścia narzędzia); 30-obrona-claude.md. Baza kodu: 47f1bc29e (gra/src bez zmian, git diff gra/src = 0). Czubek pracy: SHA w StructuredOutput.
+
+ODPOWIEDZI NA ZARZUTY:
+1. PRZYJMUJĘ i poprawiam. Rozkład wg powodu wykonany z JSONL (skarbiec, surowceTyp z hud, miastaWojsko, unitFlow, wojskoPozaMiastem). Dominujący powód dla maksimum t60, ziarno 4242: brak pieniędzy 34 z 55 (62%) przy progu 64 Pn (Procarz, tempo Wysoki x4, Brąz x2, mnożnik epoki Brąz x2); surowiec blokuje 6 (11%); 15 (27%) ma pieniądze i surowiec, a jest puste bez wyjaśnienia. Ziarno 7 t60: brak pieniędzy 34 z 80 (43%), surowiec 14, 32 (40%) bez wyjaśnienia. Dla ziarna 7 dominującego powodu NIE ustalono. Wcześniejsze „2 z 55 poniżej 4 Pn” było błędne (koszt bazowy, bez mnożników). Dowód: dane/aiempty-reason-t60-C-max-s4242.txt, dane/aiempty-reason-t60-C-max-s7.txt, dane/aiempty-reason-t30-C-max-s7.txt.
+2. PRZYJMUJĘ (nierozstrzygnięte). Bisekcja nie została wykonana. dane/PRE875-domyslna-s4242 zawiera tylko run.txt i events.txt (brak JSONL), a build bez haka __settingsLive nie uruchamia konfiguracji. Nie zawężono do konkretnej FALI. Wniosek w dokumencie: NIE ROZSTRZYGNIĘTE.
+3. PRZYJMUJĘ i poprawiam. Uruchomiono bramki (node_modules w gra/ zainstalowano npm ci, bez builda): npx tsc --noEmit exit 0; node gra/tools/logic-test.cjs LOGIC OK (213/213); node gra/tools/ai-test.cjs 297 passed, 0 failed. Tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6 NIE uruchomiono ponownie (pozostają z recenzji Evaluatora, bez powtórzenia). Wejście: ten sam commit 47f1bc29e.
+4. PRZYJMUJĘ częściowo. Definicja metryki jest ta sama (wojsko === 0 dla właścicieli AI; owner 0 wykluczony w obu). Rozbieżność z FALĄ 857 nie jest wyjaśniona: FALA 857 zapisuje w dowodach sumę skarbca AI t60 = 50 237 i utrzymanie Pn 2 760 → 3 148, a rekord FALI 857 nie zapisuje ustawień Koszty jednostek ani trudności, więc nie da się potwierdzić, że były takie jak w tym pomiarze. Mierzalna różnica: skarbiec AI t60 w A seed 7 = 19 312 (2,6x mniej niż w FALI 857). To wskazuje na różnicę ekonomii, ale przyczyna NIE ROZSTRZYGNIĘTA.
+5. ODRZUCAM w części, PRZYJMUJĘ w części. Zarzut „brak odczytu zasobów, brak haka odczytowego” jest błędny: rekord tury zawiera hud.surowceTyp (stan każdego surowca) i utrzymanieJednostekSurowce. Odczytano je dla właścicieli 9 i 13 (dokument 6.2–6.3). Hipoteza Drewno/Brąz została sprawdzona i ODRZUCONA: owner 9 ma Brąz 680 (wystarcza na stockowy koszt Włócznika 50), a jego Drewno 10 blokuje tylko Procarza; owner 13 ma Brąz 1010. Blokuje ich skarbiec (22 i 50 Pn). Dowód: dane/aiempty-reason-t60-C-max-s4242.txt (perOwner).
+6. PRZYJMUJĘ. Status zmieniono z PASS-WITH-NOTES na BLOCK: kryteria binarne „wniosek z dowodem” (regresja czy zamierzone) nie są spełnione, a dominujący powód jest ustalony tylko dla ziarna 4242. Wywołanie dismiss_task z poprzedniej rundy (odrzucone przez klasyfikator, bez skutku) jest odnotowane; w tej rundzie nie wywołano żadnego narzędzia tworzącego lub usuwającego sesje/zadania.
+
+TESTY: tsc exit 0 · logic 213/213 · ai-test 297 passed / 0 failed (wszystkie z tego commita, lokalnie, bez builda). Narzędzie aiempty-reason.cjs: dane 3 plików (wynik: patrz dane/aiempty-reason-*.txt).
+BLOKADY: (a) bisekcja regresja/zamierzone wymaga buildów z hakiem __settingsLive (kilka commitów, każdy build i bieg do t60 ok. 400 s; poza zakresem tej rundy); (b) przyczyna pustych miast przy pieniądzach i surowcu (ziarno 7: 32 z 80; ziarno 4242: 15 z 55) wymaga odczytu kolejki produkcji i bramki garnizonu, czego rekord tury nie zawiera.
+RUNDY: 2/5 (poprzednio 1/5, ostatni werdykt Evaluatora FAIL, 6 zarzutów).
+DECYZJA WYMAGANA: tak, dla właściciela (ABC) czy skarbiec AI w t60 wynikający z kosztów Wysoki x4 i kultury trudnej jest zamierzony. Nie ma w dokumencie zalecanej zmiany balansu.
+NASTĘPNY KROK: (1) orkiestrator decyduje, czy otworzyć temat bisekcji (2–3 buildy z hakiem, konfiguracja C ziarno 4242 do t60) i odczyt kolejki produkcji w rekordzie tury (haki w gra/src wymagają osobnego tematu); (2) decyzja właściciela o balansie dopiero po tym.
+DEPLOY/PUSH: NIE WYKONANO
+
+UWAGI-DLA-ORKIESTRATORA:
+- Wrzutka w zadaniu: „npm ci” w gra/ (71 pakietów) potrzebne do tsc/testów; gra/node_modules nie jest śledzony przez git.
+- Ten sam commit kodu co w 10-operator-claude.md (47f1bc29e); tabela 6 biegów z 10-operator jest zgodna z recenzją (np. C-max 4242 t60 55/174, C-max 7 t60 80/173).

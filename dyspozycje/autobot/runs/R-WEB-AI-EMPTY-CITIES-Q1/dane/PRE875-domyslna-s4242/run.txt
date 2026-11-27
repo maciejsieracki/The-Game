@@ -1,0 +1,8 @@
+[tmpdir] TMPDIR_RUN_ID=8285-b6709182 DIST=/tmp/aiempty-dist-pre875 PROFILE=/tmp/aiempty-prof/P875-A-s4242 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[econ] BLAD: page.evaluate: TypeError: Cannot read properties of undefined (reading 'startNewGame')
+    at eval (eval at evaluate (:303:30), <anonymous>:1:63)
+    at UtilityScript.evaluate (<anonymous>:305:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+    at openGame (/home/user/The-Game/.claude/worktrees/wf_19b74605-7cc-1/gra/tools/aibal2-measure-run.cjs:309:16)
+    at async runSeries (/home/user/The-Game/.claude/worktrees/wf_19b74605-7cc-1/gra/tools/aibal2-measure-run.cjs:555:16)
+    at async main (/home/user/The-Game/.claude/worktrees/wf_19b74605-7cc-1/gra/tools/aibal2-measure-run.cjs:644:15)

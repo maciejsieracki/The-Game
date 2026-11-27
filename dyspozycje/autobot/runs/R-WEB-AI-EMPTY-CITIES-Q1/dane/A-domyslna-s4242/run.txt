@@ -1,0 +1,14 @@
+[tmpdir] TMPDIR_RUN_ID=356-6f90c048 DIST=/tmp/aiempty-dist PROFILE=/tmp/aiempty-prof/A-s4242 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[readback] {"diplomacyWarLevel":"latwa","kulturaReligiaLevel":"latwy","kulturaReligiaLevelAI":"latwy","wzrostSurowcowZEpoka":false,"kosztJednostekPace":"normalny","difficulty":"normal"} pace=normalny resume=false
+[econ] seed=4242 tura=6 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=0/0/0 czas=15s
+[econ] seed=4242 tura=11 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=0/0/0 czas=29s
+[econ] seed=4242 tura=16 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=0/0/0 czas=42s
+[econ] seed=4242 tura=21 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=0/0/0 czas=57s
+[econ] seed=4242 tura=26 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=0/0/0 czas=72s
+[econ] seed=4242 tura=31 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=0/0/0 czas=86s
+[econ] seed=4242 tura=36 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=0/0/0 czas=109s
+[econ] seed=4242 tura=41 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=0/0/0 czas=135s
+[econ] seed=4242 tura=46 gateAktywna=2 dosypki=2 zamkniete(aud/armia/techn)=0/0/0 czas=164s
+[econ] seed=4242 tura=51 gateAktywna=2 dosypki=2 zamkniete(aud/armia/techn)=0/0/0 czas=196s
+[econ] seed=4242 tura=56 gateAktywna=2 dosypki=2 zamkniete(aud/armia/techn)=0/0/0 czas=234s
+[econ] PODSUMOWANIE {"seed":4242,"startTurn":1,"endTurn":60,"stop":null,"counters":{"gateActiveTurns":2,"bypassApplied":2,"stuckQueueHeals":0,"battlesAuto":0,"diploAudienceClosed":0,"armyMergeClosed":0,"techNoticeClosed":0,"aiOffersRejected":0,"aiOffersRejectAttempts":0,"forcedPeaceAccepted":0},"wallSec":265,"resumed":false,"rebalance":null,"unitCostPace":"normalny"}

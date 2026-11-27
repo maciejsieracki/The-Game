@@ -1,0 +1,5 @@
+2026-11-27T18:08:46.333Z navigate file:///tmp/aiempty-dist/index.html?civTest=1&civSeed=4242
+2026-11-27T18:08:50.408Z endturn-blocked [EndTurn] blocked: awaitingFirstPlayerCity
+2026-11-27T18:10:46.701Z endturn-blocked [EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)
+2026-11-27T18:10:51.298Z endturn-blocked [EndTurn] blocked: endTurnInProgress
+2026-11-27T18:15:15.432Z close strona zamknieta

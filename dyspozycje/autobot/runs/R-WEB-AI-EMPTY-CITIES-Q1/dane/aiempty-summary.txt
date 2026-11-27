@@ -1,0 +1,1521 @@
+{
+ "A-domyslna": {
+  "7": {
+   "30": {
+    "defFALA857": {
+     "cities": 79,
+     "empty": 30,
+     "peaceEmpty": 30,
+     "warEmpty": 0,
+     "pct": 38
+    },
+    "defAIBAL2": {
+     "cities": 79,
+     "empty": 30,
+     "pct": 38
+    },
+    "owners": [
+     {
+      "owner": 1,
+      "miasta": 8,
+      "empty": 2,
+      "skarbiec": 1413.2,
+      "rekruci": 12884,
+      "jednostkiWojskowe": 12,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 3,
+      "miasta": 3,
+      "empty": 2,
+      "skarbiec": 258,
+      "rekruci": 8000,
+      "jednostkiWojskowe": 5,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 5,
+      "miasta": 6,
+      "empty": 3,
+      "skarbiec": 578,
+      "rekruci": 6098,
+      "jednostkiWojskowe": 8,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 7,
+      "miasta": 7,
+      "empty": 5,
+      "skarbiec": 192,
+      "rekruci": 15871,
+      "jednostkiWojskowe": 6,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 9,
+      "miasta": 7,
+      "empty": 1,
+      "skarbiec": 181,
+      "rekruci": 4880,
+      "jednostkiWojskowe": 10,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 11,
+      "miasta": 9,
+      "empty": 7,
+      "skarbiec": 289,
+      "rekruci": 20080,
+      "jednostkiWojskowe": 4,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 17,
+      "miasta": 6,
+      "empty": 4,
+      "skarbiec": 92.2,
+      "rekruci": 16000,
+      "jednostkiWojskowe": 4,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 21,
+      "miasta": 7,
+      "empty": 6,
+      "skarbiec": 34,
+      "rekruci": 12000,
+      "jednostkiWojskowe": 3,
+      "glodWojska": false,
+      "jednostkiCywilne": 1,
+      "niezdolnoscSkarbu": false
+     }
+    ]
+   },
+   "60": {
+    "defFALA857": {
+     "cities": 169,
+     "empty": 61,
+     "peaceEmpty": 56,
+     "warEmpty": 5,
+     "pct": 36.1
+    },
+    "defAIBAL2": {
+     "cities": 169,
+     "empty": 61,
+     "pct": 36.1
+    },
+    "owners": [
+     {
+      "owner": 3,
+      "miasta": 10,
+      "empty": 3,
+      "skarbiec": 594,
+      "rekruci": 21740,
+      "jednostkiWojskowe": 14,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 5,
+      "miasta": 15,
+      "empty": 10,
+      "skarbiec": 781,
+      "rekruci": 114522,
+      "jednostkiWojskowe": 17,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 7,
+      "miasta": 15,
+      "empty": 12,
+      "skarbiec": 2632,
+      "rekruci": 138328,
+      "jednostkiWojskowe": 10,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 9,
+      "miasta": 15,
+      "empty": 6,
+      "skarbiec": 152,
+      "rekruci": 182400,
+      "jednostkiWojskowe": 19,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 11,
+      "miasta": 15,
+      "empty": 1,
+      "skarbiec": 501,
+      "rekruci": 244960,
+      "jednostkiWojskowe": 18,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 13,
+      "miasta": 4,
+      "empty": 2,
+      "skarbiec": 726,
+      "rekruci": 17960,
+      "jednostkiWojskowe": 4,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 15,
+      "miasta": 14,
+      "empty": 1,
+      "skarbiec": 539,
+      "rekruci": 153800,
+      "jednostkiWojskowe": 22,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 17,
+      "miasta": 14,
+      "empty": 11,
+      "skarbiec": 1151.2,
+      "rekruci": 80000,
+      "jednostkiWojskowe": 7,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 19,
+      "miasta": 12,
+      "empty": 4,
+      "skarbiec": 2198,
+      "rekruci": 185920,
+      "jednostkiWojskowe": 29,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 23,
+      "miasta": 11,
+      "empty": 3,
+      "skarbiec": 1521,
+      "rekruci": 255600,
+      "jednostkiWojskowe": 20,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 25,
+      "miasta": 12,
+      "empty": 8,
+      "skarbiec": 971,
+      "rekruci": 94000,
+      "jednostkiWojskowe": 9,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     }
+    ]
+   }
+  },
+  "4242": {
+   "30": {
+    "defFALA857": {
+     "cities": 72,
+     "empty": 27,
+     "peaceEmpty": 27,
+     "warEmpty": 0,
+     "pct": 37.5
+    },
+    "defAIBAL2": {
+     "cities": 72,
+     "empty": 27,
+     "pct": 37.5
+    },
+    "owners": [
+     {
+      "owner": 1,
+      "miasta": 7,
+      "empty": 4,
+      "skarbiec": 1331,
+      "rekruci": 10575,
+      "jednostkiWojskowe": 8,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 3,
+      "miasta": 8,
+      "empty": 4,
+      "skarbiec": 524,
+      "rekruci": 44280,
+      "jednostkiWojskowe": 7,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 5,
+      "miasta": 8,
+      "empty": 5,
+      "skarbiec": 81,
+      "rekruci": 7781,
+      "jednostkiWojskowe": 7,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 7,
+      "miasta": 1,
+      "empty": 1,
+      "skarbiec": 264,
+      "rekruci": 2987,
+      "jednostkiWojskowe": 0,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 9,
+      "miasta": 6,
+      "empty": 1,
+      "skarbiec": 356,
+      "rekruci": 9200,
+      "jednostkiWojskowe": 9,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 13,
+      "miasta": 6,
+      "empty": 2,
+      "skarbiec": 117,
+      "rekruci": 7000,
+      "jednostkiWojskowe": 6,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 15,
+      "miasta": 6,
+      "empty": 2,
+      "skarbiec": 49,
+      "rekruci": 10520,
+      "jednostkiWojskowe": 7,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 21,
+      "miasta": 7,
+      "empty": 2,
+      "skarbiec": 65,
+      "rekruci": 16080,
+      "jednostkiWojskowe": 10,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 23,
+      "miasta": 8,
+      "empty": 4,
+      "skarbiec": 258,
+      "rekruci": 22374,
+      "jednostkiWojskowe": 8,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 25,
+      "miasta": 7,
+      "empty": 2,
+      "skarbiec": 271,
+      "rekruci": 12720,
+      "jednostkiWojskowe": 10,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     }
+    ]
+   },
+   "60": {
+    "defFALA857": {
+     "cities": 155,
+     "empty": 39,
+     "peaceEmpty": 31,
+     "warEmpty": 8,
+     "pct": 25.2
+    },
+    "defAIBAL2": {
+     "cities": 155,
+     "empty": 39,
+     "pct": 25.2
+    },
+    "owners": [
+     {
+      "owner": 1,
+      "miasta": 15,
+      "empty": 1,
+      "skarbiec": 6107,
+      "rekruci": 132809,
+      "jednostkiWojskowe": 30,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 7,
+      "miasta": 1,
+      "empty": 1,
+      "skarbiec": 612,
+      "rekruci": 4512,
+      "jednostkiWojskowe": 0,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 11,
+      "miasta": 12,
+      "empty": 7,
+      "skarbiec": 1339,
+      "rekruci": 156759,
+      "jednostkiWojskowe": 16,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 13,
+      "miasta": 15,
+      "empty": 4,
+      "skarbiec": 157,
+      "rekruci": 133040,
+      "jednostkiWojskowe": 15,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 15,
+      "miasta": 14,
+      "empty": 10,
+      "skarbiec": 1060,
+      "rekruci": 108880,
+      "jednostkiWojskowe": 11,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 19,
+      "miasta": 11,
+      "empty": 2,
+      "skarbiec": 22,
+      "rekruci": 35920,
+      "jednostkiWojskowe": 14,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 21,
+      "miasta": 14,
+      "empty": 2,
+      "skarbiec": 142,
+      "rekruci": 157480,
+      "jednostkiWojskowe": 18,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 23,
+      "miasta": 15,
+      "empty": 7,
+      "skarbiec": 1906.2,
+      "rekruci": 195060,
+      "jednostkiWojskowe": 19,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 25,
+      "miasta": 15,
+      "empty": 5,
+      "skarbiec": 69,
+      "rekruci": 186400,
+      "jednostkiWojskowe": 15,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     }
+    ]
+   }
+  }
+ },
+ "B-wysoki-x4": {
+  "7": {
+   "30": {
+    "defFALA857": {
+     "cities": 79,
+     "empty": 35,
+     "peaceEmpty": 35,
+     "warEmpty": 0,
+     "pct": 44.3
+    },
+    "defAIBAL2": {
+     "cities": 79,
+     "empty": 35,
+     "pct": 44.3
+    },
+    "owners": [
+     {
+      "owner": 1,
+      "miasta": 8,
+      "empty": 2,
+      "skarbiec": 1313.2,
+      "rekruci": 12884,
+      "jednostkiWojskowe": 12,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 3,
+      "miasta": 3,
+      "empty": 2,
+      "skarbiec": 302,
+      "rekruci": 8000,
+      "jednostkiWojskowe": 5,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 5,
+      "miasta": 6,
+      "empty": 3,
+      "skarbiec": 490,
+      "rekruci": 6098,
+      "jednostkiWojskowe": 9,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 7,
+      "miasta": 7,
+      "empty": 7,
+      "skarbiec": 268,
+      "rekruci": 17902,
+      "jednostkiWojskowe": 4,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 9,
+      "miasta": 7,
+      "empty": 1,
+      "skarbiec": 71,
+      "rekruci": 6880,
+      "jednostkiWojskowe": 10,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 11,
+      "miasta": 9,
+      "empty": 9,
+      "skarbiec": 279,
+      "rekruci": 22000,
+      "jednostkiWojskowe": 2,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 17,
+      "miasta": 6,
+      "empty": 4,
+      "skarbiec": 103.2,
+      "rekruci": 16000,
+      "jednostkiWojskowe": 4,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 21,
+      "miasta": 7,
+      "empty": 6,
+      "skarbiec": 8,
+      "rekruci": 12000,
+      "jednostkiWojskowe": 2,
+      "glodWojska": false,
+      "jednostkiCywilne": 1,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 23,
+      "miasta": 8,
+      "empty": 1,
+      "skarbiec": 217,
+      "rekruci": 37160,
+      "jednostkiWojskowe": 9,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     }
+    ]
+   },
+   "60": {
+    "defFALA857": {
+     "cities": 162,
+     "empty": 54,
+     "peaceEmpty": 23,
+     "warEmpty": 31,
+     "pct": 33.3
+    },
+    "defAIBAL2": {
+     "cities": 162,
+     "empty": 54,
+     "pct": 33.3
+    },
+    "owners": [
+     {
+      "owner": 3,
+      "miasta": 13,
+      "empty": 7,
+      "skarbiec": 921,
+      "rekruci": 36960,
+      "jednostkiWojskowe": 10,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 5,
+      "miasta": 14,
+      "empty": 8,
+      "skarbiec": 73,
+      "rekruci": 60595,
+      "jednostkiWojskowe": 17,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 7,
+      "miasta": 14,
+      "empty": 13,
+      "skarbiec": 2680,
+      "rekruci": 134845,
+      "jednostkiWojskowe": 8,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 9,
+      "miasta": 15,
+      "empty": 3,
+      "skarbiec": 509,
+      "rekruci": 155280,
+      "jednostkiWojskowe": 14,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 11,
+      "miasta": 15,
+      "empty": 1,
+      "skarbiec": 215,
+      "rekruci": 190480,
+      "jednostkiWojskowe": 18,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 15,
+      "miasta": 13,
+      "empty": 10,
+      "skarbiec": 320,
+      "rekruci": 130577,
+      "jednostkiWojskowe": 10,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 17,
+      "miasta": 11,
+      "empty": 2,
+      "skarbiec": 51.8,
+      "rekruci": 45840,
+      "jednostkiWojskowe": 12,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 19,
+      "miasta": 10,
+      "empty": 1,
+      "skarbiec": 1007,
+      "rekruci": 148000,
+      "jednostkiWojskowe": 20,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 21,
+      "miasta": 16,
+      "empty": 3,
+      "skarbiec": 161,
+      "rekruci": 107960,
+      "jednostkiWojskowe": 15,
+      "glodWojska": false,
+      "jednostkiCywilne": 1,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 25,
+      "miasta": 12,
+      "empty": 6,
+      "skarbiec": 86,
+      "rekruci": 82000,
+      "jednostkiWojskowe": 9,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     }
+    ]
+   }
+  },
+  "4242": {
+   "30": {
+    "defFALA857": {
+     "cities": 79,
+     "empty": 33,
+     "peaceEmpty": 33,
+     "warEmpty": 0,
+     "pct": 41.8
+    },
+    "defAIBAL2": {
+     "cities": 79,
+     "empty": 33,
+     "pct": 41.8
+    },
+    "owners": [
+     {
+      "owner": 1,
+      "miasta": 7,
+      "empty": 5,
+      "skarbiec": 1554,
+      "rekruci": 6535,
+      "jednostkiWojskowe": 5,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 3,
+      "miasta": 8,
+      "empty": 4,
+      "skarbiec": 502,
+      "rekruci": 44280,
+      "jednostkiWojskowe": 7,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 5,
+      "miasta": 8,
+      "empty": 7,
+      "skarbiec": 92,
+      "rekruci": 20000,
+      "jednostkiWojskowe": 3,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 7,
+      "miasta": 1,
+      "empty": 1,
+      "skarbiec": 266,
+      "rekruci": 2987,
+      "jednostkiWojskowe": 0,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 9,
+      "miasta": 6,
+      "empty": 1,
+      "skarbiec": 316,
+      "rekruci": 11120,
+      "jednostkiWojskowe": 9,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 11,
+      "miasta": 8,
+      "empty": 2,
+      "skarbiec": 552,
+      "rekruci": 44760,
+      "jednostkiWojskowe": 8,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 13,
+      "miasta": 6,
+      "empty": 1,
+      "skarbiec": 65,
+      "rekruci": 8520,
+      "jednostkiWojskowe": 7,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 15,
+      "miasta": 6,
+      "empty": 2,
+      "skarbiec": 27,
+      "rekruci": 10520,
+      "jednostkiWojskowe": 7,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 21,
+      "miasta": 7,
+      "empty": 2,
+      "skarbiec": 99,
+      "rekruci": 14320,
+      "jednostkiWojskowe": 8,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 23,
+      "miasta": 8,
+      "empty": 6,
+      "skarbiec": 180,
+      "rekruci": 26000,
+      "jednostkiWojskowe": 5,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 25,
+      "miasta": 8,
+      "empty": 2,
+      "skarbiec": 28,
+      "rekruci": 14800,
+      "jednostkiWojskowe": 8,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     }
+    ]
+   },
+   "60": {
+    "defFALA857": {
+     "cities": 156,
+     "empty": 45,
+     "peaceEmpty": 24,
+     "warEmpty": 21,
+     "pct": 28.8
+    },
+    "defAIBAL2": {
+     "cities": 156,
+     "empty": 45,
+     "pct": 28.8
+    },
+    "owners": [
+     {
+      "owner": 1,
+      "miasta": 15,
+      "empty": 9,
+      "skarbiec": 3406,
+      "rekruci": 82093,
+      "jednostkiWojskowe": 17,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 3,
+      "miasta": 13,
+      "empty": 3,
+      "skarbiec": 263,
+      "rekruci": 192000,
+      "jednostkiWojskowe": 13,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 5,
+      "miasta": 15,
+      "empty": 10,
+      "skarbiec": 41,
+      "rekruci": 92000,
+      "jednostkiWojskowe": 9,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 7,
+      "miasta": 1,
+      "empty": 1,
+      "skarbiec": 568,
+      "rekruci": 4472,
+      "jednostkiWojskowe": 0,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 9,
+      "miasta": 15,
+      "empty": 3,
+      "skarbiec": 0,
+      "rekruci": 9545,
+      "jednostkiWojskowe": 14,
+      "glodWojska": true,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": true
+     },
+     {
+      "owner": 13,
+      "miasta": 15,
+      "empty": 5,
+      "skarbiec": 240,
+      "rekruci": 102000,
+      "jednostkiWojskowe": 13,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 15,
+      "miasta": 13,
+      "empty": 1,
+      "skarbiec": 231,
+      "rekruci": 71024,
+      "jednostkiWojskowe": 15,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 19,
+      "miasta": 9,
+      "empty": 5,
+      "skarbiec": 185,
+      "rekruci": 30000,
+      "jednostkiWojskowe": 6,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 21,
+      "miasta": 14,
+      "empty": 1,
+      "skarbiec": 232,
+      "rekruci": 113400,
+      "jednostkiWojskowe": 15,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 23,
+      "miasta": 15,
+      "empty": 3,
+      "skarbiec": 1575.4,
+      "rekruci": 193396,
+      "jednostkiWojskowe": 21,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 25,
+      "miasta": 15,
+      "empty": 4,
+      "skarbiec": 96,
+      "rekruci": 206000,
+      "jednostkiWojskowe": 14,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     }
+    ]
+   }
+  }
+ },
+ "C-max": {
+  "7": {
+   "30": {
+    "defFALA857": {
+     "cities": 89,
+     "empty": 26,
+     "peaceEmpty": 26,
+     "warEmpty": 0,
+     "pct": 29.2
+    },
+    "defAIBAL2": {
+     "cities": 89,
+     "empty": 26,
+     "pct": 29.2
+    },
+    "owners": [
+     {
+      "owner": 1,
+      "miasta": 15,
+      "empty": 1,
+      "skarbiec": 2452,
+      "rekruci": 31444,
+      "jednostkiWojskowe": 29,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 3,
+      "miasta": 2,
+      "empty": 1,
+      "skarbiec": 504,
+      "rekruci": 1278,
+      "jednostkiWojskowe": 4,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 5,
+      "miasta": 6,
+      "empty": 1,
+      "skarbiec": 1272,
+      "rekruci": 6800,
+      "jednostkiWojskowe": 12,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 7,
+      "miasta": 6,
+      "empty": 4,
+      "skarbiec": 453,
+      "rekruci": 12320,
+      "jednostkiWojskowe": 5,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 11,
+      "miasta": 11,
+      "empty": 3,
+      "skarbiec": 657,
+      "rekruci": 31202,
+      "jednostkiWojskowe": 14,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 15,
+      "miasta": 8,
+      "empty": 1,
+      "skarbiec": 159,
+      "rekruci": 14840,
+      "jednostkiWojskowe": 15,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 17,
+      "miasta": 5,
+      "empty": 2,
+      "skarbiec": 151,
+      "rekruci": 10960,
+      "jednostkiWojskowe": 6,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 19,
+      "miasta": 12,
+      "empty": 2,
+      "skarbiec": 720,
+      "rekruci": 129120,
+      "jednostkiWojskowe": 16,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 21,
+      "miasta": 6,
+      "empty": 5,
+      "skarbiec": 22,
+      "rekruci": 14000,
+      "jednostkiWojskowe": 3,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 23,
+      "miasta": 10,
+      "empty": 2,
+      "skarbiec": 519,
+      "rekruci": 105720,
+      "jednostkiWojskowe": 17,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 25,
+      "miasta": 5,
+      "empty": 4,
+      "skarbiec": 144,
+      "rekruci": 3803,
+      "jednostkiWojskowe": 8,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     }
+    ]
+   },
+   "60": {
+    "defFALA857": {
+     "cities": 173,
+     "empty": 80,
+     "peaceEmpty": 24,
+     "warEmpty": 56,
+     "pct": 46.2
+    },
+    "defAIBAL2": {
+     "cities": 173,
+     "empty": 80,
+     "pct": 46.2
+    },
+    "owners": [
+     {
+      "owner": 3,
+      "miasta": 7,
+      "empty": 5,
+      "skarbiec": 90,
+      "rekruci": 8279,
+      "jednostkiWojskowe": 7,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 5,
+      "miasta": 15,
+      "empty": 8,
+      "skarbiec": 1122.5,
+      "rekruci": 41833,
+      "jednostkiWojskowe": 19,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 7,
+      "miasta": 17,
+      "empty": 12,
+      "skarbiec": 151,
+      "rekruci": 106600,
+      "jednostkiWojskowe": 9,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 13,
+      "miasta": 9,
+      "empty": 5,
+      "skarbiec": 7,
+      "rekruci": 28000,
+      "jednostkiWojskowe": 6,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 15,
+      "miasta": 17,
+      "empty": 15,
+      "skarbiec": 344,
+      "rekruci": 190477,
+      "jednostkiWojskowe": 9,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 17,
+      "miasta": 15,
+      "empty": 4,
+      "skarbiec": 99,
+      "rekruci": 43156,
+      "jednostkiWojskowe": 15,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 19,
+      "miasta": 15,
+      "empty": 2,
+      "skarbiec": 561,
+      "rekruci": 225720,
+      "jednostkiWojskowe": 24,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 21,
+      "miasta": 15,
+      "empty": 9,
+      "skarbiec": 54,
+      "rekruci": 90000,
+      "jednostkiWojskowe": 8,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 23,
+      "miasta": 15,
+      "empty": 3,
+      "skarbiec": 0,
+      "rekruci": 244320,
+      "jednostkiWojskowe": 22,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": true
+     },
+     {
+      "owner": 25,
+      "miasta": 17,
+      "empty": 17,
+      "skarbiec": 4,
+      "rekruci": 38052,
+      "jednostkiWojskowe": 4,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     }
+    ]
+   }
+  },
+  "4242": {
+   "30": {
+    "defFALA857": {
+     "cities": 94,
+     "empty": 16,
+     "peaceEmpty": 16,
+     "warEmpty": 0,
+     "pct": 17
+    },
+    "defAIBAL2": {
+     "cities": 94,
+     "empty": 16,
+     "pct": 17
+    },
+    "owners": [
+     {
+      "owner": 1,
+      "miasta": 6,
+      "empty": 2,
+      "skarbiec": 1665,
+      "rekruci": 14320,
+      "jednostkiWojskowe": 7,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 5,
+      "miasta": 10,
+      "empty": 2,
+      "skarbiec": 97,
+      "rekruci": 21200,
+      "jednostkiWojskowe": 13,
+      "glodWojska": false,
+      "jednostkiCywilne": 1,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 9,
+      "miasta": 5,
+      "empty": 1,
+      "skarbiec": 549,
+      "rekruci": 4201,
+      "jednostkiWojskowe": 11,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 11,
+      "miasta": 10,
+      "empty": 2,
+      "skarbiec": 1090,
+      "rekruci": 114529,
+      "jednostkiWojskowe": 15,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 13,
+      "miasta": 6,
+      "empty": 3,
+      "skarbiec": 115,
+      "rekruci": 9940,
+      "jednostkiWojskowe": 10,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 21,
+      "miasta": 11,
+      "empty": 2,
+      "skarbiec": 42,
+      "rekruci": 28760,
+      "jednostkiWojskowe": 13,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 23,
+      "miasta": 10,
+      "empty": 2,
+      "skarbiec": 366,
+      "rekruci": 30182,
+      "jednostkiWojskowe": 15,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 25,
+      "miasta": 10,
+      "empty": 2,
+      "skarbiec": 267,
+      "rekruci": 25880,
+      "jednostkiWojskowe": 13,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     }
+    ]
+   },
+   "60": {
+    "defFALA857": {
+     "cities": 174,
+     "empty": 55,
+     "peaceEmpty": 12,
+     "warEmpty": 43,
+     "pct": 31.6
+    },
+    "defAIBAL2": {
+     "cities": 174,
+     "empty": 55,
+     "pct": 31.6
+    },
+    "owners": [
+     {
+      "owner": 1,
+      "miasta": 16,
+      "empty": 3,
+      "skarbiec": 5104,
+      "rekruci": 75240,
+      "jednostkiWojskowe": 15,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 3,
+      "miasta": 15,
+      "empty": 1,
+      "skarbiec": 24,
+      "rekruci": 298000,
+      "jednostkiWojskowe": 16,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 5,
+      "miasta": 15,
+      "empty": 2,
+      "skarbiec": 0,
+      "rekruci": 66000,
+      "jednostkiWojskowe": 15,
+      "glodWojska": false,
+      "jednostkiCywilne": 1,
+      "niezdolnoscSkarbu": true
+     },
+     {
+      "owner": 7,
+      "miasta": 5,
+      "empty": 1,
+      "skarbiec": 91,
+      "rekruci": 13720,
+      "jednostkiWojskowe": 7,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 9,
+      "miasta": 15,
+      "empty": 15,
+      "skarbiec": 50,
+      "rekruci": 38320,
+      "jednostkiWojskowe": 3,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 11,
+      "miasta": 15,
+      "empty": 6,
+      "skarbiec": 516,
+      "rekruci": 289190,
+      "jednostkiWojskowe": 25,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 13,
+      "miasta": 17,
+      "empty": 16,
+      "skarbiec": 22,
+      "rekruci": 92614,
+      "jednostkiWojskowe": 5,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 15,
+      "miasta": 10,
+      "empty": 3,
+      "skarbiec": 156,
+      "rekruci": 36000,
+      "jednostkiWojskowe": 9,
+      "glodWojska": false,
+      "jednostkiCywilne": 2,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 17,
+      "miasta": 15,
+      "empty": 3,
+      "skarbiec": 329,
+      "rekruci": 196360,
+      "jednostkiWojskowe": 17,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 21,
+      "miasta": 15,
+      "empty": 2,
+      "skarbiec": 118,
+      "rekruci": 228000,
+      "jednostkiWojskowe": 15,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     },
+     {
+      "owner": 23,
+      "miasta": 15,
+      "empty": 3,
+      "skarbiec": 577.6,
+      "rekruci": 202000,
+      "jednostkiWojskowe": 19,
+      "glodWojska": false,
+      "jednostkiCywilne": 3,
+      "niezdolnoscSkarbu": false
+     }
+    ]
+   }
+  }
+ }
+}

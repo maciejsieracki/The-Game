@@ -1,0 +1,122 @@
+{
+ "plik": "dyspozycje/autobot/runs/R-WEB-AI-EMPTY-CITIES-Q1/dane/C-max-s7/seed7.jsonl.gz",
+ "tura": 30,
+ "counts": {
+  "razemPuste": 26,
+  "brakPieniedzy": 5,
+  "brakSurowca": 8,
+  "dostepnaJednostka": 13
+ },
+ "perOwner": [
+  {
+   "owner": 21,
+   "puste": 5,
+   "miasta": 6,
+   "skarbiec": 22,
+   "drewno": 0,
+   "braz": 0,
+   "rekruci": 14000,
+   "powod": "brakPieniedzy"
+  },
+  {
+   "owner": 7,
+   "puste": 4,
+   "miasta": 6,
+   "skarbiec": 453,
+   "drewno": 11,
+   "braz": 0,
+   "rekruci": 12320,
+   "powod": "brakSurowca"
+  },
+  {
+   "owner": 25,
+   "puste": 4,
+   "miasta": 5,
+   "skarbiec": 144,
+   "drewno": 130,
+   "braz": 50,
+   "rekruci": 3803,
+   "powod": "dostepnaJednostka"
+  },
+  {
+   "owner": 11,
+   "puste": 3,
+   "miasta": 11,
+   "skarbiec": 657,
+   "drewno": 9,
+   "braz": 50,
+   "rekruci": 31202,
+   "powod": "dostepnaJednostka"
+  },
+  {
+   "owner": 17,
+   "puste": 2,
+   "miasta": 5,
+   "skarbiec": 151,
+   "drewno": 0,
+   "braz": 0,
+   "rekruci": 10960,
+   "powod": "brakSurowca"
+  },
+  {
+   "owner": 19,
+   "puste": 2,
+   "miasta": 12,
+   "skarbiec": 720,
+   "drewno": 0,
+   "braz": 250,
+   "rekruci": 129120,
+   "powod": "dostepnaJednostka"
+  },
+  {
+   "owner": 23,
+   "puste": 2,
+   "miasta": 10,
+   "skarbiec": 519,
+   "drewno": 6,
+   "braz": 250,
+   "rekruci": 105720,
+   "powod": "dostepnaJednostka"
+  },
+  {
+   "owner": 1,
+   "puste": 1,
+   "miasta": 15,
+   "skarbiec": 2452,
+   "drewno": 28,
+   "braz": 50,
+   "rekruci": 31444,
+   "powod": "dostepnaJednostka"
+  },
+  {
+   "owner": 3,
+   "puste": 1,
+   "miasta": 2,
+   "skarbiec": 504,
+   "drewno": 0,
+   "braz": 100,
+   "rekruci": 1278,
+   "powod": "dostepnaJednostka"
+  },
+  {
+   "owner": 5,
+   "puste": 1,
+   "miasta": 6,
+   "skarbiec": 1272,
+   "drewno": 8,
+   "braz": 0,
+   "rekruci": 6800,
+   "powod": "brakSurowca"
+  },
+  {
+   "owner": 15,
+   "puste": 1,
+   "miasta": 8,
+   "skarbiec": 159,
+   "drewno": 16,
+   "braz": 0,
+   "rekruci": 14840,
+   "powod": "brakSurowca"
+  }
+ ]
+}
