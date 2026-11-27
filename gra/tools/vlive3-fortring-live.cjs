@@ -129,6 +129,9 @@ async function main() {
       }
       if (!gate.canEnd) {
         const st = await page.evaluate(() => ({ g: window.__nnsMeasureDebug.gateInfo(), battle: window.__aiTradeWiringTestDebug.battleState() }));
+        // R-WEB-EARLY-DEFEAT-CAUSE-Q1 (pkt 4): przegrana gracza (gameOver) to WYNIK przebiegu, nie cannot-end.
+        const overNow = await page.evaluate(() => window.__defeatTestDebug.isGameOver());
+        if (overNow === true) { logLine({ kind: 'result', variant: VARIANT, outcome: 'przegrana', turn: pre.turn, battles, endTurnBlocks: endTurnBlocks.splice(0) }); break; }
         logLine({ kind: 'stop', variant: VARIANT, turn: pre.turn, reason: 'cannot-end', battles, offers, forcedPeace, endTurnBlocks: endTurnBlocks.splice(0), state: st });
         break;
       }

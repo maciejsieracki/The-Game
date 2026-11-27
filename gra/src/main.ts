@@ -31712,6 +31712,15 @@ async function boot(): Promise<void> {
       },
       countSettlersForOwner: (owner: number): number =>
         units.filter(u => u.ownerId === owner && u.category === 'osadnik').length,
+      /** R-WEB-EARLY-DEFEAT-CAUSE-Q1: WYŁĄCZNIE ODCZYT (bez mutacji). Dla każdego miasta: właściciel, heks, jednostki
+       *  tego samego właściciela na heksie miasta i obce jednostki w promieniu 3 heksów (właściciel, typ, kategoria, heks). */
+      cityThreatProbe: () => cities.map(c => ({
+        id: c.id, name: c.name, ownerId: c.ownerId, q: c.q, r: c.r,
+        playerOnHex: units.filter(u => u.ownerId === 0 && u.q === c.q && u.r === c.r)
+          .map(u => ({ typeId: u.typeId, category: u.category, hp: u.hp ?? null, inGarnizon: !!u.inGarnizon })),
+        foreignNear: units.filter(u => u.ownerId !== c.ownerId && hexDistance(u.q, u.r, c.q, c.r) <= 3)
+          .map(u => ({ owner: u.ownerId, typeId: u.typeId, category: u.category, q: u.q, r: u.r })),
+      })),
       /** Realna ścieżka bitwy barbarzyńców: `launchIncomingMapFieldBattle` z tym samym `onResolved`
        *  (`onBarbarianCityBattleResolved`) co produkcyjny call site fazy barbarzyńców. Resztę (przycisk Auto,
        *  podsumowanie) przechodzi test w UI. Bez endTurn. */
