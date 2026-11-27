@@ -11589,3 +11589,12 @@ R-WEB-MAP-ISLANDS-ORPHAN-FIX-Q1 (wf_d7ad9b86-4bd; Operator Haiku → Evaluator S
 - DECYZJA O GRZE (obrona startu na maksimum): fakty zebrane (REALDEF3–5); następny krok = turniej C-018 (dwa niezależne projekty + sędzia) i pytanie ABC wg zasad — w toku, NIE pokazano właścicielowi.
 - refs/keep/REALDEF5-r1-{op,eval,obrona,fc}; worktree REALDEF5 usunięte. Task #212 zamknięty.
 - START ENDARIA (R-WEB-ENDTURN-BUTTON-ARIA-Q1, Operator HAIKU, cand = origin/main 32b3f17181c704ca4305bd651c84af9fee7417c3): tabela t1–t8 atrybutów przycisku końca tury i skutku kliknięcia, 2 ziarna na maksimum; poprawka tylko po odtworzeniu błędu.
+
+### 2026-11-27 · FALA 933 — ENDARIA (R-WEB-ENDTURN-BUTTON-ARIA-Q1) WDROŻONE NA ROBOCZĄ (zegar maszyny `date -u` 20:58 UTC)
+- FC r1 PASS-WITH-NOTES (kod 00216ef8c, raport 422555eb2; r1 Operator BLOCK z odtworzonym błędem → Obrona wykonała poprawkę), merge w integracji 810b566cf → main 6afdec814356dc8ca1ebd409bf5cec31d84eafb7. ROBOCZA MD5 60d54c64f3fe1dfda477c7dab10c1c22 (GitHub Raw zgodne; sidecary audio-pack 5b990bc3/0a9a1047/9e88be9f zgodne).
+- BŁĄD (odtworzony na żywo, maksimum, seed 4242 i 7): przycisk „Zakończ turę” zostawał z aria-disabled=true i klasą is-disabled, choć tura już dawała się zakończyć (canEnd=true), a klik kończył turę; atrybut ustawiany tylko w render() (bottomBarHud.ts:204,218,257-259), odświeżany z jedynego miejsca hud.ts:2132-2133 po updateHud.
+- POPRAWKA (gra/src/ui/bottomBarHud.ts, +24 linie): cykl syncEndTurnState co 500 ms, render() tylko przy zmianie stanu przycisku; test endturn-aria-sync-test.cjs 5/0 (kod bazowy 3 PASS/2 FAIL); zero zmian logiki bramek tury.
+- CO DAJE W GRZE: przycisk „Zakończ turę” nie wygląda już na zablokowany, gdy tura da się zakończyć (wcześniej w turach 2–4 gracz widział szary przycisk).
+- Testy: dep3 tsc 0, logic 213/213, endturn-aria-sync 5/0, society-breakdown 56/0; FC: tech-tree 20/0, research 33/0, unit-replace 45/0, combat 6/6, ai-test 297/0, wiring 267/0; live seed 7 maks. 8 tur: stan przycisku podąża za canEnd ≤500 ms, klik skuteczny 8/8.
+- NIE ZMIERZONO: koszt wydajnościowy cyklu 500 ms (canEndTurn poza updateHud), zawieszony activeEndTurnPointers, odwrotny przypadek (aria=false przy canEnd=false), ręczne zamknięcie modali; pełna tabela przed poprawką dla obu ziaren.
+- refs/keep/ENDARIA-r1-{op,eval,obrona,fc}; worktree ENDARIA usunięte. Task #214 zamknięty.
