@@ -184,6 +184,7 @@ import { createDirtyRenderSync } from './game/dirtyRenderSync';
 import { trimSidePanelEventLog } from './game/retained-side-panel-events';
 import {
   worldDiploNewsEntry,
+  worldDiploNewsRebellionEntry,
   worldDiploNewsPush,
   worldDiploNewsSanitize,
   worldDiploNewsVisibleList,
@@ -484,6 +485,7 @@ import {
   loadRevoltParams,
   revoltWarningMessage,
   isOsiedleRevoltImmune,
+  shouldStartCityRebellion,
   REBEL_FACTION_OWNER_ID,
 } from './game/society-breakdown';
 import { computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
@@ -27256,6 +27258,26 @@ async function boot(): Promise<void> {
       trimWarEventLog();
     }
 
+    /** AI-REBEL (39B): wpis w dzienniku Wydarzeń o buncie miasta AI — jednym zdaniem, TYLKO gdy gracz zna
+     *  właściciela (obie strony odkryte nie są wymagane: wystarczy kontakt z cywilizacją). Bez okna/modala. */
+    function recordAiCityRebellionNews(cityName: string, prevOwnerId: number, cityId: string): void {
+      if (!getDiplomaticContacts().has(prevOwnerId)) return;
+      // R-WEB-AI-REBEL-WORLD-NEWS-Q1: ten sam wpis w TRWAŁEJ liście „Wydarzenia na świecie” (okno dyplomacji).
+      const worldEntry = worldDiploNewsRebellionEntry({
+        cityName, cityId, ownerId: prevOwnerId, ownerLabel: ownerDiploLabel(prevOwnerId),
+        turn, discovered: getDiplomaticContacts(),
+      });
+      if (worldEntry !== null) worldDiploNewsList = worldDiploNewsPush(worldDiploNewsList, worldEntry);
+      const evId = `ai-city-rebel-${turn}-${cityId}`;
+      if (warEventLog.some(e => e.id === evId)) return;
+      warEventLog.unshift({
+        id: evId, icon: '⚑', title: `Bunt miasta: ${cityName}`,
+        subtitle: `Miasto ${ownerDiploLabel(prevOwnerId)} zbuntowało się i ogłosiło niepodległość`,
+        kind: 'enemy', turnCreated: turn,
+      });
+      trimWarEventLog();
+    }
+
     /** DIPLO-PEACE-AUTO-NO-CITIES-STALE-OFFER-DIAG-Q1 (Z7): trwały wpis „Ważne" o zawarciu pokoju/rozejmu z udziałem gracza (dedup: tura + para). */
     function logPeaceVazne(a: number, b: number, titlePrefix: string, subtitle: string): void {
       if (a !== ME() && b !== ME()) return;
@@ -45139,7 +45161,24 @@ async function boot(): Promise<void> {
                 // -> bunt), więc migruję literał `0` na `isHuman(...)`, ZACHOWUJĄC granicę
                 // "tylko człowiek" -- drugi fotel człowieka dostaje TĘ SAMĄ mechanikę buntu,
                 // AI nadal jej nie ma (brak regresu, brak nowej funkcjonalności dla AI).
-                if (graceUpd.shouldTriggerRebellion && isHuman(city.ownerId) && !city.rebelState) {
+                // AI-REBEL (39B, 2026-11-27): miasto AI wchodzi w TĘ SAMĄ ścieżkę buntu, gdy ustawienie
+                // „Kultura i religia” ma poziom (nowe gry); w trybie zgodności (null) — jak dotąd, bez buntu AI.
+                // Bramka jest jedna (aiCityRebellionEnabled); ścieżka wspólna — bez duplikacji.
+                const rebelOwnerPrev = city.ownerId;
+                const rebelByPlayer = isHuman(rebelOwnerPrev);
+                // AIREBEL-R3: ostatnie miasto AI nie buntuje się (bez zombie-cywilizacji bez miast).
+                // Liczone na żywo: po buncie poprzedniego miasta tego AI kolejne staje się ostatnim.
+                const rebelOwnerOtherCities = cities.reduce(
+                  (n, c) => (c.ownerId === rebelOwnerPrev && c.id !== city.id ? n + 1 : n), 0,
+                );
+                if (shouldStartCityRebellion(
+                  graceUpd.shouldTriggerRebellion,
+                  city.rebelState === true,
+                  rebelByPlayer,
+                  isAiOwner(humanSeats, rebelOwnerPrev),
+                  getCulturaReligiaLevel(),
+                  rebelOwnerOtherCities,
+                )) {
                   const wonderWatchRebel = beginWonderTransferWatch(); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
                   markCityRebellionStarted(city);
                   city.rebelState = true;
@@ -45159,10 +45198,15 @@ async function boot(): Promise<void> {
                   // to the player in normal play. Toast (same pattern as other diplomatic/war
                   // events in this file, e.g. main.ts:9317) clearly says "rebelled", NOT
                   // "was conquered" — the city doesn't go to any civilization, it becomes independent.
-                  showHintMessage(
-                    `⚡ ${city.name} zbuntowało się i ogłosiło niepodległość! Miasto nie jest już Twoje.`,
-                    5500,
-                  );
+                  if (rebelByPlayer) {
+                    showHintMessage(
+                      `⚡ ${city.name} zbuntowało się i ogłosiło niepodległość! Miasto nie jest już Twoje.`,
+                      5500,
+                    );
+                  } else {
+                    // AI-REBEL: bez modala — tylko wpis w dzienniku Wydarzeń (gdy gracz zna właściciela).
+                    recordAiCityRebellionNews(city.name, rebelOwnerPrev, city.id);
+                  }
                 }
               }
 

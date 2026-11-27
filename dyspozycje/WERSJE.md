@@ -1,3 +1,21 @@
+## ROBOCZA daf475f0 -- 2026-11-27 -- FALA 929: AI: bunt miasta komputera w trwałej liście Wydarzenia na świecie (testowa)
+
+- Bunt miasta AI (nowe gry, Kultura i religia ≠ zgodność) dodaje jednozdaniowy wpis 'rebelia' do trwałej listy Wydarzenia na świecie w oknie dyplomacji, widoczny tylko gdy właściciel miasta jest znany graczowi (ta sama reguła widoczności co wojny/pokoje AI); wpis w dzienniku Wydarzeń zostaje. Tryb zgodności i zapisy bez zmian.
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat 6/6; ai-test 297/0; society-breakdown 56/0; rebellion-gate 37/0; rebellion-news 24/0 (mutacja czerwona 23/1); diplo-world-news 67/0; round-trip zapisu listy OK
+- Limity: NIE ZMIERZONO: render w Chromium (zrzut okna dyplomacji z wpisem), bieg żywy na maksimum, CSS per rodzaj wpisu; test ścieżki w main.ts jest dopasowaniem po źródle
+
+## ROBOCZA 7103aff5 -- 2026-11-27 -- FALA 928: AI: miasta komputera w głębokim niepokoju buntują się jak miasta gracza (nowe gry) (testowa)
+
+- W nowych grach (ustawienie Kultura i religia ≠ tryb zgodności) miasto AI w buncie skrajnym po wyczerpaniu łaski przechodzi tę samą rebelię co miasto gracza; ostatnie miasto AI się nie buntuje (ochrona przed cywilizacją bez miast). Tryb zgodności i zapisy bez zmian. Wpis buntu AI w dzienniku Wydarzeń (tylko przy kontakcie z właścicielem).
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat OK; ai-test 297/0; society-breakdown 56/0; culture-religion-level 59/0; culture-religion 65/0; ai-city-order-need-wiring 231/0; ai-city-rebellion-gate 37/0; mutacje czerwone; pomiar 60 tur Trudny/Kultura trudny/Koszty Wysoki x4 seed 4242 i 7: 10 i 16 buntów miast AI
+- Limity: NIE ZMIERZONO: round-trip zapisu, hotseat, wygląd wpisu w przeglądarce, skutki utraty stolicy przez AI z >=2 miastami, runtime pętli tury; ochrona ostatniego miasta nie została wywołana w pomiarze; wpis nie trafia do listy Wydarzenia na świecie
+
+## ROBOCZA df4e3ab8 -- 2026-11-27 -- FALA 927: Generator map: naprawa osieroconych heksow rzek na wyspach (testowa)
+
+- Generator map po FALI 925: na wyspach z siecia rzek znika osierocone heksy rzeki (zbior z diagnozy 63 -> 0, 0 samotnych ladow); do 0,6% ladu przy brzegu traci znacznik dostepu do wody slodkiej; do ROBOCZEJ trafiaja tez liczniki odczytu pomiarow za ?civTest=1 (diagnozy AI, rebelii, pomiary live), bez wplywu na gre
+- Weryfikacja: tsc 0; logic 213; map-offmask-stranded-fix 5/0; map-islands-orphan PASS (orphan 0, solitary 0); FC: tech-tree 20, research 33, unit-replace 21, combat 6, ai-test 297/0, determinism-save-load PASS; obrona: 80 map suma naruszen 5 = baza
+- Limity: NIE ZMIERZONO: pelny map-gen-regression, world-density, river-path-adjacency (timeouty); ocena wizualna wysp z rzekami po wdrozeniu; wplyw utraty znacznikow wody (do 0,6% ladu)
+
 ## ROBOCZA 0999e34f -- 2026-11-26 -- FALA 926: AI na trudnej kulturze: garnizon wg potrzeby miasta i budynki Prawa/Szczescia (testowa)
 
 - AI przy poziomie Kultura i religia normalny/trudny trzyma w miescie tyle jednostek garnizonu, ile potrzeba do wyjscia z buntu (potrzeba liczona z rozbicia Porzadku), wyklucza garnizon z puli armii i preferuje budynki Prawa/Szczescia w miescie z deficytem Porzadku; latwy i zgodnosc bez zmian
