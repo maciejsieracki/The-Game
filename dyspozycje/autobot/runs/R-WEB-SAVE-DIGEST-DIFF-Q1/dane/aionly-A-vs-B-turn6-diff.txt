@@ -1,0 +1,71 @@
+{
+ "lenA": 46483,
+ "lenB": 49647,
+ "matched": {
+  "units": {
+   "missingA": 2,
+   "missingB": 1,
+   "orderDiff": 2,
+   "count": [
+    64,
+    65
+   ]
+  },
+  "cities": {
+   "missingA": 0,
+   "missingB": 0,
+   "orderDiff": 0,
+   "count": [
+    43,
+    43
+   ]
+  }
+ },
+ "charsByKind": {
+  "added": 3182,
+  "removed": 132,
+  "changed": 192
+ },
+ "charsTotal": 3506
+}
+--- top 40 klas sciezek (kind | sciezka | n | znaki) ---
+added    | units[*] | 2 | 329
+removed  | units[*] | 1 | 132
+added    | units[diffbonus_1_13_nm64bp].stackGroupId | 1 | 32
+added    | units[diffbonus_1_13_1q1bhjv].stackGroupId | 1 | 32
+added    | units[diffbonus_1_22_ebtm3f].stackGroupId | 1 | 32
+added    | units[diffbonus_1_22_1ps2q58].stackGroupId | 1 | 32
+added    | units[rec_5_city25_1tyixgb].stackGroupId | 1 | 32
+added    | units[rec_6_city16_1rkbf9p].stackGroupId | 1 | 32
+added    | cities[city1].postepBudynkowUsuniete | 1 | 27
+added    | cities[city2].postepBudynkowUsuniete | 1 | 27
+added    | cities[city3].postepBudynkowUsuniete | 1 | 27
+added    | cities[city4].postepBudynkowUsuniete | 1 | 27
+added    | cities[city5].postepBudynkowUsuniete | 1 | 27
+added    | cities[city6].postepBudynkowUsuniete | 1 | 27
+added    | cities[city7].postepBudynkowUsuniete | 1 | 27
+added    | cities[city8].postepBudynkowUsuniete | 1 | 27
+added    | cities[city9].postepBudynkowUsuniete | 1 | 27
+added    | cities[city10].postepBudynkowUsuniete | 1 | 27
+added    | cities[city11].postepBudynkowUsuniete | 1 | 27
+added    | cities[city12].postepBudynkowUsuniete | 1 | 27
+added    | cities[city13].postepBudynkowUsuniete | 1 | 27
+added    | cities[city14].postepBudynkowUsuniete | 1 | 27
+added    | cities[city15].postepBudynkowUsuniete | 1 | 27
+added    | cities[city16].postepBudynkowUsuniete | 1 | 27
+added    | cities[city17].postepBudynkowUsuniete | 1 | 27
+added    | cities[city18].postepBudynkowUsuniete | 1 | 27
+added    | cities[city19].postepBudynkowUsuniete | 1 | 27
+added    | cities[city20].postepBudynkowUsuniete | 1 | 27
+added    | cities[city21].postepBudynkowUsuniete | 1 | 27
+added    | cities[city22].postepBudynkowUsuniete | 1 | 27
+added    | cities[city23].postepBudynkowUsuniete | 1 | 27
+added    | cities[city24].postepBudynkowUsuniete | 1 | 27
+added    | cities[city25].postepBudynkowUsuniete | 1 | 27
+added    | cities[city26].postepBudynkowUsuniete | 1 | 27
+added    | cities[city27].postepBudynkowUsuniete | 1 | 27
+added    | cities[city28].postepBudynkowUsuniete | 1 | 27
+added    | cities[city29].postepBudynkowUsuniete | 1 | 27
+added    | cities[city30].postepBudynkowUsuniete | 1 | 27
+added    | cities[city31].postepBudynkowUsuniete | 1 | 27
+added    | cities[city32].postepBudynkowUsuniete | 1 | 27

@@ -1,0 +1,37 @@
+{
+ "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/savedigest/dist",
+ "mode": "B",
+ "cfg": "max",
+ "seed": 4242,
+ "n": 5,
+ "k": 3,
+ "records": [
+  {
+   "phase": "restore",
+   "turn": 3,
+   "digest": "{\"turn\":3,\"detIdSeq\":42,\"abTurn\":-1,\"abSeq\":0,\"dipSeq\":0,\"nUnits\":42,\"nCities\":43,\"len\":44389,\"fnv\":\"8614c0c9\",\"fnvNoPP\":\"95f60779\",\"lenNoPP\":42798}"
+  },
+  {
+   "phase": "resumed",
+   "turn": 4,
+   "digest": "{\"turn\":4,\"detIdSeq\":49,\"abTurn\":-1,\"abSeq\":0,\"dipSeq\":0,\"nUnits\":49,\"nCities\":43,\"len\":46263,\"fnv\":\"52e90493\",\"fnvNoPP\":\"5d8f4489\",\"lenNoPP\":44672}"
+  },
+  {
+   "phase": "resumed",
+   "turn": 5,
+   "digest": "{\"turn\":5,\"detIdSeq\":60,\"abTurn\":-1,\"abSeq\":0,\"dipSeq\":0,\"nUnits\":60,\"nCities\":43,\"len\":48115,\"fnv\":\"88d13206\",\"fnvNoPP\":\"62a7f3b2\",\"lenNoPP\":46524}"
+  },
+  {
+   "phase": "resumed",
+   "turn": 6,
+   "digest": "{\"turn\":6,\"detIdSeq\":66,\"abTurn\":-1,\"abSeq\":0,\"dipSeq\":0,\"nUnits\":66,\"nCities\":43,\"len\":49778,\"fnv\":\"155b596c\",\"fnvNoPP\":\"10eb4f54\",\"lenNoPP\":48187}"
+  }
+ ],
+ "pageErrors": [],
+ "turnMs": [
+  23967,
+  20581,
+  18174
+ ],
+ "done": true
+}

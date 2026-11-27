@@ -1,0 +1,39 @@
+{
+ "lenA": 41661,
+ "lenB": 44391,
+ "matched": {
+  "units": {
+   "missingA": 0,
+   "missingB": 0,
+   "orderDiff": 0,
+   "count": [
+    42,
+    42
+   ]
+  },
+  "cities": {
+   "missingA": 0,
+   "missingB": 0,
+   "orderDiff": 0,
+   "count": [
+    43,
+    43
+   ]
+  }
+ },
+ "charsByKind": {
+  "added": 210
+ },
+ "charsTotal": 210
+}
+--- top 10 klas sciezek (kind | sciezka | n | znaki) ---
+added    | cities[city1].budowaLista | 1 | 2
+added    | cities[city1].postepBudynkowUsuniete | 1 | 2
+added    | cities[city2].budowaLista | 1 | 2
+added    | cities[city2].postepBudynkowUsuniete | 1 | 2
+added    | cities[city3].budowaLista | 1 | 2
+added    | cities[city3].postepBudynkowUsuniete | 1 | 2
+added    | cities[city4].budowaLista | 1 | 2
+added    | cities[city4].postepBudynkowUsuniete | 1 | 2
+added    | cities[city5].budowaLista | 1 | 2
+added    | cities[city5].postepBudynkowUsuniete | 1 | 2
