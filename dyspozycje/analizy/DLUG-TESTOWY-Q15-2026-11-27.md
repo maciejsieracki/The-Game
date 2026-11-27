@@ -83,3 +83,12 @@ Brak wyników podsumowania w capital-capture-test i save-load-sort-test: kod wyj
 - `gra/src/**`, `gra/data/**`: bez zmian (mutacje w `gra/src` były przywracane z kopii; `git status` czysty poza testami).
 - Testów nie usunięto; asercji nie osłabiono. Asercje 0.5c, 6a–6c, skanera tempa niezmienione co do warunku oczekiwanego; skaner tylko precyzyjniej wykrywa tempo.
 - Otwarte: 6a–6c — DECISION_REQUIRED (pkt 2b). Skan tabelą nie obejmuje wszystkich ~200 pasujących testów (pkt 3).
+
+## 5. Q15B — pin 6a–6c karty eliminacji (wariant A, gra bez zmian)
+
+Decyzja inżynierska orkiestratora (nie pytanie do właściciela): pin „karta eliminacji przeżywa turę” był błędny. Obowiązuje reguła R-WEB-EVENTS-ONE-TURN-LIFETIME-Q1 (2026-11-04): wydarzenia dziennika żyją jedną turę. Kod (`gra/src/main.ts` ~43933 `expireInformationalEventsBeforeTurn` → `gra/src/game/event-lifetime.ts` `isEventLiveInTurn` ~34–37, `expireEventsBeforeTurn` ~43–52) wygasza wpis `elim-cs-*` przy przejściu tury. Zero zmian w `gra/src`.
+
+- Zmieniono: `gra/tools/wydarzenia-eliminacja-podboj-karta-test.cjs`, sekcja (6). Dodano asercję (6pre) — wpis istnieje w `warEventLog` w turze utworzenia. Przekształcono 6a — po zakończeniu tury wpis wygasł (`entryAfterEot === undefined`). Przekształcono 6b — tytuł „ELIMINACJA:” sprawdzany w turze utworzenia, przed wygaśnięciem. Przekształcono 6c — resolver `linkFor` zwraca `null` po turze. Komentarz w teście podaje regułę i linie kodu. Nie usunięto żadnej asercji i nie osłabiono warunków (sekcje 0–5 bez zmian).
+- Wynik na bazie `7d8cf0664`: `wydarzenia-eliminacja-podboj-karta-test: 29 pass, 0 fail` (poprzednio 25/3).
+- Mutacja: tymczasowo w `gra/src/game/event-lifetime.ts` dodano `if (id.startsWith("elim-cs-")) return true;` w `isEventLiveInTurn`. Wynik: `FAIL (6a)` i `FAIL (6c)` (`linkFor` zwrócił `civ-elim/Szczegóły`), `27 pass, 2 fail`. Plik przywrócono z kopii, `grep MUTACJA` = 0.
+- Inne testy z tym samym pinem (grep `elim-cs|civElimEventDetails` w `gra/tools/*test.cjs`): nie znaleziono pinu „przeżywa turę”. Do sprawdzenia: `miasto-zdobycie-raport-test.cjs` linia ~398 — opis asercji 9b zawiera zdanie „przeżywa koniec tury, jak elim-cs-*”. Asercja sprawdza tylko bezpośredni zapis do `warEventLog`, a nie przeżycie tury, więc to zdanie w opisie, nie pin. Nie zmieniano (poza zakresem; do oceny).

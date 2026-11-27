@@ -324,8 +324,22 @@ async function main() {
     // dyplomatyczną (ten sam warEventLog, ten sam brak dedykowanego rerenderu w
     // `triggerPlayerEndTurn`), NIE regresem tego tematu — kryterium 1 dotyczy TRWAŁOŚCI
     // wpisu (nie ginie jak toast na timerze), nie odświeżania DOM co klatkę.
-    console.log('\n-- (6) karta przezywa koniec tury (dowod strukturalny) --');
+    // RUNDA Q15B (R-WEB-TEST-DEBT-Q15B, wariant A, zero zmian gra/src): wpis eliminacji jest
+    // wpisem informacyjnym jednej tury. Zgodnie z regula R-WEB-EVENTS-ONE-TURN-LIFETIME-Q1
+    // (2026-11-04) granica tury (`turn++`) usuwa wpisy utworzone przed biezaca tura: gra/src/main.ts
+    // ~43933 wola expireInformationalEventsBeforeTurn -> gra/src/game/event-lifetime.ts
+    // (isEventLiveInTurn ~34-37, expireEventsBeforeTurn ~43-52). Poprzedni pin (6a-6c) zakladal,
+    // ze karta eliminacji PRZEZYWA tura -- to byl bledny pin, nie regresja gry. Asercje ponizej
+    // sprawdzaja ZAMIERZONE zachowanie: (6pre) wpis istnieje w turze utworzenia i ma tytul
+    // ELIMINACJA, (6a) po zakonczeniu tury wygasl, (6b) w turze utworzenia tytul byl poprawny,
+    // (6c) resolver nie zwraca juz skrotu dla wygaslego wpisu. Mutacja event-lifetime.ts,
+    // ktora zachowuje elim-cs-*, zaczerwienia 6a/6c.
+    console.log('\n-- (6) wpis eliminacji wygasa po koncu tury (zamierzone wg one-turn-lifetime) --');
     await page.evaluate(() => window.__sidePanelLinkTestDebug.closeAll());
+    const logBeforeEot = await page.evaluate(() => window.__rebelNotifyTestDebug.getWarEventLog());
+    const entryBeforeEot = logBeforeEot.find((e) => e.id === eventId);
+    assert('(6pre) wpis ' + eventId + ' ISTNIEJE w warEventLog w turze utworzenia (przed zakonczeniem tury)',
+      entryBeforeEot !== undefined, logBeforeEot.map((e) => e.id));
     await page.evaluate(() => window.__eraTestDebug.endTurn());
     for (let i = 0; i < 60; i++) {
       if (!(await page.evaluate(() => window.__eraTestDebug.isEndTurnInProgress()))) break;
@@ -334,13 +348,13 @@ async function main() {
     await wait(500);
     const logAfterEot = await page.evaluate(() => window.__rebelNotifyTestDebug.getWarEventLog());
     const entryAfterEot = logAfterEot.find((e) => e.id === eventId);
-    assert('(6a) wpis ' + eventId + ' NADAL jest w warEventLog po zakonczeniu tury (nie usuniety/nie zamieniony w eot-hint)',
-      entryAfterEot !== undefined, logAfterEot.map((e) => e.id));
-    assert('(6b) tytul wpisu niezmieniony po turze ("ELIMINACJA: <cywilizacja>", nie generyczny "Koniec tury")',
-      entryAfterEot !== undefined && /^ELIMINACJA:/.test(entryAfterEot.title), entryAfterEot);
+    assert('(6a) wpis ' + eventId + ' WYGASL po zakonczeniu tury (turnCreated < biezaca tura; event-lifetime.ts isEventLiveInTurn)',
+      entryAfterEot === undefined, logAfterEot.map((e) => e.id));
+    assert('(6b) w turze utworzenia wpis mial tytul "ELIMINACJA: <cywilizacja>" (nie generyczny), przed wygasnieciem',
+      entryBeforeEot !== undefined && /^ELIMINACJA:/.test(entryBeforeEot.title), entryBeforeEot);
     const linkAfterEot = await page.evaluate((id) => window.__sidePanelLinkTestDebug.linkFor(id), eventId);
-    assert('(6c) resolver nadal zwraca civ-elim/Szczegóły po turze (skrot przezyl)',
-      linkAfterEot !== null && linkAfterEot.kind === 'civ-elim', linkAfterEot);
+    assert('(6c) resolver NIE zwraca skrotu civ-elim dla wygaslego wpisu po turze (skrot wygasl wraz z wpisem)',
+      linkAfterEot === null, linkAfterEot);
 
     assert('(9) zero bledow konsoli/JS przez caly przebieg', consoleErrors.length === 0, consoleErrors.slice(0, 5));
   } finally {
