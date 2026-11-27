@@ -1,0 +1,107 @@
+[truce-live] vite build do katalogu tymczasowego: /tmp/civ-truce-live-2349
+      warn [EndTurn] blocked: awaitingFirstPlayerCity
+      warn [EndTurn] blocked: awaitingFirstPlayerCity
+      warn [EndTurn] blocked: awaitingFirstPlayerCity
+      warn [EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)
+      warn [EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)
+      warn [EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)
+U1 UI: modal pokoj/rozejm
+  OK  U1a domyślnie rodzaj = pokoj
+  OK  U1b w trybie pokoju brak chipów rozejmu
+  OK  U1c przełącznik na rozejm zmienia pole
+  OK  U1d rozejm pokazuje 3 chipy 5/10/15
+  OK  U1e chip 5 tur zapisuje długość
+  OK  U1f przycisk wyślij aktywny
+  OK  U1g wysłanie z UI trafia na stół jako rozejm 5 tur
+  OK  U1h modal koszyka zamknięty po wysłaniu
+L1 akceptacja rozejmu
+  OK  L1a akceptacja przechodzi (accepted)
+  OK  L1b status pary = pokoj po rozejmie
+  OK  L1c truceUntilTurn = tura + 5
+  OK  L1d rozejm nie zakłada peaceUntilTurn
+L2 okno rozejmu i wygaśnięcie
+  OK  L2-pre okno koszyka/audiencji zamknięte przed pętlą tur
+      dbg 0 {"ws":{"citiesLen":2,"unitsLen":4,"turn":1},"modal":true}
+      warn [EndTurn] triggerPlayerEndTurn: START tura 1
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] triggerPlayerEndTurn: DONE tura 2
+      dbg 1 {"ws":{"citiesLen":2,"unitsLen":4,"turn":2},"modal":true}
+      warn [EndTurn] triggerPlayerEndTurn: START tura 2
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] triggerPlayerEndTurn: DONE tura 3
+      dbg 2 {"ws":{"citiesLen":3,"unitsLen":5,"turn":3},"modal":true}
+      warn [EndTurn] triggerPlayerEndTurn: START tura 3
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] triggerPlayerEndTurn: DONE tura 4
+      dbg 3 {"ws":{"citiesLen":3,"unitsLen":5,"turn":4},"modal":true}
+      warn [EndTurn] triggerPlayerEndTurn: START tura 4
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] triggerPlayerEndTurn: DONE tura 5
+  OK  L2a w oknie (tura < until) status nadal pokoj
+      dbg 0 {"ws":{"citiesLen":4,"unitsLen":7,"turn":5},"modal":true}
+      warn [EndTurn] triggerPlayerEndTurn: START tura 5
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] triggerPlayerEndTurn: DONE tura 6
+  OK  L2b w turze wygaśnięcia rozejmu: status pokoj, bez wojny (oferta pokoju stałego dla gracza, nie decyzja AI)
+  OK  L2b2 oferta czeka na gracza: pokój stały NIE zawarty w turze wygaśnięcia (peaceUntilTurn null)
+  OK  L2c truceUntilTurn wyczyszczony
+  OK  L2d brak flagi agresora po wygaśnięciu
+  OK  L2e brak kary zlamanie_paktu_nap po wygaśnięciu
+L3 złamanie rozejmu
+  OK  L3a ponowna akceptacja rozejmu
+      warn [EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)
+  OK  L3b wypowiedzenie w oknie zrywa rozejm, wojna
+  OK  L3c kara zlamanie_paktu_nap za złamanie rozejmu
+  OK  L3d flaga agresora dla złamania rozejmu (mimo casus belli)
+  OK  L3e zdarzenia Wiarygodności przybyły po złamaniu
+L2f–L2h brak odpowiedzi gracza na ofertę pokoju stałego (timeout): wojna bez kary
+  OK  L2f0 ponowne zawarcie rozejmu z AI (startowy stan odmowy)
+  OK  L2f0b po rozejmie status pokoj, truceUntilTurn = tura + 5
+      dbg 0 {"ws":{"citiesLen":4,"unitsLen":8,"turn":6},"modal":true}
+      warn [EndTurn] triggerPlayerEndTurn: START tura 6
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] triggerPlayerEndTurn: DONE tura 7
+      dbg 1 {"ws":{"citiesLen":4,"unitsLen":8,"turn":7},"modal":true}
+      warn [EndTurn] triggerPlayerEndTurn: START tura 7
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] triggerPlayerEndTurn: DONE tura 8
+      dbg 2 {"ws":{"citiesLen":4,"unitsLen":8,"turn":8},"modal":true}
+      warn [EndTurn] triggerPlayerEndTurn: START tura 8
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: endTurnInProgress
+      warn [EndTurn] blocked: preBattleOpen {pending: false}
+      warn [EndTurn] blocked: preBattleOpen {pending: false}
+      warn [EndTurn] triggerPlayerEndTurn: DONE tura 9
+      dbg 3 {"ws":{"citiesLen":4,"unitsLen":8,"turn":9},"modal":true}
+      warn [EndTurn] blocked: preBattleOpen {pending: false}
+      warn [EndTurn] blocked: preBattleOpen {pending: false}
+      warn [EndTurn] blocked: preBattleOpen {pending: false}
+      warn [EndTurn] blocked: preBattleOpen {pending: false}
+ FAIL wyjątek: Error: bramka Zakończ turę nadal zamknięta po prepareEndTurnGate: {"changed":true,"canEnd":false,"turn":9,"gateBefore":{"blokada":false,"komunikat":"","dzwignie":[],"zasob":null,"prognoza":null,"propozycjaPodatku":null,"automatPoprawil":false,"niewystarczajace":false},"gateAfter":{"blokada":false,"komunikat":"","dzwignie":[],"zasob":null,"prognoza":null,"propozycjaPodatku":null,"automatPoprawil":false,"niewystarczajace":false}} |     at endOneTurn (/home/user/The-Game/.claude/worktrees/wf_378d4f74-865-1/gra/tools/diplo-truce-live-test.cjs:179:27) |     at async endUntilTurn (/home/user/The-Game/.claude/worktrees/wf_378d4f74-865-1/gra/tools/diplo-truce-live-test.cjs:136:5) |     at async main (/home/user/The-Game/.claude/worktrees/wf_378d4f74-865-1/gra/tools/diplo-truce-live-test.cjs:327:5)
+  OK  C zero pageerror/console.error
+
+27 pass / 1 fail

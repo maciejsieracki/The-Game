@@ -1,0 +1,15 @@
+[forced-war-player-target-live-test] budowanie bundla (vite build, wyłącznie dozwolona komenda z CLAUDE.md)...
+[forced-war-player-target-live-test] build OK.
+[forced-war-player-target-live-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+
+-- A. Bootstrap ?playtest=mapa dobiega końca (miasta+jednostki, tura=1) --
+  OK  bootstrap zakończony: citiesLen>0
+  OK  bootstrap zakończony: unitsLen>0
+  OK  bootstrap zakończony: turn===1
+
+-- A2. Fast-forward do tury 39 (próg R1 = 40; gracz od tury 25, R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1) --
+[forced-war-player-target-live-test] błąd: page.evaluate: Target page, context or browser has been closed
+    at advanceTurnBySettledEndTurn (/home/user/The-Game/.claude/worktrees/wf_378d4f74-865-1/gra/tools/forced-war-player-target-live-test.cjs:128:42)
+    at async main (/home/user/The-Game/.claude/worktrees/wf_378d4f74-865-1/gra/tools/forced-war-player-target-live-test.cjs:207:23) {
+  log: []
+}

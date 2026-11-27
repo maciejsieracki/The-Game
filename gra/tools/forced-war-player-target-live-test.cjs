@@ -1,5 +1,5 @@
 'use strict';
-const { closeCivWelcome } = require('./_live-ready.cjs');
+const { closeCivWelcome, prepareEndTurnGate } = require('./_live-ready.cjs');
 /**
  * forced-war-player-target-live-test.cjs — P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1,
  * kryteria końca 4 i 6 (Operator Sonnet 5, effort=medium, 2026-08-30, worktree izolowany).
@@ -53,7 +53,9 @@ const { execSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
 const OUT_DIR = path.join(GRA_DIR, 'dist-forced-war-player-target-live-test');
-const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html') + '?playtest=mapa';
+// R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1: ?civTest=1 udostepnia hak __nnsMeasureDebug (gateInfo/setPlayerTreasury/
+// setPlayerGranary); bez niego prepareEndTurnGate nie ma czym ustawic zapasu. Tylko odczyt/test-only, bez zmiany gry.
+const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html') + '?playtest=mapa&civTest=1';
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 let pass = 0;
@@ -110,6 +112,9 @@ async function wait(ms) { return new Promise((r) => setTimeout(r, ms)); }
 // bitwy -- ZERO nowego haka produkcyjnego, ZERO zmiany main.ts.
 async function advanceTurnBySettledEndTurn(page) {
   await page.evaluate(() => window.__rebelProtectionTestDebug.pullPlayerUnitsHome());
+  // R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1: bramka „Zakończ turę” (skarbiec/spichlerz) -- przygotowanie stanu przez hak pomiarowy.
+  const gate = await prepareEndTurnGate(page);
+  if (!gate.canEnd) throw new Error('bramka Zakończ turę nadal zamknięta po prepareEndTurnGate: ' + JSON.stringify(gate));
   // NIE opiera się na złapaniu przejścia isEndTurnInProgress() true->false w oknie
   // pollingu 150ms -- na wczesnych, ubogich w jednostki turach `endTurn()` potrafi
   // zakończyć się SZYBCIEJ niż jeden cykl pollingu, więc "true" nigdy nie zostaje
@@ -215,6 +220,8 @@ async function main() {
     assert('przed turą: attacker i gracz NIE są w wojnie', relBefore !== 'wojna', { relBefore });
 
     console.log('\n-- C. Realny triggerPlayerEndTurn() (ta sama funkcja co przycisk "Zakończ turę") --');
+    const gateC = await prepareEndTurnGate(page);
+    if (!gateC.canEnd) throw new Error('bramka Zakończ turę (C) nadal zamknięta: ' + JSON.stringify(gateC));
     await page.evaluate(() => window.__eraTestDebug.endTurn());
     const t0 = Date.now();
     let sawInProgress = false;
