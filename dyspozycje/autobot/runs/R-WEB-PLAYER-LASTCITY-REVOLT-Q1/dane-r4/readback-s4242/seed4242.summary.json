@@ -1,0 +1,110 @@
+{
+  "seed": 4242,
+  "startTurn": 1,
+  "endTurn": 30,
+  "stop": null,
+  "counters": {
+    "gateActiveTurns": 0,
+    "bypassApplied": 0,
+    "stuckQueueHeals": 0,
+    "battlesAuto": 0,
+    "diploAudienceClosed": 0,
+    "armyMergeClosed": 0,
+    "techNoticeClosed": 0,
+    "aiOffersRejected": 0,
+    "aiOffersRejectAttempts": 0,
+    "forcedPeaceAccepted": 0
+  },
+  "wallSec": 70,
+  "resumed": false,
+  "rebalance": null,
+  "unitCostPace": "wysoki",
+  "readback": {
+    "seed": 4242,
+    "pace": "wysoki",
+    "kulturaGracza": "normalny",
+    "kulturaAI": "trudny",
+    "difficulty": "trudny",
+    "kosztJednostekPace": "wysoki",
+    "diplomacyWarLevel": "trudna",
+    "barbariansLevelArg": "trudny",
+    "barbariansLevelGra": "trudny",
+    "gameSettings": {
+      "diplomacyWarLevel": "trudna",
+      "kulturaReligiaLevel": "normalny",
+      "kulturaReligiaLevelAI": "trudny",
+      "wzrostSurowcowZEpoka": false,
+      "kosztJednostekPace": "wysoki",
+      "difficulty": "hard"
+    }
+  },
+  "ownerChangesTail": [
+    {
+      "turn": 24,
+      "cityId": "city33",
+      "name": "Nekhen",
+      "oldOwner": 3,
+      "newOwner": -1,
+      "path": "applyCityCaptureToMap",
+      "stack": [
+        "at Bve (index.html?civTest=1&civSeed=4242:33709:74271)",
+        "at Ese (index.html?civTest=1&civSeed=4242:33709:55214)",
+        "at Zmn (index.html?civTest=1&civSeed=4242:33709:46273)",
+        "at LFt (index.html?civTest=1&civSeed=4242:33709:354508)",
+        "at async file:///tmp/plrrevolt-r4-hook-dist/index.html?civTest=1&civSeed=4242:33709:104346"
+      ],
+      "population": 2,
+      "porPct": 58.1,
+      "bandLabel": "Napięcie",
+      "revoltGraceRemaining": null,
+      "revoltWarning": false,
+      "rebelState": false,
+      "osiedle": true
+    },
+    {
+      "turn": 25,
+      "cityId": "city23",
+      "name": "Uruk",
+      "oldOwner": -1,
+      "newOwner": 21,
+      "path": "applyCityCaptureToMap",
+      "stack": [
+        "at Bve (index.html?civTest=1&civSeed=4242:33709:74271)",
+        "at iE (index.html?civTest=1&civSeed=4242:33709:76785)",
+        "at kU (index.html?civTest=1&civSeed=4242:33709:76630)",
+        "at Object.onCapture (index.html?civTest=1&civSeed=4242:33709:342423)",
+        "at qat (index.html?civTest=1&civSeed=4242:4523:551280)",
+        "at ue (index.html?civTest=1&civSeed=4242:33709:341925)"
+      ],
+      "population": 1,
+      "porPct": 23.2,
+      "bandLabel": "Bunt",
+      "revoltGraceRemaining": null,
+      "revoltWarning": false,
+      "rebelState": false,
+      "osiedle": true
+    },
+    {
+      "turn": 30,
+      "cityId": "city71",
+      "name": "Syrakuzy",
+      "oldOwner": 23,
+      "newOwner": -1,
+      "path": "applyCityCaptureToMap",
+      "stack": [
+        "at Bve (index.html?civTest=1&civSeed=4242:33709:74271)",
+        "at iE (index.html?civTest=1&civSeed=4242:33709:76785)",
+        "at kU (index.html?civTest=1&civSeed=4242:33709:76630)",
+        "at LFt (index.html?civTest=1&civSeed=4242:33709:353401)",
+        "at async file:///tmp/plrrevolt-r4-hook-dist/index.html?civTest=1&civSeed=4242:33709:104346"
+      ],
+      "population": 1,
+      "porPct": 69.1,
+      "bandLabel": "Napięcie",
+      "revoltGraceRemaining": null,
+      "revoltWarning": false,
+      "rebelState": false,
+      "osiedle": true
+    }
+  ]
+}

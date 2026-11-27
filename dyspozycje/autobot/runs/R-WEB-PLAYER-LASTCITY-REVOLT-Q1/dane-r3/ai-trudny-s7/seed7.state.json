@@ -1,0 +1,30 @@
+{
+  "seed": 7,
+  "slot": "ai-econ-s7",
+  "saved": true,
+  "slotTurn": 15,
+  "slotCounters": {
+    "gateActiveTurns": 5,
+    "bypassApplied": 5,
+    "stuckQueueHeals": 0,
+    "battlesAuto": 0,
+    "diploAudienceClosed": 0,
+    "armyMergeClosed": 0,
+    "techNoticeClosed": 0,
+    "aiOffersRejected": 1,
+    "aiOffersRejectAttempts": 1,
+    "forcedPeaceAccepted": 0
+  },
+  "gateActiveTurns": 10,
+  "bypassApplied": 10,
+  "stuckQueueHeals": 0,
+  "battlesAuto": 0,
+  "diploAudienceClosed": 0,
+  "armyMergeClosed": 0,
+  "techNoticeClosed": 0,
+  "aiOffersRejected": 1,
+  "aiOffersRejectAttempts": 1,
+  "forcedPeaceAccepted": 0,
+  "lastTurn": 25,
+  "stop": null
+}

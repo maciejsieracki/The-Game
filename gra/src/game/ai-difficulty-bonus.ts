@@ -147,11 +147,15 @@ export function cityStateStartUnitCount(difficulty: 'easy' | 'normal' | 'hard'):
   return 0;
 }
 
-/** Jednostki wojskowe gracza po założeniu pierwszego miasta: easy=2, normal=1, hard=0. */
+/**
+ * Jednostki wojskowe gracza po założeniu pierwszego miasta: easy=2, normal=1, hard=1.
+ * R-WEB-EARLY-GRACE-15-IMPL-Q1 (decyzja Q41-A, 2026-11-27): Trudny dostaje jednego
+ * Wojownika na starcie (wcześniej 0).
+ */
 export function playerStartUnitCount(difficulty: 'easy' | 'normal' | 'hard'): number {
   if (difficulty === 'easy') return 2;
   if (difficulty === 'normal') return 1;
-  return 0;
+  return 1;
 }
 
 /** Jednostki obcych państw-miast AI; ta tabela jest niezależna od suwaka PM gracza. */

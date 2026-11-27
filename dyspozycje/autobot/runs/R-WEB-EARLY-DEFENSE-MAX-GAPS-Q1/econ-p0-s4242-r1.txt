@@ -1,0 +1,49 @@
+REALDEFECON {"kind":"console","type":"log","text":"[Diag:boot] start"}
+REALDEFECON {"kind":"console","type":"log","text":"[Diag:session] resetStuckInteractiveState"}
+REALDEFECON {"kind":"console","type":"log","text":"[NewGame] tempoGry = standardowa · kosztJednostekPace = wysoki · buildingCostPace = niski · wzrostLudnosciPace = wysoki · ruchSwiataPace = krotki · epoka= 2 (braz) · typSwiata= kontynenty (Kontynenty) · jakoscMapy= Wysoka → render=high, map"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Cusco: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Machu Picchu: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 5 Cusco: Zwiadowca gotowa @ (38,28)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 5 Machu Picchu: Zwiadowca gotowa @ (37,32)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Cusco: Wojownik z maczugą (Chaska) oplacone 52 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Ollantaytambo: Łucznik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Tura 5: nowe obozy: 12"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik szekelesz @ (79,7)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik szekelesz @ (37,40)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik szekelesz @ (49,28)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik szekelesz @ (31,17)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik szekelesz @ (57,47)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik szekelesz @ (87,13)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik szekelesz @ (36,18)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik szekelesz @ (58,53)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik szekelesz @ (24,20)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik szekelesz @ (52,56)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik szekelesz @ (36,58)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik szekelesz @ (24,4)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 6 Cusco: Wojownik z maczugą (Chaska) gotowa @ (38,28)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 6 Ollantaytambo: Łucznik gotowa @ (37,24)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Ateny: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Sparta: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Xi'an: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 7 Ateny: Zwiadowca gotowa @ (82,50)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 7 Sparta: Zwiadowca gotowa @ (78,50)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 7 Xi'an: Zwiadowca gotowa @ (82,22)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Cusco: Łucznik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Ateny: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik Sherden @ (78,6)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik Sherden @ (37,40)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik Sherden @ (49,28)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik Sherden @ (31,17)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik Sherden @ (57,47)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik Sherden @ (88,13)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik Sherden @ (35,19)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik Sherden @ (58,53)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik Sherden @ (24,20)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik Sherden @ (52,56)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik Sherden @ (36,58)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik Sherden @ (22,4)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Barbarzyncy] Spawn: Wojownik Sherden @ (14,42) [na wodzie]"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 9 Cusco: Łucznik gotowa @ (38,28)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 9 Ateny: Wojownik gotowa @ (82,50)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Victory] PRZEGRANA (tura 10) gracz=0 rodzaj=przegrana"}
+REALDEFECON {"kind":"result","runda":3,"policy":"p0","seed":4242,"run":1,"barb":"trudny","turnsRequested":20,"turnsCompleted":9,"outcome":"przegrana-miasto","turn":10,"cityOwnerAfter":-1,"cityLost":true,"lossTurn":10,"survived":false,"conqueror":"barbarzyncy","firstGoldAffordTurn":null,"firstGoldAndStockAffordTurn":null,"purchaseTurn":null,"purchaseClick":null,"taxProbe":null,"infraDiag":null,"navLog":[{"t":2979,"url":"bfb0-2a747b18a590/scratchpad/maxgaps/Gra-LIVE.html?civTest=1"}],"worldWait":true,"mapGenLog":[{"t":4912,"mapGen":"total=1180"},{"t":5102,"hexCount":"hexCount=1008"},{"t":20785,"mapGen":"total=14444"},{"t":22304,"hexCount":"hexCount=7992"}],"clusterStartSeen":4,"firstDefenderTurn":null,"lastBarbNear":1,"errors":0,"notes":[],"definicjaTury":"turn=gateInfo().turn; tura_utraty = turn odczytany po ukonczeniu tury, w ktorej miasto zmienilo wlasciciela (= ukonczone tury + 1)","infra":false,"powodNiewiarygodnosci":null}

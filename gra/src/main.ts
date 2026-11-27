@@ -1015,7 +1015,7 @@ import aiParamsRaw from '../data/ai-params.json';
 import aiUpkeepParamsRaw from '../data/ai-upkeep-params.json';
 // R-WEB-AI-FREE-UNIT-UPKEEP-40-TURNS-Q1: darmowe utrzymanie jednostek AI w turach 1..tury (flaga w danych).
 import aiFreeUnitUpkeepParamsRaw from '../data/ai-free-unit-upkeep-params.json';
-import { setAiFreeUnitUpkeepContext, paceUtrzymaniaWlasciciela, type AiFreeUnitUpkeepParams } from './game/ai-free-unit-upkeep';
+import { setAiFreeUnitUpkeepContext, paceUtrzymaniaWlasciciela, PLAYER_UPKEEP_GRACE_TURNS_KEY, PLAYER_UPKEEP_GRACE_TURNS_DEFAULT, type AiFreeUnitUpkeepParams } from './game/ai-free-unit-upkeep';
 import { aiUpkeepRunwayAllowsRecruit } from './game/ai-upkeep-runway';
 // R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2: P3/P4/P6/P7 — wszystko za flagą isDiploTickWarBrakeEnabled().
 import diplomacyTickParams from '../data/diplomacy-tick-params.json';
@@ -1506,7 +1506,7 @@ import {
 } from './ui/victoryScreen';
 import type { VictoryScreenData } from './ui/victoryScreen';
 import {
-  loadBarbParams, barbariansActive, spawnCamps, tickCamps, decideBarbarianMoves,
+  loadBarbParams, barbariansActive, barbariansGraceBlocksTurnEnd, loadBarbGraceTurns, spawnCamps, tickCamps, decideBarbarianMoves,
   scaleBarbParamsForLevel, pickBronzeBarbUnit, isCampRaidReady, migrateBarbariansLevel,
   seaPeoplesBoostActive, boostBarbParamsForSeaPeoples, shouldEmitSeaPeoplesEpochNotice,
   BARBARIAN_OWNER_ID, isBarbarian,
@@ -5922,6 +5922,27 @@ async function boot(): Promise<void> {
     const orderValueMap = new Map<string, number>();
     /** Per-city order state (szczescie/porzadek) — updated each turn for city panel B2 hooks. */
     const cityOrderState = new Map<string, OrderState>();
+    /**
+     * R-WEB-PLAYER-LASTCITY-REVOLT-Q1 (PLRREVOLT r3): TYLKO ODCZYT / INSTRUMENTACJA (?civTest=1). Dziennik zmian
+     * `city.ownerId` (tura, miasto, stary->nowy wlasciciel, sciezka kodu, Porzadek miasta, flaga osiedle). Zapis
+     * wylacznie dopisuje do tablicy i tylko gdy civTest; nie zmienia stanu gry ani logiki. Poza civTest = no-op.
+     */
+    const cityOwnerChangeLogForTest: Array<Record<string, unknown>> = [];
+    function noteCityOwnerChangeForTest(city: City, oldOwner: number, newOwner: number, path: string): void {
+      if (typeof window === 'undefined' || !isCivTestEnabled(window.location.search)) return;
+      const st = cityOrderState.get(city.id);
+      cityOwnerChangeLogForTest.push({
+        turn, cityId: city.id, name: city.name, oldOwner, newOwner, path,
+        stack: String(new Error().stack ?? '').split('\n').slice(2, 8).map(x => x.trim().replace(/\(.*\/(.*)\)$/, '($1)')),
+        population: city.population,
+        porPct: typeof st?.porPct === 'number' ? st.porPct : null,
+        bandLabel: st?.bandLabel ?? null,
+        revoltGraceRemaining: st?.revoltGraceRemaining ?? null,
+        revoltWarning: st?.revoltWarning ?? null,
+        rebelState: city.rebelState === true,
+        osiedle: isOsiedleRevoltImmune(city.population, data.societyParams, _menuDifficulty),
+      });
+    }
     /**
      * R-ZUZYCIE-SUROWCOW-OBYWATELE N1 runda 4 (Maciej 2026-08-11, Evaluator FAIL runda 3):
      * werdykt drenażu obywateli KLUCZOWANY BEZPOŚREDNIO OWNEREM, nie miastem. Zdobycie miasta
@@ -13981,6 +14002,8 @@ async function boot(): Promise<void> {
     const clearedBarbCampHexes = new Set<string>();
     /** Barbarian params loaded from ai-params.json (with fallbacks). */
     const barbParams = loadBarbParams(data);
+    // R-WEB-EARLY-GRACE-15-IMPL-Q1: okno łaski barbarzyńców (tury 1..15) -- bramka tury niżej.
+    const barbGraceTurns = loadBarbGraceTurns(data);
     /** Flag: game ended (victory or defeat). Prevents repeated end-game messages. */
     let gameOver = false;
     /** R-WEB-TRUCE-Q1 (r5): wyłącznie hak live `__truceTestDebug.suppressVictoryForTest` — mapa testowa ma 2 miasta i kończy grę zwycięstwem przy pierwszym EOT. Domyślnie false. */
@@ -14994,6 +15017,8 @@ async function boot(): Promise<void> {
       getTurn: () => aiUpkeepTickTurnOverride ?? turn,
       isHumanOwner: (oid: number) => isHuman(oid),
       params: aiFreeUnitUpkeepParamsRaw as AiFreeUnitUpkeepParams,
+      // R-WEB-EARLY-GRACE-15-IMPL-Q1: okno łaski utrzymania GRACZA (tury 1..N, każdy fotel ludzki).
+      playerGraceTurns: (aiParamsRaw as Record<string, { wartosc?: number }>)[PLAYER_UPKEEP_GRACE_TURNS_KEY]?.wartosc ?? PLAYER_UPKEEP_GRACE_TURNS_DEFAULT,
     });
     // R-HOTSEAT-ETAP-1-OWNERID-ISAIOWNER-Q1: pierwszy realny konsument isAiOwner
     // (gra/src/game/human-owners.ts, Etap 0). Dziś zawsze dokładnie jeden fotel
@@ -19175,6 +19200,7 @@ async function boot(): Promise<void> {
         // LOSS-COUNTERS: utrata miasta gracza (poddanie/przejęcie przez kapitulację).
         lossCounters = recordCityLoss(lossCounters, oldOwner, newOwner);
         city.ownerId = newOwner;
+        noteCityOwnerChangeForTest(city, oldOwner, newOwner, 'resolveSiegeSurrender'); // PLRREVOLT: instrumentacja
         recordOwnersStockDeltaToPending(ledgerCaptureBefore, o => ownerResourceStockAll(cities, o), `przejecie-miasta|${city.id}`,
           o => (o === newOwner ? { kind: 'przejecie_miasta', label: 'Zdobycie miasta' } : { kind: 'przejecie_miasta', label: 'Oddanie miasta' }));
         settleWonderTransfer(wonderWatchSurrender); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
@@ -29558,7 +29584,7 @@ async function boot(): Promise<void> {
         // Tura 1 = 4000 p.n.e.; potem −50 lat/turę (nie turn×50 — to zjadało rok już na starcie).
         getYearLabel: () => Math.max(0, 4000 - (turn - 1) * 50) + ' p.n.e.',
         onExecutePending: () => executeFirstBlockingEvent(),
-        canEndTurn: () => canPlayerInitiateEndTurn(),
+        canEndTurn: () => canPlayerInitiateEndTurn(true),
         getEndTurnTooltip: () => nnsEndTurnTooltipText(),
         hideEndTurn: () => playtestWalkaActive,
         getBlockingCount: () => countBlockingEvents(),
@@ -34690,6 +34716,26 @@ async function boot(): Promise<void> {
       let cityTransfersLastForTest: Array<{ z: number; na: number; liczba: number }> = [];
       // AICULTREBEL (tylko odczyt): licznik kolejnych tur w strefie buntu skrajnego per id miasta.
       const cityCritStreakForTest = new Map<string, number>();
+      // PLRREVOLT (tylko odczyt, ?civTest=1): dziennik zmian wlasciciela miast + odczyt miast gracza (Porzadek).
+      (window as any).__cityOwnerChangeLogDebug = {
+        log: (): Array<Record<string, unknown>> => cityOwnerChangeLogForTest.slice(),
+        clear: (): void => { cityOwnerChangeLogForTest.length = 0; },
+        /** Readback efektywnego poziomu barbarzyncow (ta sama migracja co faza barbarzyncow). */
+        settings: (): { barbariansLevel: string } => ({ barbariansLevel: String(migrateBarbariansLevel(_menuAdvanced?.barbariansLevel)) }),
+        humanCities: (): Array<Record<string, unknown>> => cities.filter(c => isHuman(c.ownerId)).map(c => {
+          const st = cityOrderState.get(c.id);
+          return {
+            turn, cityId: c.id, name: c.name, ownerId: c.ownerId, population: c.population,
+            porPct: typeof st?.porPct === 'number' ? st.porPct : null,
+            szPct: typeof st?.szPct === 'number' ? st.szPct : null,
+            bandLabel: st?.bandLabel ?? null,
+            revoltGraceRemaining: st?.revoltGraceRemaining ?? null,
+            revoltWarning: st?.revoltWarning ?? null,
+            rebelState: c.rebelState === true,
+            osiedle: isOsiedleRevoltImmune(c.population, data.societyParams, _menuDifficulty),
+          };
+        }),
+      };
       (window as any).__aiEconomyMeasure = {
         schemaVersion: 1,
         /** R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1 (tylko ?civTest=1, domyślnie OFF): gracz (0) wykonuje w fazie AI
@@ -40478,6 +40524,7 @@ async function boot(): Promise<void> {
         const ledgerAnnexBefore = snapshotOwnersStock([csOwnerId, annexerId], o => ownerResourceStockAll(cities, o));
         lossCounters = recordCityLoss(lossCounters, csOwnerId, annexerId); // LOSS-COUNTERS: anektowanie miasta-państwa
         city.ownerId = annexerId;
+        noteCityOwnerChangeForTest(city, csOwnerId, annexerId, 'annexCityState'); // PLRREVOLT: instrumentacja
         recordOwnersStockDeltaToPending(ledgerAnnexBefore, o => ownerResourceStockAll(cities, o), `wchloniecie-miasta|${city.id}`,
           o => (o === annexerId ? { kind: 'przejecie_miasta', label: 'Przyłączenie miasta-państwa' } : { kind: 'przejecie_miasta', label: 'Oddanie miasta' }));
         // R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1: to samo gaszenie oznaczenia co na
@@ -41467,6 +41514,7 @@ async function boot(): Promise<void> {
         },
       );
       settleWonderTransfer(wonderWatchCapture);
+      noteCityOwnerChangeForTest(city, oldOwner, city.ownerId, 'applyCityCaptureToMap'); // PLRREVOLT: instrumentacja (stack = wolajacy: bitwa/szturm/puste miasto)
       triggerRebelProtectionWarConsequence(wasProtectedRebel, rebelPrevOwnerSnapshot, atkOwner);
       // R-WEB-PEACE-RULES-R8R9-Q1 R9: brak auto-końca wojen wymuszonych po zdobyciu miast.
       maybeResolveRegularWarOnCityCapture(oldOwner, atkOwner);
@@ -41865,7 +41913,9 @@ async function boot(): Promise<void> {
     function transferCityToRebelFactionWithLedger(city: City): void {
       const ledgerRebelBefore = snapshotOwnersStock([city.ownerId, REBEL_FACTION_OWNER_ID], o => ownerResourceStockAll(cities, o));
       lossCounters = recordCityLoss(lossCounters, city.ownerId, REBEL_FACTION_OWNER_ID); // LOSS-COUNTERS: bunt
+      const rebelOldOwnerForLog = city.ownerId;
       city.ownerId = REBEL_FACTION_OWNER_ID;
+      noteCityOwnerChangeForTest(city, rebelOldOwnerForLog, REBEL_FACTION_OWNER_ID, 'transferCityToRebelFactionWithLedger'); // PLRREVOLT: instrumentacja
       recordOwnersStockDeltaToPending(ledgerRebelBefore, o => ownerResourceStockAll(cities, o), `bunt-miasta|${city.id}`,
         o => (o === REBEL_FACTION_OWNER_ID ? { kind: 'przejecie_miasta', label: 'Bunt miasta (przejęte)' } : { kind: 'przejecie_miasta', label: 'Bunt miasta (utrata)' }));
     }
@@ -41904,6 +41954,7 @@ async function boot(): Promise<void> {
       const ledgerCessionBefore = snapshotOwnersStock([fromOwnerId, toOwnerId], o => ownerResourceStockAll(cities, o));
       lossCounters = recordCityLoss(lossCounters, fromOwnerId, toOwnerId); // LOSS-COUNTERS: cesja traktatowa
       city.ownerId = toOwnerId;
+      noteCityOwnerChangeForTest(city, fromOwnerId, toOwnerId, 'transferCityByTreaty'); // PLRREVOLT: instrumentacja
       recordOwnersStockDeltaToPending(ledgerCessionBefore, o => ownerResourceStockAll(cities, o), `cesja-miasta|${city.id}`,
         o => (o === toOwnerId ? { kind: 'przejecie_miasta', label: 'Cesja miasta (otrzymane)' } : { kind: 'przejecie_miasta', label: 'Cesja miasta (oddane)' }));
       settleWonderTransfer(wonderWatchCession);
@@ -43604,14 +43655,22 @@ async function boot(): Promise<void> {
       return g.blokada ? g.komunikat : '';
     }
 
-    function canPlayerInitiateEndTurn(): boolean {
+    /**
+     * quiet=true: wersja cicha dla pasywnych odczytów (cykl synchronizacji HUD co 500 ms,
+     * render przycisku). Ten sam wynik i te same efekty uboczne (healStaleEndTurnBlockers),
+     * tylko bez console.warn. Klik gracza i advanceSeat() wołają wersję głośną (quiet=false).
+     * / EN: quiet=true is the silent variant for passive reads (500 ms HUD sync cycle, button
+     * render). Same result and same side effects (healStaleEndTurnBlockers), no console.warn.
+     * Player clicks and advanceSeat() use the loud variant (quiet=false).
+     */
+    function canPlayerInitiateEndTurn(quiet = false): boolean {
       healStaleEndTurnBlockers();
       if (playtestWalkaActive) {
-        console.warn('[EndTurn] blocked: playtestWalkaActive');
+        if (!quiet) console.warn('[EndTurn] blocked: playtestWalkaActive');
         return false;
       }
       if (isAwaitingFirstPlayerCity()) {
-        console.warn('[EndTurn] blocked: awaitingFirstPlayerCity');
+        if (!quiet) console.warn('[EndTurn] blocked: awaitingFirstPlayerCity');
         return false;
       }
       // F3 (Evaluator FAIL 136fefbb, runda 3, Maciej 2026-08-14): rozszerzone o
@@ -43628,23 +43687,23 @@ async function boot(): Promise<void> {
       // request would only surface from the NEXT turn's `finally`, showing a roster from
       // before that turn (the second half of round-1 recommendation 1, skipped in round 2).
       if (isPreBattleOpen() || hasPendingAutoPreBattle()) {
-        console.warn('[EndTurn] blocked: preBattleOpen', { pending: hasPendingAutoPreBattle() });
+        if (!quiet) console.warn('[EndTurn] blocked: preBattleOpen', { pending: hasPendingAutoPreBattle() });
         return false;
       }
       if (galleryOn) {
-        console.warn('[EndTurn] blocked: galleryOn');
+        if (!quiet) console.warn('[EndTurn] blocked: galleryOn');
         return false;
       }
       if (gameOver) {
-        console.warn('[EndTurn] blocked: gameOver');
+        if (!quiet) console.warn('[EndTurn] blocked: gameOver');
         return false;
       }
       if (endTurnInProgress) {
-        console.warn('[EndTurn] blocked: endTurnInProgress');
+        if (!quiet) console.warn('[EndTurn] blocked: endTurnInProgress');
         return false;
       }
       if (aiTurnAwaitingBattle || aiCmdResume) {
-        console.warn('[EndTurn] blocked: aiTurnAwaitingBattle/resume', {
+        if (!quiet) console.warn('[EndTurn] blocked: aiTurnAwaitingBattle/resume', {
           aiTurnAwaitingBattle,
           aiCmdResume: aiCmdResume != null,
         });
@@ -43653,18 +43712,18 @@ async function boot(): Promise<void> {
       // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B2): opcja „Wymagaj rozpatrzenia ofert handlowych" —
       // oferta handlowa AI->gracz czeka na decyzję (przyjmij / modyfikuj / odrzuć).
       if (hasBlockingAiTradeOfferForPlayer()) {
-        console.warn('[EndTurn] blocked: oferta handlowa AI czeka na decyzję gracza');
+        if (!quiet) console.warn('[EndTurn] blocked: oferta handlowa AI czeka na decyzję gracza');
         return false;
       }
       // R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1: skarbiec/spichlerz po turze < 0 i istnieje ruch naprawczy.
       if (nnsGateForPlayer().blokada) {
-        console.warn('[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)');
+        if (!quiet) console.warn('[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)');
         return false;
       }
       // PENDING-FORCED-PEACE-Q1: dopóki wisi pokój wymuszony z graczem, nie da się zakończyć tury.
       prunePendingForcedPeace();
       if (pendingForcedPeaceTreaties.length > 0) {
-        console.warn('[EndTurn] blocked: oczekujący pokój wymuszony');
+        if (!quiet) console.warn('[EndTurn] blocked: oczekujący pokój wymuszony');
         return false;
       }
       return true;
@@ -49135,7 +49194,9 @@ async function boot(): Promise<void> {
           // save's newGameParams after load, without crashing on an unknown string.
           const barbLevel = migrateBarbariansLevel(_menuAdvanced?.barbariansLevel);
           const barbLive = scaleBarbParamsForLevel(barbParams, barbLevel, _menuDifficulty);
-          if (barbariansActive(turn, barbLive, player.era, barbLevel)) {
+          // R-WEB-EARLY-GRACE-15-IMPL-Q1: w oknie łaski (tury 1..barbGraceTurns) barbarzyńcy nie działają wcale.
+          // Faza domyka turę N (turn = N+1 po turn++) -- okno liczone dla N, jak utrzymanie.
+          if (barbariansActive(turn, barbLive, player.era, barbLevel) && !barbariansGraceBlocksTurnEnd(turn, barbGraceTurns)) {
             const seaBarbParams = loadSeaBarbParams(data, _menuDifficulty);
 
             // R-LUDY-MORZA-Q1=A: w Brązie zero obozów naval — usuń stare z save.

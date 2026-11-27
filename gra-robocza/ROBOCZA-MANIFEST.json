@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "4bd55c323e5c4478f21aa74c5e6ee15d",
-  "bundleSha256": "0fdf5dba2321e253a2497bd3d786544f2373e7506d04843638fbc03d2f51ca0b",
-  "bundleBytes": 15046164,
+  "bundleMd5": "97f663d793764ec8e05f01dd75695a7b",
+  "bundleSha256": "2a82b3c1b7a93ee6118992f5fd8167920e51515e62f29694dca2aab5220e03b7",
+  "bundleBytes": 15047465,
   "sourceSnapshot": {
-    "source": "origin/main 213cb0b30 + FC b11aee027 (kod 51d7b0b3b)",
+    "source": "origin/main 3b23b2d4f + FC 7336d316a (kod c4bf50f53)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 932: wczytanie zapisu z menu pauzy w tej samej grze (ten sam seed, rozmiar, typ mapy) zostawiało mapę ze zmianami po zapisie (nakładki, lasy); teraz gdy mapa żywa różni się od zapisanej, jest odbudowywana z zapisu jak przy wczytaniu z menu głównego; zapisy bez mapSnapshot bez zmian; dodatkowy hak testowy civTest"
+    "FALA 935: decyzja właściciela Q41-A rozszerzona: (1) na poziomie Trudny gracz startuje z jednym Wojownikiem (Łatwy 2, Normalny 1 bez zmian); (2) w turach 1–15 barbarzyńcy nie wykonują tury (nie atakują nikogo, na każdym poziomie trudności; obozy i ich aktywność startują najwcześniej przy domknięciu tury 16); (3) w turach 1–15 utrzymanie jednostek gracza-człowieka wynosi 0 na każdym poziomie trudności i przy każdym ustawieniu Koszty jednostek; od tury 16 normalnie; utrzymanie AI 1–40 i koszt zakupu bez zmian; parametry 15 w ai-params.json"
   ],
   "verification": [
-    "tsc 0; logic 213/213; save-load-sort 4/4; determinism-save-load-resume PASS; society-breakdown 56/0; FC: ai-test 297/0, wiring 267/0, culture-religion 108/0, plus10 72/0 i 190/0, rebellion 37/0 i 24/0; live B==A 6/6 tur (maksimum, seed 4242, zapis po t3), mutacja czerwona 6/6 rozjazd, zapis legacy bez mapSnapshot PASS"
+    "tsc 0; logic 213/213; early-grace-15 33/0 (mutacje: start, barbarzyńcy, utrzymanie, domknięcie tury, parametr — czerwone); ai-difficulty-bonus 97/0; barbarians 213/0; society-breakdown 56/0; FC: tech-tree 20/0, research 33/0, unit-replace 21, combat 6, ai-test 297/0, wiring 267/0, save-load-sort 4/4, endturn-aria-sync 5/0; live FC na maksimum (Trudny, Wysoki x4, kultura i dyplomacja trudne, barbarzyńcy Trudny, ziarna 4242 i 778899): Wojownik od t1, barbarzyńcy nie pojawiają się w t1–16, miasto nie ginie (wcześniej t10 i t13), Zakończ turę działa do t16–18"
   ],
   "limits": [
-    "NIE ZMIERZONO: 13 z 16 komórek macierzy (bunt, seed 7 t10, default itd.), klik w UI menu pauzy i render 3D po wczytaniu, A==A' osobno; test live save-load-continuity nie wpięty w bramkę"
+    "NIE ZMIERZONO: literalne przeżycie t20 (pasywny gracz staje na bramce skarbca w t17 (778899) i t19 (4242) po wygaśnięciu darmowego utrzymania), scout-start-units-live (timeout), wiki Barbarzyńcy, wpływ na AI (AIEMPTY, miasta AI w t30), prognoza bramki Zakończ turę w t1 w grze domyślnej; unit-upkeep-cost-pace-test 80/1 czerwony już na bazie (pin tekstowy podglądu UI)"
   ],
-  "finalControl": "R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1 r3: FC PASS-WITH-NOTES",
+  "finalControl": "R-WEB-EARLY-GRACE-15-IMPL-Q1 r1: FC PASS-WITH-NOTES",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-27T20:20:53",
+  "hubGeneratedAt": "2026-11-27T22:22:24",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "4bd55c323e5c4478f21aa74c5e6ee15d",
-      "sizeBytes": 15046164
+      "md5": "97f663d793764ec8e05f01dd75695a7b",
+      "sizeBytes": 15047465
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "4bd55c323e5c4478f21aa74c5e6ee15d",
-      "sizeBytes": 15046164
+      "md5": "97f663d793764ec8e05f01dd75695a7b",
+      "sizeBytes": 15047465
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "4bd55c323e5c4478f21aa74c5e6ee15d",
-      "sizeBytes": 15046164
+      "md5": "97f663d793764ec8e05f01dd75695a7b",
+      "sizeBytes": 15047465
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "4bd55c323e5c4478f21aa74c5e6ee15d",
-      "sizeBytes": 15046164
+      "md5": "97f663d793764ec8e05f01dd75695a7b",
+      "sizeBytes": 15047465
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "4bd55c323e5c4478f21aa74c5e6ee15d",
-      "sizeBytes": 15046164
+      "md5": "97f663d793764ec8e05f01dd75695a7b",
+      "sizeBytes": 15047465
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "4bd55c323e5c4478f21aa74c5e6ee15d",
-      "sizeBytes": 15046164
+      "md5": "97f663d793764ec8e05f01dd75695a7b",
+      "sizeBytes": 15047465
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "4bd55c323e5c4478f21aa74c5e6ee15d",
-      "sizeBytes": 15046164
+      "md5": "97f663d793764ec8e05f01dd75695a7b",
+      "sizeBytes": 15047465
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "4bd55c323e5c4478f21aa74c5e6ee15d",
-      "sizeBytes": 15046164
+      "md5": "97f663d793764ec8e05f01dd75695a7b",
+      "sizeBytes": 15047465
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "4bd55c323e5c4478f21aa74c5e6ee15d",
-      "sizeBytes": 15046164
+      "md5": "97f663d793764ec8e05f01dd75695a7b",
+      "sizeBytes": 15047465
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "4bd55c323e5c4478f21aa74c5e6ee15d",
-      "sizeBytes": 15046164
+      "md5": "97f663d793764ec8e05f01dd75695a7b",
+      "sizeBytes": 15047465
     }
   ],
-  "md5": "4bd55c323e5c4478f21aa74c5e6ee15d",
+  "md5": "97f663d793764ec8e05f01dd75695a7b",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",

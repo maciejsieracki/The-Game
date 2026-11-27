@@ -1,0 +1,109 @@
+{
+  "seed": 4242,
+  "startTurn": 1,
+  "endTurn": 16,
+  "stop": null,
+  "counters": {
+    "gateActiveTurns": 0,
+    "bypassApplied": 0,
+    "stuckQueueHeals": 0,
+    "battlesAuto": 0,
+    "diploAudienceClosed": 0,
+    "armyMergeClosed": 0,
+    "techNoticeClosed": 0,
+    "aiOffersRejected": 0,
+    "aiOffersRejectAttempts": 0,
+    "forcedPeaceAccepted": 0
+  },
+  "wallSec": 27,
+  "resumed": false,
+  "rebalance": null,
+  "unitCostPace": "wysoki",
+  "readback": {
+    "seed": 4242,
+    "pace": "wysoki",
+    "kulturaGracza": "normalny",
+    "kulturaAI": "trudny",
+    "difficulty": "trudny",
+    "kosztJednostekPace": "wysoki",
+    "diplomacyWarLevel": "trudna",
+    "barbariansLevelArg": "trudny",
+    "barbariansLevelGra": "trudny",
+    "gameSettings": {
+      "diplomacyWarLevel": "trudna",
+      "kulturaReligiaLevel": "normalny",
+      "kulturaReligiaLevelAI": "trudny",
+      "wzrostSurowcowZEpoka": false,
+      "kosztJednostekPace": "wysoki",
+      "difficulty": "hard"
+    }
+  },
+  "ownerChangesTail": [
+    {
+      "turn": 8,
+      "cityId": "city8",
+      "name": "Kanesz",
+      "oldOwner": 6,
+      "newOwner": 5,
+      "path": "annexCityState",
+      "stack": [
+        "at _se (index.html?civTest=1&civSeed=4242:33709:62904)",
+        "at ue (index.html?civTest=1&civSeed=4242:33709:329936)",
+        "at async LFt (index.html?civTest=1&civSeed=4242:33709:349796)",
+        "at async file:///tmp/plrrevolt-r4-hook-dist/index.html?civTest=1&civSeed=4242:33709:104346"
+      ],
+      "population": 1,
+      "porPct": 33.2,
+      "bandLabel": "Niepokój",
+      "revoltGraceRemaining": null,
+      "revoltWarning": false,
+      "rebelState": false,
+      "osiedle": true
+    },
+    {
+      "turn": 11,
+      "cityId": "city1",
+      "name": "Ostia",
+      "oldOwner": 27,
+      "newOwner": -1,
+      "path": "applyCityCaptureToMap",
+      "stack": [
+        "at Bve (index.html?civTest=1&civSeed=4242:33709:74271)",
+        "at Ese (index.html?civTest=1&civSeed=4242:33709:55214)",
+        "at Zmn (index.html?civTest=1&civSeed=4242:33709:46273)",
+        "at LFt (index.html?civTest=1&civSeed=4242:33709:354508)",
+        "at async file:///tmp/plrrevolt-r4-hook-dist/index.html?civTest=1&civSeed=4242:33709:104346"
+      ],
+      "population": 1,
+      "porPct": 88,
+      "bandLabel": "Spokój",
+      "revoltGraceRemaining": null,
+      "revoltWarning": false,
+      "rebelState": false,
+      "osiedle": true
+    },
+    {
+      "turn": 16,
+      "cityId": "city0",
+      "name": "Rzym",
+      "oldOwner": 0,
+      "newOwner": -1,
+      "path": "applyCityCaptureToMap",
+      "stack": [
+        "at Bve (index.html?civTest=1&civSeed=4242:33709:74271)",
+        "at Ese (index.html?civTest=1&civSeed=4242:33709:55214)",
+        "at oE (index.html?civTest=1&civSeed=4242:33709:44063)",
+        "at st (index.html?civTest=1&civSeed=4242:33709:49168)",
+        "at Object.onAuto (index.html?civTest=1&civSeed=4242:33709:49488)",
+        "at YZ (index.html?civTest=1&civSeed=4242:10262:8546)"
+      ],
+      "population": 1,
+      "porPct": 49,
+      "bandLabel": "Niepokój",
+      "revoltGraceRemaining": null,
+      "revoltWarning": false,
+      "rebelState": false,
+      "osiedle": true
+    }
+  ]
+}

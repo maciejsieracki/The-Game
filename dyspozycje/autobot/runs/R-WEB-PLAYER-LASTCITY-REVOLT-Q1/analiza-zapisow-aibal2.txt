@@ -1,0 +1,10 @@
+V1-trudny-trudny-s4242 seed4242.jsonl.gz lastTurn=80 playerMaxMiasta=1 playerZeroFromTurn=null playerLossToOwnerMinus1Turns=[] playerLossToOwnerMinus99Turns=[] firstOwnerMinus99RecordTurn=73
+V1-trudny-trudny-s7 seed7.jsonl.gz lastTurn=84 playerMaxMiasta=1 playerZeroFromTurn=null playerLossToOwnerMinus1Turns=[] playerLossToOwnerMinus99Turns=[] firstOwnerMinus99RecordTurn=77
+V2-trudny-latwy-s4242 seed4242.jsonl.gz lastTurn=60 playerMaxMiasta=1 playerZeroFromTurn=null playerLossToOwnerMinus1Turns=[] playerLossToOwnerMinus99Turns=[] firstOwnerMinus99RecordTurn=null
+V2-trudny-latwy-s7 seed7.jsonl.gz lastTurn=60 playerMaxMiasta=1 playerZeroFromTurn=null playerLossToOwnerMinus1Turns=[] playerLossToOwnerMinus99Turns=[] firstOwnerMinus99RecordTurn=null
+V3-latwy-trudny-s4242 seed4242.jsonl.gz lastTurn=60 playerMaxMiasta=1 playerZeroFromTurn=null playerLossToOwnerMinus1Turns=[] playerLossToOwnerMinus99Turns=[] firstOwnerMinus99RecordTurn=null
+V3-latwy-trudny-s7 seed7.jsonl.gz lastTurn=60 playerMaxMiasta=1 playerZeroFromTurn=null playerLossToOwnerMinus1Turns=[] playerLossToOwnerMinus99Turns=[] firstOwnerMinus99RecordTurn=null
+V4-normalny-normalny-s4242 seed4242.jsonl.gz lastTurn=60 playerMaxMiasta=1 playerZeroFromTurn=29 playerLossToOwnerMinus1Turns=[] playerLossToOwnerMinus99Turns=[] firstOwnerMinus99RecordTurn=null
+V4-normalny-normalny-s7 seed7.jsonl.gz lastTurn=60 playerMaxMiasta=1 playerZeroFromTurn=null playerLossToOwnerMinus1Turns=[] playerLossToOwnerMinus99Turns=[] firstOwnerMinus99RecordTurn=null
+V5-latwy-latwy-s4242 seed4242.jsonl.gz lastTurn=90 playerMaxMiasta=1 playerZeroFromTurn=null playerLossToOwnerMinus1Turns=[] playerLossToOwnerMinus99Turns=[] firstOwnerMinus99RecordTurn=null
+V5-latwy-latwy-s7 seed7.jsonl.gz lastTurn=60 playerMaxMiasta=1 playerZeroFromTurn=null playerLossToOwnerMinus1Turns=[] playerLossToOwnerMinus99Turns=[] firstOwnerMinus99RecordTurn=null
