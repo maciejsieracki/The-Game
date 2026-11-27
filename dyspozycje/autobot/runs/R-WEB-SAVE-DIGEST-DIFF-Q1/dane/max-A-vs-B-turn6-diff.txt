@@ -1,0 +1,91 @@
+{
+ "lenA": 46723,
+ "lenB": 49903,
+ "matched": {
+  "units": {
+   "missingA": 3,
+   "missingB": 2,
+   "orderDiff": 3,
+   "count": [
+    65,
+    66
+   ]
+  },
+  "cities": {
+   "missingA": 0,
+   "missingB": 0,
+   "orderDiff": 0,
+   "count": [
+    43,
+    43
+   ]
+  }
+ },
+ "charsByKind": {
+  "added": 919,
+  "removed": 384,
+  "changed": 238
+ },
+ "charsTotal": 1541
+}
+--- top 60 klas sciezek (kind | sciezka | n | znaki) ---
+added    | units[*] | 3 | 579
+removed  | units[*] | 2 | 384
+changed  | units[diffbonus_1_34_c6hvsv].stackGroupId | 1 | 34
+changed  | units[diffbonus_1_34_yyiq88].stackGroupId | 1 | 34
+changed  | units[rec_5_city25_1tyixgb].typeId | 1 | 21
+changed  | units[rec_5_city25_1tyixgb].category | 1 | 21
+changed  | units[rec_6_city16_1rkbf9p].typeId | 1 | 21
+changed  | units[rec_6_city16_1rkbf9p].category | 1 | 21
+added    | units[diffbonus_1_13_nm64bp].stackGroupId | 1 | 17
+added    | units[diffbonus_1_13_1q1bhjv].stackGroupId | 1 | 17
+added    | units[diffbonus_1_22_ebtm3f].stackGroupId | 1 | 17
+added    | units[diffbonus_1_22_1ps2q58].stackGroupId | 1 | 17
+added    | units[rec_5_city25_1tyixgb].stackGroupId | 1 | 17
+added    | units[rec_6_city16_1rkbf9p].stackGroupId | 1 | 17
+added    | units[rec_5_city25_1tyixgb].stockPaid | 1 | 13
+added    | units[rec_6_city16_1rkbf9p].stockPaid | 1 | 13
+changed  | cities[city16].wealthState.pula | 1 | 10
+changed  | cities[city25].wealthState.pula | 1 | 10
+changed  | units[rec_5_city25_1tyixgb].isGeneral | 1 | 9
+changed  | units[rec_6_city16_1rkbf9p].isGeneral | 1 | 9
+changed  | units[rec_5_city25_1tyixgb].q | 1 | 6
+changed  | cities[city17].manpower | 1 | 6
+changed  | cities[city26].manpower | 1 | 6
+changed  | units[rec_5_city25_1tyixgb].r | 1 | 4
+changed  | units[rec_5_city25_1tyixgb].hpMax | 1 | 4
+changed  | units[rec_6_city16_1rkbf9p].q | 1 | 4
+changed  | units[rec_6_city16_1rkbf9p].hpMax | 1 | 4
+changed  | cities[city16].surowce.drewno | 1 | 3
+changed  | cities[city25].surowce.drewno | 1 | 3
+changed  | units[rec_5_city25_1tyixgb].ruch | 1 | 2
+changed  | units[rec_5_city25_1tyixgb].ruchLeft | 1 | 2
+added    | units[rec_5_city25_1tyixgb].hp | 1 | 2
+changed  | units[rec_6_city16_1rkbf9p].ruch | 1 | 2
+changed  | units[rec_6_city16_1rkbf9p].ruchLeft | 1 | 2
+added    | cities[city1].budowaLista | 1 | 2
+added    | cities[city1].postepBudynkowUsuniete | 1 | 2
+added    | cities[city2].budowaLista | 1 | 2
+added    | cities[city2].postepBudynkowUsuniete | 1 | 2
+added    | cities[city3].budowaLista | 1 | 2
+added    | cities[city3].postepBudynkowUsuniete | 1 | 2
+added    | cities[city4].budowaLista | 1 | 2
+added    | cities[city4].postepBudynkowUsuniete | 1 | 2
+added    | cities[city5].budowaLista | 1 | 2
+added    | cities[city5].postepBudynkowUsuniete | 1 | 2
+added    | cities[city6].budowaLista | 1 | 2
+added    | cities[city6].postepBudynkowUsuniete | 1 | 2
+added    | cities[city7].budowaLista | 1 | 2
+added    | cities[city7].postepBudynkowUsuniete | 1 | 2
+added    | cities[city8].budowaLista | 1 | 2
+added    | cities[city8].postepBudynkowUsuniete | 1 | 2
+added    | cities[city9].budowaLista | 1 | 2
+added    | cities[city9].postepBudynkowUsuniete | 1 | 2
+added    | cities[city10].budowaLista | 1 | 2
+added    | cities[city10].postepBudynkowUsuniete | 1 | 2
+added    | cities[city11].budowaLista | 1 | 2
+added    | cities[city11].postepBudynkowUsuniete | 1 | 2
+added    | cities[city12].budowaLista | 1 | 2
+added    | cities[city12].postepBudynkowUsuniete | 1 | 2
+added    | cities[city13].budowaLista | 1 | 2
+added    | cities[city13].postepBudynkowUsuniete | 1 | 2
