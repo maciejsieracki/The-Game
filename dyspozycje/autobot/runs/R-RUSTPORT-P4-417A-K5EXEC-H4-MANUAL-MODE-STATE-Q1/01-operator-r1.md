@@ -67,3 +67,9 @@ Decyzje dopisane przez Operatora (do wpisu w `REJESTR-RUST.md` przez orkiestrato
 5. Wykonanie `_siegeSafeApproach` (marsz `_siegeWalkTo` z filtrem `safe`, :8107-8136 + :8006-8019); w ciele tag `reczny-oblezenie-bezpieczne-podejscie`.
 6. Panel generała: `_generalSettings`/blokada :17809-17815, :17830.
 7. `activation_done` w `SiegeLoop` z `player_unit_idle` (:6020-6025) i `turn_order` w trybie ręcznym (`siege_tactics_turnseq.rs`).
+
+
+---
+
+## RUNDA 2 (Operator r2, baza 707654e47)
+Pelny raport rundy 2: `01-operator-r2.md` w tym katalogu (STATUS: PASS; wektory kroku ciala hold/none/move/attack/attackMove, 1410 przypadkow z wykonania pinu, 0 rozbieznosci; 15 z 17 nowych mutantow zabitych, 2 rownowazne; fmt/clippy/pelny test EXIT 0: 4432 passed). Kod: 0568a7cb6, 38a94c654.
