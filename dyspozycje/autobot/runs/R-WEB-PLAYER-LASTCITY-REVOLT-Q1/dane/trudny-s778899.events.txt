@@ -1,0 +1,48 @@
+2026-11-27T18:52:30.089Z navigate file:///tmp/plrrevolt-dist/index.html?civTest=1&civSeed=778899
+2026-11-27T18:52:32.312Z endturn-blocked [EndTurn] blocked: awaitingFirstPlayerCity
+2026-11-27T18:54:57.286Z endturn-blocked [EndTurn] blocked: endTurnInProgress
+2026-11-27T18:55:02.768Z evt-console [Barbarzyncy] Tura 5: nowe obozy: 2
+2026-11-27T18:55:02.769Z evt-console [Barbarzyncy] Spawn: Wojownik szekelesz @ (29,51)
+2026-11-27T18:55:02.769Z evt-console [Barbarzyncy] Spawn: Wojownik szekelesz @ (42,110)
+2026-11-27T18:55:17.000Z evt-console [Barbarzyncy] Spawn: Wojownik Sherden @ (29,51)
+2026-11-27T18:55:17.001Z evt-console [Barbarzyncy] Spawn: Wojownik Sherden @ (40,110)
+2026-11-27T18:55:17.001Z evt-console [Barbarzyncy] Spawn: Wojownik Sherden @ (40,68) [na wodzie]
+2026-11-27T18:55:34.750Z evt-console [Barbarzyncy] Spawn: Wojownik szekelesz @ (29,51)
+2026-11-27T18:55:34.750Z evt-console [Barbarzyncy] Spawn: Wojownik szekelesz @ (41,111)
+2026-11-27T18:55:34.750Z evt-console [Barbarzyncy] Spawn: Wojownik szekelesz @ (94,42) [na wodzie]
+2026-11-27T18:56:01.597Z evt-console [Barbarzyncy] Spawn: Wojownik Sherden @ (29,51)
+2026-11-27T18:56:01.598Z evt-console [Barbarzyncy] Spawn: Wojownik Sherden @ (41,109)
+2026-11-27T18:56:01.598Z evt-console [Barbarzyncy] Spawn: Wojownik Sherden @ (62,8) [na wodzie]
+2026-11-27T18:56:03.007Z evt-console [Bunt] Tura 33 Elefantyna → migracja −1 do Sais (risk=0.05)
+2026-11-27T18:56:10.871Z evt-console [Bunt] Tura 35 Luoyang → migracja −1 do Xi'an (risk=0.05)
+2026-11-27T18:56:18.919Z evt-console [Bunt] Tura 37 Heliopolis → migracja −1 do Memfis (risk=0.05)
+2026-11-27T18:56:28.416Z evt-console [Bunt] Tura 39 Nankin → migracja −1 do Xi'an (risk=0.05)
+2026-11-27T18:56:28.453Z evt-console [Bunt] Tura 39 Bubastis → migracja −1 do Memfis (risk=0.05)
+2026-11-27T18:56:33.285Z evt-console [Bunt] Tura 40 Pekin → migracja −1 do Xi'an (risk=0.05)
+2026-11-27T18:56:44.854Z evt-console [Barbarzyncy] Spawn: Wojownik szekelesz @ (29,51)
+2026-11-27T18:56:44.854Z evt-console [Barbarzyncy] Spawn: Wojownik szekelesz @ (42,109)
+2026-11-27T18:56:44.854Z evt-console [Barbarzyncy] Spawn: Wojownik szekelesz @ (49,17) [na wodzie]
+2026-11-27T18:56:52.441Z evt-console [Bunt] Tura 43 Elefantyna → migracja −1 do Memfis (risk=0.05)
+2026-11-27T18:56:58.347Z evt-console [Bunt] Tura 44 Dendera → migracja −1 do Memfis (risk=0.05)
+2026-11-27T18:57:03.758Z evt-console [Bunt] Tura 45 Luoyang → migracja −1 do Xi'an (risk=0.05)
+2026-11-27T18:57:03.817Z evt-console [Bunt] Tura 45 Elefantyna → migracja −1 do Sais (risk=0.05)
+2026-11-27T18:57:09.773Z evt-console [Bunt] Tura 46 Elefantyna → migracja −1 do Memfis (risk=0.05)
+2026-11-27T18:57:09.862Z evt-console [Bunt] Tura 46 Chongqing → migracja −1 do Xi'an (risk=0.05)
+2026-11-27T18:57:15.909Z evt-console [Bunt] Tura 47 Suzhou → migracja −1 do Xi'an (risk=0.05)
+2026-11-27T18:57:30.234Z evt-console [Bunt] Tura 49 Argos → migracja −1 do Ateny (risk=0.05)
+2026-11-27T18:57:45.559Z evt-console [Barbarzyncy] Spawn: Wojownik Sherden @ (29,51)
+2026-11-27T18:57:45.560Z evt-console [Barbarzyncy] Spawn: Wojownik Sherden @ (40,111)
+2026-11-27T18:57:45.560Z evt-console [Barbarzyncy] Spawn: Wojownik Sherden @ (47,103) [na wodzie]
+2026-11-27T18:57:56.184Z evt-console [Bunt] Tura 52 Gergowia → migracja −1 do Uxellodunum (risk=0.05)
+2026-11-27T18:57:56.299Z evt-console [Bunt] Tura 52 Manching → migracja −1 do Uxellodunum (risk=0.05)
+2026-11-27T18:57:56.318Z evt-console [Bunt] Tura 52 Numancja → migracja −1 do Uxellodunum (risk=0.05)
+2026-11-27T18:57:56.481Z evt-console [Bunt] Tura 52 Guangzhou → migracja −1 do Harbin (risk=0.05)
+2026-11-27T18:58:26.441Z evt-console [Bunt] Tura 55 Manching → migracja −1 do Bibracte (risk=0.05)
+2026-11-27T18:58:36.440Z evt-console [Bunt] Tura 56 Argos → migracja −1 do Ateny (risk=0.05)
+2026-11-27T18:58:55.766Z evt-console [Bunt] Tura 58 Luoyang → migracja −1 do Xi'an (risk=0.05)
+2026-11-27T18:59:02.668Z evt-console [Barbarzyncy] Miasto city147: spawn Wojownik Sherden @ (37,41)
+2026-11-27T18:59:05.463Z evt-console [Bunt] Tura 59 Korynt → migracja −1 do Ateny (risk=0.05)
+2026-11-27T18:59:16.564Z evt-console [Barbarzyncy] Spawn: Wojownik szekelesz @ (29,51)
+2026-11-27T18:59:16.564Z evt-console [Barbarzyncy] Spawn: Wojownik szekelesz @ (43,110)
+2026-11-27T18:59:16.564Z evt-console [Barbarzyncy] Spawn: Wojownik szekelesz @ (136,12) [na wodzie]
+2026-11-27T18:59:30.244Z close strona zamknieta

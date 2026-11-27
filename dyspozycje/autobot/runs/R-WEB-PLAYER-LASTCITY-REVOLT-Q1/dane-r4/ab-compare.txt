@@ -1,0 +1,19 @@
+A/B inercyjnosc haka civTest (PLRREVOLT r4) - seed 4242, kultura gracza normalny, AI trudny, maksimum (Trudny, Wysoki, dyplomacja trudna, barbarzyncy trudny), pasywny gracz, tury 2-16
+A = bundle z 909a057fa (bez haka); B = bundle z bf299e885 (gra/src identyczne z 3bef0082b; hak civTest w main.ts +47 linii)
+tura | stateHash A | stateHash B | zgodnosc stateHash | zgodnosc digest(wszystko bez plr/sec/load1)
+t2 | 0b882c683e681352 | 0b882c683e681352 | TAK | TAK
+t3 | 279fc5697fdf88ab | 279fc5697fdf88ab | TAK | TAK
+t4 | 9e94ad773dd834bb | 9e94ad773dd834bb | TAK | TAK
+t5 | 29ce14319967efa5 | 29ce14319967efa5 | TAK | TAK
+t6 | 0dfd5c125158724a | 0dfd5c125158724a | TAK | TAK
+t7 | 3713aafd6a6ce94a | 3713aafd6a6ce94a | TAK | TAK
+t8 | 449fd9ce6eb0d5e0 | 449fd9ce6eb0d5e0 | TAK | TAK
+t9 | 5911d49e4ab8a3fa | 5911d49e4ab8a3fa | TAK | TAK
+t10 | 699f6c68d3483c41 | 699f6c68d3483c41 | TAK | TAK
+t11 | 1c81b0780e5e913d | 1c81b0780e5e913d | TAK | TAK
+t12 | bb6951a9c32c72bf | bb6951a9c32c72bf | TAK | TAK
+t13 | 6167258dbf85af5c | 6167258dbf85af5c | TAK | TAK
+t14 | 4d306c36637eea82 | 4d306c36637eea82 | TAK | TAK
+t15 | 31f585d407afc6b7 | 31f585d407afc6b7 | TAK | TAK
+t16 | 08c4dcd1c7686157 | 08c4dcd1c7686157 | TAK | TAK
+Uwaga: pole plr (odczyt haka) istnieje tylko w B i nie wchodzi do digestu; B zawiera w t16 zdarzenie zmiany wlasciciela Rzym 0->-1 (applyCityCaptureToMap), A tego pola nie ma.

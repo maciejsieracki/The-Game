@@ -1,0 +1,51 @@
+{
+  "seed": 778899,
+  "slot": "ai-econ-s778899",
+  "saved": true,
+  "slotTurn": 10,
+  "slotCounters": {
+    "gateActiveTurns": 0,
+    "bypassApplied": 0,
+    "stuckQueueHeals": 0,
+    "battlesAuto": 0,
+    "diploAudienceClosed": 0,
+    "armyMergeClosed": 0,
+    "techNoticeClosed": 0,
+    "aiOffersRejected": 0,
+    "aiOffersRejectAttempts": 0,
+    "forcedPeaceAccepted": 0
+  },
+  "gateActiveTurns": 0,
+  "bypassApplied": 0,
+  "stuckQueueHeals": 0,
+  "battlesAuto": 0,
+  "diploAudienceClosed": 0,
+  "armyMergeClosed": 0,
+  "techNoticeClosed": 0,
+  "aiOffersRejected": 0,
+  "aiOffersRejectAttempts": 0,
+  "forcedPeaceAccepted": 0,
+  "lastTurn": 12,
+  "stop": {
+    "reason": "gameover",
+    "tura": 12,
+    "why": {
+      "isGameOver": true,
+      "overlayOpen": true,
+      "overlayClass": "vsc-overlay lose",
+      "overlayText": "TWOJE IMPERIUM UPADŁO KLĘSKA ✕ Rzymianie — koniec epoki OSIĄGNIĘCIA 12 TUR PRZETRWANYCH Brąz OSTATNIA EPOKA 12 ZBADANE TECHNOLOGIE Rzymianie CYWILIZACJA STRATY 1 UTRACONE MIASTA 1 UTRACONE JEDNOSTKI WCZYTAJ GRĘ ROZPOCZNIJ OD NOWA THE GAME · KONIEC GRY — PORAŻKA · 1E",
+      "buttons": [
+        {
+          "id": "vsc-load-game",
+          "text": "WCZYTAJ GRĘ"
+        },
+        {
+          "id": "vsc-new-game",
+          "text": "ROZPOCZNIJ OD NOWA"
+        }
+      ],
+      "ownerChangesTail": [],
+      "screenshot": "dyspozycje/autobot/runs/R-WEB-PLAYER-LASTCITY-REVOLT-Q1/dane-r3/pas-trudny-s778899-defeat.png"
+    }
+  }
+}
