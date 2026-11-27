@@ -16,3 +16,15 @@ Zmiany logiki gry/balansu, gra/data/**, gra-robocza/, gra-kanon/, WERSJE.md, man
 tsc 0, logic 213, ai-test 297/0 (po npm ci --ignore-scripts); przy zmianie gra/src pełny zestaw jw.
 ## Binarne kryterium
 Tabela macierzy max (≥10 komórek łącznie z poprzednimi) z B==A ≥6 tur; test z klikiem UI (2 komórki); A==A' ≥10 tur ×2 ziarna; spójność renderu opisana; przy B≠A — diagnoza i poprawka z mutacją.
+
+---
+# DODATEK — RUNDA 2/5 (data `date -u` 22:34 UTC; BAZA = 193fadc8cebcf7d133865e1d03e12d0d80bec9c2, FC r1 FAIL, kod 34e4b2db0; Operator HAIKU)
+Wynik r1 (FC FAIL): ZMIERZONO (nie powtarzać): na prawdziwym maksimum (barbarzyńcy Trudny, po poprawce Obrony) komórka max/4242/t3 PASS (B==A 6/6, 0 błędów strony); 5 komórek z r1 (bunt/4242/t3, bunt/7/t3, max/7/t3, max/7/t10, + max/4242/t10 z wcześniejszej rundy) były mierzone przy barbarzyńcach „normalny” — NIE liczą się jako maksimum; żadnego rozjazdu B≠A w żadnej komórce.
+KROK 0 (obowiązkowy): w swoim worktree wykonaj `git merge --no-edit ca61257d487345c74ef69eea448914b8ca253a98` (origin/main z FALAMI 932–935: okno łaski 15 tur — barbarzyńcy nie wykonują tury w t1–15; ENDARIA/ENDQUIET; hak civTest). Konfliktów nie spodziewamy się (SAVEMAT zmienia tylko tools/docs). Wszystkie pomiary r2 na tej zmergowanej bazie; zapisz SHA bazy w raporcie.
+ZADANIE r2 (TYLKO maksimum: Trudny, Wysoki ×4, kultura trudny, dyplomacja trudna, barbarzyńcy Trudny; ustal i ZAPISZ do pliku .txt, jakie są maksymalne wartości pól „rivals” i „civTypesCount” w kreatorze nowej gry (gra/src/ui/newGameFlow.ts) i użyj ich):
+1. Macierz 11 brakujących komórek na maksimum: {max, max+bunt stolicy AI, aionly} × ziarna {4242, 7} × zapis po {t3, t10} (komórka max/4242/t3 gotowa). UWAGA: po FALI 935 barbarzyńcy nie działają w t1–15 — to zamierzone i nie zmienia metody (B==A ≥6 tur po wczytaniu). Użyj gra/tools/save-load-continuity-live.cjs (cfgUsed musi być zapisane w KAŻDYM JSON; segmenty ≤25 tur, timeout ≤ 590000 ms, Chromium SIGSEGV — ponów ≤3 razy). Jeśli któraś komórka t10 nie mieści się w limicie — rozbij na segmenty i opisz.
+2. Ścieżka UI: wczytanie z menu pauzy KLIKIEM („Wczytaj” → slot) zamiast haka — max/4242/t3 i max/7/t3 (≥6 tur). Opisz próby; jeśli klik niemożliwy — użyj wywołania produkcyjnego loadGameFromSlot i opisz.
+3. A==A': dwa niezależne ciągłe przebiegi tego samego ziarna/ustawień (max/4242 i max/7) przez ≥10 tur, digest bajt w bajt.
+4. Render po wczytaniu: max/4242 po t10: hexCount, brak błędów strony/konsoli, liczba miast/jednostek w scenie = odczyt stanu; zrzut PNG (mały) do dane/.
+5. readback ustawień do .txt (NIE .log) w commicie dla każdej komórki. Dokument ZAPIS-WCZYTANIE-MACIERZ-2026-11-27.md: stan wiążący na górze, tabela komórek z cfgUsed, oznaczenie które z r1 NIE były na maksimum.
+Allowlista/zakazy/bramki bez zmian (gra/src bez zmian; jeśli B≠A — odtwórz minimalnie i zwróć diagnozę; poprawka tylko minimalna z testem czerwony→zielony).
