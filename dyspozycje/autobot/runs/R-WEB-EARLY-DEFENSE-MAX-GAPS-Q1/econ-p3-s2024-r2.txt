@@ -1,0 +1,58 @@
+REALDEFECON {"kind":"console","type":"log","text":"[Diag:boot] start"}
+REALDEFECON {"kind":"console","type":"log","text":"[Diag:session] resetStuckInteractiveState"}
+REALDEFECON {"kind":"console","type":"log","text":"[NewGame] tempoGry = standardowa · kosztJednostekPace = wysoki · buildingCostPace = niski · wzrostLudnosciPace = wysoki · ruchSwiataPace = krotki · epoka= 2 (braz) · typSwiata= kontynenty (Kontynenty) · jakoscMapy= Wysoka → render=high, map"}
+REALDEFECON {"kind":"p3-tax-ui","tabOk":true,"ui":{"ok":true,"before":"30","max":"100"},"splitAfter":{"procentPieniadz":100,"procentNauka":0,"procentLuksus":0},"projSkarbDeltaBefore":3,"projSkarbDeltaAfter":9,"turn":1}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Cusco: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Ateny: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Sparta: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 5 Cusco: Zwiadowca gotowa @ (81,54)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 5 Ateny: Zwiadowca gotowa @ (82,25)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 5 Sparta: Zwiadowca gotowa @ (78,25)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Xi'an: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 7 Xi'an: Zwiadowca gotowa @ (45,42)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Cusco: Wojownik z maczugą (Chaska) oplacone 52 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Ateny: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Luoyang: Oszczepnik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Pekin: Oszczepnik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Xi'an: Łucznik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 9 Cusco: Wojownik z maczugą (Chaska) gotowa @ (81,54)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 9 Ateny: Wojownik gotowa @ (82,25)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 9 Xi'an: Łucznik gotowa @ (45,42)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 9 Luoyang: Oszczepnik gotowa @ (42,41)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 9 Pekin: Oszczepnik gotowa @ (40,46)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Ateny: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Sparta: Oszczepnik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Korynt: Oszczepnik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Ateny: Łucznik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 13 Ateny: Wojownik gotowa @ (82,25)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 13 Sparta: Oszczepnik gotowa @ (78,25)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 13 Korynt: Oszczepnik gotowa @ (82,20)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Xi'an: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 14 Ateny: Łucznik gotowa @ (82,25)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 14 Xi'an: Wojownik gotowa @ (45,42)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Cusco: Wojownik z maczugą (Chaska) oplacone 52 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Ollantaytambo: Łucznik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Ateny: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Xi'an: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 15 Cusco: Wojownik z maczugą (Chaska) gotowa @ (81,54)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 15 Ollantaytambo: Łucznik gotowa @ (76,59)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 15 Ateny: Wojownik gotowa @ (82,25)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 15 Xi'an: Wojownik gotowa @ (45,42)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Teby: Oszczepnik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Ateny: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 19 Ateny: Wojownik gotowa @ (82,25)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 19 Teby: Oszczepnik gotowa @ (82,15)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Argos: Oszczepnik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Nankin: Oszczepnik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 20 Nankin: Oszczepnik gotowa @ (46,36)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 20 Argos: Oszczepnik gotowa @ (83,11)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Mykeny: Oszczepnik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Ateny: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Kaifeng: Oszczepnik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Hangzhou: Oszczepnik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 21 Ateny: Wojownik gotowa @ (82,25)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 21 Kaifeng: Oszczepnik gotowa @ (49,31)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 21 Hangzhou: Oszczepnik gotowa @ (53,31)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 21 Mykeny: Oszczepnik gotowa @ (78,11)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Milet: Oszczepnik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"result","runda":5,"policy":"p3","seed":2024,"run":2,"barb":"brak","turnsRequested":20,"turnsCompleted":20,"outcome":"dokonczone","turn":null,"cityOwnerAfter":0,"cityLost":false,"lossTurn":null,"survived":true,"conqueror":null,"firstGoldAffordTurn":3,"firstGoldAndStockAffordTurn":null,"purchaseTurn":null,"purchaseClick":null,"taxProbe":{"tabOk":true,"ui":{"ok":true,"before":"30","max":"100"},"splitAfter":{"procentPieniadz":100,"procentNauka":0,"procentLuksus":0},"projSkarbDeltaBefore":3,"projSkarbDeltaAfter":9,"turn":1},"infraDiag":null,"navLog":[{"t":664,"url":"bfb0-2a747b18a590/scratchpad/maxgaps/Gra-LIVE.html?civTest=1"}],"worldWait":true,"mapGenLog":[{"t":2881,"mapGen":"total=1377"},{"t":3237,"hexCount":"hexCount=1008"},{"t":29203,"mapGen":"total=24609"},{"t":30791,"hexCount":"hexCount=7992"}],"clusterStartSeen":4,"firstDefenderTurn":null,"lastBarbNear":0,"errors":0,"notes":[],"definicjaTury":"turn=gateInfo().turn; tura_utraty = turn odczytany po ukonczeniu tury, w ktorej miasto zmienilo wlasciciela (= ukonczone tury + 1)","infra":false,"powodNiewiarygodnosci":null}
