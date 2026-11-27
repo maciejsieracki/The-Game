@@ -90,6 +90,7 @@ pub mod player_order_attack;
 pub mod player_order_move;
 pub mod player_order_move_gate;
 pub mod player_order_queue;
+pub mod player_order_siege_manual;
 pub mod production_queue;
 pub mod production_units;
 pub mod recruitment;

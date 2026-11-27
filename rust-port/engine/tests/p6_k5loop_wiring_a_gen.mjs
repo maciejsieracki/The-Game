@@ -2024,6 +2024,307 @@ if (process.env.WIRING_A_ATTACK_ORDER_STEPS) {
   process.exit(0);
 }
 
+// R-RUSTPORT-P4-416 (K5EXEC-H3, D-416-3): wektory KROKU `_performSiegeManualOrder(ru, ord, done)` (`:18435-18475`) i
+// `_trySiegeTowerClimb(ru, done)` (`:8056-8084`). `WIRING_A_SIEGE_MANUAL_STEPS=1`: przypadki jednego wywolania na scenie
+// pinu z murem (konstruktor pinu: `_carveWallTiles`, `_placeSiegeTowers`) i ustawionym stanem (`towerAtWallRows`,
+// `wallTileHp`, `gateOpen`, `wallEverBreached`, `onWallWalkway`, doktryna, amunicja, `shootingEnabled`, rozkaz).
+// Funkcja pinu wolana WPROST (nie przez `_performPlayerOrder`); jej wywolania podfunkcji (`_siegeRamTowerStep`,
+// `_rangedTargetInRange`, `_targetInRange`, `_trySiegeTowerClimb`, `_siegeInfantryToTowerStep`, `_siegeApproachRestricted`,
+// `_siegeSafeApproach`) zapisane jako SLAD (nazwa, argumenty, wynik, wywolania `done` podfunkcji, pierwsze efekty
+// sceny) tylko na glebokosci 1 (wolane wprost z ciala funkcji). Podfunkcje wykonuja tekst pinu; metody wykonawcze
+// (`_doMove`, `_attackGate`, `_advanceToward`, `_doAttack`, `_refreshQueuedOrderVisuals`) = zapis bez wolania
+// callbacku (marsz konczy sie na pierwszym kroku). `done` przekazane do podfunkcji = osobny licznik podfunkcji;
+// `doneCalls` = wylacznie bezposrednie `done()` z ciala funkcji. Klasyfikacja jednostki NIE jest liczona w harnessie:
+// zapisane sa pola `stats.Typ` / `stats.Jednostka` / `nazwa` / `rangedBase` / `ammoLeft` (port klasyfikacji w Rust).
+// Tekst pinu bez zmian (straznik SHA-256 nietkniety). Zapis: `siege_manual_order_step_vectors.json` (albo `WIRING_A_OUT`).
+if (process.env.WIRING_A_SIEGE_MANUAL_STEPS) {
+  const tS = Date.now();
+  let seed = 0x416416;
+  const rnd = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+  const ri = (a, b) => a + Math.floor(rnd() * (b - a + 1));
+  const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
+  const ck = (c, r) => `${c},${r}`;
+  const MO_WT = ['Wieża oblężnicza', 'obleznicza'];
+  const MO_TO = ['Taran okuty', 'obleznicza'];
+  const BASES = [
+    { name: 'sm_mur', built: ['mury'], atk: [MO_W, MO_W, MO_T, MO_WT, MO_WT, MO_K, MO_L, MO_C, MO_F, MO_W], def: [MO_W, MO_S, MO_L, MO_L, MO_W, MO_W] },
+    { name: 'sm_palisada', built: ['palisada'], atk: [MO_W, MO_K, MO_TO, MO_WT, MO_L, MO_W, MO_S, MO_W], def: [MO_W, MO_L, MO_L, MO_S, MO_W, MO_K] },
+    { name: 'sm_baszta', teren: 'Las', built: ['mury', 'baszta'], world: { baza: 'Las', las: true, rzeka: false }, atk: [MO_W, MO_W, MO_L, MO_K, MO_WT, MO_T, MO_C, MO_L], def: [MO_W, MO_W, MO_L, MO_L, MO_K, MO_W] },
+  ];
+  const DOCS = [null, 'steady', 'skirmish', 'aggressive', 'defensive', 'manual'];
+  const N_ORD = Number(process.env.WIRING_A_SIEGE_MANUAL_N ?? 1500);
+  const N_CLIMB = Number(process.env.WIRING_A_SIEGE_MANUAL_NC ?? 450);
+  const orders = [];
+  const climbs = [];
+  const impassable = {};
+  const SUBS = ['_siegeRamTowerStep', '_rangedTargetInRange', '_targetInRange', '_trySiegeTowerClimb', '_siegeInfantryToTowerStep', '_siegeApproachRestricted', '_siegeSafeApproach'];
+  for (const base of BASES) {
+    modCache = new Map();
+    rafQ = [];
+    globalThis.__blowRandom = () => { throw new Error('rzut w przypadku kroku'); };
+    const { BattleScene } = load(SCENE);
+    const bs = new BattleScene({
+      attacker: JSON.parse(JSON.stringify(A(base.atk))),
+      defender: JSON.parse(JSON.stringify(D(base.def))),
+      teren: base.teren ?? 'Równina', worldTerrain: base.world, data: { units, counters, terrainCombat },
+      deploy: false, deployPlayerSide: 'atk', manualControlAllowed: false,
+      siege: { defCiv: 'rzym', builtBuildingIds: base.built }, attackerCivBonusy: [], defenderCivBonusy: [],
+      attackerEra: 1, defenderEra: 1,
+    });
+    const all = [...bs.atk, ...bs.def];
+    const wallCol0 = bs.siegeWallCol;
+    if (!(wallCol0 >= 0)) throw new Error('scena bez muru: ' + base.name);
+    const wallTiles0 = new Map(bs.wallTileHp);
+    const wallRows0 = [...wallTiles0.keys()];
+    if (wallRows0.length === 0) throw new Error('brak kafli muru: ' + base.name);
+    const log0 = bs.log.length;
+    // `_passableForUnit` kazdej jednostki (teren; kafle nieprzejezdne), deduplikowane.
+    const impTable = new Map();
+    const impOf = new Map();
+    for (const u of all) {
+      const out = [];
+      for (let c = 0; c < BF_COLS_PIN; c++) for (let r = 0; r < BF_ROWS_PIN; r++) if (!bs._passableForUnit(u, c, r)) out.push([c, r]);
+      const key = JSON.stringify(out);
+      if (!impTable.has(key)) { impTable.set(key, base.name + '#' + impTable.size); impassable[base.name + '#' + (impTable.size - 1)] = out; }
+      impOf.set(u, impTable.get(key));
+    }
+    let rec = null;
+    let depth = 0;
+    let sub = null;
+    const idOf = (u) => (u ? u.bu.id : null);
+    bs._doMove = function (ru, c, r) { if (sub) sub.fx.push(['move', c, r]); else throw new Error('_doMove poza podfunkcja'); };
+    bs._attackGate = function () { if (sub) sub.fx.push(['attackGate']); else throw new Error('_attackGate poza podfunkcja'); };
+    bs._advanceToward = function (ru, c, r) { if (sub) sub.fx.push(['advance', c, r]); else throw new Error('_advanceToward poza podfunkcja'); };
+    bs._schedule = function () { throw new Error('_schedule w przypadku kroku'); };
+    bs._doAttack = function (a, d) { if (!rec || depth !== 0) throw new Error('_doAttack poza cialem'); rec.attacks.push(idOf(d)); };
+    bs._refreshQueuedOrderVisuals = function () { if (rec && depth === 0) rec.refresh += 1; };
+    const orig = {};
+    for (const name of SUBS) {
+      orig[name] = bs[name];
+      bs[name] = function (...a) {
+        if (!rec || depth !== 0) return orig[name].apply(this, a);
+        const s = { fn: name, fx: [], done: 0 };
+        const args = a.slice(1);
+        // `done` / callback podfunkcji -> licznik podfunkcji (nie `done` ciala).
+        for (let i = 0; i < args.length; i++) if (typeof args[i] === 'function') args[i] = () => { s.done += 1; s.fx.push(['done']); };
+        depth += 1;
+        const prevSub = sub;
+        sub = s;
+        let out;
+        try { out = orig[name].call(this, a[0], ...args); } finally { depth -= 1; sub = prevSub; }
+        s.args = a.slice(1).filter((x) => typeof x !== 'function');
+        s.out = out && typeof out === 'object' ? idOf(out) : out;
+        rec.trace.push(s);
+        return out;
+      };
+    }
+    const unitSnap = (ru) => ({
+      unit: ru.bu.id, side: ru.side, pos: [ru.q, ru.r], moveLeft: ru.moveLeft, dead: !!ru.dead, fadingOut: !!ru.fadingOut,
+      routed: !!ru.routed, onWallWalkway: !!ru.onWallWalkway, mounted: !!ru.mounted, primaryRanged: !!ru.primaryRanged,
+      rangedBase: !!ru.rangedBase, ammoLeft: ru.ammoLeft, shootingEnabled: ru.shootingEnabled !== false,
+      typ: ru.bu.stats?.Typ == null ? null : String(ru.bu.stats.Typ),
+      jednostka: ru.bu.stats?.Jednostka == null ? null : String(ru.bu.stats.Jednostka),
+      nazwa: ru.bu.nazwa == null ? null : String(ru.bu.nazwa),
+      impassable: impOf.get(ru),
+    });
+    const sceneSnap = () => ({
+      finished: !!bs.finished, wallCol: bs.siegeWallCol, gateCol: bs.siegeGateCol, gateRow: bs.siegeGateRow,
+      gateOpen: !!bs.gateOpen, wallEverBreached: !!bs.wallEverBreached, wallTilesInit: bs.siegeWallTilesInit,
+      wallRows: [...bs.wallTileHp.keys()].sort((x, y) => x - y), towerRows: [...bs.towerAtWallRows].sort((x, y) => x - y),
+      occ: [...bs.occByKey.keys()].map((k) => k.split(',').map(Number)),
+    });
+    const resetScene = () => {
+      bs.wallTileHp = new Map(wallTiles0);
+      bs.towerAtWallRows = new Set();
+      bs.gateOpen = false;
+      bs.wallEverBreached = false;
+      bs.finished = false;
+      bs.siegeWallCol = wallCol0;
+      bs.log.length = log0;
+      for (const u of all) { u.dead = false; u.fadingOut = false; u.routed = false; u.removed = false; u.onWallWalkway = false; }
+    };
+    const layout = () => {
+      const used = new Set();
+      const anchorR = pick(wallRows0) + ri(-3, 3);
+      for (const u of all) {
+        let ok = false;
+        for (let k = 0; k < 400 && !ok; k++) {
+          const c = u.side === 'atk' ? wallCol0 - ri(1, 9) : wallCol0 + ri(-2, 5);
+          const r = anchorR + ri(-6, 6);
+          if (c < 0 || c >= BF_COLS_PIN || r < 0 || r >= BF_ROWS_PIN) continue;
+          if (used.has(ck(c, r)) || !bs._passableForUnit(u, c, r)) continue;
+          used.add(ck(c, r));
+          u.q = c; u.r = r;
+          ok = true;
+        }
+        if (!ok) return false;
+      }
+      for (const u of all) {
+        const x = rnd();
+        if (x < 0.06) u.dead = true;
+        else if (x < 0.11) u.routed = true;
+        else if (x < 0.14) u.fadingOut = true;
+        else if (x < 0.16) u.removed = true;
+        u.moveLeft = pick([0, 1, 2.5, 4, 6]);
+        if (u.rangedBase) u.ammoLeft = pick([0, 3, 10]);
+        u.shootingEnabled = rnd() >= 0.2;
+        if (u.side === 'def' && u.q === wallCol0 && rnd() < 0.5) u.onWallWalkway = true;
+      }
+      bs.occByKey = new Map();
+      for (const u of all) if (!u.dead && !(u.routed && rnd() < 0.5)) bs.occByKey.set(ck(u.q, u.r), u);
+      return true;
+    };
+    const moveTo = (u, c, r) => {
+      if (c < 0 || c >= BF_COLS_PIN || r < 0 || r >= BF_ROWS_PIN || bs.occByKey.has(ck(c, r))) return false;
+      if (bs.occByKey.get(ck(u.q, u.r)) === u) bs.occByKey.delete(ck(u.q, u.r));
+      u.q = c; u.r = r;
+      bs.occByKey.set(ck(c, r), u);
+      return true;
+    };
+    const towersAndWall = (ru) => {
+      if (rnd() < 0.6) {
+        const k = ri(1, 3);
+        for (let i = 0; i < k; i++) {
+          const row = rnd() < 0.7 ? ru.r + ri(-2, 2) : pick(wallRows0);
+          if (wallTiles0.has(row)) bs.towerAtWallRows.add(row);
+        }
+      }
+      const wb = wallCol0 - 1;
+      const tr = bs.towerAtWallRows.size > 0 ? pick([...bs.towerAtWallRows]) : pick(wallRows0);
+      const y = rnd();
+      if (y < 0.5) {
+        const spot = pick([[wb - 1, tr], [wb, tr - 1], [wb, tr + 1], [wb - 2, tr], [wb, tr], [wb - 1, tr + 1], [wb + 1, tr]]);
+        moveTo(ru, spot[0], spot[1]);
+      }
+      // Korona nad `ru` zajeta / wyburzona, brama, wylom.
+      if (rnd() < 0.25) {
+        const other = pick(all.filter((u) => u !== ru));
+        moveTo(other, wallCol0, ru.r);
+      }
+      if (rnd() < 0.15) bs.wallTileHp.delete(ru.r);
+      for (const row of wallRows0) if (rnd() < 0.04) bs.wallTileHp.delete(row);
+      bs.gateOpen = rnd() < 0.25;
+      bs.wallEverBreached = rnd() < 0.25;
+      if (rnd() < 0.1) bs.siegeWallCol = -1;
+    };
+    const setDoctrine = (ru) => {
+      ru.unitDoctrine = pick(DOCS);
+      ru.groupId = rnd() < 0.35 ? pick(['g1', 'g2']) : null;
+      bs._groupMeta = new Map();
+      if (rnd() < 0.6) bs._groupMeta.set('g1', { doctrine: pick(DOCS.filter(Boolean)), autoPlay: rnd() < 0.7 });
+    };
+    const rosterOf = (ru) => (ru.side === 'atk' ? bs.def : bs.atk);
+    // Rozkazy.
+    const per = Math.ceil(N_ORD / BASES.length);
+    let made = 0;
+    let guard = 0;
+    while (made < per && guard++ < per * 20) {
+      resetScene();
+      if (!layout()) continue;
+      const pool = all.filter((u) => !u.dead && !u.removed && bs.occByKey.get(ck(u.q, u.r)) === u);
+      const atkPool = pool.filter((u) => u.side === 'atk');
+      if (atkPool.length === 0) continue;
+      const rangedAtk = atkPool.filter((u) => u.rangedBase);
+      const ru = rnd() < 0.15 && rangedAtk.length > 0 ? pick(rangedAtk) : rnd() < 0.88 ? pick(atkPool) : pick(pool);
+      towersAndWall(ru);
+      setDoctrine(ru);
+      if (rnd() < 0.15) ru.onWallWalkway = true;
+      const x = rnd();
+      let ord;
+      if (x < 0.3) {
+        ord = { type: 'none' };
+        // Bezczynny strzelec (`:18445-18452`): czesc przypadkow z amunicja, doktryna `manual` i wrogiem w zasiegu.
+        if (ru.rangedBase && rnd() < 0.7) {
+          ru.ammoLeft = pick([0, 10, 10]);
+          if (rnd() < 0.6) ru.unitDoctrine = 'manual';
+          const foe = pick(rosterOf(ru).filter((u) => !u.dead));
+          if (foe && rnd() < 0.7) {
+            const d = ri(0, Math.max(1, Math.floor(ru.range)) + 1);
+            const dc = ri(0, d);
+            moveTo(foe, ru.q + dc, ru.r + (d - dc) * pick([-1, 1]));
+          }
+        }
+      } else if (x < 0.55) {
+        const y = rnd();
+        const roster = rosterOf(ru);
+        const targetId = y < 0.8 ? pick(roster).bu.id : y < 0.9 ? pick(ru.side === 'atk' ? bs.atk : bs.def).bu.id : 'brak';
+        const t = roster.find((u) => u.bu.id === targetId);
+        if (t && rnd() < 0.12) { t.q = ru.q; t.r = ru.r; t.dead = false; t.fadingOut = false; t.routed = false; }
+        ord = { type: 'attack', targetId };
+      } else if (x < 0.82) {
+        const at = rnd() < 0.1;
+        ord = { type: 'attackMove', col: at ? ru.q : Math.max(0, Math.min(BF_COLS_PIN - 1, ru.q + ri(-12, 12))), row: at ? ru.r : Math.max(0, Math.min(BF_ROWS_PIN - 1, ru.r + ri(-12, 12))) };
+      } else if (x < 0.92) ord = { type: 'move', col: ru.q + 1, row: ru.r };
+      else ord = { type: 'hold' };
+      const snap = {
+        base: base.name, ...unitSnap(ru), scene: sceneSnap(),
+        unitDoctrine: ru.unitDoctrine ?? null, groupId: ru.groupId ?? null,
+        groupMeta: [...bs._groupMeta.entries()].map(([k, m]) => [k, m.doctrine, m.autoPlay]),
+        enemies: rosterOf(ru).map((e) => ({ id: e.bu.id, q: e.q, r: e.r, dead: !!e.dead, fadingOut: !!e.fadingOut, routed: !!e.routed })),
+        threats: bs._siegeShooterThreats().map((t) => [t.q, t.r, t.range]),
+        order: ord.type,
+        ...(ord.type === 'attack' ? { targetId: ord.targetId } : ord.type === 'attackMove' || ord.type === 'move' ? { target: [ord.col, ord.row] } : {}),
+      };
+      rec = { trace: [], attacks: [], refresh: 0 };
+      ru.playerOrder = ord;
+      let doneCalls = 0;
+      const ret = bs._performSiegeManualOrder(ru, ord, () => { doneCalls += 1; });
+      orders.push({
+        ...snap,
+        expect: {
+          ret, doneCalls, attacks: rec.attacks, refresh: rec.refresh, orderAfter: ru.playerOrder.type,
+          trace: rec.trace.map((s) => ({ fn: s.fn, args: s.args, out: s.out, done: s.done, fx: s.fx })),
+          towerRowsAfter: [...bs.towerAtWallRows].sort((p, q) => p - q),
+        },
+      });
+      rec = null;
+      made += 1;
+    }
+    // `_trySiegeTowerClimb` wprost: stan przed i po.
+    const perC = Math.ceil(N_CLIMB / BASES.length);
+    made = 0;
+    guard = 0;
+    while (made < perC && guard++ < perC * 20) {
+      resetScene();
+      if (!layout()) continue;
+      const pool = all.filter((u) => !u.dead && !u.removed && bs.occByKey.get(ck(u.q, u.r)) === u);
+      if (pool.length === 0) continue;
+      const ru = rnd() < 0.85 ? pick(pool.filter((u) => u.side === 'atk')) ?? pick(pool) : pick(pool);
+      if (!ru) continue;
+      towersAndWall(ru);
+      if (rnd() < 0.5 && bs.towerAtWallRows.size > 0) {
+        const tr = pick([...bs.towerAtWallRows]);
+        const spot = pick([[wallCol0 - 2, tr], [wallCol0 - 1, tr - 1], [wallCol0 - 1, tr + 1]]);
+        moveTo(ru, spot[0], spot[1]);
+      }
+      if (rnd() < 0.1) ru.onWallWalkway = true;
+      if (rnd() < 0.05) ru.moveLeft = NaN;
+      const occHasSelf = bs.occByKey.get(ck(ru.q, ru.r)) === ru;
+      const before = { ...unitSnap(ru), moveLeft: Number.isNaN(ru.moveLeft) ? 'NaN' : ru.moveLeft, scene: sceneSnap(), occSelf: occHasSelf };
+      let done = 0;
+      const ret = bs._trySiegeTowerClimb(ru, () => { done += 1; });
+      climbs.push({
+        base: base.name, ...before,
+        expect: {
+          ret, done, pos: [ru.q, ru.r], onWallWalkway: !!ru.onWallWalkway,
+          moveLeft: Number.isNaN(ru.moveLeft) ? 'NaN' : ru.moveLeft,
+          wallEverBreached: !!bs.wallEverBreached, log: bs.log.slice(log0),
+          occ: [...bs.occByKey.keys()].map((k) => k.split(',').map(Number)).sort((p, q) => p[0] - q[0] || p[1] - q[1]),
+        },
+      });
+      made += 1;
+    }
+    console.error(`${base.name}: rozkazy ${orders.length} wspinaczki ${climbs.length} (${Date.now() - tS} ms)`);
+  }
+  const shaS = hash.digest('hex');
+  if (shaS !== EXPECTED_SHA256) throw new Error('straznik SHA-256 pinu: ' + shaS + ' != ' + EXPECTED_SHA256);
+  const txt = JSON.stringify({ pin: PIN, pinSha256: shaS, bfCols: BF_COLS_PIN, bfRows: BF_ROWS_PIN, impassable, orders, climbs }) + '\n';
+  const outPath = process.env.WIRING_A_OUT ?? join(here, 'p6_k5loop_wiring_a_pin_vectors', 'siege_manual_order_step_vectors.json');
+  writeFileSync(outPath, txt);
+  console.log(createHash('md5').update(txt).digest('hex') + '  ' + outPath);
+  process.exit(0);
+}
+
 // PIN2-PROBE-Q1: kandydaci scenariuszy (diagnostyka, np. przy szukaniu wektorow zabijajacych mutanty): `WIRING_A_EXTRA`
 // = plik JSON z lista scenariuszy w formacie `SCENARIOS`, wynik do `WIRING_A_OUT` (NIE do katalogu wektorow).
 const extra0 = process.env.WIRING_A_EXTRA ? JSON.parse(readFileSync(process.env.WIRING_A_EXTRA, 'utf8')) : null;
