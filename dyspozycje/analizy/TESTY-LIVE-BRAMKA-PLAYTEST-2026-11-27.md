@@ -237,3 +237,45 @@ Kandydat obrony: 47dec7e3a. ZMIERZONO: forced-war-player-target-live-test.cjs (j
 | war-era-counter-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa; ekran NIE ZMIERZONO |
 | war-rules-multiwar-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa; ekran NIE ZMIERZONO |
 | wyrab-wycinka-nazwa-live-test.cjs | NIE ZMIERZONO | 0 | 0 | grep; ekran NIE ZMIERZONO |
+
+## Runda 2 (R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1, baza 5c187d3be)
+
+Pomiary wykonane na tym samym bundlu (src gry bez zmian względem c2749691b; zmieniono tylko pliki testów). Surowe wyjścia: `dyspozycje/autobot/runs/R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1/logi/`. Czasy to wall-clock sesji (limit 280 s z dispatchu).
+
+| Test | PRZED (rc, wynik, czas) | PO (rc, wynik, czas) | Dowód / zmiana |
+|---|---|---|---|
+| forced-war-player-target-live-test | rc=1, `endTurn #1 nie ustabilizował się`, 147 s (`PRE-forced-war-player-target.txt`) | rc=0, 12 pass / 0 fail, 364 s (`POST2-forced-war-player-target-full.txt`) | przepięcie na prepareEndTurnGate (z 5c187d3be). Pierwsza próba PO (`POST-forced-war-player-target.txt`) ubita timeoutem 285 s w A2, bez błędu gry. Przebieg PO przekracza limit 280 s |
+| sidepanel-diplo-dismiss-real-render-test | rc=1, 33 pass / 4 fail (A6, A7, B6, B7: endTurn nie wykonał się), 286 s (`PRE-sidepanel-diplo-dismiss.txt`) | rc=0, 35 pass / 0 fail, 133 s (`POST-sidepanel-diplo-dismiss.txt`) | zmiana: `?civTest=1` + `prepareEndTurnGate` w `endTurnAndSettle` |
+| era-change-toast-live-test (zamiast diplo-truce, patrz niżej) | rc=1, FAIL C/D/E: endTurn nie wykonany, komunikat „Nie można zakończyć tury. Spichlerz państwa…”, 144 s (`PRE-era-change-toast.txt`) | rc=1 na późniejszym etapie: C, D, E PASS (era 1→2, toast „Nowa epoka” widoczny); F: karta technologii pusta (`sections:0`), Escape timeout, 85 s (`POST-era-change-toast.txt`) | zmiana: `?civTest=1` + `prepareEndTurnGate` przed endTurn w sekcji C |
+
+Wniosek: forced-war i sidepanel przechodzą z bramki „Zakończ turę” na dalszy etap (oba zielone po zmianie). era-change-toast przechodzi bramkę i zalicza sekcje C–E. Jego fail w F nie jest skutkiem tej zmiany: ta sama pusta karta technologii występuje już w PRE (`PRE-era-change-toast.txt`, sekcja F). Nie został zbadany w tej rundzie.
+
+### Mutacja czerwono-zielona (sidepanel)
+
+- Mutant: kopia testu z wyłączonym tylko wywołaniem `prepareEndTurnGate` (reszta, w tym `?civTest=1`, bez zmian): `MUTANT-sidepanel-bez-przepiecia.txt`, rc=1, 33 pass / 4 fail (A6/A7/B6/B7 jak w PRE).
+- Przywrócony test (PO): rc=0, 35 pass / 0 fail. Czerwono→zielono potwierdzone na tym samym teście.
+
+### Diplo-truce (odrzucony jako 3. test)
+
+- PRZED: 27 pass / 1 fail. Fail w L2f–L2h: `endUntilTurn: nie osiągnięto tury 11`, stan tura 9, `inProgress:false` (`PRE-diplo-truce.txt`).
+- Próba 1: zamknięcie okna Civpedia (`.civ-wiki-hub.open .wh-close`) w `endOneTurn`. Bez efektu, ten sam stan (`POST-diplo-truce.txt`).
+- Próba 2: `prepareEndTurnGate` w `endOneTurn`. Bramka NNS zwraca `blokada:false`, ale `canEnd:false` (`POST2-diplo-truce.txt`, błąd „bramka … nadal zamknięta”).
+- Diagnoza z `TRUCE_DEBUG=1` (`DEBUG-diplo-truce-blocker.txt`): po L2f0b gra wielokrotnie loguje `[EndTurn] blocked: preBattleOpen {pending:false}`. Blokadą jest otwarte okno PRZEDBITEWNE (`isPreBattleOpen()`), a nie bramka NNS. Hook `flushBattles` nie pomaga, bo wymaga `hasPendingAutoPreBattle()`. Zamknięcie wymaga nowego haka w `main.ts` albo rozstrzygnięcia okna przez test, poza zakresem tego tematu. Zmiany w `diplo-truce-live-test.cjs` cofnięto (plik wraca do stanu z 5c187d3be).
+
+### Poziom maksymalny (zasada właściciela 2026-11-26)
+
+- Żaden z trzech testów nie ustawia w sobie Dyplomacji, Kosztów jednostek, Kultury i religii ani rozmiaru mapy. Używają domyślnego bootstrapu `?playtest=mapa` (+ `civTest=1` tam, gdzie dodano). NIE ZMIERZONO na poziomie maksymalnym (Dyplomacja Trudna, Koszty jednostek Wysoki ×4, Kultura i religia trudny, największa mapa). W tych testach nie znaleziono parametrów URL ani haków do podniesienia tych ustawień.
+- Poziomy „maksimum” wg kreatora gry (do zweryfikowania w osobnym temacie): Dyplomacja i wojna: Trudna; Koszty jednostek: Wysoki ×4; Kultura i religia: trudny.
+
+### Inwentaryzacja (105 plików `*-live-test.cjs`)
+
+Kolumna „blokuje ekran powitalny” jest wypełniona z kodu (grep), nie z uruchomienia:
+- „NIE (kod: helper closeCivWelcome obecny)”: test wywołuje `closeCivWelcome`, więc ekran powitalny jest zamykany przed testem.
+- „prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome)”: test startuje na mapie playtest i nie zamyka ekranu. To hipoteza, nie wynik pomiaru.
+- „NIE ZMIERZONO (kod: brak ?playtest=mapa)”: test nie używa tej ścieżki, brak danych.
+
+Z grep: 105 plików; 55 z hipotezą „prawdopodobnie TAK”. Pełna tabela (plik | blokuje | closeCivWelcome | prepareEndTurnGate | civTest): `dyspozycje/autobot/runs/R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1/logi/INWENTARYZACJA-grep-r2.txt`.
+
+Uruchomione w tej rundzie: 4 testy live (forced-war, sidepanel, era-change-toast, diplo-truce). Pozostałe: NIE ZMIERZONO.
+
+Kolumna `prepareEndTurnGate` w plikach testów: po zmianach tej rundy wystąpienia w 3 plikach (forced-war, sidepanel, era-change-toast). Pozostałe testy: 0.

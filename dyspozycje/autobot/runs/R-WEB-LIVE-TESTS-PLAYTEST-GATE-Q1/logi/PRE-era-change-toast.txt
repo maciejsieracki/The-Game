@@ -1,0 +1,47 @@
+[era-change-toast-live-test] budowanie bundla (vite build, wyłącznie dozwolona komenda z CLAUDE.md)...
+[era-change-toast-live-test] build OK.
+[era-change-toast-live-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+
+-- A. Bootstrap ?playtest=mapa dobiega końca (miasta+jednostki, tura=1) --
+  OK  bootstrap zakończony: citiesLen>0
+  OK  bootstrap zakończony: unitsLen>0
+  OK  bootstrap zakończony: turn===1
+
+-- B. prepareOneTechFromBronze(): era cofnięta do 1, brakuje dokładnie Brązownictwa --
+  OK  remaining tech === "Brązownictwo" (jedyny tech Kamienia z awansDoEpoki:2)
+  OK  era1Count === 12 (liczba techów Kamienia w tech.json)
+  OK  po prepare: era===1
+  OK  po prepare: zbadaneSize===11 (12 - Brązownictwo)
+
+-- C. Realny triggerPlayerEndTurn() (ta sama funkcja co przycisk "Zakończ turę") --
+ FAIL endTurnInProgress zaobserwowane true -> false (przejście tury faktycznie się wykonało) -- {"sawInProgress":false,"settled":false,"elapsedMs":60142}
+
+-- D. Era faktycznie awansowała (reconcilePlayerEraFromResearch), nie tylko lokalnie w researchStep --
+ FAIL po end turn: era===2 -- {"era":1,"zbadaneSize":11,"nauka":1925,"badana":null}
+ FAIL po end turn: Brązownictwo faktycznie zbadane (zbadaneSize>=12) -- {"era":1,"zbadaneSize":11,"nauka":1925,"badana":null}
+
+-- E. SEDNO zgłoszenia Macieja: toast "Nowa epoka" faktycznie WIDOCZNY po przejściu tury --
+  OK  toast istnieje w DOM
+ FAIL toast display==="block" (widoczny, nie ukryty) -- {"display":"none","html":"Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 187. Pomogą: podatek złota: +29 złota/turę; obniżka racji żywności: +59 żywności/turę; rozwiązanie jednostek (złoto): +96 złota/turę; rozwiązanie jednostek (żywność): +192 żywności/turę.","zIndex":"320"}
+ FAIL toast HTML zawiera "Nowa epoka" -- {"display":"none","html":"Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 187. Pomogą: podatek złota: +29 złota/turę; obniżka racji żywności: +59 żywności/turę; rozwiązanie jednostek (złoto): +96 złota/turę; rozwiązanie jednostek (żywność): +192 żywności/turę.","zIndex":"320"}
+ FAIL toast HTML zawiera "Brązu" -- {"display":"none","html":"Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 187. Pomogą: podatek złota: +29 złota/turę; obniżka racji żywności: +59 żywności/turę; rozwiązanie jednostek (złoto): +96 złota/turę; rozwiązanie jednostek (żywność): +192 żywności/turę.","zIndex":"320"}
+
+-- F. Modal pełnej karty technologii (dane produkcyjne + długie listy) --
+  OK  modal odkrycia jest widoczny
+ FAIL modal pokazuje pełną kartę Brązownictwa -- {"visible":true,"title":"","sections":0,"hasUndefined":false,"scrollable":false}
+ FAIL karta ma sekcje z danych tech tree -- {"visible":true,"title":"","sections":0,"hasUndefined":false,"scrollable":false}
+  OK  karta nie renderuje brakujących pól jako undefined
+ FAIL długa karta ma własny przewijany obszar -- {"visible":true,"title":"","sections":0,"hasUndefined":false,"scrollable":false}
+
+-- G. Edge cases: Escape + ponowne otwarcie drzewa --
+  OK  Escape zamyka modal bez kończenia tury
+[era-change-toast-live-test] błąd: locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('#civ-tech-discovery-notice-host [data-act="tree"]')[22m
+
+    at main (/home/user/The-Game/.claude/worktrees/wf_378d4f74-865-1/gra/tools/era-change-toast-live-test.cjs:214:77) {
+  log: [
+    `  - waiting for locator('#civ-tech-discovery-notice-host [data-act="tree"]')`
+  ],
+  name: 'TimeoutError'
+}

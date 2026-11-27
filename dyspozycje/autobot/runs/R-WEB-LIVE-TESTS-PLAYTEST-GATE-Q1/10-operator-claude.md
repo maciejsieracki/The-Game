@@ -1,22 +1,30 @@
-STATUS: BLOCK
-DOMAIN: GAME
-TEMAT: R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1
-GOAL: zamknąć lukę z #108: przynajmniej 3 testy live, które przed zmianą padają na bramce „Zakończ turę” w ?playtest=mapa, a po zmianie idą dalej, z mutacją czerwono-zieloną. Tabela inwentaryzacji ≥20 wierszy.
-ZMIANY/COMMIT: baza c2749691b686f4ece6b2cb5e35b3438d0427c365 (origin/main, `git rev-parse HEAD` = c2749691b686f4ece6b2cb5e35b3438d0427c365; `git merge-base --is-ancestor` z bazą: tak). Zmienione pliki: dyspozycje/analizy/TESTY-LIVE-BRAMKA-PLAYTEST-2026-11-27.md (inwentaryzacja 105 wierszy) i ten raport. Kod gry, testy *-live-test.cjs i _live-ready.cjs NIE zmienione. Commit: patrz SHA w odpowiedzi orkiestratorze.
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (testy live; gra/src bez zmian, pliki testów i analiza)
+TEMAT: R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1 (tag LIVEGATE2), runda 2/5
+GOAL: co najmniej 3 realne testy live zmieniają wynik PRZED→PO (z bramki „Zakończ turę” na dalszy etap), mutacja czerwono-zielona na jednym, inwentaryzacja z kolumną „blokuje ekran powitalny” (≥20 wierszy z grep), hak nie zmienia gry bez flagi.
+ZMIANY-COMMIT: commit z tą rundą (wskazany w polu sha wyniku). Baza 5c187d3bfecef5a09043135395d4538a93b5d3cc (`git merge-base --is-ancestor` potwierdzone przez checkout --detach). Brak zmian w gra/src (nie dodano haka w main.ts).
+  Zmienione pliki (allowlista):
+  - gra/tools/forced-war-player-target-live-test.cjs: bez zmian w tej rundzie (przepięte w 5c187d3be; zmierzone ponownie).
+  - gra/tools/sidepanel-diplo-dismiss-real-render-test.cjs: `?playtest=mapa&civTest=1` + `prepareEndTurnGate` w endTurnAndSettle. Uwaga: plik nie pasuje do glob `*-live-test.cjs` z allowlisty, ale jest wskazany w dispatchu.
+  - gra/tools/era-change-toast-live-test.cjs: `?playtest=mapa&civTest=1` + `prepareEndTurnGate` przed endTurn w sekcji C. Zamiast diplo-truce (patrz BLOKADY).
+  - gra/tools/diplo-truce-live-test.cjs: zmiany z tej rundy cofnięte, plik bez modyfikacji.
+  - dyspozycje/analizy/TESTY-LIVE-BRAMKA-PLAYTEST-2026-11-27.md: dopisana sekcja „Runda 2”.
+  - dyspozycje/autobot/runs/R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1/logi/*.txt: surowe wyjścia, mutant (usunięty z drzewa po pomiarze) i inwentaryzacja grep.
 TESTY:
-- Inwentaryzacja (grep -c, 105 plików *-live-test.cjs): closeCivWelcome w 12 plikach; prepareEndTurnGate w 0 plikach *-live-test.cjs (jedyne użycie: gra/tools/live-nns-gate-smoke-test.cjs).
-- Pomiary live PRZED/PO: NIE ZMIERZONO w tej rundzie. Nie uruchomiono Chromium ani żadnego testu live.
-- Bramki tsc/logic/tech-tree/research/unit-replace/combat/ai-test: NIE ZMIERZONO (brak zmiany w kodzie gry, nie uruchomiono w tej rundzie).
-- Poziom maksymalny (Dyplomacja Trudna, Koszty jednostek Wysoki x4, Kultura i religia trudny, największa mapa): NIE ZMIERZONO.
+  - tsc --noEmit: rc=0.
+  - forced-war-player-target-live-test PRZED (kod z c2749691b, kopia tymczasowa): rc=1, „endTurn #1 nie ustabilizował się”, 147 s. PO (kod z 5c187d3be): rc=0, 12 pass / 0 fail, 364 s. Pierwsza próba PO ubita limitem 285 s w A2 (rc=124, bez błędu gry). Czas PO przekracza limit 280 s.
+  - sidepanel-diplo-dismiss-real-render-test PRZED: rc=1, 33 pass / 4 fail (A6, A7, B6, B7: endTurn nie wykonany), 286 s. PO: rc=0, 35 pass / 0 fail, 133 s.
+  - era-change-toast-live-test PRZED: rc=1, C/D/E fail (bramka: „Nie można zakończyć tury. Spichlerz…”), 144 s. PO: rc=1 dalej: C, D, E PASS (era 1→2, toast „Nowa epoka” widoczny), F fail (karta technologii pusta, `sections:0`; ta sama usterka w PRE), Escape timeout, 85 s.
+  - Mutacja czerwono-zielona (sidepanel, bez wywołania prepareEndTurnGate): rc=1, 33 pass / 4 fail; przywrócony: rc=0, 35 pass / 0 fail.
+  - diplo-truce-live-test PRZED: 27 pass / 1 fail (endUntilTurn, tura 9). Dwie próby poprawki (wiki, prepareEndTurnGate) bez efektu. Diagnoza: blokada to isPreBattleOpen (pending:false), nie NNS.
+  - Poziom maksymalny: NIE ZMIERZONO. Testy używają domyślnego bootstrapu ?playtest=mapa; żaden nie ustawia Dyplomacji Trudna, Kosztów jednostek Wysoki ×4, Kultury i religii trudny ani największej mapy, i nie zawierają haka/parametru, który by je podniósł. Maksimum wg kreatora (do zweryfikowania osobno): Dyplomacja i wojna: Trudna; Koszty jednostek: Wysoki ×4; Kultura i religia: trudny; mapa: największa dostępna.
+  - Inwentaryzacja: 105 plików *-live-test.cjs, kolumny z grep (closeCivWelcome, prepareEndTurnGate, civTest). Wiersze „blokuje ekran powitalny” wypełnione z kodu jako hipoteza (55 „prawdopodobnie TAK”), nie z uruchomienia. Pliki: logi/INWENTARYZACJA-grep-r2.txt oraz sekcja w dokumencie analizy. Uruchomione w tej rundzie: 4 testy (forced-war, sidepanel, era-change-toast, diplo-truce).
+  - Bramki pełne (logic 213, tech-tree 20, research 33, unit-replace, combat 6, ai-test 297/0): NIE ZMIERZONO w tej rundzie (gra/src bez zmian; uruchomiono tylko tsc).
 BLOKADY:
-1. Hak do ustawienia skarbca i spichlerza (`prepareEndTurnGate` -> `__nnsMeasureDebug.setPlayerTreasury/setPlayerGranary`) według raportu FC LIVEGATE działa tylko pod ?civTest=1. Test forced-war-player-target-live-test.cjs działa na ?playtest=mapa, więc bez zmiany w gra/src/main.ts (blok playtest, wyłącznie setter skarbca/spichlerza) albo przeniesienia testu na ?civTest=1 mechanizm nie zadziała. Nie wykonałem tej zmiany w tej rundzie: wymaga najpierw potwierdzenia warunku strażnika w main.ts (ok. linii 34841), zbudowania live i pomiarów, czyli więcej pracy niż mieści się w jednej rundzie.
-2. Brak pomiarów PRZED/PO na ≥3 testach, brak mutacji czerwono-zielonej: kryterium binarne tematu nie jest spełnione.
-3. Ryzyko dla integracji: żadne. Zmiana w tej rundzie to wyłącznie dokumentacja.
-RUNDY: 1/5. Werdykt: BLOCK (kryterium binarne niespełnione, bez zmian w kodzie gry).
-NASTĘPNY KROK: (a) otworzyć osobny temat R-WEB-* z allowlistą gra/src/main.ts (blok playtest, tylko setter skarbca/spichlerza, bez zmiany reguł); po wdrożeniu PRZED/PO na forced-war-player-target, sidepanel-diplo i jednym z 12 testów; (b) alternatywnie przenieść test na ?civTest=1 (bez zmian w gra/src), ale wtedy poziom maksymalny ustawień trzeba zmierzyć osobno; (c) #108 NIE zamykać.
+  - diplo-truce-live-test: blokada to okno przedbitewne (isPreBattleOpen), nie bramka NNS. Wymaga haka w main.ts albo osobnego tematu. Zastąpiony przez era-change-toast.
+  - Pomiar na poziomie maksymalnym: nieuruchomiony (brak parametrów w testach).
+  - Wszystkie trzy przepięte testy: forced-war przekracza limit 280 s (364 s). Skrócenie wymaga osobnego tematu.
+  - Sekcja F era-change-toast (karta technologii pusta) to pre-existing, nie zbadana.
+RUNDY: 2/5 (ostatni werdykt FC runda 1: FAIL; ten przebieg: domknięcie kryterium binarnego).
+NASTĘPNY KROK: FC (Final Control) na tym commicie: weryfikacja 3 PRZED/PO (logi/*.txt), mutacji, zapisu „poziom maksymalny NIE ZMIERZONO” i decyzji o era-change-toast zamiast diplo-truce. Ewentualnie osobny temat na: pre-battle w diplo-truce, skrócenie forced-war poniżej 280 s, pomiar na poziomie maksymalnym.
 DEPLOY/PUSH: NIE WYKONANO
-
-UWAGI-DLA-ORKIESTRATORA:
-- Wzorzec `*.log` w .gitignore utrudnia commit logów testów live (używać .txt) — powtórzone z raportu FC LIVEGATE.
-- Dysk przy starcie rundy: `df -h /` = 17G dostępne z 252G (59% użycia). Nic nie usuwano poza plikami tej rundy (brak).
-- Zgłoszenie do rejestru: sekcja 3 raportu FC LIVEGATE (`gra/tools/live-nns-gate-smoke-test.cjs` używa prepareEndTurnGate, a 12 przepiętych testów nie) potwierdzona grep-em.
