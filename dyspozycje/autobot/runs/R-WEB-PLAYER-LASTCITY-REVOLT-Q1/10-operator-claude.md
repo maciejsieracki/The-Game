@@ -1,18 +1,25 @@
 STATUS: PASS-WITH-NOTES
-DOMAIN: GAME
-TEMAT: R-WEB-PLAYER-LASTCITY-REVOLT-Q1
-GOAL: pomiar, czy gracz moze stracic ostatnie miasto przez bunt i jak czesto; mechanizm utraty miasta (V4/4242); Porzadek miast gracza; skutek w UI; readback ustawien maksimum.
-ZMIERZONO (runda 3, Operator SONNET po 2 nieudanych rundach Haiku, baza 909a057fa):
-- Mechanizm: utrata miasta gracza w 9/9 biegach pasywnych (kultura latwy/normalny/trudny x ziarna 4242/7/778899, maksimum) = barbarzyncy (0 -> -1), sciezka applyCityCaptureToMap <- applyMapBattleOutcome <- doMapAutoResolveIncoming <- onAuto <- showPreBattle (bitwa barbarzyncow, „Auto”), gracz bez obroncy. Tury: 4242 t16, 7 t29, 778899 t12 (niezaleznie od kultury). Zmian na -99 (bunt): 0 we wszystkich 16 biegach (9 + 3 autopilot + 3 diagnostyczne + 1 niezminifikowany). V4/4242 = t16 (nie t29).
-- Porzadek miast gracza (min/sr): zob. tabela w dokumencie (latwy 59,8-75; normalny 44,9-59,5; trudny 37,4-43,9). Skrajny bunt (<12%): nigdy. Miasta pop 1-3 maja immunitet osiedla (prog pop<=4).
-- Diagnostyka POZA maksimum (barbarzyncy 'brak', kultura trudny, 3 ziarna do t60): 1 miasto pop 3, Porzadek min 26,1-26,8, bunt 0.
-- Autopilot gracza (kultura trudny): t18 utrata (4242), t15 utrata (778899), przezycie do t25 (7).
-- UI po utracie: ekran „TWOJE IMPERIUM UPADLO / KLESKA”, przyciski „WCZYTAJ GRE” i „ROZPOCZNIJ OD NOWA”, brak „Wroc na mape”/kontynuacji, „Zakoncz ture” zablokowane (gameOver). Zrzuty: dane-r3/*-defeat.png.
-- Rozbieznosc z REALDEF4: runner r1/r2 mial zaszyte barbariansLevel 'normalny' i kosztJednostekPace 'normalny' (domyslny --pace). Poprawione: --barb (domyslnie trudny), --pace wysoki; readback KAZDEGO biegu w dane-r3/*.run.log (linia [readback-plr], live.barbariansLevel z gry).
-ZMIANY/COMMIT: allowlista r3: gra/src/main.ts (JEDEN hak civTest __cityOwnerChangeLogDebug + noteCityOwnerChangeForTest; 5 miejsc dopisania po zmianie city.ownerId; wylacznie odczyt i push do tablicy, no-op poza ?civTest=1), gra/tools/plrrevolt-run.cjs (--barb, --suppress 0, collectPlr, captureGameOverUi), gra/tools/plrrevolt-r3-table.cjs (nowy), dyspozycje/analizy/GRACZ-BUNT-OSTATNIE-MIASTO-2026-11-27.md, dyspozycje/autobot/runs/R-WEB-PLAYER-LASTCITY-REVOLT-Q1/dane-r3/** (jsonl.gz, run.log, zrzuty, events.log), ten raport. SHA: w polu sha wyniku.
-TESTY (surowe wyjscie, kod r3): tsc --noEmit 0; logic-test "LOGIC OK (213/213)"; tech-tree-test 20 pass 0 fail; research-test 33/0; unit-replace-test 21/21; combat-test 6/6; society-breakdown-test 56 OK 0 FAIL; ai-city-rebellion-gate-test PASS=37 FAIL=0; ai-city-order-need-wiring-test 267 passed 0 failed; ai-test 297 passed 0 failed. Determinism: 2 biegi tego samego ziarna (bundle zminifikowany vs niezminifikowany) = identyczny skrot owners/terytorium/wars w 15/15 tur. Mutacja czerwona: nie dotyczy (instrumentacja).
-BLOKADY: brak. NIE ZMIERZONO: porownanie bit w bit z bundlem BEZ haka (kandydat 909a057fa); bunt gracza przy populacji >= 5 (gracz nie urosl w 60 turach); wznowienie biegu ze slotu sypie Chromium (2 proby, diag-brak-trudny-s4242 powtorzony od zera w jednym segmencie).
-RUNDY: 3/5.
-UWAGI-DLA-ORKIESTRATORA: (1) ekran porazki nie podaje przyczyny (barbarzyncy vs bunt) — propozycja, nie decyzja; (2) decyzja ABC o ochronie ostatniego miasta gracza przed buntem dopiero jesli bunt okaze sie osiagalny przy pop >= 5 (dzis niezmierzone); (3) /tmp/plrrevolt-* (dist, profile) usuniete po pracy.
-NASTEPNY KROK: Evaluator -> Obrona -> Final Control (ten sam ID).
+DOMAIN: GAME (pomiar; zero zmian gra/src)
+TEMAT: R-WEB-PLAYER-LASTCITY-REVOLT-Q1 (runda 4/5, Operator HAIKU)
+GOAL: readback ustawien w commicie (3 biegi maksimum), A/B inercja haka civTest, ownerChangesTail w summary.json, aktualizacja dokumentu GRACZ-BUNT-OSTATNIE-MIASTO-2026-11-27.md
+ZMIANY/COMMIT: zmiany w allowliscie: gra/tools/plrrevolt-run.cjs (readback do .txt i summary, ownerChangesTail, helper); dyspozycje/analizy/GRACZ-BUNT-OSTATNIE-MIASTO-2026-11-27.md (sekcja 00 STAN WIAZACY r4); dyspozycje/autobot/runs/R-WEB-PLAYER-LASTCITY-REVOLT-Q1/dane-r4/ (5 katalogow biegow, *.jsonl.gz, *.readback.txt, *.summary.json, *.state.json, *.events.log, run.txt, ab-compare.txt); ten raport. Zero zmian gra/src (git diff bf299e885 -- gra/src = 0 linii). Commit: patrz "SHA" w StructuredOutput.
+TESTY:
+- readback (maksimum: difficulty trudny, kosztJednostekPace wysoki, diplomacyWarLevel trudna, barbariansLevel trudny, kulturaReligiaLevel gracza normalny, kulturaReligiaLevelAI TRUDNY): 3/3 biegow ziarno 4242, 7, 778899, do t30, zapisany readback.txt + summary.readback. Odczyt z gry potwierdzony w gameSettings: kulturaReligiaLevelAI "trudny", difficulty "hard", barbariansLevelGra "trudny".
+- A/B inercja haka (ziarno 4242, kultura normalny, pasywny gracz, t2-t16): bundle A z 909a057fa (bez haka) vs bundle B z bf299e885 (z hakiem). stateHash identyczny w 15/15 turach; digest bez plr/sec/load1 identyczny 15/15. Tabela: dane-r4/ab-compare.txt.
+- tsc --noEmit: exit 0 (17 s).
+- logic-test: LOGIC OK (213/213).
+- ai-test: 297 passed, 0 failed.
+- society-breakdown-test: 56 OK, 0 FAIL.
+- Wyniki utraty miasta gracza (readback, 3 biegi, do t30): ziarno 4242 utrata t16 (Rzym 0 -> -1, applyCityCaptureToMap); ziarno 7 utrata t29 (Rzym 0 -> -1); ziarno 778899 utrata t12 (Rzym 0 -> -1). Zmian na -99 (bunt): 0. Tury zgodne z r3.
+- Porzadek miasta gracza (porPct) min/sr do utraty: 4242 52,9/52,9; 7 44,9/54,9; 778899 59,5/59,5. Zadne miasto gracza nie weszlo w skrajny bunt (prog 12).
+- Populacja miasta gracza: max 2 (4242), 3 (7), 1 (778899).
+BLOKADY: brak wymaganych blokad. Chromium SIGSEGV przy starcie/wczytaniu slotu: wznowienie 4242 padlo 2x (przy ponownym wywolaniu takze), ab-nohook 2x przed sukcesem (3. proba). Pomimo tego wszystkie biegi koncowe wykonano jako swieze (bez wznowienia), segmenty <= 30 tur. Plik ab-nohook: 2 nieudane proby (run.txt nadpisany przy 3. probie).
+RUNDY: 4/5 (r4). Poprzednie rundy: r1 FAIL, r2 FAIL, r3 FC FAIL formalny.
+NASTEPNY KROK: Final Control r4 — sprawdzic readback.txt i summary.json w dane-r4 oraz ab-compare.txt; decyzja o pop >= 5 (NIE ZMIERZONO) i o rozbieznosci z REALDEF4 (NIE ZWERYFIKOWANO, ktore ziarno REALDEF4 przezylo).
 DEPLOY/PUSH: NIE WYKONANO
+
+UWAGI-DLA-ORKIESTRATORA:
+1. Baza bf299e885 nie zawiera (w gra/src/main.ts) okna lacznosci barbarzyncow 15 tur (GRACE15). Jesli na origin/main jest pozniejsza wersja, pomiar trzeba powtorzyc na biezacym main. NIE ZWERYFIKOWANO.
+2. ownerChangesTail w summary.json pokazuje ostatnie 3 zmiany wlasciciela wszystkich miast (nie tylko gracza). Dla gracza uzywac pola oldOwner 0 w jsonl.
+3. Dane biegow sa w dyspozycje/autobot/runs/R-WEB-PLAYER-LASTCITY-REVOLT-Q1/dane-r4/. Buildy vite (w /tmp) usuniete po pracy.
+4. Wszystkie liczby pochodza z surowych plikow (jsonl.gz, summary.json, ab-compare.txt).

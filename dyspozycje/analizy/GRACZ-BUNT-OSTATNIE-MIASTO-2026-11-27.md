@@ -5,6 +5,41 @@ STATUS: POMIAR WYKONANY NA ŻYWO (runda 3). Baza: origin/main 909a057fa. Jedyna 
 `dyspozycje/autobot/runs/R-WEB-PLAYER-LASTCITY-REVOLT-Q1/dane-r3/` (jsonl.gz, state/summary json, zrzuty
 ekranu porażki). UWAGA: plik `run.log` z readbackiem ustawień NIE jest w commicie (`*.log` w .gitignore); zob. §6. Tabela z danych: `node gra/tools/plrrevolt-r3-table.cjs <dane-r3>`.
 
+## 00. STAN WIĄŻĄCY — RUNDA 4 (nadrzędny; uzupełnia i koryguje §0–§6 poniżej)
+
+Baza: origin/main `bf299e885` (= gra/src identyczne z `3bef0082b`; hak `civTest` w `gra/src/main.ts` +47 linii, zob. §2).
+Dane: `dyspozycje/autobot/runs/R-WEB-PLAYER-LASTCITY-REVOLT-Q1/dane-r4/`. Runner: `gra/tools/plrrevolt-run.cjs` (r4: readback do
+`seed<S>.readback.txt` i pola `readback` w `summary.json`; pole `ownerChangesTail` w `summary.json`). Zakres r4 = readback,
+A/B inercja haka, tail zmian właściciela. Nie powtarzano analizy kodu ani 9 biegów z r3.
+
+1. **Readback ustawień (3 biegi, maksimum; kultura gracza NORMALNY, kultura AI TRUDNY):** pliki `dane-r4/readback-s4242`,
+   `readback-s7`, `readback-s778899` (`seed*.readback.txt`, `summary.json` → `readback`). Odczyt z gry (`getSettings`):
+   `difficulty: hard` (Trudny), `kosztJednostekPace: wysoki`, `diplomacyWarLevel: trudna`, `kulturaReligiaLevel: normalny`,
+   `kulturaReligiaLevelAI: trudny`; barbarzyńcy: argument `trudny` = odczyt gry `trudny` (hak `settings()`). Odstępstwo z r3
+   (kultura AI normalny) USUNIĘTE: w r4 runner ustawia `--kr-ai trudny` i zapisuje to w readbacku.
+2. **Tury utraty JEDYNEGO miasta gracza (te same co r3; jedyna zmiana właściciela: `0 -> -1`, `applyCityCaptureToMap`,
+   barbarzyńcy; zmian na `-99` = 0):** ziarno 4242 → t16 (Rzym), ziarno 7 → t29 (Rzym), ziarno 778899 → t12 (Rzym).
+   Ziarno 4242 w biegu A/B (bez haka, identyczny stan) też t16. Poza tym do t30 gracz nie ma miast (bez buntu).
+3. **Porządek miasta gracza (`porPct`) do utraty:** 4242: min 52,9 / śr 52,9; 7: min 44,9 / śr 54,9; 778899: min 59,5 / śr 59,5.
+   Żadne miasto gracza nie weszło w skrajny bunt (próg 12%). **Populacja miasta gracza: max 2 (4242), 3 (7), 1 (778899).**
+4. **NIE ZMIERZONO (zostaje):** bunt miasta gracza przy populacji **≥ 5** (w tych biegach miasto nie przekroczyło pop. 3).
+5. **Rozbieżność z REALDEF4 (pkt 4 §0 r3):** tury utraty 4242 (t16) i 778899 (t12) mieszczą się w przedziale REALDEF4
+   (t10–16). Ziarno 7 (t29) jest poza tym przedziałem. NIE ZWERYFIKOWANO, które ziarno REALDEF4 uznało za przeżywające
+   (brak jego danych w tym dokumencie), ani czy różnice kodu między commitami REALDEF4 a `bf299e885` wpływają na barbarzyńców.
+   Różnica ustawień (barbarzyńcy Trudny, kultura AI Trudny) zweryfikowana readbackiem, a nie założeniem.
+6. **A/B inercja haka (`civTest`, ziarno 4242, kultura normalny, pasywny gracz, tury t2–t16):** bundle A (`909a057fa`, bez haka)
+   i bundle B (`bf299e885`, z hakiem). `stateHash` identyczny w KAŻDEJ z 15 tur; digest bez pól `plr/sec/load1` identyczny
+   w każdej turze. Tabela: `dane-r4/ab-compare.txt`. Hak jest inertny dla stanu gry (tylko odczyt i zapis do tablicy logu).
+7. **ownerChangesTail w summary.json** = ostatnie 3 zmiany właściciela WSZYSTKICH miast z `plr.ownerChanges` (nie tylko
+   miast gracza). Dla gracza przydatne są pola `oldOwner: 0` w jsonl (pkt 2).
+8. **Chromium:** crashy SIGSEGV przy starcie / wczytaniu slotu. Wznowienie (`--resume-test`/slot) na 4242 padło 2×, na
+   ab-nohook 2× przed sukcesem (3. próba). Wszystkie 5 końcowych biegów wykonano jako świeże (bez wznowienia), w segmentach
+   ≤ 30 tur. Liczby z surowych wyjść: `run.txt` w każdym katalogu.
+9. **Baza bez łaski barbarzyńców:** w `gra/src/main.ts` bazy nie znaleziono okna łaski 15 tur (GRACE15). Pomiar dotyczy kodu bez
+   tej łaski. NIE ZWERYFIKOWANO, czy na origin/main jest późniejsza wersja tej funkcji.
+10. **Bramki (po `npm ci --ignore-scripts`, worktree r4):** `tsc --noEmit` exit 0; `logic-test` 213/213 OK; `ai-test` 297 passed,
+    0 failed; `society-breakdown-test` 56 OK, 0 FAIL. `git diff bf299e885 -- gra/src` = 0 linii (zmiany gra/src w r4 zero).
+
 ## 0. STAN WIĄŻĄCY (wnioski runda 3)
 
 1. **Utrata miasta gracza w tych biegach NIE jest buntem. To barbarzyńcy.** W 9 biegach (kultura gracza łatwy / normalny /

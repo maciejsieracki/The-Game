@@ -1,0 +1,19 @@
+READBACK {
+  "seed": 7,
+  "pace": "wysoki",
+  "kulturaGracza": "normalny",
+  "kulturaAI": "trudny",
+  "difficulty": "trudny",
+  "kosztJednostekPace": "wysoki",
+  "diplomacyWarLevel": "trudna",
+  "barbariansLevelArg": "trudny",
+  "barbariansLevelGra": "trudny",
+  "gameSettings": {
+    "diplomacyWarLevel": "trudna",
+    "kulturaReligiaLevel": "normalny",
+    "kulturaReligiaLevelAI": "trudny",
+    "wzrostSurowcowZEpoka": false,
+    "kosztJednostekPace": "wysoki",
+    "difficulty": "hard"
+  }
+}

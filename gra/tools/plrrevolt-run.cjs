@@ -109,6 +109,21 @@ const TURN_TIMEOUT_MS = 300000;
 let SNAP_PREFIX = process.env.SNAP_DUMP || '';
 /** Tura startowa biezacego segmentu (po wczytaniu slotu); pierwsza tura po niej = rozgrzewka (odrzucana w analizie). */
 let RUN_START_TURN = 0;
+/** R4 (PLRREVOLT): readback ustawien z tego biegu (zapis do seed<S>.readback.txt i pole readback w summary.json). */
+let READBACK = null;
+/** R4: ostatnie niepuste zmiany wlasciciela miast gracza (z jsonl, pole rec.plr.ownerChanges). */
+function ownerChangesTailFromJsonl() {
+  const p = path.join(OUT, `seed${SEED}.jsonl`);
+  if (!fs.existsSync(p)) return null;
+  const rows = [];
+  for (const l of fs.readFileSync(p, 'utf8').split('\n')) {
+    if (!l.trim()) continue;
+    const r = JSON.parse(l);
+    const ch = r.plr && r.plr.ownerChanges;
+    if (ch && ch.length) for (const c of ch) rows.push(Object.assign({ turn: r.turn }, c));
+  }
+  return rows.slice(-3);
+}
 
 /** Liczniki przebiegu (zapisywane w state.json po KAZDEJ turze i w summary.json). */
 const COUNTER_KEYS = ['gateActiveTurns', 'bypassApplied', 'stuckQueueHeals', 'battlesAuto',
@@ -616,6 +631,10 @@ async function runSeries(ctx, { resumeFromSlot, stopAt }) {
   // PLRREVOLT r3: readback barbarzyncow z gry (hak __cityOwnerChangeLogDebug.settings) + argumenty biegu -- do logu KAZDEGO biegu.
   const plrSettings = await page.evaluate(() => (window.__cityOwnerChangeLogDebug && window.__cityOwnerChangeLogDebug.settings ? window.__cityOwnerChangeLogDebug.settings() : null));
   console.log('[readback-plr] ' + JSON.stringify({ seed: SEED, barbArg: BARB, suppress: SUPPRESS, playerAi: PLAYER_AI, kr: arg('kr', 'trudny'), krAi: arg('kr-ai', ''), kosztJednostek: arg('koszt-jednostek', 'wysoki'), difficulty: arg('difficulty', 'trudny'), dyplo: arg('dyplo', 'trudna'), live: plrSettings }));
+  // R4: readback do pliku (.txt, nie .log: .log jest w .gitignore) i do summary.json. Pola z gry (getSettings) bez skrotu.
+  const gameSettings = await page.evaluate(() => (window.__settingsLive ? window.__settingsLive.getSettings() : null));
+  READBACK = { seed: SEED, pace: PACE, kulturaGracza: arg('kr', 'trudny'), kulturaAI: arg('kr-ai', '') || '(domyslna gry)', difficulty: arg('difficulty', 'trudny'), kosztJednostekPace: arg('koszt-jednostek', 'wysoki'), diplomacyWarLevel: arg('dyplo', 'trudna'), barbariansLevelArg: BARB, barbariansLevelGra: plrSettings ? plrSettings.barbariansLevel : null, gameSettings };
+  try { fs.writeFileSync(path.join(OUT, `seed${SEED}.readback.txt`), 'READBACK ' + JSON.stringify(READBACK, null, 2) + '\n'); } catch (_) {}
   const startTurn = await turnOf(page);
   RUN_START_TURN = startTurn;
   // Linia bazowa licznika przyrostu jednostek (po starcie lub wczytaniu slotu): delta pierwszej tury liczona od tego punktu.
@@ -692,7 +711,7 @@ async function main() {
   const resume = !!(st && st.lastTurn > 0 && st.saved === true && st.slot);
   const res = await runSeries(ctx, { resumeFromSlot: resume, stopAt: STOP_AT });
   await ctx.close();
-  const summary = { seed: SEED, startTurn: res.startTurn, endTurn: res.endTurn, stop: res.stop, counters: res.counters, wallSec: res.wallSec, resumed: resume, rebalance: REBALANCE_FLAG_STATE, unitCostPace: PACE };
+  const summary = { seed: SEED, startTurn: res.startTurn, endTurn: res.endTurn, stop: res.stop, counters: res.counters, wallSec: res.wallSec, resumed: resume, rebalance: REBALANCE_FLAG_STATE, unitCostPace: PACE, readback: READBACK, ownerChangesTail: ownerChangesTailFromJsonl() };
   fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
   console.log('[econ] PODSUMOWANIE ' + JSON.stringify(summary));
 }

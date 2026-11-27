@@ -1,0 +1,111 @@
+{
+  "seed": 778899,
+  "startTurn": 1,
+  "endTurn": 30,
+  "stop": null,
+  "counters": {
+    "gateActiveTurns": 0,
+    "bypassApplied": 0,
+    "stuckQueueHeals": 0,
+    "battlesAuto": 0,
+    "diploAudienceClosed": 0,
+    "armyMergeClosed": 0,
+    "techNoticeClosed": 0,
+    "aiOffersRejected": 0,
+    "aiOffersRejectAttempts": 0,
+    "forcedPeaceAccepted": 0
+  },
+  "wallSec": 93,
+  "resumed": false,
+  "rebalance": null,
+  "unitCostPace": "wysoki",
+  "readback": {
+    "seed": 778899,
+    "pace": "wysoki",
+    "kulturaGracza": "normalny",
+    "kulturaAI": "trudny",
+    "difficulty": "trudny",
+    "kosztJednostekPace": "wysoki",
+    "diplomacyWarLevel": "trudna",
+    "barbariansLevelArg": "trudny",
+    "barbariansLevelGra": "trudny",
+    "gameSettings": {
+      "diplomacyWarLevel": "trudna",
+      "kulturaReligiaLevel": "normalny",
+      "kulturaReligiaLevelAI": "trudny",
+      "wzrostSurowcowZEpoka": false,
+      "kosztJednostekPace": "wysoki",
+      "difficulty": "hard"
+    }
+  },
+  "ownerChangesTail": [
+    {
+      "turn": 26,
+      "cityId": "city14",
+      "name": "Ondini",
+      "oldOwner": 11,
+      "newOwner": -1,
+      "path": "applyCityCaptureToMap",
+      "stack": [
+        "at Bve (index.html?civTest=1&civSeed=778899:33709:74271)",
+        "at iE (index.html?civTest=1&civSeed=778899:33709:76785)",
+        "at kU (index.html?civTest=1&civSeed=778899:33709:76630)",
+        "at LFt (index.html?civTest=1&civSeed=778899:33709:353401)",
+        "at async file:///tmp/plrrevolt-r4-hook-dist/index.html?civTest=1&civSeed=778899:33709:104346"
+      ],
+      "population": 1,
+      "porPct": 92.9,
+      "bandLabel": "Ład",
+      "revoltGraceRemaining": null,
+      "revoltWarning": false,
+      "rebelState": false,
+      "osiedle": true
+    },
+    {
+      "turn": 27,
+      "cityId": "city11",
+      "name": "Uruk",
+      "oldOwner": -1,
+      "newOwner": 9,
+      "path": "applyCityCaptureToMap",
+      "stack": [
+        "at Bve (index.html?civTest=1&civSeed=778899:33709:74271)",
+        "at iE (index.html?civTest=1&civSeed=778899:33709:76785)",
+        "at kU (index.html?civTest=1&civSeed=778899:33709:76630)",
+        "at Object.onCapture (index.html?civTest=1&civSeed=778899:33709:342423)",
+        "at qat (index.html?civTest=1&civSeed=778899:4523:551280)",
+        "at ue (index.html?civTest=1&civSeed=778899:33709:341925)"
+      ],
+      "population": 1,
+      "porPct": 40.2,
+      "bandLabel": "Niepokój",
+      "revoltGraceRemaining": null,
+      "revoltWarning": false,
+      "rebelState": false,
+      "osiedle": true
+    },
+    {
+      "turn": 30,
+      "cityId": "city60",
+      "name": "Eridu",
+      "oldOwner": -1,
+      "newOwner": 9,
+      "path": "applyCityCaptureToMap",
+      "stack": [
+        "at Bve (index.html?civTest=1&civSeed=778899:33709:74271)",
+        "at iE (index.html?civTest=1&civSeed=778899:33709:76785)",
+        "at kU (index.html?civTest=1&civSeed=778899:33709:76630)",
+        "at Object.onCapture (index.html?civTest=1&civSeed=778899:33709:342423)",
+        "at qat (index.html?civTest=1&civSeed=778899:4523:551280)",
+        "at ue (index.html?civTest=1&civSeed=778899:33709:341925)"
+      ],
+      "population": 1,
+      "porPct": 0.3,
+      "bandLabel": "Bunt skrajny",
+      "revoltGraceRemaining": null,
+      "revoltWarning": false,
+      "rebelState": false,
+      "osiedle": true
+    }
+  ]
+}
