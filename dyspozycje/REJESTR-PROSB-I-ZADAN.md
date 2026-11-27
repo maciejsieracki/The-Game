@@ -11546,3 +11546,7 @@ R-WEB-MAP-ISLANDS-ORPHAN-FIX-Q1 (wf_d7ad9b86-4bd; Operator Haiku → Evaluator S
 - refs/keep/CAPCONQ-r1-{op,eval,obrona,fc}; worktree CAPCONQ usunięte. Task #207 zamknięty.
 - UWAGA: sprzątanie /tmp 18:18 usunęło katalog /tmp/savefix-distA (starszy niż 90 min, wzorzec *-dist*) — SAVEFIX r3 mógł go używać; razem z AIBAL2 usunięto /tmp/aibal2-*. Jeśli SAVEFIX r3 zgłosi brak buildu — to przyczyna (operator zbuduje ponownie).
 - START PLRREVOLT (R-WEB-PLAYER-LASTCITY-REVOLT-Q1, Operator HAIKU, cand = origin/main a9e68894e16e7c2d59b6a46fbd1518c9477f4238): czy gracz może stracić OSTATNIE miasto przez bunt (AIBAL2: wariant normalny/normalny seed 4242, t29) i jak często; 9 biegów kultura × ziarno; zero zmian gra/src.
+
+### 2026-11-27 · PLRREVOLT r1 FC FAIL → runda 2 na tym samym ID (zegar maszyny `date -u` 18:27 UTC)
+- r1 (Haiku): z kodu i danych AIBAL2: gracz NIE MA ochrony ostatniego miasta przed buntem (tylko AI, society-breakdown.ts:522-533); owner −1 = barbarzyńcy (t29 V4/4242 najpewniej przejęcie przez barbarzyńców, nie bunt −99); w danych AIBAL2 gracz nie stracił ostatniego miasta przez bunt. Główny pomiar (9 biegów) NIE PRÓBOWANY → FC FAIL (kod cd587eb82, raport 2e50241cd). Nowa obserwacja FC: miasto owner −1 w t30–31 ma flagę osiedle (trop mechanizmu t29).
+- r2: Operator HAIKU (pierwsza nieudana runda), wskazanie gotowego runnera aibal2-measure-run.cjs, obowiązek prób żywych biegów (9 biegów, logi zmian właściciela miast gracza, mechanizm t29, skutek w UI). refs/keep/PLRREVOLT-r1-{op,eval,obrona,fc}; worktree r1 usunięte.
