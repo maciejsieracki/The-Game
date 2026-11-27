@@ -148,7 +148,7 @@ use crate::domain::siege_tactics_walk::{
 
 /// Wejście ciała jednostki (web `_activateUnit`): czas trwania i zakończenie.
 pub trait LoopBody {
-    /// R-RUSTPORT-P4-417A: `u.playerOrder.type === 'none' && !this._isUnitDoctrineAuto(u)` (`battleScene.ts:6027-6028`,
+    /// R-RUSTPORT-P4-417A: `u.playerOrder.type === 'none' && !this._isUnitDoctrineAuto(u)` (`battleScene.ts:6020-6025`,
     /// bezczynna jednostka gracza nie zużywa tury). Domyślnie `false` (ciało bez trybu ręcznego).
     fn player_unit_idle(&self, _unit: UnitRef) -> bool {
         false
@@ -8674,7 +8674,7 @@ impl<R: RollSource> ProdBody<R> {
         }
     }
 
-    /// `u.playerOrder.type === 'none' && !this._isUnitDoctrineAuto(u)` (`:6027-6028`).
+    /// `u.playerOrder.type === 'none' && !this._isUnitDoctrineAuto(u)` (`:6020-6025`).
     fn manual_unit_idle(&self, unit: UnitRef) -> bool {
         if !self.manual.exec || self.player_order(unit) != PlayerOrder::None {
             return false;
@@ -8701,7 +8701,7 @@ impl<R: RollSource> ProdBody<R> {
 
 /// Kolejka rozkazów gracza `_executeUnitsImmediate` (`battleScene.ts:18578-18614`) na ciele: implementacja
 /// [`PlayerOrderExec`] dla [`crate::domain::player_order_queue::execute_units_immediate`]. Id jednostki = `bu.id` jako
-/// napis (`_findPlayerUnit`, `:7115-7135`). `_refreshQueuedOrderVisuals` jest wyłącznie renderem (zdarzenie kolejki).
+/// napis (`_findPlayerUnit`, `:12432`). `_refreshQueuedOrderVisuals` jest wyłącznie renderem (zdarzenie kolejki).
 pub struct ManualQueue<'a, R: RollSource> {
     pub body: &'a mut ProdBody<R>,
     pub st: &'a mut TurnSeqState,

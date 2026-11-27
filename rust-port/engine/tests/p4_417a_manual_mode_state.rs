@@ -420,7 +420,7 @@ fn auto_zeruje_rozkaz_gracza() {
     assert!(b.manual.records.is_empty());
 }
 
-// --- (6) bezczynność jednostki gracza (`:6027-6028`) ------------------------------------------------------------
+// --- (6) bezczynność jednostki gracza (`:6020-6025`) ------------------------------------------------------------
 
 #[test]
 fn bezczynna_jednostka_gracza() {
