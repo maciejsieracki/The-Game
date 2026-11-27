@@ -1,12 +1,11 @@
 STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
 TEMAT: R-WEB-VERIFY-LIVE-MAX-Q2
-GOAL: domknąć pozycje NIE ZMIERZONO z VLIVE Q1 na poziomie maksymalnym (Dyplomacja Trudna, Koszty jednostek Wysoki ×4, flagi ON).
-ZMIANY/COMMIT: allowlista: `gra/tools/diplomacy-harder-measure-run.cjs` (opcje `--unit-pace`, `--culture`, domyślnie bez zmiany zachowania), `dyspozycje/analizy/VERIFY-LIVE-MAX-Q2-2026-11-27.md`, `dyspozycje/autobot/runs/R-WEB-VERIFY-LIVE-MAX-Q2/**`. Zmiany w `gra/src`: brak. Baza: origin/main 01795c329. SHA commita: patrz pole sha w wyniku Operatora.
-TESTY: tsc exit 0; logic 213/213; tech-tree 20 pass / 0 fail; research 33/0 (TOTAL 33); unit-replace 21/21; combat 6/6; ai-test 297 passed / 0 failed. Pomiar live: seed 4242, tury 2–150, 149 wierszy, Trudna + Wysoki ×4 + flagi ON (kultura Łatwy).
-Wyniki: (1) limit wojen z graczem seed 4242: 0 naruszeń (gracz ≤1 naturalna + ≤1 epoki w turze; 66 tur w wojnie). (2) limit sojuszy AI↔AI seed 4242: maks. 2 na cywilizację (t120), 0 tur z >2 na cywilizację. (3)–(5) NIE ZMIERZONO. Seed 7 NIE ZMIERZONO. Porównanie Łatwa/Normalna NIE ZMIERZONO.
-BLOKADY: (a) Kultura i religia NIE była na maksimum w biegu seed 4242 (runner nie ustawiał klucza; poprawiony opcją `--culture trudny`, bieg nie powtórzony). (b) Czas: tempo 2–8 min/turę przy load 5–8 uniemożliwiło seed 7, porównania Łatwa/Normalna, Targowisko (wymaga haka), cesję >1 miasta (wymaga haka) i FORTRING. (c) Chromium przy wznowieniach segmentów (1–2 próby na segment), bez utraty danych.
-RUNDY: 1/5
-NASTĘPNY KROK: orkiestrator decyduje: (1) powtórzyć seed 4242 z `--culture trudny` (150 tur), (2) seed 7 do t120/t150, (3) biegi Łatwa/Normalna do t100 (seed 4242), (4) osobny temat na haki Targowiska i cesji >1 miasta oraz runner FORTRING.
+GOAL: domknąć pozycje 1–2 (limit wojen z graczem, limit 2 sojuszy AI↔AI, porównanie poziomów dyplomacji) na poziomie maksymalnym.
+ZMIANY/COMMIT: tylko dane i dokument: dane/seed7-r3 (dokończony do t150), dane/analiza-limitow-q2.seed7-r3.wynik.txt, dane/analiza-sojuszy-t100-porownanie-r3.wynik.txt, dyspozycje/analizy/VERIFY-LIVE-MAX-Q2-2026-11-27.md (sekcja RUNDA 3), ten raport. gra/src: brak zmian. Baza 116a8e5faadd5280239cc8d70c8595667162b766.
+TESTY: seed 4242 t2–150 i seed 7 t2–150 (po 149 wierszy, ciągłe): wojny z graczem 0 naruszeń na obu; limit sojuszy 2/cyw. dotrzymany (4242: max 1, 17 tur; seed 7: max 2, 76 tur, 0 tur >2 na cyw.). Porównanie 4242 t≤100: tury z sojuszem Łatwa 64 / Normalna 42 / Trudna 7 → zamierzone. Readback unit-pace=wysoki, culture=trudny, diplo-level w logach segmentów (4242: 14/14, 7: 17/17 udanych). Bramki: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat sanity OK; ai-test 297/0.
+BLOKADY: brak. Chromium padał przy wznowieniach (5 z 6 prób seed 7 rc=124 lub częściowe), każdorazowo ponowione, bez utraty danych. Pole deklarującego wojnę odroczone (wymaga zmiany gry, decyzja orkiestratora). Pozycje 3–5 → VLIVE3.
+RUNDY: 3/5
+NASTĘPNY KROK: Evaluator → Final Control.
 DEPLOY/PUSH: NIE WYKONANO
-UWAGI-DLA-ORKIESTRATORA: znalezisko poza zakresem: brak; obserwacja do oceny: w tym biegu sojusze AI↔AI pojawiają się na Wysokim kosztach jednostek (w Q1 na Niski ich nie było) — jedno ziarno, bez wniosku o błędzie gry.
+UWAGI-DLA-ORKIESTRATORA: skrypt analiza-limitow-q2.py liczy „tury z >2 sojuszami” sumarycznie (nie per cywilizację) — mylące, kryterium jest linia „na cywilizację”; kandydat na poprawkę etykiety (tools/dane, nie gra).

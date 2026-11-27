@@ -3,7 +3,7 @@
   "tag": "seed7-all1-lvl-trudna",
   "slot": "dipl-measure-seed7-all1-lvl-trudna",
   "saved": true,
-  "slotTurn": 124,
+  "slotTurn": 150,
   "slotCounters": {
     "gateActiveTurns": 0,
     "bypassApplied": 0,
@@ -16,8 +16,8 @@
     "aiOffersRejectAttempts": 4,
     "forcedPeaceAccepted": 1
   },
-  "zerwaniaSuma": 14,
-  "lastTurn": 124,
+  "zerwaniaSuma": 16,
+  "lastTurn": 150,
   "counters": {
     "gateActiveTurns": 0,
     "bypassApplied": 0,

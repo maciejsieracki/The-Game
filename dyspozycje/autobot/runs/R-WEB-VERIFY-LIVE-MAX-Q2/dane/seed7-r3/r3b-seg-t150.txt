@@ -1,0 +1,56 @@
+# CMD seg.sh 7 150 trudna seed7-r3 start 14:43:50 load 10.15 10.38 10.09
+[tmpdir] TMPDIR_RUN_ID=13084-d071ab29 DIST=/tmp/vl3-dist PROFILE=/tmp/vl3-prof-seed7-r3 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[diplo] seed7-all1-lvl-trudna WZNOWIENIE ze slotu dipl-measure-seed7-all1-lvl-trudna (tura 139)
+[diplo] player-ai autopilot=1
+[diplo] diplo-level=trudna
+[diplo] unit-pace=wysoki
+[diplo] culture=trudny
+[diplo] all-flags=1 {"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true}
+[diplo] seed7-all1-lvl-trudna tura=140 pary=96 wojny=4 czas=476s
+[diplo] seed7-all1-lvl-trudna tura=141 pary=96 wojny=4 czas=503s
+[diplo] seed7-all1-lvl-trudna tura=142 pary=96 wojny=3 czas=525s
+[diplo] seed7-all1-lvl-trudna tura=143 pary=96 wojny=4 czas=545s
+[diplo] BLAD: page.evaluate: Target page, context or browser has been closed
+    at playOneTurn (/home/user/The-Game/.claude/worktrees/wf_8fa6a3c1-144-1/gra/tools/diplomacy-harder-measure-run.cjs:341:27)
+    at async main (/home/user/The-Game/.claude/worktrees/wf_8fa6a3c1-144-1/gra/tools/diplomacy-harder-measure-run.cjs:411:17)
+# rc=124 end 14:53:00
+# CMD seg.sh 7 150 trudna seed7-r3 start 14:53:04 load 9.01 11.49 10.98
+[tmpdir] TMPDIR_RUN_ID=15568-bd631303 DIST=/tmp/vl3-dist PROFILE=/tmp/vl3-prof-seed7-r3 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[diplo] seed7-all1-lvl-trudna WZNOWIENIE ze slotu dipl-measure-seed7-all1-lvl-trudna (tura 143)
+[diplo] wznowienie: proba 1/3 przerwana (page.waitForFunction: Target page, context or browser has been closed) -- ponawiam start ze slotu
+[diplo] wznowienie: proba 2/3 przerwana (page.waitForFunction: Target page, context or browser has been closed) -- ponawiam start ze slotu
+[diplo] BLAD: page.waitForFunction: Target page, context or browser has been closed
+    at openGame (/home/user/The-Game/.claude/worktrees/wf_8fa6a3c1-144-1/gra/tools/diplomacy-harder-measure-run.cjs:207:14)
+    at async openWithRetry (/home/user/The-Game/.claude/worktrees/wf_8fa6a3c1-144-1/gra/tools/measure-resume-retry.cjs:67:20)
+    at async main (/home/user/The-Game/.claude/worktrees/wf_8fa6a3c1-144-1/gra/tools/diplomacy-harder-measure-run.cjs:398:20)
+# rc=124 end 15:02:14
+# CMD seg.sh 7 150 trudna seed7-r3 start 15:02:18 load 12.65 13.02 11.98
+[tmpdir] TMPDIR_RUN_ID=17548-04f3d1b8 DIST=/tmp/vl3-dist PROFILE=/tmp/vl3-prof-seed7-r3 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[diplo] seed7-all1-lvl-trudna WZNOWIENIE ze slotu dipl-measure-seed7-all1-lvl-trudna (tura 143)
+[diplo] player-ai autopilot=1
+[diplo] diplo-level=trudna
+[diplo] unit-pace=wysoki
+[diplo] culture=trudny
+[diplo] all-flags=1 {"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true}
+[diplo] seed7-all1-lvl-trudna tura=144 pary=96 wojny=3 czas=478s
+[diplo] seed7-all1-lvl-trudna tura=145 pary=96 wojny=4 czas=497s
+[diplo] seed7-all1-lvl-trudna tura=146 pary=96 wojny=4 czas=515s
+[diplo] seed7-all1-lvl-trudna tura=147 pary=96 wojny=2 czas=535s
+[diplo] BLAD: page.evaluate: Target page, context or browser has been closed
+    at Object.closeEndTurnModals (/home/user/The-Game/.claude/worktrees/wf_8fa6a3c1-144-1/gra/tools/ai-economy-measure-run.cjs:186:32)
+    at playOneTurn (/home/user/The-Game/.claude/worktrees/wf_8fa6a3c1-144-1/gra/tools/diplomacy-harder-measure-run.cjs:342:33)
+    at async main (/home/user/The-Game/.claude/worktrees/wf_8fa6a3c1-144-1/gra/tools/diplomacy-harder-measure-run.cjs:411:17)
+# rc=124 end 15:11:28
+# CMD seg.sh 7 150 trudna seed7-r3 start 15:11:31 load 8.38 12.51 12.49
+[tmpdir] TMPDIR_RUN_ID=18921-62f8b507 DIST=/tmp/vl3-dist PROFILE=/tmp/vl3-prof-seed7-r3 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[diplo] seed7-all1-lvl-trudna WZNOWIENIE ze slotu dipl-measure-seed7-all1-lvl-trudna (tura 147)
+[diplo] player-ai autopilot=1
+[diplo] diplo-level=trudna
+[diplo] unit-pace=wysoki
+[diplo] culture=trudny
+[diplo] all-flags=1 {"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true}
+[diplo] seed7-all1-lvl-trudna tura=148 pary=96 wojny=3 czas=487s
+[diplo] seed7-all1-lvl-trudna tura=149 pary=96 wojny=3 czas=506s
+[diplo] seed7-all1-lvl-trudna tura=150 pary=97 wojny=2 czas=525s
+[diplo] PODSUMOWANIE {"seed":7,"diploLevel":"trudna","harder":1,"allFlags":1,"playerAi":1,"graczAdnotacja":"gracz = autopilot","turnsRequested":150,"every":1,"endTurn":150,"rows":3,"stop":null,"segment":true,"stopAt":150,"resumed":true,"slot":"dipl-measure-seed7-all1-lvl-trudna","flagi":{"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true},"counters":{"gateActiveTurns":0,"bypassApplied":0,"stuckQueueHeals":0,"battlesAuto":0,"diploAudienceClosed":1,"armyMergeClosed":0,"techNoticeClosed":0,"aiOffersRejected":4,"aiOffersRejectAttempts":4,"forcedPeaceAccepted":1},"aiOffersRejected":4,"aiOffersRejectAttempts":4,"wallSec":526}
+# rc=0 end 15:20:17

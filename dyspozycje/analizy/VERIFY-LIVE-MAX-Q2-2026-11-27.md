@@ -113,3 +113,50 @@ Tabela pozycji rundy 2 (bieżąca baza):
 | 5. FORTRING | → VLIVE3 (osobny temat) | — | jw. |
 
 Wniosek: na bieżącej bazie nie ma żadnego wyniku liczbowego dla pozycji 1–2. Dane starej bazy 01795c329 (seed 4242 t2–120, seed 7 t2–40) są zachowane jako dowód historyczny i nie zamykają pozycji.
+
+## RUNDA 3 (kontynuacja po restarcie kontenera) — baza 116a8e5fa, Operator Sonnet 5.5
+
+Baza: origin/main `116a8e5faadd5280239cc8d70c8595667162b766` (praca r3 `f4c5b9c2f` + dane cząstkowe seed 7). Zmiany w `gra/src`: brak. Pole „kto wypowiedział wojnę”: ODROCZONE, wymaga zmiany gry (decyzja orkiestratora). Sekcje wyżej opisujące bazę `01795c329` i wyniki „NIE ZMIERZONO” są nadpisane przez tę sekcję dla pozycji 1–2.
+
+Ustawienia (readback w logu KAŻDEGO udanego segmentu `.txt`): `diplo-level=trudna`, `unit-pace=wysoki` (Wysoki ×4), `culture=trudny`, 6 flag ON (`napTor` poza pakietem). Seed 4242: 14/14 segmentów z `culture=trudny`; seed 7: 17/17 udanych segmentów (segmenty bez readbacku `r3-seg-t80.txt`, `r3-seg-t140.txt` to próby przerwane przez Chromium przed wypisaniem ustawień — bez wierszy danych). Porównanie Łatwa/Normalna: `culture=trudny`, `unit-pace=wysoki`, poziom dyplomacji wg nazwy biegu.
+
+### Wyniki (poziom: Trudna + Wysoki ×4 + kultura trudny + flagi ON)
+
+| Pomiar | Seed 4242 (t2–150, 149 wierszy) | Seed 7 (t2–150, 149 wierszy, ciągłe, bez duplikatów) |
+|---|---|---|
+| Limit wojen z graczem (max 1 naturalna + 1 epoki) | **0 naruszeń**; gracz w wojnie 66 tur; max naturalna 1, epoki 1 | **0 naruszeń**; gracz w wojnie 41 tur; max naturalna 0, epoki 1 |
+| Max par w wojnie naraz / max wojen jednej cywilizacji | 7 / 2 | 6 / 2 |
+| Limit 2 sojuszy AI↔AI na cywilizację | **dotrzymany**: max 1 na cywilizację (t94), 0 tur z >2; sojusze w 17 turach (max 1 para naraz) | **dotrzymany**: max 2 na cywilizację (t83), 0 tur z >2 na cywilizację; sojusze w 76 turach (max 5 par naraz w całej grze, licznik `sojuszeAiAi` max 5) |
+
+Uwaga do skryptu: linia „tury z >2 sojuszami” (seed 7: 29) liczy pary sumarycznie w świecie, NIE per cywilizacja; kryterium limitu to linia „tury z >2 na cywilizację” = 0.
+
+Limit sojuszy po raz pierwszy zmierzony dla wartości >0 przy maksimum: seed 7 osiągnął 2 na cywilizację i nie przekroczył.
+
+### Porównanie poziomów Dyplomacji (seed 4242, t2–100, Wysoki ×4, kultura trudny, flagi ON)
+
+| Poziom | Tury z sojuszem AI↔AI | Pierwsza tura sojuszu | Max par naraz | Max na cywilizację |
+|---|---|---|---|---|
+| Łatwa | 64 | 37 | 5 | 2 |
+| Normalna | 42 | 59 | 3 | 2 |
+| Trudna | 7 | 94 | 1 | 1 |
+
+Dodatkowo seed 7 Trudna t≤100: 26 tur z sojuszem, pierwszy t75, max 3 pary naraz, max 2 na cywilizację.
+
+Wniosek: liczba i tempo powstawania sojuszy rośnie monotonicznie z łagodnością poziomu (Łatwa > Normalna > Trudna). Zgodne ze zdaniem „Trudna (×3 kary / ÷3 bonusy) ogranicza sojusze” — **zamierzone, brak podstaw do podejrzenia błędu**. Jedno ziarno na porównanie (kierunek, nie wielkość; seed 7 Trudna pokazuje, że przy innym ziarnie Trudna też tworzy sojusze, 0 sojuszy z Q1 przy Niskim koszcie było zjawiskiem ziarna/ustawienia, nie twardym zerem).
+
+### Wynik biegu seed 7 do t150 (wznowienie)
+
+Wznowienie ze slotu `dipl-measure-seed7-all1-lvl-trudna` (tura 124), 6 prób segmentów (logi `dane/seed7-r3/r3b-seg-t*.txt`, komendy `seg.sh <seed> <stop> trudna seed7-r3`, `timeout 550`): t130 rc=0; t140 rc=124 (doszło do t139); t150 rc=124 (do t143); t150 rc=124 (do t147); t150 rc=0 (t150). Przyczyna powtarzanych rc=124: padanie Chromium (`Target page, context or browser has been closed`) i wznowienie przy load 8–12; dane nie zostały utracone (slot zapisywany co turę, wiersze ciągłe 2–150, sprawdzone). Uwaga: `state.json` potrafi mieć chwilowo `lastTurn: 0` po przerwanej próbie, `slotTurn` jest wiarygodny.
+
+### Dane i dowody (r3)
+
+Katalog `dyspozycje/autobot/runs/R-WEB-VERIFY-LIVE-MAX-Q2/dane/`: `seed4242-r3/`, `seed7-r3/`, `seed4242-latwa-r3/`, `seed4242-normalna-r3/`, `analiza-limitow-q2.seed*-r3.wynik.txt`, `analiza-sojuszy-t100-porownanie-r3.wynik.txt`.
+
+| Plik | sha256 |
+|---|---|
+| `seed4242-r3/seed4242-all1-lvl-trudna.jsonl` | `54497cd9c6a74ab562295852a7aadfcf38c6c6bf53137586b85790686074c787` |
+| `seed7-r3/seed7-all1-lvl-trudna.jsonl` | `2653127730f7f31a2525269b513aea7dcbe41322ab9dc8eae968fc8765720c35` |
+
+Bramki (r3, surowe wyjście): tsc exit 0; LOGIC OK (213/213); tech-tree-test 20 pass / 0 fail; research PASSED 33 / FAILED 0; unit-replace 21/21; combat sanity passed (6/6 wg poprzednich rund; ostatnia linia wyjścia „All sanity checks passed.”); ai-test 297 passed, 0 failed.
+
+Pozycje 3–5: → VLIVE3 (osobny temat; wykonany osobno, patrz rejestr).
