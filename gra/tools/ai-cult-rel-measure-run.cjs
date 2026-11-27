@@ -546,6 +546,8 @@ async function runSeries(ctx, { resumeFromSlot, stopAt }) {
     const got = await page.evaluate(() => window.__aiEconomyMeasure.unitCostPaceState());
     if (got !== PACE) throw new Error('wznowienie: tempo w zapisie=' + got + ' != --pace ' + PACE);
   }
+  // R-WEB-AI-CULT-BALANCE-MEASURE-Q1 (AIBAL): readback ustawien (kultura gracza i AI, tempo, trudnosc) do logu biegu.
+  console.log('[readback] ' + JSON.stringify(await page.evaluate(() => (window.__settingsLive ? window.__settingsLive.getSettings() : null))) + ' pace=' + PACE + ' resume=' + resumeFromSlot);
   const startTurn = await turnOf(page);
   RUN_START_TURN = startTurn;
   // Linia bazowa licznika przyrostu jednostek (po starcie lub wczytaniu slotu): delta pierwszej tury liczona od tego punktu.

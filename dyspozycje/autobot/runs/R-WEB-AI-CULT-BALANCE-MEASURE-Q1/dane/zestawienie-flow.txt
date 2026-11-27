@@ -1,0 +1,81 @@
+== tt-4242 seed4242.jsonl
+  t10: miasta 42, jednostki 57, puste 17 (40%), Porzadek sr 65.8, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 1825
+  t20: miasta 68, jednostki 95, puste 21 (31%), Porzadek sr 75.7, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 2498
+  t30: miasta 126, jednostki 172, puste 42 (33%), Porzadek sr 62.9, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 7890.2
+  t40: miasta 166, jednostki 269, puste 31 (19%), Porzadek sr 58.3, ponizej progu 0, bunt 1, rebelia 0, skarbiec AI 13090.8
+  t50: miasta 182, jednostki 200, puste 51 (28%), Porzadek sr 54.2, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 7840.2
+  t60: miasta 187, jednostki 216, puste 51 (27%), Porzadek sr 55.5, ponizej progu 1, bunt 0, rebelia 0, skarbiec AI 7484
+  t70: miasta 191, jednostki 254, puste 26 (14%), Porzadek sr 58.3, ponizej progu 0, bunt 2, rebelia 0, skarbiec AI 9743.8
+  t80: miasta 195, jednostki 254, puste 57 (29%), Porzadek sr 57.4, ponizej progu 0, bunt 6, rebelia 0, skarbiec AI 10922.8
+  t90: miasta 196, jednostki 260, puste 66 (34%), Porzadek sr 55.7, ponizej progu 5, bunt 3, rebelia 0, skarbiec AI 12877.8
+  NOWE jednostki AI (t2-koniec, produkcja+zakup razem): 358
+  ZNIKNIĘCIA jednostek AI wg przyczyny: {"bez-przyczyny":18,"eliminacja-wlasciciela":1,"rozwiazanie-ai":89}
+  UTRACONE miasta AI: {"AI->AI":35}
+  ZDOBYTE miasta przez AI: {"AI<-AI":35}
+  utrzymanie AI (pieniądz, suma po turach): jednostki 324000, budynki 249024
+  pierwsza tura z budynkiem Prawa: 28, Szczęścia: 17
+== tl-4242 seed4242.jsonl
+  t10: miasta 42, jednostki 57, puste 17 (40%), Porzadek sr 68.7, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 1837
+  t20: miasta 72, jednostki 97, puste 25 (35%), Porzadek sr 74.4, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 2555
+  t30: miasta 133, jednostki 183, puste 34 (26%), Porzadek sr 65.0, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 8877
+  t40: miasta 168, jednostki 261, puste 25 (15%), Porzadek sr 62.1, ponizej progu 0, bunt 1, rebelia 0, skarbiec AI 16419.8
+  t50: miasta 183, jednostki 235, puste 46 (25%), Porzadek sr 57.1, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 9072.8
+  t60: miasta 193, jednostki 230, puste 63 (33%), Porzadek sr 57.1, ponizej progu 1, bunt 1, rebelia 0, skarbiec AI 12526.2
+  NOWE jednostki AI (t2-koniec, produkcja+zakup razem): 291
+  ZNIKNIĘCIA jednostek AI wg przyczyny: {"bez-przyczyny":8,"eliminacja-wlasciciela":1,"rozwiazanie-ai":61}
+  UTRACONE miasta AI: {"AI->AI":27}
+  ZDOBYTE miasta przez AI: {"AI<-AI":27}
+  utrzymanie AI (pieniądz, suma po turach): jednostki 109952, budynki 87210
+  pierwsza tura z budynkiem Prawa: 27, Szczęścia: 16
+== ll-4242 seed4242.jsonl
+  t10: miasta 42, jednostki 57, puste 17 (40%), Porzadek sr 68.7, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 1837
+  t20: miasta 72, jednostki 97, puste 25 (35%), Porzadek sr 74.4, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 2555
+  t30: miasta 133, jednostki 183, puste 34 (26%), Porzadek sr 65.0, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 8877
+  t40: miasta 168, jednostki 261, puste 25 (15%), Porzadek sr 62.1, ponizej progu 0, bunt 1, rebelia 0, skarbiec AI 16419.8
+  t50: miasta 183, jednostki 232, puste 48 (26%), Porzadek sr 57.0, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 8921.8
+  t60: miasta 192, jednostki 226, puste 64 (33%), Porzadek sr 57.4, ponizej progu 1, bunt 0, rebelia 0, skarbiec AI 10140.2
+  NOWE jednostki AI (t2-koniec, produkcja+zakup razem): 288
+  ZNIKNIĘCIA jednostek AI wg przyczyny: {"bez-przyczyny":8,"eliminacja-wlasciciela":1,"rozwiazanie-ai":62}
+  UTRACONE miasta AI: {"AI->AI":27}
+  ZDOBYTE miasta przez AI: {"AI<-AI":27}
+  utrzymanie AI (pieniądz, suma po turach): jednostki 109760, budynki 87418
+  pierwsza tura z budynkiem Prawa: 27, Szczęścia: 16
+== tt-7 seed7.jsonl
+  t10: miasta 44, jednostki 56, puste 19 (43%), Porzadek sr 65.4, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 1636.8
+  t20: miasta 71, jednostki 96, puste 22 (31%), Porzadek sr 74.0, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 3152.2
+  t30: miasta 127, jednostki 190, puste 19 (15%), Porzadek sr 66.0, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 9795.6
+  t40: miasta 162, jednostki 257, puste 26 (16%), Porzadek sr 60.3, ponizej progu 0, bunt 1, rebelia 0, skarbiec AI 19698.4
+  t50: miasta 178, jednostki 255, puste 35 (20%), Porzadek sr 55.4, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 14804.800000000001
+  t60: miasta 184, jednostki 262, puste 44 (24%), Porzadek sr 52.3, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 13358.5
+  NOWE jednostki AI (t2-koniec, produkcja+zakup razem): 292
+  ZNIKNIĘCIA jednostek AI wg przyczyny: {"bez-przyczyny":2,"eliminacja-wlasciciela":1,"rozwiazanie-ai":37}
+  UTRACONE miasta AI: {"AI->AI":30}
+  ZDOBYTE miasta przez AI: {"AI<-AI":30}
+  utrzymanie AI (pieniądz, suma po turach): jednostki 123104, budynki 71668
+  pierwsza tura z budynkiem Prawa: 25, Szczęścia: 10
+== tl-7 seed7.jsonl
+  t10: miasta 44, jednostki 56, puste 19 (43%), Porzadek sr 68.6, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 1607.8
+  t20: miasta 73, jednostki 100, puste 21 (29%), Porzadek sr 75.2, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 3160.2
+  t30: miasta 134, jednostki 184, puste 28 (21%), Porzadek sr 66.8, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 10080.6
+  t40: miasta 168, jednostki 258, puste 20 (12%), Porzadek sr 62.6, ponizej progu 0, bunt 1, rebelia 0, skarbiec AI 20140.800000000003
+  t50: miasta 181, jednostki 265, puste 25 (14%), Porzadek sr 56.4, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 15252
+  t60: miasta 187, jednostki 272, puste 32 (17%), Porzadek sr 54.2, ponizej progu 0, bunt 1, rebelia 0, skarbiec AI 15657.5
+  NOWE jednostki AI (t2-koniec, produkcja+zakup razem): 276
+  ZNIKNIĘCIA jednostek AI wg przyczyny: {"bez-przyczyny":4,"eliminacja-wlasciciela":1,"rozwiazanie-ai":9}
+  UTRACONE miasta AI: {"AI->AI":29}
+  ZDOBYTE miasta przez AI: {"AI<-AI":29}
+  utrzymanie AI (pieniądz, suma po turach): jednostki 123408, budynki 75740
+  pierwsza tura z budynkiem Prawa: 25, Szczęścia: 10
+== ll-7 seed7.jsonl
+  t10: miasta 44, jednostki 56, puste 19 (43%), Porzadek sr 68.6, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 1607.8
+  t20: miasta 73, jednostki 100, puste 21 (29%), Porzadek sr 75.2, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 3160.2
+  t30: miasta 134, jednostki 184, puste 28 (21%), Porzadek sr 66.8, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 10080.6
+  t40: miasta 168, jednostki 258, puste 20 (12%), Porzadek sr 62.6, ponizej progu 0, bunt 1, rebelia 0, skarbiec AI 20140.800000000003
+  t50: miasta 181, jednostki 264, puste 26 (14%), Porzadek sr 56.2, ponizej progu 0, bunt 0, rebelia 0, skarbiec AI 15656
+  t60: miasta 186, jednostki 266, puste 42 (23%), Porzadek sr 52.9, ponizej progu 0, bunt 1, rebelia 0, skarbiec AI 13867.25
+  NOWE jednostki AI (t2-koniec, produkcja+zakup razem): 275
+  ZNIKNIĘCIA jednostek AI wg przyczyny: {"bez-przyczyny":9,"eliminacja-wlasciciela":1,"rozwiazanie-ai":9}
+  UTRACONE miasta AI: {"AI->AI":30}
+  ZDOBYTE miasta przez AI: {"AI<-AI":30}
+  utrzymanie AI (pieniądz, suma po turach): jednostki 122784, budynki 75546
+  pierwsza tura z budynkiem Prawa: 25, Szczęścia: 10

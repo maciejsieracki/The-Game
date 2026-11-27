@@ -1,0 +1,13 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (pomiar; zero zmian gra/src i gra/data)
+TEMAT: R-WEB-AI-CULT-BALANCE-MEASURE-Q1
+GOAL: tabela skutkow poziomow Kultura i religia (gracz/AI) po FALI 930 na maksimum reszty ustawien; wnioski opisowe z liczbami; zero zmian gry.
+ZMIANY/COMMIT: kandydat f260e080c1d43bab56739b89e61c30954e72b1e8; merge-base --is-ancestor c0a55450945535a0680b569b0cf5c650314c86f9 f260e080c = tak. Diff vs baza: 30 plikow; w gra/ tylko gra/tools/ai-cult-rel-measure-run.cjs (+2 linie, console.log readback; allowlista OK). Zero zmian w gra/src, gra/data, WERSJE.md, rust-port. Reszta: dokument analizy, raporty 10/30, dane/ (jsonl, state, summary, run.txt, zestawienia).
+TESTY (wlasne, na f260e080c, npm ci, bez build/dev): tsc --noEmit exit 0 (puste); logic-test LOGIC OK 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; unit-power 6 pass 0 fail; ai-test 297 passed, 0 failed.
+WERYFIKACJA TRESCI: tabela t30/t60 dokumentu (6 wariantow x ziarno) zgodna z dane/zestawienie-flow.txt (tt/4242 t60: 216 jedn., 187 miast, 27% pustych, Porzadek 55,5; tl/7 t60: 272, 187, 17%, 54,2; ll/7 t60: 266, 186, 23%, 52,9). Dynamika t40-t90 tt/4242 (bunt 1/0/0/2/6/3; jedn. 269/200/216/254/254/260) zgodna z flow. Readback w run.txt wszystkich biegow: poziomy kultury zgodne z wariantem, kosztJednostekPace=wysoki, difficulty=hard.
+OCENA ZARZUTOW: 1 poprawione (wniosek ogolny zgodny z wnioskiem 3) - OK. 2 poprawione - OK. 3 poprawione (DECISION_REQUIRED skutkiem, uwaga o szumie) - OK. 4 ograniczenie zakresu jawnie opisane; kryterium binarne dispatchu (>=3 warianty x 2 ziarna do t60, dane surowe, readback) spelnione - ODDAL (uwaga). 5 diplomacyWarLevel=latwa we wszystkich biegach: odstepstwo od zasady maksimum, naprawa wymaga gra/src (zakazane), jawnie opisane, wyniki ograniczone do tego poziomu - ODDAL (uwaga, osobny temat). 6 bramki wpisane i zgodne z moimi - OK. 7 zlagodzone - OK. 8 baza pre-926 przyblizona, jawnie opisana - ODDAL (uwaga).
+BLOKADY: brak blokujacych. Ograniczenia pomiaru: dyplomacja/wojna=latwa; brak normalny/normalny i latwy/trudny; ll, tl, seed 7 tylko do t60; brak strat, zakonczonych buntow, Porzadku/Szczescia gracza.
+RUNDY: 2/5
+NASTEPNY KROK: integracja orkiestratora (dokumenty + readback w runnerze; zero wplywu na gre), rejestr. DECISION_REQUIRED (balans kultury AI A/B/C) dla wlasciciela wg ZASAD ABC.
+UWAGI-DLA-ORKIESTRATORA: (a) roznica tt vs tl (4-6% jednostek) jest w granicach szumu przy 2 ziarnach - nie przedstawiac jej wlascicielowi jako wyraznego skutku; (b) kandydat na temat: przekazanie diplomacyWarLevel w haku pomiarowym (gra/src/main.ts) i powtorka na poziomie trudna; (c) gra/node_modules (npm ci) w worktree do sprzatniecia.
+DEPLOY/PUSH: NIE WYKONANO
