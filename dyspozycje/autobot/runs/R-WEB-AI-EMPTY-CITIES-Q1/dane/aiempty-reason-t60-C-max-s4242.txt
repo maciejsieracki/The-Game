@@ -1,0 +1,122 @@
+{
+ "plik": "dyspozycje/autobot/runs/R-WEB-AI-EMPTY-CITIES-Q1/dane/C-max-s4242/seed4242.jsonl.gz",
+ "tura": 60,
+ "counts": {
+  "razemPuste": 55,
+  "brakPieniedzy": 34,
+  "brakSurowca": 6,
+  "dostepnaJednostka": 15
+ },
+ "perOwner": [
+  {
+   "owner": 13,
+   "puste": 16,
+   "miasta": 17,
+   "skarbiec": 22,
+   "drewno": 0,
+   "braz": 1010,
+   "rekruci": 92614,
+   "powod": "brakPieniedzy"
+  },
+  {
+   "owner": 9,
+   "puste": 15,
+   "miasta": 15,
+   "skarbiec": 50,
+   "drewno": 10,
+   "braz": 680,
+   "rekruci": 38320,
+   "powod": "brakPieniedzy"
+  },
+  {
+   "owner": 11,
+   "puste": 6,
+   "miasta": 15,
+   "skarbiec": 516,
+   "drewno": 1350,
+   "braz": 120,
+   "rekruci": 289190,
+   "powod": "dostepnaJednostka"
+  },
+  {
+   "owner": 1,
+   "puste": 3,
+   "miasta": 16,
+   "skarbiec": 5104,
+   "drewno": 0,
+   "braz": 0,
+   "rekruci": 75240,
+   "powod": "brakSurowca"
+  },
+  {
+   "owner": 15,
+   "puste": 3,
+   "miasta": 10,
+   "skarbiec": 156,
+   "drewno": 495,
+   "braz": 0,
+   "rekruci": 36000,
+   "powod": "dostepnaJednostka"
+  },
+  {
+   "owner": 17,
+   "puste": 3,
+   "miasta": 15,
+   "skarbiec": 329,
+   "drewno": 1050,
+   "braz": 0,
+   "rekruci": 196360,
+   "powod": "dostepnaJednostka"
+  },
+  {
+   "owner": 23,
+   "puste": 3,
+   "miasta": 15,
+   "skarbiec": 577.6,
+   "drewno": 0,
+   "braz": 0,
+   "rekruci": 202000,
+   "powod": "brakSurowca"
+  },
+  {
+   "owner": 5,
+   "puste": 2,
+   "miasta": 15,
+   "skarbiec": 0,
+   "drewno": 3765,
+   "braz": 4580,
+   "rekruci": 66000,
+   "powod": "brakPieniedzy"
+  },
+  {
+   "owner": 21,
+   "puste": 2,
+   "miasta": 15,
+   "skarbiec": 118,
+   "drewno": 4534,
+   "braz": 5050,
+   "rekruci": 228000,
+   "powod": "dostepnaJednostka"
+  },
+  {
+   "owner": 3,
+   "puste": 1,
+   "miasta": 15,
+   "skarbiec": 24,
+   "drewno": 17662,
+   "braz": 10890,
+   "rekruci": 298000,
+   "powod": "brakPieniedzy"
+  },
+  {
+   "owner": 7,
+   "puste": 1,
+   "miasta": 5,
+   "skarbiec": 91,
+   "drewno": 29,
+   "braz": 50,
+   "rekruci": 13720,
+   "powod": "dostepnaJednostka"
+  }
+ ]
+}

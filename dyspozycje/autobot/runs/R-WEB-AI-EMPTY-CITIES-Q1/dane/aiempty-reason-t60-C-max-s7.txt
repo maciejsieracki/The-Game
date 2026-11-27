@@ -1,0 +1,112 @@
+{
+ "plik": "dyspozycje/autobot/runs/R-WEB-AI-EMPTY-CITIES-Q1/dane/C-max-s7/seed7.jsonl.gz",
+ "tura": 60,
+ "counts": {
+  "razemPuste": 80,
+  "brakPieniedzy": 34,
+  "brakSurowca": 14,
+  "dostepnaJednostka": 32
+ },
+ "perOwner": [
+  {
+   "owner": 25,
+   "puste": 17,
+   "miasta": 17,
+   "skarbiec": 4,
+   "drewno": 40,
+   "braz": 1772,
+   "rekruci": 38052,
+   "powod": "brakPieniedzy"
+  },
+  {
+   "owner": 15,
+   "puste": 15,
+   "miasta": 17,
+   "skarbiec": 344,
+   "drewno": 0,
+   "braz": 3328,
+   "rekruci": 190477,
+   "powod": "dostepnaJednostka"
+  },
+  {
+   "owner": 7,
+   "puste": 12,
+   "miasta": 17,
+   "skarbiec": 151,
+   "drewno": 0,
+   "braz": 0,
+   "rekruci": 106600,
+   "powod": "brakSurowca"
+  },
+  {
+   "owner": 21,
+   "puste": 9,
+   "miasta": 15,
+   "skarbiec": 54,
+   "drewno": 0,
+   "braz": 2260,
+   "rekruci": 90000,
+   "powod": "brakPieniedzy"
+  },
+  {
+   "owner": 5,
+   "puste": 8,
+   "miasta": 15,
+   "skarbiec": 1122.5,
+   "drewno": 910,
+   "braz": 2095,
+   "rekruci": 41833,
+   "powod": "dostepnaJednostka"
+  },
+  {
+   "owner": 3,
+   "puste": 5,
+   "miasta": 7,
+   "skarbiec": 90,
+   "drewno": 424,
+   "braz": 250,
+   "rekruci": 8279,
+   "powod": "dostepnaJednostka"
+  },
+  {
+   "owner": 13,
+   "puste": 5,
+   "miasta": 9,
+   "skarbiec": 7,
+   "drewno": 13,
+   "braz": 396,
+   "rekruci": 28000,
+   "powod": "brakPieniedzy"
+  },
+  {
+   "owner": 17,
+   "puste": 4,
+   "miasta": 15,
+   "skarbiec": 99,
+   "drewno": 0,
+   "braz": 50,
+   "rekruci": 43156,
+   "powod": "dostepnaJednostka"
+  },
+  {
+   "owner": 23,
+   "puste": 3,
+   "miasta": 15,
+   "skarbiec": 0,
+   "drewno": 90,
+   "braz": 0,
+   "rekruci": 244320,
+   "powod": "brakPieniedzy"
+  },
+  {
+   "owner": 19,
+   "puste": 2,
+   "miasta": 15,
+   "skarbiec": 561,
+   "drewno": 0,
+   "braz": 0,
+   "rekruci": 225720,
+   "powod": "brakSurowca"
+  }
+ ]
+}
