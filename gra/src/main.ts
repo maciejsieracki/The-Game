@@ -1072,6 +1072,7 @@ import {
   applyAnnexCityStateSpoils,
   barbarianCapturedPowerGain,
   disbandOwnerUnits,
+  effectiveCapitalBeforeCapture,
   oldestCityOfOwner,
   type OwnerResourceAccess,
 } from './game/capital-capture';
@@ -40761,7 +40762,11 @@ async function boot(): Promise<void> {
         }
         return null;
       }
-      const designatedCapitalId = capitalCityIdByOwner.get(oldOwner) ?? undefined;
+      // R-WEB-CAPITAL-RECAPTURE-Q1 (r2): efektywna stolica SPRZED przejęcia (nie surowy wpis —
+      // ten bywa nieaktualny po buncie/cesji, patrz effectiveCapitalBeforeCapture).
+      const designatedCapitalId = effectiveCapitalBeforeCapture(
+        city, oldOwner, cities, capitalCityIdByOwner.get(oldOwner),
+      );
       // P-BARB-CAPTURE-GUARD RUNDA 2 (Evaluator, punkt 1), wyciągnięte do czystych,
       // testowalnych funkcji w RUNDZIE 3 (capital-capture.ts, zero pokrycia testowego
       // póki logika żyła inline tutaj -- main.ts nie jest bundlowalny):

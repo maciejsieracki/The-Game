@@ -4,6 +4,75 @@ Baza: origin/main `af3e0f141bdee917a1261ffa9c87e8561c80cc07`. Data: 2026-11-27.
 Zakres: odczyt kodu i pomiar na module czystym (bez przeglądarki). Zero zmian w `gra/src`.
 Runda 2 (obrona Operatora): odpowiedź na zarzuty Evaluatora r1; poprawka gry NIE wdrożona (patrz §5, §7).
 
+## 0. STAN WIĄZĄCY — RUNDA 2 (poprawka + pomiar live PRZED/PO)
+
+Sekcje 1–7 poniżej to analiza r1 (stan przed poprawką). Sekcja 0 je zastępuje w zakresie
+„poprawka NIE wdrożona” i „S1/S3/S4 NIE ZMIERZONO”.
+
+**Błąd odtworzony i naprawiony (decyzja inżynierska orkiestratora, bez pytania do właściciela).**
+Gdy jawny wpis `capitalCityIdByOwner` jest nieaktualny (wskazuje miasto, które się zbuntowało
+albo przeszło do kogoś innego), `runCapitalCapturePlunder` (main.ts) czytał SUROWY wpis
+(`designatedCapitalId`) i porównywał go z przejmowanym miastem. Faktyczna stolica (fallback
+z `capitalCityIdForOwner`) nie była więc rozpoznawana: nie było plunderu skarbca, nie było
+sukcesji stolicy, a stary wpis zostawał w mapie.
+
+**Poprawka (minimalna, zero zmian balansu/formuł, zapis wstecznie zgodny — brak nowych pól):**
+- `gra/src/game/capital-capture.ts`: nowa czysta funkcja `effectiveCapitalBeforeCapture(captured,
+  oldOwner, citiesNow, explicitCapitalId)` — liczy efektywną stolicę oldOwner SPRZED przejęcia
+  (miasto `captured` jest już u zdobywcy, więc dodawane z powrotem). Reguły jak w `capitalCityIdForOwner`.
+- `gra/src/main.ts` (`runCapitalCapturePlunder`): `designatedCapitalId = effectiveCapitalBeforeCapture(
+  city, oldOwner, cities, capitalCityIdByOwner.get(oldOwner))` zamiast surowej mapy.
+- Nie czyszczę wpisu przy buncie (zalecenie opcjonalne z dispatchu): po poprawce nieaktualny wpis
+  jest nieszkodliwy, bo resolver ignoruje wpis wskazujący miasto spoza oldOwner. Efektywna stolica
+  po odzyskaniu miasta (S2) NIE zmieniona — zachowanie jak w r1.
+
+**Konsekwencja, którą trzeba zobaczyć w FC:** przejęcie ostatniego miasta cywilizacji, które było
+faktyczną stolicą (także przy nieaktualnym wpisie), daje teraz Zdarzenie 2 = eliminację. Przed
+poprawką takie przejęcie zwracało `null`, czyli cywilizacja bez żadnego miasta zostawała w grze.
+
+**Pomiar live (Chromium, maksimum: Trudny, koszt jednostek Wysoki ×4, kultura Trudny, dyplomacja
+Trudna, wzrost z epoką ON, zwycięstwo ON; konfiguracje = ziarna 4242, 7, 11; 3 właścicieli AI
+na ziarno, każdy z 4 miastami; tryb: `setCapitalForTest` ustawia jawną stolicę, `ledgerRealPathDebug.rebel`
+buntuje, `cession` oddaje w pokoju (S3), `siegeSurrender` zdobywa przez prawdziwą ścieżkę
+`runCapitalCapturePlunder`). Narzędzie: `gra/tools/capital-recapture-live.cjs`.
+
+| Ziarno | Scenariusz (właściciel) | Jawny wpis przed buncie | Zdobyte miasto | PRZED: wpis po zdobyciu | PRZED: stolica po | PO: wpis po zdobyciu | PO: stolica po | Werdykt PRZED / PO |
+|---|---|---|---|---|---|---|---|---|
+| 4242 | S1 AI (1) | city3 | city4 | city3 (stary) | city43 | city43 | city43 | FAIL / PASS |
+| 4242 | S3 cesja AI (3) | city5 | city45 | city5 (stary) | city46 | city46 | city46 | FAIL / PASS |
+| 4242 | S4 dwa bunty AI (4) | city6 | city48 | city6 (stary) | city49 | city49 | city49 | FAIL / PASS |
+| 7 | S1 AI (1) | city3 | city4 | city3 (stary) | city43 | city43 | city43 | FAIL / PASS |
+| 7 | S3 cesja AI (3) | city5 | city45 | city5 (stary) | city46 | city46 | city46 | FAIL / PASS |
+| 7 | S4 dwa bunty AI (4) | city6 | city48 | city6 (stary) | city50 | city50 | city50 | FAIL / PASS |
+| 11 | S1 AI (1) | city3 | city4 | city3 (stary) | city42 | city42 | city42 | FAIL / PASS |
+| 11 | S3 cesja AI (3) | city5 | city45 | city5 (stary) | city45 | city45 | city45 | FAIL / PASS |
+| 11 | S4 dwa bunty AI (4) | city6 | city48 | city6 (stary) | city48 | city48 | city48 | FAIL / PASS |
+
+Liczba prób: 9 scenariuszy PRZED i 9 PO (3 ziarna × 3 scenariusze), każdy jednokrotnie, deterministycznie
+(ziarno). PRZED: wpis zostaje na starym mieście we wszystkich 9. PO: sukcesja zapisana we wszystkich 9.
+Uwaga o kolumnie „stolica po”: w PRZED efektywna stolica i tak przeskakuje (fallback), tylko wpis został
+stary — dokładnie ta rozbieżność (dwa różne źródła prawdy o stolicy).
+
+**Luki (NIE ZMIERZONO, jawnie):**
+- Skarbiec i pula przejęte w live: harness zwraca `treasuryOf` = 0 dla obu stron, więc kwota plunderu
+  NIE jest zmierzona w live. Kwota plunderu i sukcesja pokryte modułem (`capital-capture-test` 107/107,
+  `capital-recapture-stale-designation-test` 12/0, mutacja czerwona przez kotwicę main.ts).
+- S2 (odzyskanie stolicy przez pierwotnego właściciela): zachowanie niezmienione, nie mierzone w r2.
+- S5 (round-trip zapisu w środku): nie mierzone w r2 (zakres r1, otwarte).
+- Odbicie przez PODBÓJ armii (a nie hakiem `siegeSurrender`) i ścieżka aneksji państwa-miasta:
+  nie mierzone live.
+- Częstość w rozgrywce: nie mierzona (scenariusze wymuszone hakami).
+
+**Narzędzia i bramki r2:**
+- `gra/tools/capital-recapture-stale-designation-test.cjs`: PASS=12 FAIL=0 NIE-ZMIERZONO=1 (S5),
+  rc=0. Kotwica main.ts sprawdza wywołanie `effectiveCapitalBeforeCapture`. Mutacja (cofnięcie
+  wywołania w main.ts do surowej mapy) → kotwica FAIL, rc=1 (sprawdzone, przywrócono poprawkę).
+- Bramki (kandydat po poprawce, surowe wyjście): tsc rc=0; logic PASS=213 FAIL=0; tech-tree
+  "20 pass, 0 fail"; research "PASSED: 33 / FAILED: 0"; unit-replace (6 plików: unit-replace-test i pięć
+  unit-replace-*) rc=0 każdy; combat rc=0; ai-test "297 passed, 0 failed"; capital-capture-test
+  "OK (107/107)"; society-breakdown "56 OK, 0 FAIL"; ai-city-rebellion-gate "PASS=37 FAIL=0";
+  ai-city-order-need-wiring "267 passed, 0 failed"; ai-city-rebellion-news rc=0.
+
 ## 1. Stan kodu (odczyt, numery linii zweryfikowane w af3e0f141)
 
 - `main.ts:2479` — `capitalCityIdByOwner: Map<ownerId, cityId>` (jawny wpis stolicy).

@@ -15,7 +15,7 @@
  *
  * Co jest REPLIKOWANE w tym pliku (nie importowane z main.ts, bo main.ts nie jest bundlowalny):
  *   - effectiveCapital  = kopia capitalCityIdForOwner,
- *   - captureRaw        = kopia odczytu designatedCapitalId (surowa mapa).
+ *   - captureFixed      = wywolanie po poprawce r2 (effectiveCapitalBeforeCapture z modulu), captureMutantRaw = stan przed r2.
  * Co jest UZYWANE z modulu gry (bundle esbuild): applyBarbarianAwareCapitalCapturePlunder, oldestCityOfOwner,
  * wasCapitalOfOldOwner z gra/src/game/capital-capture.ts. Przed pomiarem skrypt sprawdza, czy linie
  * replikowane nadal wystepuja w main.ts (kotwice ponizej); gdy nie -- FAIL "replika nieaktualna".
@@ -54,7 +54,8 @@ const MAIN_TS = path.resolve(__dirname, '..', 'src', 'main.ts');
 const ANCHORS = [
   'const explicit = capitalCityIdByOwner.get(ownerId);',
   'if (explicit && cities.some(c => c.id === explicit && c.ownerId === ownerId)) return explicit;',
-  'const designatedCapitalId = capitalCityIdByOwner.get(oldOwner) ?? undefined;',
+  'const designatedCapitalId = effectiveCapitalBeforeCapture(',
+  'city, oldOwner, cities, capitalCityIdByOwner.get(oldOwner),',
 ];
 const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
 const anchorsOk = ANCHORS.every(a => mainSrc.includes(a));
@@ -65,6 +66,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.capital-recapture-bundle.cjs');
 const ENTRY_TS = `
 export {
   applyBarbarianAwareCapitalCapturePlunder,
+  effectiveCapitalBeforeCapture,
   oldestCityOfOwner,
   wasCapitalOfOldOwner,
 } from '../src/game/capital-capture';
@@ -102,8 +104,17 @@ function effectiveCapital(ownerId, explicitMap, cities) {
   return M.oldestCityOfOwner(ownerId, cities)?.id ?? null;
 }
 
-/** Replika wywolania z runCapitalCapturePlunder: designated = SUROWA mapa, czytana PO zmianie ownerId miasta. */
-function captureRaw(cityId, oldOwner, newOwner, cities, explicitMap) {
+/** Wywolanie jak w runCapitalCapturePlunder (main.ts) PO poprawce r2: designated = efektywna stolica
+ *  sprzed przejecia, liczona z modulu gry (effectiveCapitalBeforeCapture). */
+function captureFixed(cityId, oldOwner, newOwner, cities, explicitMap) {
+  const target = cities.find(c => c.id === cityId);
+  target.ownerId = newOwner;
+  const designated = M.effectiveCapitalBeforeCapture(target, oldOwner, cities, explicitMap.get(oldOwner));
+  return M.applyBarbarianAwareCapitalCapturePlunder(target, oldOwner, newOwner, cities, ACCESS, designated, () => false);
+}
+
+/** MUTACJA (stan PRZED poprawka r2): designated = SUROWY wpis mapy. Musi dawac FAIL na S1/S3/S4. */
+function captureMutantRaw(cityId, oldOwner, newOwner, cities, explicitMap) {
   const target = cities.find(c => c.id === cityId);
   target.ownerId = newOwner;
   const designated = explicitMap.get(oldOwner) ?? undefined;
@@ -131,7 +142,7 @@ function measure(tag, obj) { lines.push('MEASURE ' + tag + ' ' + JSON.stringify(
   cities.find(c => c.id === 'city2').ownerId = REBEL;
   const efektywna = effectiveCapital(AI, explicit, cities);
   check('S1-AI efektywna stolica AI po buncie', 'city1', efektywna, 'resolver (replika)');
-  const out = captureRaw('city1', AI, PLAYER, cities, explicit);
+  const out = captureFixed('city1', AI, PLAYER, cities, explicit);
   const ev = out ? out.event : null;
   measure('S1-AI-odbicie-faktycznej-stolicy', { wynikCapture: ev, surowyWpis: explicit.get(AI) });
   check('S1-AI przejecie faktycznej stolicy -> plunder/sukcesja', 'przejecie_stolicy', ev,
@@ -144,11 +155,11 @@ function measure(tag, obj) { lines.push('MEASURE ' + tag + ' ' + JSON.stringify(
   cities.find(c => c.id === 'city4').ownerId = REBEL;
   const efektywna = effectiveCapital(PLAYER, explicit, cities);
   check('S1-GRACZ efektywna stolica gracza po buncie', 'city5', efektywna, 'resolver (replika)');
-  const out = captureRaw('city5', PLAYER, AI, cities, explicit);
+  const out = captureFixed('city5', PLAYER, AI, cities, explicit);
   const ev = out ? out.event : null;
   measure('S1-GRACZ-zdobycie-faktycznej-stolicy', { wynikCapture: ev, surowyWpis: explicit.get(PLAYER) });
-  check('S1-GRACZ przejecie faktycznej stolicy -> plunder/sukcesja', 'przejecie_stolicy', ev,
-    'surowy wpis wskazuje miasto -99 (city4)');
+  check('S1-GRACZ przejecie faktycznej stolicy (ostatnie miasto gracza) -> eliminacja', 'eliminacja', ev,
+    'po r2: efektywna stolica = ostatnie miasto -> Zdarzenie 2 (przed r2: surowy wpis city4 -> null, cywilizacja bez miast)');
 }
 
 // --- KONTROLA: wpis AI wyczyszczony przy buncie (kierunek poprawki, NIE wdrozony)
@@ -156,7 +167,7 @@ function measure(tag, obj) { lines.push('MEASURE ' + tag + ' ' + JSON.stringify(
   const { cities, explicit } = fresh();
   cities.find(c => c.id === 'city2').ownerId = REBEL;
   explicit.delete(AI);
-  const out = captureRaw('city1', AI, PLAYER, cities, explicit);
+  const out = captureFixed('city1', AI, PLAYER, cities, explicit);
   const ev = out ? out.event : null;
   measure('KONTROLA-wpis-wyczyszczony', { wynikCapture: ev });
   check('KONTROLA wpis wyczyszczony -> przejecie_stolicy', 'przejecie_stolicy', ev,
@@ -182,7 +193,7 @@ function measure(tag, obj) { lines.push('MEASURE ' + tag + ' ' + JSON.stringify(
   cities.find(c => c.id === 'city2').ownerId = PLAYER;
   const efektywna = effectiveCapital(AI, explicit, cities);
   check('S3 efektywna stolica AI po cesji city2', 'city1', efektywna, 'resolver (replika)');
-  const out = captureRaw('city1', AI, PLAYER, cities, explicit);
+  const out = captureFixed('city1', AI, PLAYER, cities, explicit);
   const ev = out ? out.event : null;
   measure('S3-atak-na-faktyczna-stolice', { wynikCapture: ev, surowyWpis: explicit.get(AI) });
   check('S3 przejecie faktycznej stolicy po cesji -> plunder/sukcesja', 'przejecie_stolicy', ev,
@@ -196,11 +207,22 @@ function measure(tag, obj) { lines.push('MEASURE ' + tag + ' ' + JSON.stringify(
   cities.find(c => c.id === 'city1').ownerId = REBEL;
   const efektywna = effectiveCapital(AI, explicit, cities);
   check('S4 efektywna stolica AI po dwoch buntach', 'city3', efektywna, 'resolver (replika)');
-  const out = captureRaw('city3', AI, PLAYER, cities, explicit);
+  const out = captureFixed('city3', AI, PLAYER, cities, explicit);
   const ev = out ? out.event : null;
   measure('S4-atak-na-trzecie-miasto', { wynikCapture: ev, surowyWpis: explicit.get(AI) });
-  check('S4 przejecie faktycznej stolicy po dwoch buntach -> plunder/sukcesja', 'przejecie_stolicy', ev,
-    'surowy wpis wskazuje city2 (-99)');
+  check('S4 przejecie faktycznej stolicy (ostatnie miasto AI) po dwoch buntach -> eliminacja', 'eliminacja', ev,
+    'po r2: efektywna stolica = ostatnie miasto -> Zdarzenie 2 (przed r2: surowy wpis city2 -> null, AI bez miast)');
+}
+
+// --- MUTACJA: surowy wpis (stan przed r2) -> musi dawac przejecie_stolicy = NIE (czerwona kontrola czulosci)
+{
+  const { cities, explicit } = fresh();
+  cities.find(c => c.id === 'city2').ownerId = REBEL;
+  const out = captureMutantRaw('city1', AI, PLAYER, cities, explicit);
+  const ev = out ? out.event : null;
+  measure('MUTACJA-surowy-wpis', { wynikCapture: ev });
+  check('MUTACJA surowy wpis daje brak przejecia (test czuly na blad)', null, ev,
+    'oczekiwane null = blad obecny w kodzie sprzed r2');
 }
 
 // --- S5: poza zakresem modulu -------------------------------------------------
