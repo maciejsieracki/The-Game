@@ -34,6 +34,9 @@ const MAX_PARAMS = {
 };
 const TREASURY_SET = 777;   // znana dodatnia wartosc skarbca zdobywanej stolicy (P1)
 const TREASURY_ELIM = 333;  // znana dodatnia wartosc skarbca ofiary eliminacji (P4)
+// Asercje (CAPCONQ-R2): kazda niezgodnosc trafia do FAILS -> proces konczy sie kodem 2 (nie 0).
+const FAILS = [];
+function check(cond, msg) { if (!cond) FAILS.push(msg); }
 
 async function main() {
   const browser = await chromium.launch({ headless: true, executablePath: CHROME, args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
@@ -100,6 +103,20 @@ async function main() {
         treasuryOwnerBefore: tOwnerBefore, treasuryPlayerBefore: tPlayerBefore, treasuryOwnerAfter: tOwnerAfter, treasuryPlayerAfter: tPlayerAfter,
         oczekiwanyPrzychod: tOwnerBefore, zmierzonyPrzychod: tPlayerAfter - tPlayerBefore, okSiege, ustawionaWartosc: TREASURY_SET };
       out.measures.S2 = { owner: o, cap1, s2Ok, cityOwnerAfterS2, capitalOfAfterS2: afterS2.cap, explicitAfterS2: afterS2.explicit, expectedCapital: cap1 };
+      // Asercje P1 (oczekiwanie = skarbiec ustawiony znana wartoscia, wzor Zdarzenia 1: caly skarbiec -> zwyciezca, ofiara 0)
+      check(tOwnerBefore === TREASURY_SET, 'P1: skarbiec ofiary przed przejeciem != ' + TREASURY_SET + ' (ustawienie nieudane)');
+      check(out.measures.P1.zmierzonyPrzychod === TREASURY_SET, 'P1: przychod zdobywcy ' + out.measures.P1.zmierzonyPrzychod + ' != oczekiwany ' + TREASURY_SET);
+      check(tOwnerAfter === 0, 'P1: skarbiec ofiary po przejeciu != 0');
+      check(okSiege === true, 'P1: przejecie nie zwrocilo true');
+      // Asercje S2 (odzyskanie przez pierwotnego wlasciciela po buncie)
+      check(s2Ok === true, 'S2: siegeSurrender do pierwotnego wlasciciela nie zwrocil true');
+      check(cityOwnerAfterS2 === o, 'S2: miasto po odzyskaniu nalezy do ' + cityOwnerAfterS2 + ', oczekiwano ' + o);
+      check(afterS2.explicit === cap1 && afterS2.cap === cap1, 'S2: wpis/efektywna stolica != miasto sprzed buntu');
+      // 2b: przejete przez gracza (cap3) -> pierwotny wlasciciel odbija; pomiar (bez asercji wzoru; zamierzenie do potwierdzenia)
+      const s2bOk = await page.evaluate(({ c, o }) => window.__ledgerRealPathDebug.siegeSurrender(c, o), { c: cap3, o }).catch((e) => 'ERR ' + e.message);
+      const s2bOwner = await page.evaluate((c) => window.__cityCessionTestDebug.cityOwner(c), cap3);
+      out.measures.S2b = { owner: o, cap3, s2bOk, cityOwnerAfter2b: s2bOwner, stateAfter2b: await state(o) };
+      check(s2bOk === true && s2bOwner === o, 'S2b: odbicie miasta zdobytego przez gracza: wlasciciel ' + s2bOwner + ', oczekiwano ' + o);
     }
 
     // ---- S5: round-trip zapisu po buncie i po przejeciu (owners[1])
@@ -122,6 +139,8 @@ async function main() {
       const afterB = await state(o);
       out.measures.S5 = { owner: o, capB, poBuncie: { przed: keyA(beforeA), po: keyA(afterA), rowne: keyA(beforeA) === keyA(afterA) },
         poPrzejeciu: { przed: keyA(beforeB), po: keyA(afterB), rowne: keyA(beforeB) === keyA(afterB) } };
+      check(out.measures.S5.poBuncie.rowne, 'S5: round-trip po buncie rozni sie: ' + JSON.stringify(out.measures.S5.poBuncie));
+      check(out.measures.S5.poPrzejeciu.rowne, 'S5: round-trip po przejeciu rozni sie: ' + JSON.stringify(out.measures.S5.poPrzejeciu));
     }
 
     // ---- P4: eliminacja. owners[0] traci miasta (bunt) az do 1; ostatnie = faktyczna stolica -> zdobycie.
@@ -137,14 +156,30 @@ async function main() {
       await page.evaluate(({ o, v }) => window.__ledgerRealPathDebug.setTreasury(o, v), { o, v: TREASURY_ELIM });
       const tOwnerBefore = await page.evaluate((o) => window.__capRebelReadTestDebug.treasuryOf(o), o);
       const tPlayerBefore = await page.evaluate(() => window.__capRebelReadTestDebug.treasuryOf(0));
+      // Surowce (stock) przed/po: POMIAR BEZ ASERCJI wzoru Zdarzenia 2 (zob. raport: NIE ZMIERZONO wzor)
+      const stockOwnerBefore = await page.evaluate((o) => window.__ledgerRealPathDebug.stock(o), o);
+      const stockPlayerBefore = await page.evaluate(() => window.__ledgerRealPathDebug.stock(0));
       const okSiege = await page.evaluate(({ c }) => window.__ledgerRealPathDebug.siegeSurrender(c, 0), { c: capL });
       const after = await state(o);
       const tPlayerAfter = await page.evaluate(() => window.__capRebelReadTestDebug.treasuryOf(0));
+      const stockOwnerAfter = await page.evaluate((o) => window.__ledgerRealPathDebug.stock(o), o);
+      const stockPlayerAfter = await page.evaluate(() => window.__ledgerRealPathDebug.stock(0));
+      const cityOwnerAfter = await page.evaluate((c) => window.__cityCessionTestDebug.cityOwner(c), capL);
       out.measures.P4 = { owner: o, lastCityIds: last, capL, okSiege, treasuryOwnerBefore: tOwnerBefore,
-        zmierzonyPrzychod: tPlayerAfter - tPlayerBefore, after,
-        cityOwnerAfter: await page.evaluate((c) => window.__cityCessionTestDebug.cityOwner(c), capL) };
+        zmierzonyPrzychod: tPlayerAfter - tPlayerBefore, after, cityOwnerAfter,
+        stock: { ownerBefore: stockOwnerBefore, ownerAfter: stockOwnerAfter, playerBefore: stockPlayerBefore, playerAfter: stockPlayerAfter } };
+      check(tOwnerBefore === TREASURY_ELIM, 'P4: skarbiec ofiary przed eliminacja != ' + TREASURY_ELIM);
+      check(okSiege === true, 'P4: eliminacja nie zwrocila true');
+      check(after.cap === null && after.explicit === null, 'P4: wpis stolicy eliminowanego nie zerowany (cap=' + after.cap + ', explicit=' + after.explicit + ')');
+      check(after.cities === 0, 'P4: eliminowany nadal ma miasta: ' + after.cities);
+      check(after.tOwner === 0, 'P4: skarbiec eliminowanego po != 0');
+      check(out.measures.P4.zmierzonyPrzychod === TREASURY_ELIM, 'P4: przychod zwyciezcy ' + out.measures.P4.zmierzonyPrzychod + ' != ' + TREASURY_ELIM);
+      check(cityOwnerAfter === 0, 'P4: ostatnie miasto nie przeszlo na gracza (wlasciciel ' + cityOwnerAfter + ')');
     }
+    check(errors.length === 0, 'konsola: ' + errors.length + ' bledow (pageerror/console.error)');
     console.log('CAPCONQ ' + JSON.stringify(out));
+    if (FAILS.length) { console.log('CAPCONQ-FAIL ' + JSON.stringify(FAILS)); process.exitCode = 2; }
+    else console.log('CAPCONQ-PASS seed=' + SEED);
   } finally {
     await browser.close();
   }
