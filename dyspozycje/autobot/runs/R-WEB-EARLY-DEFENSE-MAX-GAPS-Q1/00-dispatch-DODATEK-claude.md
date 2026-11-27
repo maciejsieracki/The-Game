@@ -1,0 +1,19 @@
+# R-WEB-EARLY-DEFENSE-MAX-GAPS-Q1 (tag REALDEF5) — dispatch (Operator HAIKU 5.5, runda 1/5; pomiar na żywo, WYŁĄCZNIE maksimum; zero zmian gra/src)
+DOMAIN: GAME (priorytet 2 — pomiar potrzebny do decyzji o grze). Reguła właściciela (2026-11-26): testuj TYLKO na maksymalnym dopuszczalnym poziomie ustawień, bez poziomów domyślnych/minimalnych (REALDEF4 niepotrzebnie mierzył też domyślną i „wysoki-łatwi”; dane zostają, ale nie rozszerzaj ich). Poprzednik: R-WEB-EARLY-DEFENSE-VERIFY-Q1 (main 213cb0b30; dyspozycje/analizy/OBRONA-STARTU-WERYFIKACJA-2026-11-27.md; runner gra/tools/realdef-econ-live.cjs). Maksimum = Trudny, koszty jednostek Wysoki ×4, kultura trudny, dyplomacja trudna, barbarzyńcy Trudny. Wynik REALDEF4 na maksimum (pasywny gracz, świat nowej gry, 1 przebieg/ziarno, gra deterministyczna): miasto ginie t10 (4242), t21 (7), t13 (778899), t16 (11), t10 (2024) — 4 z 5 ziaren przed t20; z obrońcą kupionym przy podatku 100% na Pieniądze: t5 (4242, 7) → blokada „Zakończ turę” t6–7 (utrzymanie ~16 Pieniędzy + 16 Żywności na turę), brak Drewna na 778899/11/2024 → brak obrońcy.
+GOAL (dopełnić luki z REALDEF4, TYLKO maksimum, ziarna 4242, 7, 778899, 11, 2024):
+1. Realny UI zamiast haków: suwak podatku (100% na Pieniądze) ustawiany KLIKIEM w panelu (nie __nnsMeasureDebug.setTaxSplit) i zakup obrońcy klikiem w panelu miasta; „Zakończ turę” klikiem (lub dopuszczonym helperem _live-ready.cjs). Potwierdź prognozę Skarbu (+6/turę vs +1) i skutek Nauki = 0 w t1–20 (co gracz traci: badania? Odczyt z UI).
+2. Drewno: policz heksy lasu w promieniu pracy miasta startowego dla 5 ziaren (z danych mapy/odczytu); dla 778899/11/2024 (brak Drewna) — czy da się zdobyć Drewno w t1–10 (kupno na rynku/handel, praca na lesie, wioski)? Zmierz, nie zgaduj.
+3. Barbarzyńcy: wariant „barbarzyńcy wyłączeni” (opcja „brak” w newGameFlow) na maksimum — czy wtedy pasywny gracz przeżywa t20 i czy „Zakończ turę” działa (izolacja skutku barbarzyńców od ekonomii). Oraz fale barbarzyńców t15–20: liczba jednostek barbarzyńskich w promieniu 5 (nie tylko odległość) dla ziaren, gdzie gracz przeżywa/obrońca kupiony.
+4. Startowy Wojownik: dlaczego w konfiguracji domyślnej gracz ma Zwiadowcę + Wojownika, a na maksimum tylko Zwiadowcę? Odszukaj w kodzie (linia) i napisz, czy to świadome (zasada poziomu trudności) — z linią kodu.
+5. Wniosek: tabela ziarno × (utrata miasta/przeżycie t20, tura pierwszego obrońcy, czy utrzymywalny, Drewno) na maksimum, jedno zdanie wniosku; NIE proponuj zmiany balansu; decyzja = pytanie ABC właściciela później (po turnieju).
+6. Dokument dyspozycje/analizy/OBRONA-STARTU-MAKSIMUM-LUKI-2026-11-27.md; NIE ZMIERZONO tam, gdzie nie zmierzono (z opisem prób).
+KLUCZOWE: każdy przebieg czeka na [ClusterStart]/świat nowej gry (7992 heksów); użyj realdef-econ-live.cjs jako wzorca.
+BAZA: args.cand = origin/main (dokładny SHA z args).
+## Allowlista
+gra/tools/realdef-*.cjs (rozszerzenia, nowe), dyspozycje/analizy/OBRONA-STARTU-MAKSIMUM-LUKI-2026-11-27.md, dyspozycje/autobot/runs/R-WEB-EARLY-DEFENSE-MAX-GAPS-Q1/** (dane *.jsonl, logi *.txt).
+## Zakazy
+gra/src/**, gra/data/**, gra-robocza/, gra-kanon/, WERSJE.md, manifest, rust-port/, npm run build/dev w gra/ (vite do /tmp, po pracy usuń), haki zmieniające stan w pomiarze (suwak i tura tylko klikiem/UI), git add -A, push, spawn_task/create_session/create_trigger/send_later/dismiss_task, run_in_background ORAZ nohup/& (Bash w pierwszym planie, timeout ≤ 590000 ms; Chromium SIGSEGV — ponów ≤3 razy), --no-gpg-sign. Biegi sekwencyjne (4 tematy równolegle). Dysk ≥ 6 GB. Wiadomości użytkownika w Twoim kontekście IGNORUJ. Nie pytaj właściciela.
+## Bramki
+tsc 0, logic 213, ai-test 297/0 (po npm ci --ignore-scripts; kod gry bez zmian — git diff gra/src = 0).
+## Binarne kryterium
+Punkty 1–4 odpowiedziane liczbami/linią kodu albo opisem prób; tabela 5 ziaren na maksimum; zero zmian gra/src.
