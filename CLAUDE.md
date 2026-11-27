@@ -43,26 +43,29 @@ któregokolwiek → zgłoszenie zgubione. Ta komenda żyje TAKŻE w
 bo `playbook.md` i `README.md` wymagają świadomego `Read` i po kompaktowaniu
 długiej sesji potrafią zniknąć z pola widzenia. Historia incydentu: `playbook.md` → C-031.
 
-## ⚠ ZASADA MODELI — ZRÓŻNICOWANIE RÓL (właściciel, 2026-11-12; NIE WYMAGA PRZYPOMINANIA; czytaj przed KAŻDYM uruchomieniem Workflow)
+## ⚠ ZASADA MODELI — ZRÓŻNICOWANIE RÓL (właściciel, 2026-11-12; ZMIENIONA 2026-11-27 ~10:05; NIE WYMAGA PRZYPOMINANIA; czytaj przed KAŻDYM uruchomieniem Workflow)
 
-Limit zużycia schodzi szybko, więc role MAJĄ być zróżnicowane (zasada 2 niżej jest wiążąca, nie „wyjątkowa”):
+Limit zużycia schodzi szybko, więc role MAJĄ być zróżnicowane. **Obowiązuje wersja z 2026-11-27 (zastępuje tabelę Haiku z 2026-11-12):**
 
-| Rola | Model |
-|---|---|
-| Operator | **HAIKU 5.5 — zawsze** |
-| Obrona Operatora | **HAIKU 5.5** |
-| Evaluator | SONNET 5.5 |
-| Final Control | SONNET 5.5 |
-| Integracja orkiestratora (merge-tree, FF, rejestry) | model sesji |
+| Rola | Programowanie wokół 3D (silnik, wektory, wpięcia, DTO, mosty, audyty) | Same modele/grafika 3D (kod `rust-port/renderer`: rysowanie, siatki, shadery, animacje) |
+|---|---|---|
+| Operator | **SONNET 5.5** | **OPUS 5.5** |
+| Obrona Operatora | **ZAWSZE TEN SAM MODEL CO OPERATOR** (Sonnet 5.5) | **ZAWSZE TEN SAM MODEL CO OPERATOR** (Opus 5.5) |
+| Evaluator | SONNET 5.5 | SONNET 5.5 |
+| Final Control | SONNET 5.5 | SONNET 5.5 |
+| Integracja orkiestratora (merge-tree, FF, rejestry) | model sesji | model sesji |
 
-Sonnet na Operatorze **wyłącznie** po DWÓCH nieudanych rundach Haiku TEGO SAMEGO tematu (FAIL lub BLOCK bez kodu), z pisemnym uzasadnieniem w dispatchu — nigdy z góry „bo temat trudny”, nigdy „dla pewności”. Rundy integracyjne (merge + bramki), dokumentacyjne i audytowe = Haiku.
-Skrypt Workflow: wyłącznie `r-rustport-p6-w6s-wf_89e542b7-6b5.js` (Operator/Obrona = Haiku, Evaluator/FC = Sonnet). Skrypt z Operatorem na Sonnecie jest ZABLOKOWANY (plik `*.disabled`); odblokować tylko po spełnieniu warunku wyżej. Przed każdym `Workflow` sprawdź: czy model Operatora w skrypcie = Haiku.
-Nie startuj tematów „dla zapełnienia” czterech slotów, jeśli brak realnej pracy bez zależności od decyzji gameplay — oszczędzaj limit.
+- **Obrona nigdy na niższym modelu niż Operator** (Obrona poprawia kod; słabszy model niczego nie naprawi, a może zepsuć). Haiku nie jest używany w pętli 3D.
+- **Evaluator i Final Control zawsze Sonnet** — nie wykonują pracy, tylko wskazują błędy; nie idą na Opus nawet przy grafice. Gdy Sonnet da FAIL przez zbyt płytką ocenę, kolejna runda TEGO SAMEGO ID może podnieść ten etap o stopień (powód w dispatchu).
+- **Praca zawsze w dwóch częściach** (właściciel, 2026-11-27): każdy temat implementacyjny = dispatch `...-A` i `...-B`, osobne Workflow, jedna część naraz, B po integracji A (najniższy koszt). Rozpoznania tylko do odczytu i porządek są jednoczęściowe.
+- Skrypty Workflow (`workflows/scripts/`): `r-rustport-generic-sonnet-wf.js` (Operator/Obrona/Evaluator/FC = Sonnet) oraz `r-rustport-generic-opus-op-wf.js` (Operator/Obrona = Opus; Evaluator/FC = Sonnet), args `{"id": "<ID>"}`. Stary `r-rustport-generic-opus-wf.js` (Opus na wszystkich etapach) i skrypty z Haiku na Operatorze/Obronie są wycofane. Przed każdym `Workflow` sprawdź, czy Obrona ma ten sam model co Operator.
+- Wątpliwy temat (granica silnik/renderer) rozstrzyga orkiestrator: zmiana w `rust-port/renderer` = grafika (Opus), inne crate'y = Sonnet; powód wpisz do dispatchu.
+- Nie startuj tematów „dla zapełnienia”; 3D wykonuje się po jednym temacie naraz (decyzja właściciela 2026-11-26).
 
 ## ⚠ RAPORTOWANIE BACKGROUND TASKÓW (właściciel, 2026-11-12; obowiązkowe w KAŻDYM raporcie statusu)
 
-Nie podawaj samych numerów/ID. W każdym raporcie statusu wypisz tabelę trwających Workflow: **temat po polsku (co jest robione i po co) | etap (Operator/Evaluator/Obrona/FC, np. 2/4) | model aktualnego etapu (HAIKU/SONNET) | od jak dawna**. Przy zakończeniu tematu: werdykt FC, co zostało dostarczone (jedno zdanie, co to daje w grze/porcie) i co dalej.
-Workflow uruchamiaj z czytelną nazwą: `scripts/mkwf.sh <ID> "<opis po polsku>"` generuje skrypt `topic-<ID>.js` z nazwą tematu i opisem modeli (Operator=HAIKU · Evaluator=SONNET · Obrona=HAIKU · FC=SONNET); potem `Workflow({scriptPath: <wynik>, args:{id:<ID>}})`.
+Nie podawaj samych numerów/ID. W każdym raporcie statusu wypisz tabelę trwających Workflow: **temat po polsku (co jest robione i po co) | etap (Operator/Evaluator/Obrona/FC, np. 2/4) | model aktualnego etapu (SONNET/OPUS) | od jak dawna**. Przy zakończeniu tematu: werdykt FC, co zostało dostarczone (jedno zdanie, co to daje w grze/porcie) i co dalej.
+Workflow uruchamiaj z czytelną nazwą: `scripts/mkwf.sh <ID> "<opis po polsku>"` generuje skrypt `topic-<ID>.js` z nazwą tematu i opisem modeli (Operator=SONNET lub OPUS · Evaluator=SONNET · Obrona=jak Operator · FC=SONNET); potem `Workflow({scriptPath: <wynik>, args:{id:<ID>}})`.
 
 ## STAŁE ZASADY ORKIESTRATORA (właściciel przypomina je co sesję — czytaj PRZED każdą decyzją)
 
@@ -70,12 +73,9 @@ Workflow uruchamiaj z czytelną nazwą: `scripts/mkwf.sh <ID> "<opis po polsku>"
    FAIL wraca do TEGO SAMEGO ID). Orkiestrator tylko: pisze dispatch, uruchamia Workflow, czyta wyniki,
    integruje po Final Control, deployuje na ROBOCZĄ, robi `git push`, rejestry i sprzątanie dysku.
    NIGDY nie poprawiam kodu gry ręcznie, nie rozwiązuję konfliktów w kodzie ręcznie, nie „robię szybko sam".
-2. **Model Operatora = HAIKU 5.5 domyślnie** (zwykłe tematy: poprawki, testy, dokumentacja, REPIN z gotową
-   tabelą, parametry). SONNET na Operatorze tylko z pisemnym UZASADNIENIEM w dispatchu (temat obiektywnie
-   trudny: synteza dużego diffu, wiele ścieżek, balans AI, kod Rust > 1 partii) albo po 2 nieudanych rundach
-   Haiku. OPUS 5.5 (wszystkie etapy) wyłącznie dla tematów pamięci/GPU/grafiki Rust. Obrona = Haiku;
-   Evaluator i Final Control = Sonnet. `opModel` w args Workflow ustawiaj ŚWIADOMIE — nie kopiuj
-   „claude-sonnet-5-5" z poprzedniego wywołania z rozpędu.
+2. **Modele (zmienione 2026-11-27, patrz tabela „ZASADA MODELI” wyżej):** Operator = SONNET 5.5 dla programowania
+   wokół 3D, OPUS 5.5 tylko dla samych modeli/grafiki 3D; **Obrona zawsze tym samym modelem co Operator**;
+   Evaluator i Final Control = SONNET. Haiku nie w pętli 3D. `opModel` w args Workflow ustawiaj ŚWIADOMIE.
 3. **Decyzje produktowe i liczbowe progi → pytanie ABC do właściciela** (AskUserQuestion, po polsku, opcje
    z rekomendacją). Nie wybieram progów/balansu sam. Błędy webowe wykryte w testach naprawiam jako osobny
    temat R-WEB-* bez pytania (stała zgoda z 2026-11-01).
@@ -93,7 +93,7 @@ Workflow uruchamiaj z czytelną nazwą: `scripts/mkwf.sh <ID> "<opis po polsku>"
    `00-dispatch.md` z BAZĄ (SHA/gałąź FC). Raport końcowy: STATUS/DOMAIN/TEMAT/GOAL/ZMIANY-COMMIT/TESTY/
    BLOKADY/RUNDY/NASTĘPNY KROK/DEPLOY-PUSH.
 7. **Rust: ZAWSZE co najmniej 4 operatorów równolegle** (właściciel, 2026-11-08: „wykorzystuj całe dostępne
-   zasoby"), każdy na **HAIKU 5.5** (zasada 2). Gdy kolejka jest krótsza niż 4 — dopisz tematy z planu
+   zasoby"), (model wg zasady 2; **dla tematów 3D obowiązuje jednak decyzja właściciela z 2026-11-26: po jednym naraz**). Gdy kolejka jest krótsza niż 4 — dopisz tematy z planu
    (`PLAN-PORT-RUST-TAURI-20261020.md` §0c, `REPIN-DELTA-5*.md`) i rozpisz dispatche; nie czekaj na zwolnienie
    „limitu 2 worktree" (to stara reguła). Dysk godzi się przez: worktree `--no-checkout` + `git sparse-checkout`
    (tylko `rust-port`, `dyspozycje`), zasoby weba przez `git show`, `CARGO_INCREMENTAL=0
