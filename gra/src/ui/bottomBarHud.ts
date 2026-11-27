@@ -190,6 +190,9 @@ export function createBottomBarHud(config: BottomBarHudConfig): BottomBarHudApi 
   const activeEndTurnPointers = new Set<number>();
   let renderPending = false;
   let pendingRenderTimer: number | null = null;
+  // R-WEB-ENDTURN-BUTTON-ARIA-Q1: stan przycisku „Zakończ turę” z OSTATNIEGO render() ('hidden' | 'off' | 'on').
+  let renderedEndKey: string | null = null;
+  let endSyncTimer: number | null = null;
 
   function render(): void {
     if (activeEndTurnPointers.size > 0) {
@@ -216,6 +219,7 @@ export function createBottomBarHud(config: BottomBarHudConfig): BottomBarHudApi 
       : arrowHtml;
 
     const endVisuallyDisabled = hideEnd || !canEnd;
+    renderedEndKey = hideEnd ? 'hidden' : (endVisuallyDisabled ? 'off' : 'on');
     const endTip = hideEnd ? '' : (config.getEndTurnTooltip?.() ?? '');
     const endTipAttr = endTip
       ? ' title="' + endTip.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '"'
@@ -303,6 +307,23 @@ export function createBottomBarHud(config: BottomBarHudConfig): BottomBarHudApi 
     });
   }
 
+  /**
+   * R-WEB-ENDTURN-BUTTON-ARIA-Q1: aria-disabled/is-disabled były zapisywane wyłącznie w render(),
+   * a render() odpalał się tylko z updateHud(). canEnd zmieniał się później (koniec pipeline'u
+   * tury, healStale) bez kolejnego render() — gracz widział wyszarzony przycisk, który dawał się
+   * kliknąć. Ten cykl porównuje bieżący stan z ostatnio wyrenderowanym i odświeża TYLKO przy
+   * zmianie (nie pełny re-render co cykl). Klikalność (data-end) pozostaje bez zmian.
+   * canEndTurn() jest już wołane z pętli HUD (updateHud), więc dodatkowe wywołanie jest w tym samym
+   * kontrakcie co dotąd.
+   */
+  function syncEndTurnState(): void {
+    if (activeEndTurnPointers.size > 0) return;
+    const hideEnd = config.hideEndTurn?.() ?? false;
+    const canEnd = !hideEnd && (config.canEndTurn?.() ?? true);
+    const key = hideEnd ? 'hidden' : (canEnd ? 'on' : 'off');
+    if (key !== renderedEndKey) render();
+  }
+
   function schedulePendingRender(): void {
     if (pendingRenderTimer !== null) window.clearTimeout(pendingRenderTimer);
     pendingRenderTimer = window.setTimeout(() => {
@@ -329,6 +350,8 @@ export function createBottomBarHud(config: BottomBarHudConfig): BottomBarHudApi 
     document.removeEventListener('pointercancel', onEndTurnPointerRelease, true);
     if (pendingRenderTimer !== null) window.clearTimeout(pendingRenderTimer);
     pendingRenderTimer = null;
+    if (endSyncTimer !== null) window.clearInterval(endSyncTimer);
+    endSyncTimer = null;
     activeEndTurnPointers.clear();
     renderPending = false;
     el.remove();
@@ -336,6 +359,7 @@ export function createBottomBarHud(config: BottomBarHudConfig): BottomBarHudApi 
 
   document.body.appendChild(el);
   render();
+  endSyncTimer = window.setInterval(syncEndTurnState, 500);
   document.addEventListener('pointerdown', onEndTurnPointerDown, true);
   document.addEventListener('pointerup', onEndTurnPointerRelease, true);
   document.addEventListener('pointercancel', onEndTurnPointerRelease, true);
