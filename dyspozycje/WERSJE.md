@@ -1,3 +1,9 @@
+## ROBOCZA a33cb54a -- 2026-11-27 -- FALA 934: Przycisk Zakończ turę: cykl odświeżania stanu przycisku nie wypisuje ostrzeżeń do konsoli (testowa)
+
+- cykl odświeżania stanu przycisku Zakończ turę (co 500 ms, FALA 933) wywoływał sprawdzenie możliwości zakończenia tury z ok. 10 ostrzeżeniami do konsoli w stanach zablokowanych; dodano tryb cichy (parametr quiet) używany wyłącznie przez cykl HUD; klik gracza i bramki bez zmian
+- Weryfikacja: tsc 0; logic 213/213; endturn-quiet 10/0 (na kodzie bazowym 3 PASS / 3 FAIL); endturn-aria-sync 5/0; society-breakdown 56/0; FC: tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6, ai-test 297/0, wiring 267/0; mutacje FC i obrony czerwone
+- Limity: NIE ZMIERZONO na żywo: liczba ostrzeżeń PRZED/PO w stanach zablokowanych na maksimum (spam wykazany strukturalnie z kodu, częstość niezmierzona); klik t2→t3 (artefakt narzędzi czy błąd) nierozstrzygnięty; test endturn-quiet jest statyczny (regex po main.ts)
+
 ## ROBOCZA 60d54c64 -- 2026-11-27 -- FALA 933: Przycisk Zakończ turę: stan przycisku (aktywny/nieaktywny) nadąża za faktyczną możliwością zakończenia tury (testowa)
 
 - przycisk Zakończ turę zostawał oznaczony jako nieaktywny (aria-disabled i klasa is-disabled), gdy tura już dawała się zakończyć; stan przycisku odświeżany był tylko przy przerysowaniu HUD; dodano cykl synchronizacji co 500 ms (bottomBarHud.ts), render tylko przy zmianie stanu przycisku; zero zmian logiki bramek tury

@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "60d54c64f3fe1dfda477c7dab10c1c22",
-  "bundleSha256": "e5b50448fa3a33a58a5986fc07f3c15f2db56ff1bc1050ef74810c5c3efa8cec",
-  "bundleBytes": 15046472,
+  "bundleMd5": "a33cb54acbcb88b7f98b6864705ae24b",
+  "bundleSha256": "93b7109c19ee933ce562682c0ef18758ecb0f550d001eaf67e3f50782938d980",
+  "bundleBytes": 15046508,
   "sourceSnapshot": {
-    "source": "origin/main 32b3f1718 + FC 422555eb2 (kod 00216ef8c)",
+    "source": "origin/main 5d5a38a51 + obrona 417760f01 + FC ba4094e91 (kod 7fd21ed0c)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 933: przycisk Zakończ turę zostawał oznaczony jako nieaktywny (aria-disabled i klasa is-disabled), gdy tura już dawała się zakończyć; stan przycisku odświeżany był tylko przy przerysowaniu HUD; dodano cykl synchronizacji co 500 ms (bottomBarHud.ts), render tylko przy zmianie stanu przycisku; zero zmian logiki bramek tury"
+    "FALA 934: cykl odświeżania stanu przycisku Zakończ turę (co 500 ms, FALA 933) wywoływał sprawdzenie możliwości zakończenia tury z ok. 10 ostrzeżeniami do konsoli w stanach zablokowanych; dodano tryb cichy (parametr quiet) używany wyłącznie przez cykl HUD; klik gracza i bramki bez zmian"
   ],
   "verification": [
-    "tsc 0; logic 213/213; endturn-aria-sync 5/0 (na kodzie bazowym 3 PASS / 2 FAIL); society-breakdown 56/0; FC: tech-tree 20/0, research 33/0, unit-replace 45/0, combat 6/6, ai-test 297/0, wiring 267/0; live seed 7 maksimum 8 tur: stan przycisku podąża za canEnd w ≤500 ms, klik skuteczny 8/8"
+    "tsc 0; logic 213/213; endturn-quiet 10/0 (na kodzie bazowym 3 PASS / 3 FAIL); endturn-aria-sync 5/0; society-breakdown 56/0; FC: tech-tree 20/0, research 33/0, unit-replace 21/21, combat 6/6, ai-test 297/0, wiring 267/0; mutacje FC i obrony czerwone"
   ],
   "limits": [
-    "NIE ZMIERZONO: koszt wydajnościowy cyklu 500 ms (canEndTurn poza updateHud), zawieszony activeEndTurnPointers, odwrotny przypadek (aria=false przy canEnd=false), ręczne zamknięcie modali; pełna tabela przed poprawką dla dwóch ziaren"
+    "NIE ZMIERZONO na żywo: liczba ostrzeżeń PRZED/PO w stanach zablokowanych na maksimum (spam wykazany strukturalnie z kodu, częstość niezmierzona); klik t2→t3 (artefakt narzędzi czy błąd) nierozstrzygnięty; test endturn-quiet jest statyczny (regex po main.ts)"
   ],
-  "finalControl": "R-WEB-ENDTURN-BUTTON-ARIA-Q1 r1: FC PASS-WITH-NOTES",
+  "finalControl": "R-WEB-ENDTURN-QUIET-CLICK-Q1 r1: FC PASS-WITH-NOTES",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-27T20:57:46",
+  "hubGeneratedAt": "2026-11-27T22:05:52",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "60d54c64f3fe1dfda477c7dab10c1c22",
-      "sizeBytes": 15046472
+      "md5": "a33cb54acbcb88b7f98b6864705ae24b",
+      "sizeBytes": 15046508
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "60d54c64f3fe1dfda477c7dab10c1c22",
-      "sizeBytes": 15046472
+      "md5": "a33cb54acbcb88b7f98b6864705ae24b",
+      "sizeBytes": 15046508
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "60d54c64f3fe1dfda477c7dab10c1c22",
-      "sizeBytes": 15046472
+      "md5": "a33cb54acbcb88b7f98b6864705ae24b",
+      "sizeBytes": 15046508
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "60d54c64f3fe1dfda477c7dab10c1c22",
-      "sizeBytes": 15046472
+      "md5": "a33cb54acbcb88b7f98b6864705ae24b",
+      "sizeBytes": 15046508
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "60d54c64f3fe1dfda477c7dab10c1c22",
-      "sizeBytes": 15046472
+      "md5": "a33cb54acbcb88b7f98b6864705ae24b",
+      "sizeBytes": 15046508
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "60d54c64f3fe1dfda477c7dab10c1c22",
-      "sizeBytes": 15046472
+      "md5": "a33cb54acbcb88b7f98b6864705ae24b",
+      "sizeBytes": 15046508
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "60d54c64f3fe1dfda477c7dab10c1c22",
-      "sizeBytes": 15046472
+      "md5": "a33cb54acbcb88b7f98b6864705ae24b",
+      "sizeBytes": 15046508
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "60d54c64f3fe1dfda477c7dab10c1c22",
-      "sizeBytes": 15046472
+      "md5": "a33cb54acbcb88b7f98b6864705ae24b",
+      "sizeBytes": 15046508
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "60d54c64f3fe1dfda477c7dab10c1c22",
-      "sizeBytes": 15046472
+      "md5": "a33cb54acbcb88b7f98b6864705ae24b",
+      "sizeBytes": 15046508
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "60d54c64f3fe1dfda477c7dab10c1c22",
-      "sizeBytes": 15046472
+      "md5": "a33cb54acbcb88b7f98b6864705ae24b",
+      "sizeBytes": 15046508
     }
   ],
-  "md5": "60d54c64f3fe1dfda477c7dab10c1c22",
+  "md5": "a33cb54acbcb88b7f98b6864705ae24b",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
