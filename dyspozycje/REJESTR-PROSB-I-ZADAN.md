@@ -11382,3 +11382,6 @@ R-WEB-MAP-ISLANDS-ORPHAN-FIX-Q1 (wf_d7ad9b86-4bd; Operator Haiku → Evaluator S
 - Co w grze: bunt miasta AI (nowe gry) dodaje jednozdaniowy wpis „rebelia” do trwałej listy „Wydarzenia na świecie” w oknie dyplomacji, widoczny gdy właściciel miasta jest znany graczowi (reguła jak dla wojen/pokojów AI); wpis w dzienniku Wydarzeń zostaje.
 - NIE ZMIERZONO: render w Chromium (zrzut okna dyplomacji), bieg żywy na maksimum, CSS per rodzaj wpisu; test ścieżki w main.ts to dopasowanie po źródle (zachowanie sprawdza mutacja na testowej logice).
 - Sprzątanie: worktree AIREBELNEWS usunięte, refs/keep/AIREBELNEWS-{op,eval,fc}, /tmp/civ-deploy-out usunięty.
+
+### 2026-11-27 · AIREBELVER start (R-WEB-AI-REBEL-VERIFY-LIVE-Q1) · zegar maszyny `date -u` 08:13 UTC
+- Wolny slot po FALI 929. Priorytet 2 (pomiary): domknięcie NIE ZMIERZONO z FAL 928–929 na maksimum (ochrona ostatniego miasta, stolica AI w buncie, round-trip zapisu, render wpisu „rebelia”, bieg 60+ tur). Operator HAIKU, cand = origin/main 99375f77e4924a09d518e0833fe38a08863f0a27, bez zmian gra/src.
