@@ -1,0 +1,30 @@
+[tmpdir] TMPDIR_RUN_ID=23044-3090c35d DIST=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist PROFILE=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p4242 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[diplo] seed4242-all1-lvl-trudna WZNOWIENIE ze slotu dipl-measure-seed4242-all1-lvl-trudna (tura 78)
+[diplo] player-ai autopilot=1
+[diplo] diplo-level=trudna
+[diplo] unit-pace=wysoki
+[diplo] all-flags=1 {"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true}
+[diplo] seed4242-all1-lvl-trudna tura=79 pary=85 wojny=6 czas=324s
+[diplo] seed4242-all1-lvl-trudna tura=80 pary=85 wojny=6 czas=333s
+[diplo] seed4242-all1-lvl-trudna tura=81 pary=85 wojny=5 czas=344s
+[diplo] seed4242-all1-lvl-trudna tura=82 pary=85 wojny=5 czas=355s
+[diplo] seed4242-all1-lvl-trudna tura=83 pary=85 wojny=5 czas=365s
+[diplo] seed4242-all1-lvl-trudna tura=84 pary=85 wojny=5 czas=376s
+[diplo] seed4242-all1-lvl-trudna tura=85 pary=85 wojny=5 czas=386s
+[diplo] seed4242-all1-lvl-trudna tura=86 pary=85 wojny=4 czas=400s
+[diplo] seed4242-all1-lvl-trudna tura=87 pary=85 wojny=5 czas=412s
+[diplo] seed4242-all1-lvl-trudna tura=88 pary=85 wojny=5 czas=425s
+[diplo] seed4242-all1-lvl-trudna tura=89 pary=85 wojny=6 czas=437s
+[diplo] seed4242-all1-lvl-trudna tura=90 pary=85 wojny=6 czas=451s
+[diplo] seed4242-all1-lvl-trudna tura=91 pary=85 wojny=3 czas=466s
+[diplo] seed4242-all1-lvl-trudna tura=92 pary=86 wojny=5 czas=479s
+[diplo] seed4242-all1-lvl-trudna tura=93 pary=86 wojny=5 czas=499s
+[diplo] seed4242-all1-lvl-trudna tura=94 pary=86 wojny=5 czas=521s
+[diplo] seed4242-all1-lvl-trudna tura=95 pary=86 wojny=5 czas=545s
+[diplo] seed4242-all1-lvl-trudna tura=96 pary=86 wojny=5 czas=570s
+[diplo] BLAD: browserContext.close: Target page, context or browser has been closed
+    at async main (/home/user/The-Game/.claude/worktrees/wf_072b3287-81c-3/gra/tools/diplomacy-harder-measure-run.cjs:426:14)
+
+real	9m45.225s
+user	0m9.464s
+sys	0m3.918s

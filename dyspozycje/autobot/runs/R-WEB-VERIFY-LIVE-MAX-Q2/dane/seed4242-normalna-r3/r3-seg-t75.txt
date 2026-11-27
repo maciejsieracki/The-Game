@@ -1,0 +1,40 @@
+# CMD seg.sh 4242 75 normalna seed4242-normalna-r3 start 11:17:52 load 8.28 10.00 9.71
+[tmpdir] TMPDIR_RUN_ID=22380-f8422c0c DIST=/tmp/vl3-dist PROFILE=/tmp/vl3-prof-seed4242-normalna-r3 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[diplo] seed4242-all1-lvl-normalna WZNOWIENIE ze slotu dipl-measure-seed4242-all1-lvl-normalna (tura 45)
+[diplo] player-ai autopilot=1
+[diplo] diplo-level=normalna
+[diplo] unit-pace=wysoki
+[diplo] culture=trudny
+[diplo] all-flags=1 {"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true}
+[diplo] seed4242-all1-lvl-normalna tura=46 pary=81 wojny=3 czas=347s
+[diplo] seed4242-all1-lvl-normalna tura=47 pary=81 wojny=3 czas=351s
+[diplo] seed4242-all1-lvl-normalna tura=48 pary=81 wojny=3 czas=355s
+[diplo] seed4242-all1-lvl-normalna tura=49 pary=81 wojny=3 czas=359s
+[diplo] seed4242-all1-lvl-normalna tura=50 pary=81 wojny=3 czas=364s
+[diplo] seed4242-all1-lvl-normalna tura=51 pary=81 wojny=3 czas=368s
+[diplo] seed4242-all1-lvl-normalna tura=52 pary=81 wojny=4 czas=372s
+[diplo] seed4242-all1-lvl-normalna tura=53 pary=82 wojny=4 czas=378s
+[diplo] seed4242-all1-lvl-normalna tura=54 pary=82 wojny=4 czas=383s
+[diplo] seed4242-all1-lvl-normalna tura=55 pary=95 wojny=5 czas=388s
+[diplo] seed4242-all1-lvl-normalna tura=56 pary=95 wojny=4 czas=393s
+[diplo] seed4242-all1-lvl-normalna tura=57 pary=95 wojny=4 czas=398s
+[diplo] seed4242-all1-lvl-normalna tura=58 pary=95 wojny=4 czas=402s
+[diplo] seed4242-all1-lvl-normalna tura=59 pary=95 wojny=4 czas=408s
+[diplo] seed4242-all1-lvl-normalna tura=60 pary=95 wojny=4 czas=413s
+[diplo] seed4242-all1-lvl-normalna tura=61 pary=95 wojny=4 czas=418s
+[diplo] seed4242-all1-lvl-normalna tura=62 pary=95 wojny=3 czas=423s
+[diplo] seed4242-all1-lvl-normalna tura=63 pary=95 wojny=3 czas=428s
+[diplo] seed4242-all1-lvl-normalna tura=64 pary=95 wojny=3 czas=434s
+[diplo] seed4242-all1-lvl-normalna tura=65 pary=95 wojny=2 czas=439s
+[diplo] seed4242-all1-lvl-normalna tura=66 pary=95 wojny=4 czas=445s
+[diplo] seed4242-all1-lvl-normalna tura=67 pary=95 wojny=4 czas=450s
+[diplo] seed4242-all1-lvl-normalna tura=68 pary=95 wojny=4 czas=457s
+[diplo] seed4242-all1-lvl-normalna tura=69 pary=95 wojny=4 czas=464s
+[diplo] seed4242-all1-lvl-normalna tura=70 pary=95 wojny=3 czas=472s
+[diplo] seed4242-all1-lvl-normalna tura=71 pary=95 wojny=3 czas=480s
+[diplo] seed4242-all1-lvl-normalna tura=72 pary=95 wojny=3 czas=487s
+[diplo] seed4242-all1-lvl-normalna tura=73 pary=95 wojny=3 czas=495s
+[diplo] seed4242-all1-lvl-normalna tura=74 pary=95 wojny=3 czas=502s
+[diplo] seed4242-all1-lvl-normalna tura=75 pary=95 wojny=3 czas=511s
+[diplo] PODSUMOWANIE {"seed":4242,"diploLevel":"normalna","harder":1,"allFlags":1,"playerAi":1,"graczAdnotacja":"gracz = autopilot","turnsRequested":150,"every":1,"endTurn":75,"rows":30,"stop":null,"segment":true,"stopAt":75,"resumed":true,"slot":"dipl-measure-seed4242-all1-lvl-normalna","flagi":{"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true},"counters":{"gateActiveTurns":0,"bypassApplied":0,"stuckQueueHeals":0,"battlesAuto":0,"diploAudienceClosed":0,"armyMergeClosed":0,"techNoticeClosed":0,"aiOffersRejected":0,"aiOffersRejectAttempts":0,"forcedPeaceAccepted":0},"aiOffersRejected":0,"aiOffersRejectAttempts":0,"wallSec":511}
+# rc=0 end 11:26:23

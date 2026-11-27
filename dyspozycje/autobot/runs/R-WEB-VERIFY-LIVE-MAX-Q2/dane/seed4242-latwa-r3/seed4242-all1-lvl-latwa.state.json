@@ -1,0 +1,34 @@
+{
+  "seed": 4242,
+  "tag": "seed4242-all1-lvl-latwa",
+  "slot": "dipl-measure-seed4242-all1-lvl-latwa",
+  "saved": true,
+  "slotTurn": 100,
+  "slotCounters": {
+    "gateActiveTurns": 0,
+    "bypassApplied": 0,
+    "stuckQueueHeals": 0,
+    "battlesAuto": 0,
+    "diploAudienceClosed": 0,
+    "armyMergeClosed": 0,
+    "techNoticeClosed": 0,
+    "aiOffersRejected": 0,
+    "aiOffersRejectAttempts": 0,
+    "forcedPeaceAccepted": 2
+  },
+  "zerwaniaSuma": 6,
+  "lastTurn": 100,
+  "counters": {
+    "gateActiveTurns": 0,
+    "bypassApplied": 0,
+    "stuckQueueHeals": 0,
+    "battlesAuto": 0,
+    "diploAudienceClosed": 0,
+    "armyMergeClosed": 0,
+    "techNoticeClosed": 0,
+    "aiOffersRejected": 0,
+    "aiOffersRejectAttempts": 0,
+    "forcedPeaceAccepted": 2
+  },
+  "stop": null
+}

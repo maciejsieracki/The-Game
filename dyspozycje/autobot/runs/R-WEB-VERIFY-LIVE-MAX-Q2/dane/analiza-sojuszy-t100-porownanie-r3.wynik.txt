@@ -1,0 +1,4 @@
+Trudna seed4242 t<=100 tury_z_sojuszem,max_par_naraz,max_na_cyw,pierwsza_tura = (7, 1, 1, 94)
+Normalna seed4242 t<=100 tury_z_sojuszem,max_par_naraz,max_na_cyw,pierwsza_tura = (42, 3, 2, 59)
+Latwa seed4242 t<=100 tury_z_sojuszem,max_par_naraz,max_na_cyw,pierwsza_tura = (64, 5, 2, 37)
+Trudna seed7 t<=100 tury_z_sojuszem,max_par_naraz,max_na_cyw,pierwsza_tura = (26, 3, 2, 75)

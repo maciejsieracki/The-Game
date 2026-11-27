@@ -1,0 +1,17 @@
+# CMD seg.sh 4242 135 trudna seed4242-r3 start 09:40:19 load 13.51 11.67 11.37
+[tmpdir] TMPDIR_RUN_ID=23229-1ac38968 DIST=/tmp/vl3-dist PROFILE=/tmp/vl3-prof-seed4242-r3 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[diplo] seed4242-all1-lvl-trudna WZNOWIENIE ze slotu dipl-measure-seed4242-all1-lvl-trudna (tura 120)
+[diplo] player-ai autopilot=1
+[diplo] diplo-level=trudna
+[diplo] unit-pace=wysoki
+[diplo] culture=trudny
+[diplo] all-flags=1 {"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true}
+[diplo] seed4242-all1-lvl-trudna tura=121 pary=98 wojny=5 czas=376s
+[diplo] seed4242-all1-lvl-trudna tura=122 pary=98 wojny=5 czas=416s
+[diplo] seed4242-all1-lvl-trudna tura=123 pary=98 wojny=4 czas=454s
+[diplo] seed4242-all1-lvl-trudna tura=124 pary=98 wojny=6 czas=488s
+[diplo] seed4242-all1-lvl-trudna tura=125 pary=98 wojny=5 czas=524s
+[diplo] seed4242-all1-lvl-trudna tura=126 pary=98 wojny=5 czas=562s
+[diplo] BLAD: browserContext.close: Target page, context or browser has been closed
+    at async main (/home/user/The-Game/.claude/worktrees/wf_838ff158-2bd-1/gra/tools/diplomacy-harder-measure-run.cjs:430:14)
+# rc=124 end 09:50:05

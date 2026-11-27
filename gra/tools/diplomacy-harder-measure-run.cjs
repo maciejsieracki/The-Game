@@ -83,6 +83,20 @@ const TURN_TIMEOUT_MS = 300000;
  *  sciezka nowej gry: hak __settingsLive.startNewGame z advanced.diplomacyWarLevel (ta sama funkcja co „Start” kreatora);
  *  potwierdzany odczytem __settingsLive.getSettings() po starcie i po wczytaniu slotu. */
 const DIPLO_LEVEL = arg('diplo-level', null);
+/** R-WEB-VERIFY-LIVE-MAX-Q2: --unit-pace niski|normalny|wysoki = „Koszty jednostek” przy starcie nowej gry (advanced.kosztJednostekPace).
+ *  Domyslnie niski = dotychczasowe zachowanie runnera (Q1 biegi szly na Niski, nie na maksimum). Dotyczy tylko --diplo-level. */
+const START_UNIT_PACE = arg('unit-pace', 'niski');
+if (!['niski', 'normalny', 'wysoki'].includes(START_UNIT_PACE)) {
+  console.error('--unit-pace: dozwolone niski|normalny|wysoki (podano ' + START_UNIT_PACE + ').');
+  process.exit(2);
+}
+/** R-WEB-VERIFY-LIVE-MAX-Q2: --culture latwy|normalny|trudny = „Kultura i religia” przy starcie (advanced.kulturaReligiaLevel).
+ *  Domyslnie latwy = dotychczasowe zachowanie runnera (brak klucza w parametrach = latwy). Maksimum = trudny. */
+const START_CULT_LEVEL = arg('culture', 'latwy');
+if (!['latwy', 'normalny', 'trudny'].includes(START_CULT_LEVEL)) {
+  console.error('--culture: dozwolone latwy|normalny|trudny (podano ' + START_CULT_LEVEL + ').');
+  process.exit(2);
+}
 if (DIPLO_LEVEL !== null && !['latwa', 'normalna', 'trudna'].includes(DIPLO_LEVEL)) {
   console.error('--diplo-level: dozwolone latwa|normalna|trudna (podano ' + DIPLO_LEVEL + ').');
   process.exit(2);
@@ -182,7 +196,7 @@ async function openGame(ctx, { fresh }) {
       worldDensityLabels: { resources: 'Normalnie', rivers: 'Normalnie', desert: 'Normalnie', forest: 'Normalnie', relief: 'Normalnie' },
       advanced: {
         barbariansLevel: 'normalny', battleAlwaysManual: false, victoryMode: 'moc_i_dominacja', buildingCostPace: 'niski',
-        kosztJednostekPace: 'niski', wzrostLudnosciPace: 'wysoki', ruchSwiataPace: 'krotki', landFractionPercent: 30, landFractionCustom: false,
+        kosztJednostekPace: START_UNIT_PACE, kulturaReligiaLevel: START_CULT_LEVEL, wzrostLudnosciPace: 'wysoki', ruchSwiataPace: 'krotki', landFractionPercent: 30, landFractionCustom: false,
         cityStateDifficultyOverride: 'normal', cityLimitBase: 10, diplomacyWarLevel: DIPLO_LEVEL,
       },
       villageRewardsEnabled: true,
@@ -212,6 +226,13 @@ async function openGame(ctx, { fresh }) {
     const lvl = await readDiploLevel(page);
     if (lvl !== DIPLO_LEVEL) throw new Error('poziom dyplomacji po starcie/wczytaniu=' + lvl + ' != ' + DIPLO_LEVEL);
     console.log('[diplo] diplo-level=' + lvl);
+    const pace = await page.evaluate(() => window.__aiEconomyMeasure.unitCostPaceState());
+    if (pace !== START_UNIT_PACE) throw new Error('koszty jednostek po starcie=' + pace + ' != --unit-pace ' + START_UNIT_PACE);
+    console.log('[diplo] unit-pace=' + pace);
+    // R-WEB-VERIFY-LIVE-MAX-Q2 (obrona): readback „Kultura i religia” z getSettings (wczesniej tylko parametr startu).
+    const cult = await page.evaluate(() => window.__settingsLive.getSettings().kulturaReligiaLevel);
+    if (cult !== START_CULT_LEVEL) throw new Error('kultura i religia po starcie/wczytaniu=' + cult + ' != --culture ' + START_CULT_LEVEL);
+    console.log('[diplo] culture=' + cult);
   }
   await page.evaluate(() => window.__aiTradeWiringTestDebug.setFastMode(true));
   // Flaga PO starcie gry (lub wczytaniu slotu), PRZED pierwszym endTurn.

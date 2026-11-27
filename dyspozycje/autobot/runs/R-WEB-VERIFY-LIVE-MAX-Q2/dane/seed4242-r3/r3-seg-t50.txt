@@ -1,0 +1,35 @@
+# CMD seg.sh 4242 50 trudna seed4242-r3 start 08:20:48 load 12.68 10.83 9.50
+[tmpdir] TMPDIR_RUN_ID=790-9538cd8f DIST=/tmp/vl3-dist PROFILE=/tmp/vl3-prof-seed4242-r3 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[diplo] seed4242-all1-lvl-trudna WZNOWIENIE ze slotu dipl-measure-seed4242-all1-lvl-trudna (tura 25)
+[diplo] player-ai autopilot=1
+[diplo] diplo-level=trudna
+[diplo] unit-pace=wysoki
+[diplo] culture=trudny
+[diplo] all-flags=1 {"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true}
+[diplo] seed4242-all1-lvl-trudna tura=26 pary=79 wojny=0 czas=335s
+[diplo] seed4242-all1-lvl-trudna tura=27 pary=79 wojny=0 czas=338s
+[diplo] seed4242-all1-lvl-trudna tura=28 pary=79 wojny=0 czas=340s
+[diplo] seed4242-all1-lvl-trudna tura=29 pary=79 wojny=0 czas=344s
+[diplo] seed4242-all1-lvl-trudna tura=30 pary=79 wojny=0 czas=347s
+[diplo] seed4242-all1-lvl-trudna tura=31 pary=79 wojny=0 czas=351s
+[diplo] seed4242-all1-lvl-trudna tura=32 pary=79 wojny=0 czas=355s
+[diplo] seed4242-all1-lvl-trudna tura=33 pary=79 wojny=0 czas=359s
+[diplo] seed4242-all1-lvl-trudna tura=34 pary=80 wojny=0 czas=362s
+[diplo] seed4242-all1-lvl-trudna tura=35 pary=80 wojny=0 czas=366s
+[diplo] seed4242-all1-lvl-trudna tura=36 pary=80 wojny=0 czas=371s
+[diplo] seed4242-all1-lvl-trudna tura=37 pary=80 wojny=0 czas=376s
+[diplo] seed4242-all1-lvl-trudna tura=38 pary=80 wojny=0 czas=380s
+[diplo] seed4242-all1-lvl-trudna tura=39 pary=80 wojny=0 czas=385s
+[diplo] seed4242-all1-lvl-trudna tura=40 pary=81 wojny=2 czas=390s
+[diplo] seed4242-all1-lvl-trudna tura=41 pary=81 wojny=2 czas=395s
+[diplo] seed4242-all1-lvl-trudna tura=42 pary=81 wojny=2 czas=400s
+[diplo] seed4242-all1-lvl-trudna tura=43 pary=81 wojny=2 czas=406s
+[diplo] seed4242-all1-lvl-trudna tura=44 pary=81 wojny=2 czas=412s
+[diplo] seed4242-all1-lvl-trudna tura=45 pary=81 wojny=2 czas=417s
+[diplo] seed4242-all1-lvl-trudna tura=46 pary=81 wojny=2 czas=421s
+[diplo] seed4242-all1-lvl-trudna tura=47 pary=81 wojny=2 czas=426s
+[diplo] seed4242-all1-lvl-trudna tura=48 pary=81 wojny=2 czas=432s
+[diplo] seed4242-all1-lvl-trudna tura=49 pary=81 wojny=4 czas=438s
+[diplo] seed4242-all1-lvl-trudna tura=50 pary=81 wojny=4 czas=445s
+[diplo] PODSUMOWANIE {"seed":4242,"diploLevel":"trudna","harder":1,"allFlags":1,"playerAi":1,"graczAdnotacja":"gracz = autopilot","turnsRequested":150,"every":1,"endTurn":50,"rows":25,"stop":null,"segment":true,"stopAt":50,"resumed":true,"slot":"dipl-measure-seed4242-all1-lvl-trudna","flagi":{"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true},"counters":{"gateActiveTurns":0,"bypassApplied":0,"stuckQueueHeals":0,"battlesAuto":0,"diploAudienceClosed":0,"armyMergeClosed":0,"techNoticeClosed":0,"aiOffersRejected":0,"aiOffersRejectAttempts":0,"forcedPeaceAccepted":0},"aiOffersRejected":0,"aiOffersRejectAttempts":0,"wallSec":446}
+# rc=0 end 08:28:14

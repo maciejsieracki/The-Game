@@ -1,0 +1,39 @@
+# CMD seg.sh 4242 70 latwa seed4242-latwa-r3 start 10:33:56 load 13.43 11.31 10.88
+[tmpdir] TMPDIR_RUN_ID=1649-efbeb3ed DIST=/tmp/vl3-dist PROFILE=/tmp/vl3-prof-seed4242-latwa-r3 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[diplo] seed4242-all1-lvl-latwa WZNOWIENIE ze slotu dipl-measure-seed4242-all1-lvl-latwa (tura 40)
+[diplo] wznowienie: proba 1/3 przerwana (page.waitForFunction: Target page, context or browser has been closed) -- ponawiam start ze slotu
+[diplo] player-ai autopilot=1
+[diplo] diplo-level=latwa
+[diplo] unit-pace=wysoki
+[diplo] culture=trudny
+[diplo] all-flags=1 {"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true}
+[diplo] seed4242-all1-lvl-latwa tura=41 pary=81 wojny=2 czas=441s
+[diplo] seed4242-all1-lvl-latwa tura=42 pary=81 wojny=2 czas=444s
+[diplo] seed4242-all1-lvl-latwa tura=43 pary=81 wojny=2 czas=448s
+[diplo] seed4242-all1-lvl-latwa tura=44 pary=81 wojny=2 czas=452s
+[diplo] seed4242-all1-lvl-latwa tura=45 pary=81 wojny=2 czas=456s
+[diplo] seed4242-all1-lvl-latwa tura=46 pary=81 wojny=2 czas=462s
+[diplo] seed4242-all1-lvl-latwa tura=47 pary=81 wojny=2 czas=466s
+[diplo] seed4242-all1-lvl-latwa tura=48 pary=81 wojny=2 czas=471s
+[diplo] seed4242-all1-lvl-latwa tura=49 pary=81 wojny=2 czas=477s
+[diplo] seed4242-all1-lvl-latwa tura=50 pary=81 wojny=2 czas=482s
+[diplo] seed4242-all1-lvl-latwa tura=51 pary=81 wojny=2 czas=487s
+[diplo] seed4242-all1-lvl-latwa tura=52 pary=81 wojny=2 czas=493s
+[diplo] seed4242-all1-lvl-latwa tura=53 pary=81 wojny=2 czas=499s
+[diplo] seed4242-all1-lvl-latwa tura=54 pary=81 wojny=2 czas=504s
+[diplo] seed4242-all1-lvl-latwa tura=55 pary=94 wojny=2 czas=509s
+[diplo] seed4242-all1-lvl-latwa tura=56 pary=94 wojny=2 czas=514s
+[diplo] seed4242-all1-lvl-latwa tura=57 pary=95 wojny=2 czas=520s
+[diplo] seed4242-all1-lvl-latwa tura=58 pary=95 wojny=2 czas=526s
+[diplo] seed4242-all1-lvl-latwa tura=59 pary=95 wojny=2 czas=534s
+[diplo] seed4242-all1-lvl-latwa tura=60 pary=95 wojny=2 czas=541s
+[diplo] seed4242-all1-lvl-latwa tura=61 pary=95 wojny=2 czas=546s
+[diplo] seed4242-all1-lvl-latwa tura=62 pary=95 wojny=3 czas=551s
+[diplo] seed4242-all1-lvl-latwa tura=63 pary=95 wojny=3 czas=559s
+[diplo] seed4242-all1-lvl-latwa tura=64 pary=95 wojny=3 czas=567s
+[diplo] seed4242-all1-lvl-latwa tura=65 pary=95 wojny=3 czas=574s
+[diplo] seed4242-all1-lvl-latwa tura=66 pary=95 wojny=4 czas=581s
+[diplo] BLAD: page.evaluate: Target page, context or browser has been closed
+    at playOneTurn (/home/user/The-Game/.claude/worktrees/wf_838ff158-2bd-1/gra/tools/diplomacy-harder-measure-run.cjs:341:27)
+    at async main (/home/user/The-Game/.claude/worktrees/wf_838ff158-2bd-1/gra/tools/diplomacy-harder-measure-run.cjs:411:17)
+# rc=124 end 10:43:41
