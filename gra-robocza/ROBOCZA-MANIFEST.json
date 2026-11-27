@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "df4e3ab8cab02f3ffa5264327b0805e5",
-  "bundleSha256": "e3a72b632e8e06649f53734c0eb1e4e6ae48e8bd3ec518619bf89d1336d61e5e",
-  "bundleBytes": 15040011,
+  "bundleMd5": "7103aff5de10afb5c29ba337f20f7f2d",
+  "bundleSha256": "7ec73922124d909467720d7aff324f4f0a7b43023636ad41478182775c04338a",
+  "bundleBytes": 15040550,
   "sourceSnapshot": {
-    "source": "MAPFIX2 (196eb53d3) + main 44649038c",
+    "source": "main + merge FC 2078c918f (kod 84deecaa8, baza a3ffe64a7)",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 927: Generator map po FALI 925: na wyspach z siecia rzek znika osierocone heksy rzeki (zbior z diagnozy 63 -> 0, 0 samotnych ladow); do 0,6% ladu przy brzegu traci znacznik dostepu do wody slodkiej; do ROBOCZEJ trafiaja tez liczniki odczytu pomiarow za ?civTest=1 (diagnozy AI, rebelii, pomiary live), bez wplywu na gre"
+    "FALA 928: W nowych grach (ustawienie Kultura i religia ≠ tryb zgodności) miasto AI w buncie skrajnym po wyczerpaniu łaski przechodzi tę samą rebelię co miasto gracza; ostatnie miasto AI się nie buntuje (ochrona przed cywilizacją bez miast). Tryb zgodności i zapisy bez zmian. Wpis buntu AI w dzienniku Wydarzeń (tylko przy kontakcie z właścicielem)."
   ],
   "verification": [
-    "tsc 0; logic 213; map-offmask-stranded-fix 5/0; map-islands-orphan PASS (orphan 0, solitary 0); FC: tech-tree 20, research 33, unit-replace 21, combat 6, ai-test 297/0, determinism-save-load PASS; obrona: 80 map suma naruszen 5 = baza"
+    "tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat OK; ai-test 297/0; society-breakdown 56/0; culture-religion-level 59/0; culture-religion 65/0; ai-city-order-need-wiring 231/0; ai-city-rebellion-gate 37/0; mutacje czerwone; pomiar 60 tur Trudny/Kultura trudny/Koszty Wysoki x4 seed 4242 i 7: 10 i 16 buntów miast AI"
   ],
   "limits": [
-    "NIE ZMIERZONO: pelny map-gen-regression, world-density, river-path-adjacency (timeouty); ocena wizualna wysp z rzekami po wdrozeniu; wplyw utraty znacznikow wody (do 0,6% ladu)"
+    "NIE ZMIERZONO: round-trip zapisu, hotseat, wygląd wpisu w przeglądarce, skutki utraty stolicy przez AI z >=2 miastami, runtime pętli tury; ochrona ostatniego miasta nie została wywołana w pomiarze; wpis nie trafia do listy Wydarzenia na świecie"
   ],
-  "finalControl": "FC PASS-WITH-NOTES 76d91d241 (Sonnet)",
+  "finalControl": "FC PASS-WITH-NOTES (AIREBEL r3, raport 2078c918f)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-27T07:12:55",
+  "hubGeneratedAt": "2026-11-27T08:00:43",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
-      "sizeBytes": 15040011
+      "md5": "7103aff5de10afb5c29ba337f20f7f2d",
+      "sizeBytes": 15040550
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
-      "sizeBytes": 15040011
+      "md5": "7103aff5de10afb5c29ba337f20f7f2d",
+      "sizeBytes": 15040550
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
-      "sizeBytes": 15040011
+      "md5": "7103aff5de10afb5c29ba337f20f7f2d",
+      "sizeBytes": 15040550
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
-      "sizeBytes": 15040011
+      "md5": "7103aff5de10afb5c29ba337f20f7f2d",
+      "sizeBytes": 15040550
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
-      "sizeBytes": 15040011
+      "md5": "7103aff5de10afb5c29ba337f20f7f2d",
+      "sizeBytes": 15040550
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
-      "sizeBytes": 15040011
+      "md5": "7103aff5de10afb5c29ba337f20f7f2d",
+      "sizeBytes": 15040550
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
-      "sizeBytes": 15040011
+      "md5": "7103aff5de10afb5c29ba337f20f7f2d",
+      "sizeBytes": 15040550
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
-      "sizeBytes": 15040011
+      "md5": "7103aff5de10afb5c29ba337f20f7f2d",
+      "sizeBytes": 15040550
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
-      "sizeBytes": 15040011
+      "md5": "7103aff5de10afb5c29ba337f20f7f2d",
+      "sizeBytes": 15040550
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
-      "sizeBytes": 15040011
+      "md5": "7103aff5de10afb5c29ba337f20f7f2d",
+      "sizeBytes": 15040550
     }
   ],
-  "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
+  "md5": "7103aff5de10afb5c29ba337f20f7f2d",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
