@@ -10,11 +10,14 @@
 //! [`MoveOrderGates`], wynik `_adjacentEnemy`), wynik to DECYZJA ([`MoveOrderStep`]); wykonanie (`_doMove`,
 //! `_doAttack`, `done()`) należy do wołającego ([`crate::domain::siege_tactics_loop::ProdBody`]).
 //!
-//! Poza zakresem (D-404-1, jawne u wołającego): `attackMove` / `attack` (`:18354-18428`, T4), `_performSiegeManualOrder`
-//! (`:18435-18475`, H3), kolejka rozkazów UI (`_refreshQueuedOrderVisuals` `:11520` = wyłącznie render).
+//! Gałęzie `attackMove` / `attack` (`:18353-18428`) portuje T4 (#415) w [`crate::domain::player_order_attack`];
+//! [`perform_player_order`] rozgałęzia do nich przez leniwe wejście `attack`. Poza zakresem (jawne u wołającego):
+//! `_performSiegeManualOrder` (`:18435-18475`, H3), kolejka rozkazów UI (`_refreshQueuedOrderVisuals` `:11520` =
+//! wyłącznie render).
 
 use std::collections::{HashSet, VecDeque};
 
+use crate::domain::player_order_attack::AttackOrderStep;
 use crate::domain::siege_tactics_doctrine_state::GroupDoctrine as StateDoctrine;
 use crate::domain::siege_tactics_doctrine_step::{effective_doctrine, is_unit_doctrine_auto};
 
@@ -344,7 +347,7 @@ pub fn move_order_step<G: MoveGrid + ?Sized, B: MoveOrderGates + ?Sized>(
     }
 }
 
-/// Rozkaz jednostki `ru.playerOrder` w zakresie T3.
+/// Rozkaz jednostki `ru.playerOrder` (T3 + T4).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PlayerOrder {
     /// `{ type: 'none' }`.
@@ -353,8 +356,10 @@ pub enum PlayerOrder {
     Hold,
     /// `{ type: 'move', col, row }`.
     Move { col: i64, row: i64 },
-    /// `attack` / `attackMove` (`:18354-18428`): poza zakresem T3 (D-404-1, T4).
-    Other,
+    /// `{ type: 'attackMove', col, row }` (`:18353-18394`, T4).
+    AttackMove { col: i64, row: i64 },
+    /// `{ type: 'attack', targetId }` (`:18395-18428`, T4); `targetId` = `bu.id` celu.
+    Attack { target_id: u64 },
 }
 
 /// Doktryna jednostki czytana przez gałąź `none` (`:18287-18293`).
@@ -368,7 +373,7 @@ pub struct OrderDoctrine {
     pub group: Option<(StateDoctrine, bool)>,
 }
 
-/// Wynik `_performPlayerOrder` dla gałęzi przed `attackMove` (`:18280-18353`). Pin zwraca `true` w każdej z nich.
+/// Wynik `_performPlayerOrder` (`:18280-18428`). Pin zwraca `true` w każdej gałęzi.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PerformOrder {
     /// `hold` (`:18282-18285`): `done()`.
@@ -382,11 +387,16 @@ pub enum PerformOrder {
     NoneDone,
     /// Gałąź `move` ([`move_order_step`]).
     Move(MoveOrderStep),
-    /// `attack` / `attackMove`: poza zakresem T3.
-    Other,
+    /// Gałąź `attackMove` / `attack` ([`crate::domain::player_order_attack::attack_move_order_step`],
+    /// [`crate::domain::player_order_attack::attack_order_step`]).
+    Attack(AttackOrderStep),
 }
 
-/// Web `_performPlayerOrder(ru, done)` (`battleScene.ts:18280-18353`) dla `hold` / `none` / `move`.
+/// Web `_performPlayerOrder(ru, done)` (`battleScene.ts:18280-18428`).
+/// `attack` = leniwa decyzja gałęzi `attackMove` / `attack` (wołający liczy ją funkcjami
+/// [`crate::domain::player_order_attack`] dla `order`); wołana wyłącznie dla tych rozkazów i wyłącznie gdy
+/// `_performSiegeManualOrder` ich nie obsłużył (bramka `:18436` przepuszcza `attack` / `attackMove` atakującego przy
+/// murze, więc pin sprawdza oblężenie ręczne PRZED nimi, `:18286`).
 /// `siege_manual_handled` = WYNIK `_performSiegeManualOrder(ru, done)` (`:18286`, ciało `:18435-18475`, H3), nie sama
 /// jego pierwsza bramka (`:18436`: `siegeWallCol >= 0 && ru.side === 'atk' && ord.type !== 'move'`): po przejściu bramki
 /// pin może nadal zwrócić `false` (np. machina inna niż taran/wieża, `none` bez doktryny AUTO i bez celu strzału, `none`
@@ -402,11 +412,18 @@ pub fn perform_player_order<G: MoveGrid + ?Sized, B: MoveOrderGates + ?Sized>(
     mv: impl FnOnce() -> MoveOrderInput,
     grid: &G,
     gates: &B,
+    attack: impl FnOnce() -> AttackOrderStep,
 ) -> PerformOrder {
     match order {
         PlayerOrder::Hold => PerformOrder::Hold,
-        PlayerOrder::Other => PerformOrder::Other,
-        PlayerOrder::None if siege_manual_handled => PerformOrder::SiegeManual,
+        PlayerOrder::None | PlayerOrder::AttackMove { .. } | PlayerOrder::Attack { .. }
+            if siege_manual_handled =>
+        {
+            PerformOrder::SiegeManual
+        }
+        PlayerOrder::AttackMove { .. } | PlayerOrder::Attack { .. } => {
+            PerformOrder::Attack(attack())
+        }
         PlayerOrder::None => {
             let auto =
                 is_unit_doctrine_auto(doctrine.unit_doctrine, doctrine.has_group, doctrine.group);

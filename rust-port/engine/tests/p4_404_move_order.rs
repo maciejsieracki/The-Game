@@ -455,6 +455,7 @@ fn rozkaz_ruchu_move_zgodny_z_pinem() {
             || inp.clone(),
             &grid,
             &gates,
+            || unreachable!("gałąź attack/attackMove (T4) poza wektorami T3"),
         );
         if via != PerformOrder::Move(step) {
             fails.push(format!(
@@ -635,6 +636,7 @@ fn rozkaz_hold_none_zgodny_z_pinem() {
             || unreachable!("gałąź move"),
             &grid,
             &gates,
+            || unreachable!("gałąź attack/attackMove (T4) poza wektorami T3"),
         );
         let e = &c["expect"];
         let (kind, meta) = match got {
@@ -682,6 +684,7 @@ fn oblezenie_reczne_tylko_gdy_obsluzone() {
             || move_input(c),
             &grid,
             &gates,
+            || unreachable!("gałąź attack/attackMove (T4) poza wektorami T3"),
         )
     };
     assert_eq!(run(PlayerOrder::None, true), PerformOrder::SiegeManual);
@@ -705,6 +708,7 @@ fn oblezenie_reczne_tylko_gdy_obsluzone() {
         || inp.clone(),
         &mgrid,
         &mgates,
+        || unreachable!("gałąź attack/attackMove (T4) poza wektorami T3"),
     );
     let b = perform_player_order(
         target,
@@ -713,6 +717,7 @@ fn oblezenie_reczne_tylko_gdy_obsluzone() {
         || inp.clone(),
         &mgrid,
         &mgates,
+        || unreachable!("gałąź attack/attackMove (T4) poza wektorami T3"),
     );
     assert_eq!(a, b);
     assert!(matches!(a, PerformOrder::Move(_)));
