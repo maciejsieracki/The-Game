@@ -164,6 +164,8 @@ async function main() {
   let gateStops = 0;
   let barbNearMax = 0;
   let barbNearAtLoss = null;
+  let barbNearOstatni = null; // ostatni pomiar barbarzyncow przed utrata (stan po turze, cityThreatProbe)
+  let barbNearStartUtraty = null; // pomiar na poczatku tury utraty (pre.foreignNear)
   let completed = 0;
   let result = null;
   try {
@@ -204,7 +206,7 @@ async function main() {
         });
         await page.waitForTimeout(400);
         if (tabClicked) snap = await readRecruitRows(page);
-        else logLine({ kind: 'recruit-error', turn: pre.turn, message: 'brak zakladki Jednostki do rekrutacji', opened });
+        else logLine({ kind: 'recruit-error', turn: pre.turn, message: 'brak zakladki Jednostki do rekrutacji', tabClicked: false });
         let clicked = null;
         if (snap.open) {
           for (const name of MIL_PRIORITY) {
@@ -242,6 +244,8 @@ async function main() {
       const alive = await probe(page, cityId);
       if (alive.owner === null || alive.owner !== 0) {
         lossTurn = lossTurn ?? pre.turn;
+        barbNearAtLoss = barbNearAtLoss ?? barbNearOstatni;
+        barbNearStartUtraty = barbNearStartUtraty ?? pre.foreignNear.filter(u => u.owner !== 0).length;
         result = { outcome: 'przegrana-miasto', turn: pre.turn };
         logLine({ kind: 'loss', turn: pre.turn, cityOwner: alive.owner, treasury: alive.treasury, note: 'miasto gracza nieobecne na liscie miast przed bramka tury' });
         break;
@@ -272,13 +276,17 @@ async function main() {
       const mil = post.playerOnHex.filter(u => !MILITARY_EXCL.has(String(u.typeId).toLowerCase()) && u.category !== 'zwiadowca');
       if (firstDefender === null && mil.length) firstDefender = { turn: post.turn, inGarnizon: mil.some(u => u.inGarnizon), units: mil.map(u => u.typeId) };
       const barbNear = post.foreignNear.filter(u => u.owner !== 0).length;
+      barbNearOstatni = barbNear;
       barbNearMax = Math.max(barbNearMax, barbNear);
       logLine({ kind: 'turn', turn: post.turn, treasury: post.treasury, owner: post.owner, gameOver: post.gameOver,
         playerOnHex: post.playerOnHex.map(u => ({ t: u.typeId, g: u.inGarnizon })), barbNear, battle: post.battle, errors: errors.length,
         endTurnBlocks: endTurnBlocks.splice(0) });
       if (post.owner !== 0 && lossTurn === null) {
+        // Definicja tury utraty (wspolna dla obu sciezek): tura_utraty = tury_ukonczone + 1,
+        // czyli pierwsza tura, w ktorej stan gry pokazuje miasto utracone.
         lossTurn = post.turn;
         barbNearAtLoss = barbNear;
+        barbNearStartUtraty = pre.foreignNear.filter(u => u.owner !== 0).length;
       }
       if (post.gameOver) { result = { outcome: 'przegrana', turn: post.turn }; }
     }
@@ -290,7 +298,10 @@ async function main() {
       survived: last.owner === 0,
       firstDefenderTurn: firstDefender ? firstDefender.turn : null,
       firstDefenderInGarnizon: firstDefender ? firstDefender.inGarnizon : null,
-      purchaseTurn, purchases, barbNearAtLoss, barbNearMax, gateStops, errors: errors.length, fortForced: false,
+      purchaseTurn, purchases, barbNearAtLoss, barbNearStartUtraty, barbNearMax, gateStops, errors: errors.length, fortForced: false,
+      definicjaTury: 'tura_utraty = tury_ukonczone + 1 (pierwsza tura ze stanem utraty)',
+      wiarygodny: last.owner === 0 || last.owner === -1,
+      powodNiewiarygodnosci: (last.owner === 0 || last.owner === -1) ? null : 'owner null: miasto zniknelo z listy miast bez zdobywcy; przyczyna NIE ZMIERZONA',
     };
     logLine(row);
     fs.appendFileSync(DANE, JSON.stringify(row) + '\n');
