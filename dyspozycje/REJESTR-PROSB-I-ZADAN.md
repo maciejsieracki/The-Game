@@ -11579,3 +11579,13 @@ R-WEB-MAP-ISLANDS-ORPHAN-FIX-Q1 (wf_d7ad9b86-4bd; Operator Haiku → Evaluator S
 - NIE ZMIERZONO: 13 z 16 komórek macierzy; klik UI menu pauzy; render 3D po wczytaniu; A==A' osobno; test live save-load-continuity nie wpięty w bramkę. → temat SAVEMAT (poniżej).
 - refs/keep/SAVEFIX-r3-{op,eval,obrona,fc}; worktree SAVEFIX usunięte. Task #205 zamknięty.
 - START SAVEMAT (R-WEB-SAVE-LOAD-MATRIX-Q1, Operator HAIKU, cand = origin/main ebaa23b038a63a2a6c40095413b2fc696ff6d417): dopełnienie macierzy B==A na maksimum, klik UI zamiast haka, A==A', render po wczytaniu.
+
+### 2026-11-27 · REALDEF5 (R-WEB-EARLY-DEFENSE-MAX-GAPS-Q1) FC PASS-WITH-NOTES → ZINTEGROWANE do main 32b3f17181c704ca4305bd651c84af9fee7417c3 (doc + dane + runner, zero zmian gra/src; bez deployu) + ENDARIA start (zegar maszyny `date -u` 20:33 UTC)
+- Kod FC f11d84b33 (raport bcadf0168), Operator HAIKU. Bramki FC: tsc 0, logic 213/213, ai-test 297/0.
+- WYNIKI (maksimum: Trudny, barbarzyńcy Trudny, 20 tur): klik w suwak podatku (30→100%, prognoza Skarbu +2→+8) i klik zakupu Łucznika: seed 4242 i 7 — obrońca w t5, potem „Zakończ turę” zablokowane w t6–7 (prognoza żywności −15/−16 na turę z utrzymania jednostki; na ziarnie 7 także deficyt Skarbu: „Nawet maksymalny podatek nie wystarczy”); Nauka 0% od t2; las r3=22/r5=36 (4242), 11/33 (7). Ziarna 778899, 11, 2024 — Drewno 0 przez wszystkie tury → brak obrońcy, miasto ginie t13/t16/t10. Barbarzyńcy wyłączeni („brak”): 778899, 11, 2024 przeżywają 20 tur, koniec tury działa; 4242 i 7 blokowane żywnością t7/t6.
+- STARTOWY WOJOWNIK: gra/src/game/ai-difficulty-bonus.ts:150-155 playerStartUnitCount: łatwy=2, normalny=1, trudny=0 (jawna tabela, użycie main.ts:12124-12129; zwiadowca zawsze) — wygląda na zamierzone (uzasadnienia w kodzie brak) → decyzja właściciela.
+- NIE ZMIERZONO: barbarzyńcy w promieniu 5 i fale t15–20 z obrońcą (sonda zasięg 3), handel/wioski jako źródło Drewna, promień pracy miasta, Nauka t8–20, p4 (klik UI) dla 778899/11/2024 (awaria Chromium).
+- KANDYDAT BŁĘDU GRY UI: przycisk „Zakończ turę” aria-disabled=true przy canEnd=true w t2–4 (4242 i 7) → ENDARIA.
+- DECYZJA O GRZE (obrona startu na maksimum): fakty zebrane (REALDEF3–5); następny krok = turniej C-018 (dwa niezależne projekty + sędzia) i pytanie ABC wg zasad — w toku, NIE pokazano właścicielowi.
+- refs/keep/REALDEF5-r1-{op,eval,obrona,fc}; worktree REALDEF5 usunięte. Task #212 zamknięty.
+- START ENDARIA (R-WEB-ENDTURN-BUTTON-ARIA-Q1, Operator HAIKU, cand = origin/main 32b3f17181c704ca4305bd651c84af9fee7417c3): tabela t1–t8 atrybutów przycisku końca tury i skutku kliknięcia, 2 ziarna na maksimum; poprawka tylko po odtworzeniu błędu.
