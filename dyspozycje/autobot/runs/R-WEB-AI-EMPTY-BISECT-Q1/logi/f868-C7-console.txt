@@ -1,0 +1,8 @@
+[tmpdir] TMPDIR_RUN_ID=3348-a45ecdfc DIST=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/aiempty2/dist-f868 PROFILE=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/aiempty2/prof/f868-C7 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[econ] BLAD: page.evaluate: TypeError: Cannot read properties of undefined (reading 'startNewGame')
+    at eval (eval at evaluate (:303:30), <anonymous>:1:63)
+    at UtilityScript.evaluate (<anonymous>:305:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+    at openGame (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/aiempty2/base/gra/tools/aibal2-measure-run.cjs:309:16)
+    at async runSeries (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/aiempty2/base/gra/tools/aibal2-measure-run.cjs:555:16)
+    at async main (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/aiempty2/base/gra/tools/aibal2-measure-run.cjs:644:15)
