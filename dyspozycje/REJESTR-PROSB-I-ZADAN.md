@@ -11657,3 +11657,6 @@ R-WEB-MAP-ISLANDS-ORPHAN-FIX-Q1 (wf_d7ad9b86-4bd; Operator Haiku → Evaluator S
 - WNIOSEK: NIEJEDNOZNACZNE, przewaga „zamierzone (decyzje właściciela: rebalans epok ON 2026-11-19; −28…−37% jednostek AI przy Normalny ×2 zostaje, decyzja 70; koszty jednostek ×4 jako prawdziwa trudność), skutek uboczny dla garnizonów AI”; brak dowodu błędu kodu. Decyzja inżynierska: BEZ nowego pytania do właściciela (skutek wynika z jego wcześniejszych decyzji; wiadomy od AICULT/AIBAL); informacja w raporcie czatu; jeśli właściciel zażąda korekty — pytanie przez turniej.
 - NIE ZMIERZONO: maksimum dla 874/883/887/main, rozdział 857→883 przy Normalny, źródło 39/155 z AIEMPTY, tempo biegu 28bace9bb.
 - refs/keep/AIEMPTY2-r1-{op,eval,obrona,fc}; worktree AIEMPTY2 usunięte. Task #211 zamknięty.
+
+### 2026-11-27 · START TDQ15 (R-WEB-TEST-DEBT-Q15, Operator HAIKU, cand = origin/main 22f69d901f6cdad09df024225e3105553e3f177d; zegar maszyny `date -u` 22:37 UTC)
+- Wolny slot, brak gotowego tematu z gry bez decyzji właściciela → dług testowy (priorytet 3): unit-upkeep-cost-pace-test 80/1 FAIL i wydarzenia-eliminacja-podboj-karta-test 0.5c (oba czerwone już na bazie), skan szybkich testów powiązanych z FALAMI 931–935. Zero zmian gra/src.
