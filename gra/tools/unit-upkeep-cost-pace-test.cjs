@@ -217,7 +217,9 @@ console.log('-- Okablowanie: każde wywołanie silnika w main.ts i UI niesie tem
         // Tempo niesie: bezpośrednio kosztJednostekPace*, lokalna zmienna `pace` (= kosztJednostekPaceUtrzymania())
         // albo owner-aware wrapper paceUtrzymaniaWlasciciela(owner, pace) (ai-free-unit-upkeep.ts; okno darmowe AI
         // i okno łaski gracza -> 0, inaczej pace). Wrapper przyjmuje tempo jako argument, więc jest tempem.
-        if (!/kosztJednostekPace/.test(text) && !/Pace\b/.test(text) && !/paceUtrzymaniaWlasciciela\(/.test(text) && !/\bpace\b/.test(text)) {
+        // Wrapper niesie tempo tylko wtedy, gdy DRUGI argument (tempo) jest tempem; sam token nazwy nie wystarcza.
+        const wrapperPace = /paceUtrzymaniaWlasciciela\(\s*[^,()]+,\s*(?:kosztJednostekPace\w*|pace\b|\w*Pace\b)/.test(text);
+        if (!/kosztJednostekPace/.test(text) && !/Pace\b/.test(text) && !wrapperPace && !/[(,]\s*pace\s*[,)]/.test(text)) {
           missing.push(`${rel}:${src.slice(0, m.index).split('\n').length} ${fn}`);
         }
       }
