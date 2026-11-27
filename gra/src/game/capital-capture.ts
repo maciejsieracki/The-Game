@@ -115,6 +115,43 @@ export function wasCapitalOfOldOwner(
   return true;
 }
 
+/**
+ * R-WEB-CAPITAL-RECAPTURE-Q1 (r2): efektywna stolica `oldOwner` SPRZED przejęcia miasta
+ * `captured`. Wołane PO zmianie `captured.ownerId` na zdobywcę (tak jak reszta tego modułu),
+ * więc samo `captured` jest już wykluczone z `citiesNow` — tu jest dodawane z powrotem.
+ *
+ * Dlaczego osobna funkcja: surowy wpis `capitalCityIdByOwner` może być NIEAKTUALNY (np. wskazuje
+ * stolicę AI, która się zbuntowała i ma ownerId -99). Efektywna stolica (capitalCityIdForOwner
+ * w main.ts) wtedy spada na najstarsze miasto. Gdy zdobywane jest właśnie to miasto, porównanie
+ * z surowym wpisem dawało „nie stolica” i plunder/sukcesja nie następowały.
+ *
+ * Reguły identyczne z capitalCityIdForOwner: jawny wpis ważny gdy miasto istnieje i ma tego
+ * właściciela sprzed przejęcia (= oldOwner, albo jest to właśnie `captured`); inaczej fallback
+ * = najstarsze miasto oldOwner sprzed przejęcia (`captured` + pozostałe z ownerId===oldOwner).
+ */
+export function effectiveCapitalBeforeCapture(
+  captured: City,
+  oldOwner: number,
+  citiesNow: readonly City[],
+  explicitCapitalId: string | null | undefined,
+): string {
+  if (explicitCapitalId && citiesNow.some(c => c.id === explicitCapitalId
+      && (c.ownerId === oldOwner || c.id === captured.id))) {
+    return explicitCapitalId;
+  }
+  let best: City = captured;
+  let bestOrder = cityFoundOrder(captured.id);
+  for (const c of citiesNow) {
+    if (c.ownerId !== oldOwner) continue;
+    const order = cityFoundOrder(c.id);
+    if (order < bestOrder) {
+      best = c;
+      bestOrder = order;
+    }
+  }
+  return best.id;
+}
+
 /** Miasta oldOwner POZOSTAŁE po przejęciu (przejęte miasto już wykluczone, bo ma nowego wł.). */
 export function remainingCitiesOfOwner(
   oldOwner: number,
