@@ -1,3 +1,9 @@
+## ROBOCZA 62871a80 -- 2026-11-27 -- FALA 930: Kultura i religia: plus i minus rosną z epoką, osobne poziomy dla gracza i AI (testowa)
+
+- Kultura i religia w Szczęściu i Prawie: wspólny model addytywny (plus rośnie z epoką: gracz wg poziomu 10/16/23 łatwy, 5/11/18 normalny, 0/6/13 trudny; AI zawsze 10/16/23; minusy 10/16/23, 15/21/28, 20/26/33 wg poziomu każdej strony). Dwa niezależne selektory w kreatorze nowej gry (poziom dla gracza i dla AI), nowe pole zapisu poziomu AI (brak = poziom gracza), tryb zgodności bez zmian; podpowiedź selektora i panel miasta zgodne z nowym modelem.
+- Weryfikacja: tsc 0; logic 213/213; tech-tree 20/0; research 33/33; unit-replace 21/21; combat OK; ai-test 297/0; culture-religion-level 108/0; ai-plus10-culture 72/0; ai-plus10-matrix 190/0; culture-religion 65/0; society-breakdown 56/0; wiring 267/0; order-need 35/0; rebellion-gate 37/0; rebellion-news 24/0; diplo-world-news 67/0; reposition 14 kart/18 pozycji PASS; żywy round-trip zapisu 4/4; mutacje czerwone; pomiar 60 tur max Trudny/Trudny/Wysoki x4: jednostki AI 142->214 (s4242) i 133->259 (s7), miasta AI <14% 67/75 -> 1
+- Limity: NIE ZMIERZONO: odczyt D/G miast w żywej grze (epoki 1-3, brak haka), seed 7 tylko do t58, PRZED dla AI łatwy/gracz trudny; ocena balansu AI po zmianie (Porządek AI 19%->55%) przez właściciela
+
 ## ROBOCZA daf475f0 -- 2026-11-27 -- FALA 929: AI: bunt miasta komputera w trwałej liście Wydarzenia na świecie (testowa)
 
 - Bunt miasta AI (nowe gry, Kultura i religia ≠ zgodność) dodaje jednozdaniowy wpis 'rebelia' do trwałej listy Wydarzenia na świecie w oknie dyplomacji, widoczny tylko gdy właściciel miasta jest znany graczowi (ta sama reguła widoczności co wojny/pokoje AI); wpis w dzienniku Wydarzeń zostaje. Tryb zgodności i zapisy bez zmian.
