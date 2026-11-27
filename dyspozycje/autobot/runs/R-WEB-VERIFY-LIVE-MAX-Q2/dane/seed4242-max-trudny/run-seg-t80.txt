@@ -1,0 +1,71 @@
+[tmpdir] TMPDIR_RUN_ID=18583-42cca257 DIST=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist PROFILE=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p4242 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[diplo] seed4242-all1-lvl-trudna WZNOWIENIE ze slotu dipl-measure-seed4242-all1-lvl-trudna (tura 20)
+[diplo] wznowienie: proba 1/3 przerwana (page.waitForFunction: Target page, context or browser has been closed) -- ponawiam start ze slotu
+[diplo] player-ai autopilot=1
+[diplo] diplo-level=trudna
+[diplo] unit-pace=wysoki
+[diplo] all-flags=1 {"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true}
+[diplo] seed4242-all1-lvl-trudna tura=21 pary=79 wojny=0 czas=319s
+[diplo] seed4242-all1-lvl-trudna tura=22 pary=79 wojny=0 czas=322s
+[diplo] seed4242-all1-lvl-trudna tura=23 pary=79 wojny=0 czas=324s
+[diplo] seed4242-all1-lvl-trudna tura=24 pary=79 wojny=0 czas=326s
+[diplo] seed4242-all1-lvl-trudna tura=25 pary=79 wojny=0 czas=329s
+[diplo] seed4242-all1-lvl-trudna tura=26 pary=79 wojny=0 czas=331s
+[diplo] seed4242-all1-lvl-trudna tura=27 pary=79 wojny=0 czas=333s
+[diplo] seed4242-all1-lvl-trudna tura=28 pary=79 wojny=0 czas=335s
+[diplo] seed4242-all1-lvl-trudna tura=29 pary=79 wojny=0 czas=338s
+[diplo] seed4242-all1-lvl-trudna tura=30 pary=79 wojny=0 czas=340s
+[diplo] seed4242-all1-lvl-trudna tura=31 pary=79 wojny=0 czas=344s
+[diplo] seed4242-all1-lvl-trudna tura=32 pary=79 wojny=0 czas=348s
+[diplo] seed4242-all1-lvl-trudna tura=33 pary=79 wojny=0 czas=350s
+[diplo] seed4242-all1-lvl-trudna tura=34 pary=80 wojny=0 czas=352s
+[diplo] seed4242-all1-lvl-trudna tura=35 pary=80 wojny=0 czas=355s
+[diplo] seed4242-all1-lvl-trudna tura=36 pary=80 wojny=0 czas=358s
+[diplo] seed4242-all1-lvl-trudna tura=37 pary=80 wojny=0 czas=360s
+[diplo] seed4242-all1-lvl-trudna tura=38 pary=80 wojny=0 czas=363s
+[diplo] seed4242-all1-lvl-trudna tura=39 pary=80 wojny=0 czas=366s
+[diplo] seed4242-all1-lvl-trudna tura=40 pary=84 wojny=5 czas=370s
+[diplo] seed4242-all1-lvl-trudna tura=41 pary=84 wojny=5 czas=373s
+[diplo] seed4242-all1-lvl-trudna tura=42 pary=84 wojny=5 czas=377s
+[diplo] seed4242-all1-lvl-trudna tura=43 pary=84 wojny=5 czas=380s
+[diplo] seed4242-all1-lvl-trudna tura=44 pary=84 wojny=5 czas=385s
+[diplo] seed4242-all1-lvl-trudna tura=45 pary=84 wojny=5 czas=389s
+[diplo] seed4242-all1-lvl-trudna tura=46 pary=84 wojny=5 czas=392s
+[diplo] seed4242-all1-lvl-trudna tura=47 pary=84 wojny=5 czas=396s
+[diplo] seed4242-all1-lvl-trudna tura=48 pary=84 wojny=5 czas=400s
+[diplo] seed4242-all1-lvl-trudna tura=49 pary=84 wojny=5 czas=405s
+[diplo] seed4242-all1-lvl-trudna tura=50 pary=84 wojny=7 czas=410s
+[diplo] seed4242-all1-lvl-trudna tura=51 pary=84 wojny=7 czas=414s
+[diplo] seed4242-all1-lvl-trudna tura=52 pary=84 wojny=7 czas=419s
+[diplo] seed4242-all1-lvl-trudna tura=53 pary=84 wojny=7 czas=424s
+[diplo] seed4242-all1-lvl-trudna tura=54 pary=84 wojny=7 czas=429s
+[diplo] seed4242-all1-lvl-trudna tura=55 pary=84 wojny=6 czas=434s
+[diplo] seed4242-all1-lvl-trudna tura=56 pary=84 wojny=6 czas=439s
+[diplo] seed4242-all1-lvl-trudna tura=57 pary=85 wojny=6 czas=445s
+[diplo] seed4242-all1-lvl-trudna tura=58 pary=85 wojny=6 czas=450s
+[diplo] seed4242-all1-lvl-trudna tura=59 pary=85 wojny=6 czas=456s
+[diplo] seed4242-all1-lvl-trudna tura=60 pary=85 wojny=7 czas=462s
+[diplo] seed4242-all1-lvl-trudna tura=61 pary=85 wojny=6 czas=468s
+[diplo] seed4242-all1-lvl-trudna tura=62 pary=85 wojny=6 czas=473s
+[diplo] seed4242-all1-lvl-trudna tura=63 pary=85 wojny=6 czas=479s
+[diplo] seed4242-all1-lvl-trudna tura=64 pary=85 wojny=6 czas=485s
+[diplo] seed4242-all1-lvl-trudna tura=65 pary=85 wojny=6 czas=492s
+[diplo] seed4242-all1-lvl-trudna tura=66 pary=85 wojny=6 czas=498s
+[diplo] seed4242-all1-lvl-trudna tura=67 pary=85 wojny=6 czas=504s
+[diplo] seed4242-all1-lvl-trudna tura=68 pary=85 wojny=6 czas=513s
+[diplo] seed4242-all1-lvl-trudna tura=69 pary=85 wojny=6 czas=520s
+[diplo] seed4242-all1-lvl-trudna tura=70 pary=85 wojny=5 czas=526s
+[diplo] seed4242-all1-lvl-trudna tura=71 pary=85 wojny=6 czas=533s
+[diplo] seed4242-all1-lvl-trudna tura=72 pary=85 wojny=6 czas=540s
+[diplo] seed4242-all1-lvl-trudna tura=73 pary=85 wojny=6 czas=546s
+[diplo] seed4242-all1-lvl-trudna tura=74 pary=85 wojny=6 czas=554s
+[diplo] seed4242-all1-lvl-trudna tura=75 pary=85 wojny=6 czas=560s
+[diplo] seed4242-all1-lvl-trudna tura=76 pary=85 wojny=6 czas=567s
+[diplo] seed4242-all1-lvl-trudna tura=77 pary=85 wojny=6 czas=577s
+[diplo] seed4242-all1-lvl-trudna tura=78 pary=85 wojny=6 czas=584s
+[diplo] BLAD: browserContext.close: Target page, context or browser has been closed
+    at async main (/home/user/The-Game/.claude/worktrees/wf_072b3287-81c-3/gra/tools/diplomacy-harder-measure-run.cjs:426:14)
+
+real	9m45.136s
+user	0m5.972s
+sys	0m0.620s

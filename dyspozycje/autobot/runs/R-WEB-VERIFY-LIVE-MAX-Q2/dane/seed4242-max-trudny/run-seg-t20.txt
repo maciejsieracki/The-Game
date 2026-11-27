@@ -1,0 +1,29 @@
+[tmpdir] TMPDIR_RUN_ID=18397-a3d9c69d DIST=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist PROFILE=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p4242 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[diplo] player-ai autopilot=1
+[diplo] diplo-level=trudna
+[diplo] unit-pace=wysoki
+[diplo] all-flags=1 {"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true}
+[diplo] seed4242-all1-lvl-trudna tura=2 pary=78 wojny=0 czas=78s
+[diplo] seed4242-all1-lvl-trudna tura=3 pary=78 wojny=0 czas=80s
+[diplo] seed4242-all1-lvl-trudna tura=4 pary=78 wojny=0 czas=82s
+[diplo] seed4242-all1-lvl-trudna tura=5 pary=78 wojny=0 czas=83s
+[diplo] seed4242-all1-lvl-trudna tura=6 pary=78 wojny=0 czas=85s
+[diplo] seed4242-all1-lvl-trudna tura=7 pary=78 wojny=0 czas=86s
+[diplo] seed4242-all1-lvl-trudna tura=8 pary=78 wojny=0 czas=88s
+[diplo] seed4242-all1-lvl-trudna tura=9 pary=78 wojny=0 czas=90s
+[diplo] seed4242-all1-lvl-trudna tura=10 pary=78 wojny=0 czas=91s
+[diplo] seed4242-all1-lvl-trudna tura=11 pary=78 wojny=0 czas=93s
+[diplo] seed4242-all1-lvl-trudna tura=12 pary=78 wojny=0 czas=95s
+[diplo] seed4242-all1-lvl-trudna tura=13 pary=78 wojny=0 czas=97s
+[diplo] seed4242-all1-lvl-trudna tura=14 pary=78 wojny=0 czas=99s
+[diplo] seed4242-all1-lvl-trudna tura=15 pary=78 wojny=0 czas=101s
+[diplo] seed4242-all1-lvl-trudna tura=16 pary=78 wojny=0 czas=103s
+[diplo] seed4242-all1-lvl-trudna tura=17 pary=79 wojny=0 czas=105s
+[diplo] seed4242-all1-lvl-trudna tura=18 pary=79 wojny=0 czas=106s
+[diplo] seed4242-all1-lvl-trudna tura=19 pary=79 wojny=0 czas=108s
+[diplo] seed4242-all1-lvl-trudna tura=20 pary=79 wojny=0 czas=110s
+[diplo] PODSUMOWANIE {"seed":4242,"diploLevel":"trudna","harder":1,"allFlags":1,"playerAi":1,"graczAdnotacja":"gracz = autopilot","turnsRequested":120,"every":1,"endTurn":20,"rows":19,"stop":null,"segment":true,"stopAt":20,"resumed":false,"slot":"dipl-measure-seed4242-all1-lvl-trudna","flagi":{"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true},"counters":{"gateActiveTurns":0,"bypassApplied":0,"stuckQueueHeals":0,"battlesAuto":0,"diploAudienceClosed":0,"armyMergeClosed":0,"techNoticeClosed":0,"aiOffersRejected":0,"aiOffersRejectAttempts":0,"forcedPeaceAccepted":0},"aiOffersRejected":0,"aiOffersRejectAttempts":0,"wallSec":110}
+
+real	1m50.320s
+user	0m3.740s
+sys	0m1.364s

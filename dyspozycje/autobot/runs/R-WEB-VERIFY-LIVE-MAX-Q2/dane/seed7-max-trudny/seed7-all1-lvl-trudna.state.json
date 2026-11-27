@@ -1,0 +1,34 @@
+{
+  "seed": 7,
+  "tag": "seed7-all1-lvl-trudna",
+  "slot": "dipl-measure-seed7-all1-lvl-trudna",
+  "saved": true,
+  "slotTurn": 40,
+  "slotCounters": {
+    "gateActiveTurns": 0,
+    "bypassApplied": 0,
+    "stuckQueueHeals": 0,
+    "battlesAuto": 0,
+    "diploAudienceClosed": 0,
+    "armyMergeClosed": 0,
+    "techNoticeClosed": 0,
+    "aiOffersRejected": 0,
+    "aiOffersRejectAttempts": 0,
+    "forcedPeaceAccepted": 0
+  },
+  "zerwaniaSuma": 4,
+  "lastTurn": 0,
+  "counters": {
+    "gateActiveTurns": 0,
+    "bypassApplied": 0,
+    "stuckQueueHeals": 0,
+    "battlesAuto": 0,
+    "diploAudienceClosed": 0,
+    "armyMergeClosed": 0,
+    "techNoticeClosed": 0,
+    "aiOffersRejected": 0,
+    "aiOffersRejectAttempts": 0,
+    "forcedPeaceAccepted": 0
+  },
+  "stop": null
+}
