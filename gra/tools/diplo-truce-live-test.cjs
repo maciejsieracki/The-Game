@@ -1,4 +1,5 @@
 'use strict';
+const { closeCivWelcome } = require('./_live-ready.cjs');
 /**
  * diplo-truce-live-test.cjs — R-WEB-TRUCE-Q1 (runda 5, N5): żywy cykl rozejmu w Chromium.
  *
@@ -108,6 +109,7 @@ async function launchBrowser(chromium) {
 async function gotoPlaytestMapa(page) {
   await page.goto(OUT_HTML, { waitUntil: 'load', timeout: 120000 });
   await page.waitForSelector('.civ-hud, .civ-ux-frame, .civ-cs', { timeout: 120000 });
+  await closeCivWelcome(page);
   for (let i = 0; i < 900; i++) {
     if ((await page.locator('text=Tworzenie świata').count()) === 0) break;
     await wait(1000);

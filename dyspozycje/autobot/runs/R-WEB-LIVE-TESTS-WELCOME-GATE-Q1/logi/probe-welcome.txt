@@ -1,0 +1,5 @@
+PROBE (dist-base, ?civTest=1&civSeed=4242, Maly, domyslne ustawienia; NIE poziom maksymalny):
+MUT=1 (bez closeCivWelcome):
+{"seed":"4242","welcomeOpen":true,"btnFound":true,"btnCover":"civ-welcome-screen-root","turn":1,"canEnd":false}
+Z closeCivWelcome:
+{"seed":"4242","welcomeOpen":false,"btnFound":true,"btnCover":"BUTTON","turn":1,"canEnd":false}

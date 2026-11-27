@@ -1,135 +1,59 @@
-# Testy live a ekran powitalny / bramka „Zakończ turę” — pomiar (2026-11-27)
+# Testy live a ekran powitalny — R-WEB-LIVE-TESTS-WELCOME-GATE-Q1 (runda 2, Operator HAIKU 5.5)
 
-Temat: R-WEB-LIVE-TESTS-WELCOME-GATE-Q1 (tag LIVEGATE), runda 1/5, Operator HAIKU 5.5.
-Baza: origin/main `6319eaf662d6055490a37f5f580f9c81d2feec58`.
-Zakres pracy: tylko testy i dokumentacja. Zero zmian w `gra/src` i `gra/data`. Helper `gra/tools/_live-ready.cjs` ani żaden `*-test.cjs` NIE został zmieniony.
+Baza: `cf8c26b22` (origin/main ancestor `6319eaf66` potwierdzony `merge-base --is-ancestor`).
+Surowe logi: `dyspozycje/autobot/runs/R-WEB-LIVE-TESTS-WELCOME-GATE-Q1/logi/` (sha256 w `SHA256SUMS.txt`).
 
-## Wynik w skrócie
+## 1. Co jest ustalone (zmierzone)
 
-- **Ekran powitalny nie blokował żadnego z 26 zmierzonych testów.** We wszystkich 26 logach zero trafień `civ-welcome` i zero komunikatów Playwright typu „intercepts pointer events”.
-- Dlatego **nie było czego przepinać na helper**. Żaden test nie został zmieniony, a skrypt migracyjny nie powstał.
-- Główne przyczyny niepowodzeń w próbce: TIMEOUT (przekroczone 280 s), `endTurn` nie ustabilizował się w ~60 s, czekanie na kreator `.civ-newgame .start`, brakujące wejście konfiguracyjne (env / plik request) i asercje scenariuszy.
-- Mutacja helpera (task 5 dispatchu) **NIE WYKONANA**: nie ma testu zablokowanego ekranem, na którym dałoby się ją pokazać czerwoną.
-
-## 1. Inwentaryzacja (zakres: `gra/tools/*-test.cjs`)
-
-Liczby z `grep` na katalogu `gra/tools` (stan 6319eaf66).
-
-| Miara | Liczba |
+| Ustalenie | Dowód |
 |---|---|
-| Wszystkie pliki `*-test.cjs` | 1571 |
-| Pliki z `chromium` / `playwright` / `launch(` (kandydaci „live”) | 369 |
-| Z kliknięciem w UI (`page.click`, `.click(`, `page.mouse`) | 169 |
-| Bez kliknięcia (odczyt DOM / `evaluate`, bez akcji UI) | 200 |
-| Wzmianka o „Zakończ turę” / `end-turn` / `endTurn` | 35 |
-| Z kliknięciem przycisku końca tury (próbka 25) | 25 |
-| Używają haka `civTest` (`?civTest=1`, `__nnsMeasureDebug`) | 55 |
-| Czekają na kreator `.civ-newgame` (start przez UI kreatora) | 19 |
-| Obsługują ekran powitalny (`closeCivWelcome` / `civ-welcome`) | 5 |
-| Używają helpera bramki (`prepareEndTurnGate` / `_live-ready`) | 2 |
+| Ekran powitalny (`#civ-welcome-screen-root`) jest otwarty w turze 1 i zasłania przycisk „Zakończ turę” | probe: `btnCover = civ-welcome-screen-root` (`logi/probe-welcome.txt`) |
+| Wspólny helper `closeCivWelcome` (gra/tools/_live-ready.cjs) zamyka ekran i odsłania przycisk | probe z helperem: `btnCover = BUTTON` |
+| Mutacja: bez helpera przycisk jest przechwycony przez ekran; z helperem nie | te same dwa wiersze probe (MUT=1 vs helper) |
+| Zamknięcie ekranu NIE wystarcza, żeby tura się zakończyła: bramka tury blokuje turę 1 | probe z helperem: `canEnd = false`; komunikat w era-change: „Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 187” |
+| Bramka żywności/skarbca w trybie `?playtest=mapa` nie ma haka do przygotowania stanu (`prepareEndTurnGate` wymaga `__nnsMeasureDebug`, a ten istnieje tylko przy `?civTest=1`) | kod: gra/src/main.ts (hak `__nnsMeasureDebug` pod `civTest`), `_live-ready.cjs` |
+| Bramki zielone | `tsc --noEmit` rc=0; `logic-test` 213/213; `ai-test` 297 passed, 0 failed (`logi/`) |
 
-Pogrupowanie wg sposobu startu gry (orientacyjnie, z grepów; NIE ZMIERZONO dla pełnej liczby 369):
+## 2. Inwentaryzacja (zakres)
 
-- **hak civTest** (`?civTest=1`, `startGame` przez `__nnsMeasureDebug`): ok. 55 plików.
-- **kreator** (klik przez `.civ-newgame .start`): ok. 19 plików.
-- **bez UI** (tylko odczyt DOM / logika w przeglądarce, bez kliku): ok. 200 plików, w tym część z własnym buildem przez `vite`.
-- **ekran powitalny** (test sam obsługuje `#civ-welcome-screen-root`): 5 plików.
+- Plików z Playwright/Chromium w `gra/tools/`: 478 trafień wzorca launch (`require('playwright')` / `chromium.launch`), z czego 143 zawiera słowa „zakończ turę/endTurn”, 228 ma `page.click` lub `.click(`.
+- Testy z `closeCivWelcome` / `prepareEndTurnGate` przed tą rundą: 4 pliki (`_live-ready.cjs` i 3 testy). NIE ZMIERZONO: pełna lista 102 testów z kliknięciem (wymagałaby ok. 2–5 min na test; poza budżetem tej rundy).
 
-Uwaga: 194 pliki wzmiankują `vite` (często jako własny build w teście), co jest sprzeczne z zasadą „build poza testem”. To tylko dopasowanie tekstowe, NIE ZMIERZONO, ile z nich faktycznie buduje.
+## 3. Przepięcie (zmiana wsadowa)
 
-## 2. Pomiar (próbka 26 testów)
+Skrypt: `dyspozycje/analizy/migrate-live-welcome-q1.cjs` (anchor musi wystąpić dokładnie raz; `--dry` do podglądu). Dodaje import `closeCivWelcome` i jedno wywołanie `await closeCivWelcome(page);` po gotowości strony. Asercje i logika gry bez zmian. `node --check` przechodzi dla wszystkich 12 plików.
 
-Próbka: wszystkie 25 testów z kliknięciem w przycisk końca tury (lista z inwentaryzacji) plus `end-turn-gate-live-test.cjs` (test bramki, zmierzony osobno). Build bazowy: `vite build` z `6319eaf66`, zapisany poza repo. Każdy test z timeoutem 280 s (procesy równoległe, po 4 naraz). Zapis `WORLD_GEN_DIST` i `--dist` zgodnie z sygnaturą danego testu.
+Przepięte (12): forced-war-iron-player-target, forced-war-player-no-contact, forced-war-player-target, forced-war-r9-no-auto-end, forced-war-trojstronna-domino, era-change-toast, diplo-truce-live, sidepanel-diplo-dismiss-real-render, diplo-truce-ai-table, diplo-truce-saveload, end-turn-gate, end-turn-block-event.
 
-Klasyfikacja: PASS / FAIL z powodem „ekran powitalny” / FAIL z innym powodem / TIMEOUT / crash Chromium.
+Nie przepięte, z uzasadnieniem: `end-turn-input-stability-test.cjs` — harness DOM (`page.setContent`), bez gry i bez ekranu powitalnego (klasyfikacja z kodu, NIE ZMIERZONO uruchomieniem).
 
-Wynik „przed” = wynik na bazie `6319eaf66` z niezmienionymi testami. Wynik „po” dla każdego testu: **bez zmian (NIE NAPRAWIANO)**, ponieważ żaden test nie był blokowany ekranem.
+## 4. Tabela przed / po (próbka: 3 testy uruchomione w obu wersjach, limit 280 s każdy)
 
-| Test | Start | Wynik przed | Wynik po | Powód (z logu) |
+| test | start | przed | po | powód |
 |---|---|---|---|---|
-| build-panel-ulepszenia-scroll-real-render-test | bez hooka | PASS (rc 0, 33 s) | bez zmian | — |
-| defeat-screen-summary-live-test | argv (build) | TIMEOUT (280 s) | bez zmian | przekroczony czas, brak wyniku |
-| diplo-forced-peace-pending-live-paths-test | civTest | PASS (rc 0, 208 s) | bez zmian | — (klik „Zakończ turę” przy pending: zablokowany zgodnie z oczekiwaniem) |
-| diplo-peace-auto-stale-offer-live-test | civTest | PASS (rc 0, 208 s, PASS=15 FAIL=0) | bez zmian | — |
-| diplo-truce-live-test | civTest | TIMEOUT (280 s) | bez zmian | `endTurn` nie ustabilizował się; zamknięcie strony w trakcie |
-| end-turn-block-event-live-test | civTest | FAIL inny powód (rc 1, 191 s) | bez zmian | scenariusze z bramki; część PASS (np. blokada przy skarbcu <0), część FAIL — szczegóły w logu, NIE ZMIERZONO pełnej listy |
-| end-turn-gameplay-runtime-test | bez hooka (env) | FAIL inny powód (rc 1, 2 s) | bez zmian | brak pliku żądania `WORLD_GEN_REQUEST_FILE` (konfiguracja, nie gra) |
-| end-turn-input-stability-test | bez hooka | FAIL inny powód (rc 1, 2 s) | bez zmian | błąd Playwright na starcie (linia 288), NIE ZMIERZONO szczegółowo |
-| era-change-toast-live-test | bez hooka | FAIL inny powód (rc 1, 237 s) | bez zmian | `endTurnInProgress` nie przeszedł z true do false w 60 s |
-| forced-war-iron-player-target-live-test | bez hooka | FAIL inny powód (rc 1, 228 s) | bez zmian | `fast-forward: endTurn #1 nie ustabilizował się` |
-| forced-war-player-no-contact-live-test | bez hooka | FAIL inny powód (rc 1, 235 s) | bez zmian | jw. |
-| forced-war-player-target-live-test | bez hooka | FAIL inny powód (rc 1, 224 s) | bez zmian | jw. |
-| general-quick-follow-action-test | bez hooka | FAIL inny powód (rc 1, 2 s) | bez zmian | asercja logiki (`expected true`), bez przeglądarki w akcji |
-| hotseat-drugi-fotel-tura-test | kreator | FAIL inny powód (rc 2, 187 s) | bez zmian | czekanie na `.civ-newgame .start` (start kreatora nie pojawił się) |
-| hotseat-dyplo-kontakt-per-fotel-test | kreator | FAIL inny powód (rc 2, 187 s) | bez zmian | jw. |
-| hotseat-etap6a-input-noop-test | bez hooka | TIMEOUT (280 s) | bez zmian | przekroczony czas; log wskazuje, że test pracował do końca limitu |
-| hotseat-etap8-dyplomacja-dane-test | kreator | FAIL inny powód (rc 2, 236 s) | bez zmian | czekanie na `.civ-newgame .start` |
-| hotseat-etap8-dyplomacja-ui-test | kreator | FAIL inny powód (rc 2, 243 s) | bez zmian | czekanie na `.civ-newgame .start` |
-| improvement-build-highlight-lifecycle-live-test | bez hooka | FAIL inny powód (rc 1, 3 s) | bez zmian | ENOENT pliku konfiguracji w ścieżce `/workspace/...` (środowisko testu) |
-| live-nns-gate-smoke-test | civTest | TIMEOUT (280 s) | bez zmian | przekroczony czas |
-| perf-large-empire-stress-live-test | argv (build) | FAIL inny powód (rc 1, 5 s) | bez zmian | kotwica transformacji `advanceCityEconomy` nieznaleziona (asercja seedera) |
-| perf-late-game-interaction-live-test | bez hooka | FAIL inny powód (rc 1, 162 s) | bez zmian | strażnik harnessu: źródło zmieniło się w trakcie builda |
-| sidepanel-diplo-dismiss-real-render-test | argv (--dist) | TIMEOUT (280 s) | bez zmian | `endTurn` nie zakończył się w czasie (A6: `endTurnInProgress` bez zmiany) |
-| war-era-counter-live-test | bez hooka | TIMEOUT (280 s) | bez zmian | przekroczony czas |
-| war-rules-multiwar-live-test | argv (build) | TIMEOUT (280 s) | bez zmian | czekanie na `.civ-hud, .civ-ux-frame, .civ-cs` (HUD nie pojawił się w czasie) |
-| end-turn-gate-live-test | civTest | FAIL inny powód (rc 1, 204 s) | bez zmian | 2/9 PASS; scenariusze a–c na t1 i t11: `netMax=0` (brak dźwigni podatku w stanie startowym) i brak blokady; NIE ZMIERZONO, czy to stan startu, czy zachowanie bramki |
+| era-change-toast-live-test | `?playtest=mapa`, własny build | rc=1, OK 11 / FAIL 9; endTurn nie stabilizuje (bramka żywności) | rc=1, OK 11 / FAIL 9 (ten sam wynik) | bramka żywności blokuje turę; zamknięcie ekranu nie zmienia wyniku |
+| sidepanel-diplo-dismiss-real-render-test | `?playtest=mapa`, własny build | rc=1 po 274 s, 33 OK / 4 FAIL (A6, A7, B6 + 1): endTurn nie stabilizuje | timeout 280 s, 23 OK / 0 FAIL do przerwania; BRAK WERDYKTU | po zamknięciu ekranu brak FAIL w części przebiegu; pełny wynik NIE ZMIERZONO (przekroczony limit czasu) |
+| end-turn-gate-live-test (`--dist` base, seed 4242, Mały) | `?civTest=1` | 2/9 PASS (scenariusze a–e) | 2/9 PASS (identycznie) | test nie klika przycisku (hooki); błędy to scenariusze bramki, np. a@t1 „netMax=0”, b@t1 brak blokady; NIE jest to problem ekranu; kandydat do osobnego zbadania |
 
-Podsumowanie próbki (26):
+Pozostałe przepięte (forced-war x4 bez tabeli, diplo-truce-live, diplo-truce-ai-table, diplo-truce-saveload, end-turn-block-event): NIE ZMIERZONO przed/po. Powód: każdy ma własny build lub długi bieg (3–5 min), a w rundzie było 280 s na test.
 
-| Klasa | Liczba | Testy |
-|---|---|---|
-| PASS | 3 | build-panel, diplo-forced-peace-pending, diplo-peace-auto-stale |
-| FAIL z powodem „ekran powitalny/bramka” | **0** | — |
-| FAIL z innym powodem | 12 | end-turn-block-event, end-turn-gameplay-runtime, end-turn-input-stability, era-change-toast, forced-war-iron, forced-war-no-contact, forced-war-target, general-quick-follow, improvement-build, perf-large-empire, perf-late-game, end-turn-gate |
-| Brak kreatora (`.civ-newgame .start`) | 4 | hotseat-drugi, hotseat-dyplo, hotseat-etap8-dane, hotseat-etap8-ui |
-| TIMEOUT (280 s) | 7 | defeat-screen, diplo-truce, hotseat-etap6a, live-nns-gate-smoke, sidepanel-diplo, war-era-counter, war-rules-multiwar |
-| Crash Chromium (SIGSEGV / Target crashed) | 0 | nie zaobserwowano w tej próbce |
+## 5. Mutacja (wymóg 4 z dodatku)
 
-Razem: 3 + 12 + 4 + 7 = 26 testów (każdy w jednej klasie). Przypisanie oparte na ostatnim powodzie w logu; NIE ZMIERZONO szczegółowo dla end-turn-block-event i end-turn-input-stability.
+Pełna mutacja na realnym teście NIE ZMIERZONO. Zastępczo, na sondzie na żywym buildzie (ta sama ścieżka co testy): bez helpera przycisk jest przechwycony przez `#civ-welcome-screen-root` (czerwone); z helperem `BUTTON` (zielone w kryterium pokrycia). Logi: `logi/probe-welcome.txt`.
 
-## 3. Naprawa
+## 6. Poziom maksymalny (wymóg 5 z dodatku)
 
-Nie wykonano. Powód: w próbce nie ma testu blokowanego ekranem powitalnym ani bramką, więc wspólny helper nie ma czego naprawiać. Istniejący helper `closeCivWelcome` (już używany przez 2 testy) pozostał bez zmian.
+Maksimum dla testów live wg dispatchu: Dyplomacja „Trudna”, Koszty jednostek „Wysoki ×4”, Kultura i religia „trudny”, największa mapa dostępna dla danego testu. NIE ZMIERZONO na tym poziomie: sonda i testy działały na mapie „Mały” z domyślnymi ustawieniami (wada wobec reguły właściciela; zapisane jawnie). Wymóg „co najmniej 5 testów na maksimum” NIE SPEŁNIONY.
 
-Dla pozostałych klas usterek (TIMEOUT, brak kreatora, `endTurn` nie ustabilizowany) helper ekranu powitalnego nie jest właściwym narzędziem. Kandydaci na osobne tematy (bez naprawy w tym temacie):
+## 7. Wnioski i kandydaci
 
-- KANDYDAT-1: `endTurn` nie ustabilizował się w 60 s w headless (`forced-war-*`, `era-change-toast`, `sidepanel-diplo`, `diplo-truce`). Sprawdzić czas tury w SwiftShader i ustawienie `setFast`.
-- KANDYDAT-2: czekanie na `.civ-newgame .start` w 4 testach hotseat. Sprawdzić, czy selektor kreatora nadal istnieje w buildzie.
-- KANDYDAT-3: `end-turn-gate-live-test` — scenariusze a–c startują z `netMax=0`. To może być stan startu testu, a nie błąd gry. Wymaga osobnej analizy (NIE ZMIERZONO przyczyny).
-- KANDYDAT-4: TIMEOUT 280 s bez przyczyny w logu (7 testów). Wydłużenie limitu nie jest tu oceniane.
+1. Ekran powitalny blokuje kliki w HUD: potwierdzone. Helper go zamyka: potwierdzone. Testy przepięte, ale w zmierzonych przypadkach wynik się nie zmienił, bo tura nie kończy się z innego powodu.
+2. Główną blokadą kończenia tury w trybie `?playtest=mapa` jest bramka żywności/skarbca (komunikat „Nie można zakończyć tury”). Helper nie usuwa tej blokady. Jej obejście wymaga haka w trybie playtest (zmiana gra/src) — poza zakresem tej rundy. **Kandydat na osobny temat R-WEB-*:** hak `setPlayerGranary/Treasury` dla `?playtest=mapa` albo test przeniesiony na `?civTest=1`.
+3. Kandydat (nie naprawiany): test `end-turn-gate-live-test` ma scenariusze a/b/c, które nie przechodzą także przed przepięciem. To nie jest efekt ekranu powitalnego. Do osobnego zbadania.
+4. Zgodnie z dodatkiem: błąd gry nie został naprawiony w gra/src (zero zmian gra/src i gra/data).
 
-## 4. Mutacja
+## 8. Czego ta runda NIE ustaliła (NIE ZMIERZONO)
 
-NIE WYKONANA. Kryterium „helper bez dismissWelcome → wybrany test czerwony” wymaga testu, który dziś zależy od zamknięcia ekranu. Brak takiego testu w próbce. Mutacji nie wymuszono sztucznie, żeby nie fałszować wyniku.
-
-## 5. Zasada maksymalnego poziomu
-
-Testy z próbki uruchomiono z domyślnymi ustawieniami harnessu (seed 11 / 4242 w zależności od testu). NIE ZMIERZONO na poziomie maksymalnym suwaków (np. Praca na ulepszenia 100%, najwyższa trudność). Poziom uznany za maksymalny: NIEJEDNOZNACZNE w tym temacie — testy nie wystawiają wspólnego suwaka; wyniki nie mogą być przypisane do poziomu maksymalnego.
-
-## 6. Ograniczenia pomiaru
-
-- Ekran powitalny pojawia się przy pierwszym kontakcie z cywilizacją. Testy w próbce mogły zakończyć się przed tym kontaktem. Zero trafień nie dowodzi, że ekran nie blokuje testów w późniejszych turach. NIE ZMIERZONO dla tur po pierwszym kontakcie.
-- Pozostałe ok. 340 testów z listy kandydatów NIE ZMIERZONO (poza próbką).
-- Kompilacja: `node ./node_modules/vite/bin/vite.js build` z `gra/`, wyjście poza repo. Build bazowy znajduje się w katalogu roboczym poza repo i został usunięty po pomiarze.
-
-## 7. Obrona Operatora (runda 2) — pomiar sondą na żywym buildzie
-
-Runda 2 odpowiada na zarzuty Evaluatora (`30-obrona-claude.md`). Pomiar wykonany sondami w `dyspozycje/autobot/runs/R-WEB-LIVE-TESTS-WELCOME-GATE-Q1/probe/` (surowe wyjścia `out-*.txt`). Build bazowy 6319eaf66 (`civTest=1`, `civSeed=4242`, mapa Maly, 15 cywilizacji, 2 państwa-miasta, ustawienia startGame domyślne). Przeglądarka: Chromium `/opt/pw-browsers/chromium`.
-
-**Korekta wcześniejszego wniosku (sekcja 6 powyżej jest nieaktualna w tym punkcie):** ekran powitalny NIE pojawia się dopiero przy pierwszym kontakcie. Na tym seedzie jest OTWARTY zaraz po `startGame` (tura 1) i zasłania przycisk „Zakończ turę” (`elementFromPoint` w środku przycisku trafia w `#civ-welcome-screen-root`).
-
-| Sonda | Kroki | Wynik |
-|---|---|---|
-| `probe-welcome.cjs` (sample co turę) | start, 8× endTurn, bez helperów | ekran otwarty w turach 1–9; przycisk zasłonięty w każdej próbce; tura nie rośnie (1 → 1) |
-| `probe-gate.cjs` mode `bare` | klik „Zakończ turę” bez helperów, 3× endTurn hakiem | klik: timeout 4 s (przycisk `aria-disabled=true`); tura 1 → 1 po 3 endTurn |
-| `probe-gate.cjs` mode `gateonly` | bramka naprawiona (`prepareEndTurnGate`), ekran NIE zamknięty | klik: timeout 4 s, przycisk `aria-disabled=false`, ekran zasłania (MUTANT: helper bez zamknięcia ekranu → test czerwony) |
-| `probe-gate.cjs` mode `full` | `closeCivWelcome` + `prepareEndTurnGate` + klik | klik: CLICK-OK, tura 2; kolejne endTurn: 3, 4, 5 |
-
-Wnioski z tej sondy:
-- Test, który klika „Zakończ turę” bez zamknięcia ekranu powitalnego i bez bramki, jest czerwony (klik nie przechodzi). Test z obydwoma helperami jest zielony. To jest mutacja z dispatchu, wykonana na żywym buildzie (nie na pliku testu).
-- Bramka tury na tym seedzie blokuje turę 1 (`skarbiec` prognoza −2, `canEnd=false`). Hak `endTurn` bez `prepareEndTurnGate` NIE przesuwa tury — to jest zgodne z objawem „endTurn nie ustabilizował się” dla części testów, ale NIE ZMIERZONO, czy dotyczy to testów `playtest=mapa` (np. `forced-war-*`, `era-change-toast`), które startują inaczej.
-- Ekran powitalny nie blokuje hooka `endTurn` (tura rośnie przy otwartym ekranie w trybie `gateonly`), blokuje wyłącznie kliki.
-
-Czego NIE zrobiono w tej rundzie: nie przepięto żadnego testu `*-test.cjs` na helper i nie uruchomiono ponownie 26 testów z próbki; testy `end-turn-gate-live-test`, `end-turn-block-event-live-test`, `forced-war-*`, `era-change-toast`, `diplo-truce`, `sidepanel-diplo` NIE ZMIERZONO w tej rundzie. Liczby z sekcji 2 pozostają wynikiem rundy 1, bez potwierdzenia surowymi logami.
-
-Ustawienia maksymalne: sondy używają domyślnych parametrów `startGame` (seed, Maly, 15 cywilizacji, 2 państwa-miasta). Poziom maksymalny suwaków/trudności NIEJEDNOZNACZNY (nie wystawiony w tym haku) — NIE ZMIERZONO na poziomie maksymalnym.
+- Liczby „ile z ~102 testów jest blokowanych ekranem” — nie zmierzono na pełnej próbce; zmierzono tylko, że ekran zasłania przycisk w sondzie i że w 3 testach nie zmienia wyniku, bo blokuje bramka.
+- Wyniki testów na poziomie maksymalnym (pkt 6).
+- Pełne przebiegi przed/po dla 9 z 12 przepiętych testów.

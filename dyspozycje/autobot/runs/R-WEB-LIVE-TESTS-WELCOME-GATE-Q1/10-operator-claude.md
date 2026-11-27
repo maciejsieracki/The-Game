@@ -1,20 +1,34 @@
-STATUS: PASS-WITH-NOTES
+STATUS: PASS-WITH-NOTES (kryterium binarne z dodatku NIE SPEŁNIONE — patrz BLOKADY)
 DOMAIN: PROCESS
-TEMAT: R-WEB-LIVE-TESTS-WELCOME-GATE-Q1
-GOAL: ustalić liczbami, ile testów live blokuje ekran powitalny / bramka „Zakończ turę”, i naprawić je wspólnym helperem. WYNIK: w próbce 26 testów (25 z kliknięciem w koniec tury + test bramki) ekran powitalny nie blokował żadnego; nie było czego naprawiać. Dokument wyników: dyspozycje/analizy/TESTY-LIVE-EKRAN-POWITALNY-2026-11-27.md.
-ZMIANY/COMMIT: allowlista — tylko dyspozycje/analizy/TESTY-LIVE-EKRAN-POWITALNY-2026-11-27.md oraz ten raport. Zero zmian w gra/src, gra/data i gra/tools (_live-ready.cjs i *-test.cjs bez zmian). SHA: czubek brancha operatora (podany w odpowiedzi).
-TESTY: pomiar przed (baza 6319eaf66, build vite poza repo, testy bez zmian):
-  PASS 3 (build-panel rc0; diplo-forced-peace-pending rc0; diplo-peace-auto-stale PASS=15 FAIL=0)
-  FAIL z powodem ekran/bramka: 0
-  FAIL inny powod: 12 (end-turn-block-event; end-turn-gameplay-runtime [brak WORLD_GEN_REQUEST_FILE]; end-turn-input-stability; era-change-toast; forced-war x3 [endTurn nie ustabilizowal sie]; general-quick-follow [asercja]; improvement-build [ENOENT konfiguracji]; perf-large-empire [kotwica]; perf-late-game [straznik builda]; end-turn-gate [2/9 PASS])
-  Brak startu kreatora (.civ-newgame .start): 4 (hotseat x4)
-  TIMEOUT 280 s: 7 (defeat-screen, diplo-truce, hotseat-etap6a, live-nns-gate-smoke, sidepanel-diplo, war-era-counter, war-rules-multiwar)
-  Crash Chromium (SIGSEGV): 0 w tej probce
-  Logi: „civ-welcome” w 0 z 26 logow; brak „intercepts pointer events”.
-  Po naprawie: NIE DOTYCZY (brak naprawy).
-  Mutacja helpera (bez dismissWelcome -> czerwony test): NIE WYKONANO — brak testu zablokowanego ekranem.
-BLOKADY: brak blokad procesu. Luki: pomiar obejmuje 26 testow z ok. 369 kandydatow live (pozostale NIE ZMIERZONO); ekran powitalny pojawia sie przy pierwszym kontakcie — tury po kontakcie NIE ZMIERZONO; poziom maksymalny ustawien NIE ZMIERZONO (testy nie wystawiaja wspolnego suwaka; domyslne seedy 11/4242).
-RUNDY: 1/5
-NASTEPNY KROK: orkiestrator decyduje o osobnych tematach: KANDYDAT-1 (endTurn nie stabilizuje sie w 60 s, headless); KANDYDAT-2 (selektor .civ-newgame .start w hotseat); KANDYDAT-3 (end-turn-gate: netMax=0 na starcie — stan testu czy bramka?); KANDYDAT-4 (7 TIMEOUT bez przyczyny w logu). Pytanie do wlasciciela nie jest potrzebne (decyzje inzynierskie/testowe).
-UWAGI-DLA-ORKIESTRATORA: (1) dispatch prosil build w /tmp/<unikalny>; uzyto katalogu scratchpad i usunieto po pomiarze. (2) W worktree zainstalowano zaleznosci gra/ (npm ci --ignore-scripts); gra/node_modules usuniete po pracy. (3) Dwa polecenia przeniesione przez harness w tlo; wynik zebrano z plikow .res, nie z tla.
+TEMAT: R-WEB-LIVE-TESTS-WELCOME-GATE-Q1 (runda 2/5, Operator HAIKU 5.5)
+GOAL: ustalić, czy ekran powitalny blokuje testy live klikające HUD/„Zakończ turę”, i przepiąć je na wspólny helper; zmierzyć przed/po.
+ZMIANY/COMMIT: baza cf8c26b225162557cb2f7d8c72e7c812f67a4820 (origin/main ancestor 6319eaf66: merge-base potwierdzony). Commit: patrz SHA w wiadomości zwrotnej (commit na gałęzi detached worktree).
+  - gra/tools/*: 12 testów live przepiętych wsadowo na `closeCivWelcome` z `_live-ready.cjs` (import + jedno wywołanie po gotowości strony). Asercje bez zmian. Zero zmian gra/src, gra/data.
+  - dyspozycje/analizy/migrate-live-welcome-q1.cjs (skrypt migracyjny, anchor x1).
+  - dyspozycje/analizy/TESTY-LIVE-EKRAN-POWITALNY-2026-11-27.md (dokument: ustalenia, tabela, poziom maksymalny, NIE ZMIERZONO).
+  - dyspozycje/autobot/runs/R-WEB-LIVE-TESTS-WELCOME-GATE-Q1/logi/ (surowe logi + SHA256SUMS.txt).
+TESTY:
+  - tsc --noEmit: rc=0 (bez wyjścia).
+  - logic-test: LOGIC OK (213/213).
+  - ai-test: 297 passed, 0 failed.
+  - probe na żywo (dist-base, ?civTest=1, seed 4242, Mały, domyślne ustawienia — NIE poziom maksymalny):
+      bez helpera: btnCover = civ-welcome-screen-root (ekran zasłania przycisk w turze 1); z helperem: btnCover = BUTTON; canEnd = false w obu (bramka tury).
+  - przed/po (przepięcie):
+      era-change-toast: 11 OK / 9 FAIL przed, 11 OK / 9 FAIL po (bez zmiany; blokada = bramka żywności „zabraknie 187”).
+      end-turn-gate (civTest, --dist base): 2/9 PASS przed, 2/9 PASS po (bez zmiany; test nie klika przycisku).
+      sidepanel-diplo-dismiss-real-render: przed rc=1, 33 OK / 4 FAIL (endTurn nie stabilizuje); po — timeout 280 s, 23 OK / 0 FAIL, BEZ WERDYKTU.
+  - NIE ZMIERZONO: pozostałe 9 przepiętych testów (forced-war x5, diplo-truce x3, end-turn-block-event) — czas jednego testu 2–5 min, budżet rundy; pełna mutacja na realnym teście; pełna inwentaryzacja 102 testów z klikiem (wykonana tylko grep: 143 wzmianek o zakończ turę/endTurn, 228 z click).
+  - Poziom maksymalny (Dyplomacja Trudna, Koszty jednostek Wysoki ×4, Kultura trudna, największa mapa): NIE ZMIERZONO. Wszystkie pomiary na Mały, domyślnie.
+  - end-turn-input-stability-test: nie przepięty (harness DOM setContent, bez gry); NIE ZMIERZONO uruchomieniem.
+BLOKADY:
+  - Ekran powitalny jest realny i zasłania przycisk, helper go zamyka — ALE tura w trybie ?playtest=mapa dalej nie kończy się: bramka żywności/skarbca (Spichlerz „zabraknie 187”). prepareEndTurnGate wymaga haka __nnsMeasureDebug, który istnieje tylko przy ?civTest=1. Obejście wymaga zmiany gra/src (zakazane w tej rundzie) — KANDYDAT NA OSOBNY TEMAT.
+  - Kryterium binarne dodatku (próbka >=20 testów; testy zablokowane ekranem naprawione z mutacją czerwoną; poziom maksymalny >=5 testów) NIE SPEŁNIONE: zmierzone 3 testy przed/po, mutacja zastępcza na sondzie, brak pomiaru na poziomie maksymalnym.
+  - Przepiętych testów nie da się uznać za „zielone” na podstawie tej rundy: w zmierzonych przypadkach wynik nie zmienił się.
+RUNDY: 2/5 (r1 FC FAIL: nic nie przepięte; r2: przepięcie 12 plików + pomiary jak wyżej). Uwaga: w r1 wniosek „0 blokowanych” był błędny i został wycofany w dodatku.
+NASTĘPNY KROK: FC decyduje, czy PASS-WITH-NOTES jest wystarczające, czy wymagana runda 3 z pomiarem 20+ testów. Propozycja tematu: R-WEB-LIVE-PLAYTEST-GRANARY-HOOK-Q1 (hak stanu bramki dla ?playtest=mapa — wymaga zgody na zmianę gra/src; decyzja orkiestratora, nie Operatora).
+UWAGI-DLA-ORKIESTRATORA:
+  - Operator nadpisał plik dyspozycje/analizy/TESTY-LIVE-EKRAN-POWITALNY-2026-11-27.md (istniał z r1, z błędnym wnioskiem „0 blokowanych”). Wniosek r1 jest wycofany w nowej wersji.
+  - Testy live uruchamiane z gra/ wymagają node_modules: `npm ci --ignore-scripts` (71 pakietów, 3 s). Bundle live: `node ./node_modules/vite/bin/vite.js build --outDir <poza repo> --emptyOutDir` (~21 s). Boot gry w headless: ~127 s (obciążenie ~9).
+  - Testy forced-war, era-change i sidepanel same budują bundle do gra/dist-*; po pracy usunięte.
+  - Usunięto tymczasowe kopie _before-*.cjs (nie trafiły do commita).
 DEPLOY/PUSH: NIE WYKONANO

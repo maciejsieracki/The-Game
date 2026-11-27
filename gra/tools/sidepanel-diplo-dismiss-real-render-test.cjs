@@ -1,4 +1,5 @@
 'use strict';
+const { closeCivWelcome } = require('./_live-ready.cjs');
 /**
  * sidepanel-diplo-dismiss-real-render-test.cjs — P-DYPLO-KARTA-DECYZJI-DISMISS-Q1 (Operator
  * Sonnet 5, effort high, runda 1, worktree izolowany).
@@ -116,6 +117,7 @@ async function launchBrowser(chromium) {
 async function gotoPlaytestMapa(page) {
   await page.goto(OUT_HTML, { waitUntil: 'load', timeout: 180000 });
   await page.waitForSelector('.civ-hud, .civ-ux-frame, .civ-cs', { timeout: 180000 });
+  await closeCivWelcome(page);
   for (let i = 0; i < 120; i++) {
     if (await page.locator('text=Tworzenie świata').count() === 0) break;
     await wait(1000);
