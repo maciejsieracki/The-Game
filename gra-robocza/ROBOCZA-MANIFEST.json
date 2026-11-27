@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "0999e34f627746823b2810a7d7743997",
-  "bundleSha256": "27e02abd46b3ca167a4af049bbc2389466e15df37c9bf88cddece84b6206c886",
-  "bundleBytes": 15037138,
+  "bundleMd5": "df4e3ab8cab02f3ffa5264327b0805e5",
+  "bundleSha256": "e3a72b632e8e06649f53734c0eb1e4e6ae48e8bd3ec518619bf89d1336d61e5e",
+  "bundleBytes": 15040011,
   "sourceSnapshot": {
-    "source": "AICULT r3 (0899aff41)",
+    "source": "MAPFIX2 (196eb53d3) + main 44649038c",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 926: AI przy poziomie Kultura i religia normalny/trudny trzyma w miescie tyle jednostek garnizonu, ile potrzeba do wyjscia z buntu (potrzeba liczona z rozbicia Porzadku), wyklucza garnizon z puli armii i preferuje budynki Prawa/Szczescia w miescie z deficytem Porzadku; latwy i zgodnosc bez zmian"
+    "FALA 927: Generator map po FALI 925: na wyspach z siecia rzek znika osierocone heksy rzeki (zbior z diagnozy 63 -> 0, 0 samotnych ladow); do 0,6% ladu przy brzegu traci znacznik dostepu do wody slodkiej; do ROBOCZEJ trafiaja tez liczniki odczytu pomiarow za ?civTest=1 (diagnozy AI, rebelii, pomiary live), bez wplywu na gre"
   ],
   "verification": [
-    "tsc 0; logic 213; ai-test 297/0; wiring 231/0 (mutanty MW1-MW8 wykryte); order-need 35/0; garrison-min-one 38/0; society-breakdown 56/0; culture-religion-level 59/0; culture-religion 65/0; pomiar 60 tur seed 4242 i 7 na trudnym"
+    "tsc 0; logic 213; map-offmask-stranded-fix 5/0; map-islands-orphan PASS (orphan 0, solitary 0); FC: tech-tree 20, research 33, unit-replace 21, combat 6, ai-test 297/0, determinism-save-load PASS; obrona: 80 map suma naruszen 5 = baza"
   ],
   "limits": [
-    "Efekt w grze mieszany: puste miasta na trudnym 32,1->31,4% i 34,7->34,5%; przyczyna -30% jednostek AI NIE ZMIERZONO (brak licznika buntow); poziom gry w pomiarze Normalny; przegladarka NIE ZMIERZONO"
+    "NIE ZMIERZONO: pelny map-gen-regression, world-density, river-path-adjacency (timeouty); ocena wizualna wysp z rzekami po wdrozeniu; wplyw utraty znacznikow wody (do 0,6% ladu)"
   ],
-  "finalControl": "FC PASS-WITH-NOTES acc72506e (Sonnet), integracja 0899aff41",
+  "finalControl": "FC PASS-WITH-NOTES 76d91d241 (Sonnet)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-26T21:45:41",
+  "hubGeneratedAt": "2026-11-27T07:12:55",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "0999e34f627746823b2810a7d7743997",
-      "sizeBytes": 15037138
+      "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
+      "sizeBytes": 15040011
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "0999e34f627746823b2810a7d7743997",
-      "sizeBytes": 15037138
+      "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
+      "sizeBytes": 15040011
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "0999e34f627746823b2810a7d7743997",
-      "sizeBytes": 15037138
+      "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
+      "sizeBytes": 15040011
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "0999e34f627746823b2810a7d7743997",
-      "sizeBytes": 15037138
+      "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
+      "sizeBytes": 15040011
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "0999e34f627746823b2810a7d7743997",
-      "sizeBytes": 15037138
+      "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
+      "sizeBytes": 15040011
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "0999e34f627746823b2810a7d7743997",
-      "sizeBytes": 15037138
+      "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
+      "sizeBytes": 15040011
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "0999e34f627746823b2810a7d7743997",
-      "sizeBytes": 15037138
+      "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
+      "sizeBytes": 15040011
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "0999e34f627746823b2810a7d7743997",
-      "sizeBytes": 15037138
+      "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
+      "sizeBytes": 15040011
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "0999e34f627746823b2810a7d7743997",
-      "sizeBytes": 15037138
+      "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
+      "sizeBytes": 15040011
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "0999e34f627746823b2810a7d7743997",
-      "sizeBytes": 15037138
+      "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
+      "sizeBytes": 15040011
     }
   ],
-  "md5": "0999e34f627746823b2810a7d7743997",
+  "md5": "df4e3ab8cab02f3ffa5264327b0805e5",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
