@@ -1906,7 +1906,7 @@ function advancedSettingRows(): AdvSettingRow[] {
     {
       key: 'kulturaReligiaLevel',
       lbl: 'Kultura i religia',
-      hint: 'Ile kultura i religia wpływają na Szczęście i Prawo miasta (każda linia osobno). Mały wpływ (łatwy, domyślnie): od −10 do +10 na linię. Neutralny (normalny): od −15 do +5. Duży wpływ (trudny): od −20 do 0 (bez plusów). Stawki rosną proporcjonalnie w kolejnych epokach.',
+      hint: 'Ile kultura i religia wpływają na Szczęście i Prawo miasta (każda linia osobno). Mały wpływ (łatwy, domyślnie): od −10 do +10 na linię. Neutralny (normalny): od −15 do +5. Duży wpływ (trudny): od −20 do 0 (bez plusów). Komputer zawsze dostaje plus +10 za własną kulturę i religię; poziom wybiera wielkość minusów (przy mieszanych populacjach). Stawki rosną proporcjonalnie w kolejnych epokach.',
       opts: ['Mały wpływ (łatwy)', 'Neutralny (normalny)', 'Duży wpływ (trudny)'],
       getIdx: () => (advOpts.kulturaReligiaLevel === 'trudny' ? 2 : advOpts.kulturaReligiaLevel === 'normalny' ? 1 : 0),
       setIdx: (i) => { advOpts.kulturaReligiaLevel = i === 2 ? 'trudny' : i === 1 ? 'normalny' : 'latwy'; },

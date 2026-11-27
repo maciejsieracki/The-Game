@@ -19,15 +19,36 @@ export const CULTURA_RELIGIA_LEVELS: readonly CulturaReligiaLevel[] = ['latwy', 
 export interface CulturaReligiaBounds {
   /** Wartość przy 0% własnej (dolna granica, ≤ 0). */
   D: number;
-  /** Wartość przy 100% własnej (górna granica). */
+  /** Wartość przy 100% własnej (górna granica) — dla GRACZA (człowieka, także hotseat). */
   G: number;
+  /**
+   * Wartość przy 100% własnej (górna granica) — dla CYWILIZACJI KOMPUTERA (AI).
+   * Decyzja właściciela (2026-11-27, „plus dziesięć zawsze stałe miało być tylko dla AI”):
+   * +10 na KAŻDYM poziomie, rośnie z epoką jak dziś. D (minusy) zostaje per poziom.
+   */
+  GAi: number;
 }
 
+/** Plus AI (epoka 1) — stały na każdym poziomie „Kultura i religia”. */
+export const CULTURA_RELIGIA_AI_G_DEFAULT = 10;
+
 export const CULTURA_RELIGIA_BOUNDS_DEFAULT: Readonly<Record<CulturaReligiaLevel, CulturaReligiaBounds>> = Object.freeze({
-  latwy: { D: -10, G: 10 },
-  normalny: { D: -15, G: 5 },
-  trudny: { D: -20, G: 0 },
+  latwy: { D: -10, G: 10, GAi: CULTURA_RELIGIA_AI_G_DEFAULT },
+  normalny: { D: -15, G: 5, GAi: CULTURA_RELIGIA_AI_G_DEFAULT },
+  trudny: { D: -20, G: 0, GAi: CULTURA_RELIGIA_AI_G_DEFAULT },
 });
+
+/**
+ * Granice D/G dla danego typu właściciela miasta — JEDNO miejsce, z którego czyta się
+ * i gracz, i AI (ten sam wzór wartości linii). Gracz (`ownerIsHuman` = true): G gracza
+ * (+10/+5/0). AI: G = `GAi` (+10 na każdym poziomie). D zawsze wspólne dla obu.
+ */
+export function culturaReligiaBoundsForOwner(
+  bounds: CulturaReligiaBounds,
+  ownerIsHuman: boolean,
+): { D: number; G: number } {
+  return { D: bounds.D, G: ownerIsHuman ? bounds.G : bounds.GAi };
+}
 
 /** Normalizacja pola z kreatora/zapisu. Brak / zła wartość = `null` (tryb zgodności). */
 export function normalizeCulturaReligiaLevel(raw: unknown): CulturaReligiaLevel | null {
@@ -48,16 +69,18 @@ export function getCulturaReligiaLevel(): CulturaReligiaLevel | null {
 /**
  * Wartość jednej linii (Kultura albo Religia) dla poziomu, epoki i udziału własnej [0,1].
  * `scaleEra` = x_epoki / x_epoki1 (np. 1,0 / 1,6 / 2,3). Udział spoza [0,1] jest ścinany.
- * Dla poziomu łatwego wynik jest matematycznie równy dzisiejszemu 2·x·udział − x (x = 10·scaleEra);
- * silnik używa jednak dokładnie dzisiejszego wzoru dla `latwy`, żeby wynik był bit-w-bit.
+ * `ownerIsHuman` (domyślnie true = gracz): false = cywilizacja AI, liczona z `GAi`.
+ * Dla poziomu łatwego (gracz i AI, bo G_AI = 10 = G gracza łatwego) silnik używa dzisiejszego
+ * wzoru `proporcjonalneSzczescie`, żeby wynik był bit-w-bit (patrz society-breakdown.ts).
  */
 export function cultureReligionLineValue(
   level: CulturaReligiaLevel,
   scaleEra: number,
   udzialWlasnej: number,
   bounds: Readonly<Record<CulturaReligiaLevel, CulturaReligiaBounds>> = CULTURA_RELIGIA_BOUNDS_DEFAULT,
+  ownerIsHuman: boolean = true,
 ): number {
-  const b = bounds[level];
+  const b = culturaReligiaBoundsForOwner(bounds[level], ownerIsHuman);
   const s = Number.isFinite(udzialWlasnej) ? Math.min(1, Math.max(0, udzialWlasnej)) : 1;
   const k = Number.isFinite(scaleEra) ? scaleEra : 1;
   return (b.D + (b.G - b.D) * s) * k;

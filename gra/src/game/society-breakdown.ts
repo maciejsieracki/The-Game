@@ -6,7 +6,9 @@
 import type { City, CityPodzialHandlu } from './cities';
 import { LEGACY_PODZIAL_HANDLU_PRZED_2026_11_14 } from './cities';
 import {
+  CULTURA_RELIGIA_AI_G_DEFAULT,
   CULTURA_RELIGIA_BOUNDS_DEFAULT,
+  culturaReligiaBoundsForOwner,
   cultureReligionLineValue,
   getCulturaReligiaLevel,
   type CulturaReligiaBounds,
@@ -99,6 +101,12 @@ export interface HappinessBreakdownInput {
   haRel?: number;
   /** Udział własnej religii [0,1]; gdy brak — odtwarzany z `haRel` (G4). */
   ownReligionShare?: number;
+  /**
+   * R-WEB-CULT-REL-AI-PLUS10-Q1 (2026-11-27): czy właściciel miasta jest GRACZEM (człowiekiem,
+   * także hotseat). `false` = cywilizacja AI → linie Kultury i Religii z plusem `GAi` (+10 na
+   * każdym poziomie). Brak pola = gracz (dzisiejsze wartości bit-w-bit).
+   */
+  ownerIsHuman?: boolean;
   haWealth?: number;
   /** CUDA-EKON-01 (2026-07-23): suma bonusy.miasto.zadowolenie cudów ukończonych (× każde miasto ownera). */
   haCuda?: number;
@@ -203,6 +211,8 @@ export interface LawBreakdownInput {
   ownReligionShare?: number;
   /** R-WEB-CULT-REL-IMPL-Q1: sygnał religii (jak w HappinessInput); źródło prawdy udziału religii, gdy brak `ownReligionShare`. */
   haRel?: number;
+  /** R-WEB-CULT-REL-AI-PLUS10-Q1: właściciel = gracz (true, domyślnie) czy AI (false). Patrz HappinessBreakdownInput. */
+  ownerIsHuman?: boolean;
 }
 
 export const REVOLT_CRITICAL_POR_PCT = 12;
@@ -705,10 +715,14 @@ function culturaReligiaBoundsFor(
     ?.kultura_religia_poziomy;
   const out = { ...CULTURA_RELIGIA_BOUNDS_DEFAULT } as Record<CulturaReligiaLevel, CulturaReligiaBounds>;
   for (const lvl of ['latwy', 'normalny', 'trudny'] as const) {
-    const row = raw?.[lvl] as { D?: unknown; G?: unknown } | undefined;
+    const row = raw?.[lvl] as { D?: unknown; G?: unknown; G_ai?: unknown } | undefined;
     if (row && typeof row.D === 'number' && typeof row.G === 'number'
       && Number.isFinite(row.D) && Number.isFinite(row.G)) {
-      out[lvl] = { D: row.D, G: row.G };
+      // R-WEB-CULT-REL-AI-PLUS10-Q1: G_ai = plus AI; brak / zła wartość = domyślne +10.
+      const gAi = typeof row.G_ai === 'number' && Number.isFinite(row.G_ai)
+        ? row.G_ai
+        : CULTURA_RELIGIA_AI_G_DEFAULT;
+      out[lvl] = { D: row.D, G: row.G, GAi: gAi };
     }
   }
   return out;
@@ -716,8 +730,10 @@ function culturaReligiaBoundsFor(
 
 /**
  * R-WEB-CULT-REL-IMPL-Q1 (CULTIMPL): jedna linia Kultury albo Religii w punktach.
- * `x` = skala epoki w punktach (10/16/23), `base` = x epoki 1. Poziom łatwy (lub brak pola =
- * zgodność) idzie DOKŁADNIE dzisiejszym wzorem `proporcjonalneSzczescie` — bit-w-bit.
+ * `x` = skala epoki w punktach (10/16/23), `base` = x epoki 1. Brak pola (zgodność) oraz
+ * poziom łatwy z granicami 10/−10 (gracz i AI: G_AI = 10) idą DOKŁADNIE dzisiejszym wzorem
+ * `proporcjonalneSzczescie` — bit-w-bit. Reszta: jedna formuła `cultureReligionLineValue`,
+ * z granicami per typ właściciela (R-WEB-CULT-REL-AI-PLUS10-Q1: AI = G_ai, gracz = G).
  */
 function kultReligLinePoints(
   level: CulturaReligiaLevel | null,
@@ -725,10 +741,13 @@ function kultReligLinePoints(
   share: number,
   base: number,
   bounds: Record<CulturaReligiaLevel, CulturaReligiaBounds>,
+  ownerIsHuman: boolean,
 ): number {
-  if (level === null || level === 'latwy') return proporcjonalneSzczescie(x, share);
+  if (level === null) return proporcjonalneSzczescie(x, share);
+  const eff = culturaReligiaBoundsForOwner(bounds[level], ownerIsHuman);
+  if (level === 'latwy' && eff.D === -10 && eff.G === 10) return proporcjonalneSzczescie(x, share);
   const k = base > 0 ? x / base : 1;
-  return cultureReligionLineValue(level, k, share, bounds);
+  return cultureReligionLineValue(level, k, share, bounds, ownerIsHuman);
 }
 
 // ---------------------------------------------------------------------------
@@ -780,7 +799,8 @@ export function computeHappinessBreakdown(
   const cLevel = getCulturaReligiaLevel();
   const cBounds = culturaReligiaBoundsFor(society);
   const cBase = scale.kultReligByEra[0] ?? x;
-  const kultV = kultReligLinePoints(cLevel, x, kultShare, cBase, cBounds);
+  const ownerIsHuman = input.ownerIsHuman !== false;
+  const kultV = kultReligLinePoints(cLevel, x, kultShare, cBase, cBounds, ownerIsHuman);
   if (kultV) {
     lines.push({ id: 'kultura', label: udzialLineLabel('Kultura', kultShare), value: kultV });
   }
@@ -790,7 +810,7 @@ export function computeHappinessBreakdown(
   const relShare = Number.isFinite(input.ownReligionShare)
     ? Math.min(1, Math.max(0, input.ownReligionShare as number))
     : ownShareFromSignal(input.haRel);
-  const relV = kultReligLinePoints(cLevel, x, relShare, cBase, cBounds);
+  const relV = kultReligLinePoints(cLevel, x, relShare, cBase, cBounds, ownerIsHuman);
   if (relV) {
     lines.push({ id: 'religia', label: udzialLineLabel('Religia', relShare), value: relV });
   }
@@ -968,9 +988,10 @@ export function computeLawBreakdown(
     const relShare = Number.isFinite(input.ownReligionShare)
       ? Math.min(1, Math.max(0, input.ownReligionShare as number))
       : ownShareFromSignal(input.haRel);
-    const kv = kultReligLinePoints(cLevel, x, kultShare, base, bounds);
+    const ownerIsHuman = input.ownerIsHuman !== false;
+    const kv = kultReligLinePoints(cLevel, x, kultShare, base, bounds, ownerIsHuman);
     if (kv) lines.push({ id: 'kultura_prawo', label: udzialLineLabel('Kultura', kultShare), value: kv });
-    const rv = kultReligLinePoints(cLevel, x, relShare, base, bounds);
+    const rv = kultReligLinePoints(cLevel, x, relShare, base, bounds, ownerIsHuman);
     if (rv) lines.push({ id: 'religia_prawo', label: udzialLineLabel('Religia', relShare), value: rv });
   }
 
@@ -1152,6 +1173,7 @@ export function evaluateOrderFromBreakdown(
     ownCultureShare: lawInput.ownCultureShare ?? happinessInput.ownCultureShare,
     ownReligionShare: lawInput.ownReligionShare ?? happinessInput.ownReligionShare,
     haRel: lawInput.haRel ?? happinessInput.haRel,
+    ownerIsHuman: lawInput.ownerIsHuman ?? happinessInput.ownerIsHuman,
   }, society);
   return computeOrderPctBreakdown(sz, prawo, params, revolt);
 }

@@ -45035,6 +45035,8 @@ async function boot(): Promise<void> {
                   hasSwiatynia: builtIds.includes('swiatynia'),
                   hasAmfiteatr: builtIds.includes('teatr') || builtIds.includes('akademia'),
                   ownCultureShare: cultureMixActive ? ownCultureShare : undefined,
+                  // R-WEB-CULT-REL-AI-PLUS10-Q1: właściciel AI dostaje plus AI (G_ai) w Kulturze i Religii.
+                  ownerIsHuman: isHuman(city.ownerId),
                   foreignReligionDominant,
                   conquestUnstablePenalty: conquestUnstablePen,
                   stolicaEasyBonus: stolicaBonus,
