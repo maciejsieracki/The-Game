@@ -5923,6 +5923,27 @@ async function boot(): Promise<void> {
     /** Per-city order state (szczescie/porzadek) — updated each turn for city panel B2 hooks. */
     const cityOrderState = new Map<string, OrderState>();
     /**
+     * R-WEB-PLAYER-LASTCITY-REVOLT-Q1 (PLRREVOLT r3): TYLKO ODCZYT / INSTRUMENTACJA (?civTest=1). Dziennik zmian
+     * `city.ownerId` (tura, miasto, stary->nowy wlasciciel, sciezka kodu, Porzadek miasta, flaga osiedle). Zapis
+     * wylacznie dopisuje do tablicy i tylko gdy civTest; nie zmienia stanu gry ani logiki. Poza civTest = no-op.
+     */
+    const cityOwnerChangeLogForTest: Array<Record<string, unknown>> = [];
+    function noteCityOwnerChangeForTest(city: City, oldOwner: number, newOwner: number, path: string): void {
+      if (typeof window === 'undefined' || !isCivTestEnabled(window.location.search)) return;
+      const st = cityOrderState.get(city.id);
+      cityOwnerChangeLogForTest.push({
+        turn, cityId: city.id, name: city.name, oldOwner, newOwner, path,
+        stack: String(new Error().stack ?? '').split('\n').slice(2, 8).map(x => x.trim().replace(/\(.*\/(.*)\)$/, '($1)')),
+        population: city.population,
+        porPct: typeof st?.porPct === 'number' ? st.porPct : null,
+        bandLabel: st?.bandLabel ?? null,
+        revoltGraceRemaining: st?.revoltGraceRemaining ?? null,
+        revoltWarning: st?.revoltWarning ?? null,
+        rebelState: city.rebelState === true,
+        osiedle: isOsiedleRevoltImmune(city.population, data.societyParams, _menuDifficulty),
+      });
+    }
+    /**
      * R-ZUZYCIE-SUROWCOW-OBYWATELE N1 runda 4 (Maciej 2026-08-11, Evaluator FAIL runda 3):
      * werdykt drenażu obywateli KLUCZOWANY BEZPOŚREDNIO OWNEREM, nie miastem. Zdobycie miasta
      * (oblężenie/aneksja) zmienia `city.ownerId` W TRAKCIE tury i NIE czyści starego wpisu w
@@ -19159,6 +19180,7 @@ async function boot(): Promise<void> {
         // LOSS-COUNTERS: utrata miasta gracza (poddanie/przejęcie przez kapitulację).
         lossCounters = recordCityLoss(lossCounters, oldOwner, newOwner);
         city.ownerId = newOwner;
+        noteCityOwnerChangeForTest(city, oldOwner, newOwner, 'resolveSiegeSurrender'); // PLRREVOLT: instrumentacja
         recordOwnersStockDeltaToPending(ledgerCaptureBefore, o => ownerResourceStockAll(cities, o), `przejecie-miasta|${city.id}`,
           o => (o === newOwner ? { kind: 'przejecie_miasta', label: 'Zdobycie miasta' } : { kind: 'przejecie_miasta', label: 'Oddanie miasta' }));
         settleWonderTransfer(wonderWatchSurrender); // R-WEB-WONDER-TRANSFER-ON-CONQUEST-Q1
@@ -34658,6 +34680,26 @@ async function boot(): Promise<void> {
       let cityTransfersLastForTest: Array<{ z: number; na: number; liczba: number }> = [];
       // AICULTREBEL (tylko odczyt): licznik kolejnych tur w strefie buntu skrajnego per id miasta.
       const cityCritStreakForTest = new Map<string, number>();
+      // PLRREVOLT (tylko odczyt, ?civTest=1): dziennik zmian wlasciciela miast + odczyt miast gracza (Porzadek).
+      (window as any).__cityOwnerChangeLogDebug = {
+        log: (): Array<Record<string, unknown>> => cityOwnerChangeLogForTest.slice(),
+        clear: (): void => { cityOwnerChangeLogForTest.length = 0; },
+        /** Readback efektywnego poziomu barbarzyncow (ta sama migracja co faza barbarzyncow). */
+        settings: (): { barbariansLevel: string } => ({ barbariansLevel: String(migrateBarbariansLevel(_menuAdvanced?.barbariansLevel)) }),
+        humanCities: (): Array<Record<string, unknown>> => cities.filter(c => isHuman(c.ownerId)).map(c => {
+          const st = cityOrderState.get(c.id);
+          return {
+            turn, cityId: c.id, name: c.name, ownerId: c.ownerId, population: c.population,
+            porPct: typeof st?.porPct === 'number' ? st.porPct : null,
+            szPct: typeof st?.szPct === 'number' ? st.szPct : null,
+            bandLabel: st?.bandLabel ?? null,
+            revoltGraceRemaining: st?.revoltGraceRemaining ?? null,
+            revoltWarning: st?.revoltWarning ?? null,
+            rebelState: c.rebelState === true,
+            osiedle: isOsiedleRevoltImmune(c.population, data.societyParams, _menuDifficulty),
+          };
+        }),
+      };
       (window as any).__aiEconomyMeasure = {
         schemaVersion: 1,
         /** R-WEB-ECONOMY-MEASURE-PLAYER-AUTOPILOT-Q1 (tylko ?civTest=1, domyślnie OFF): gracz (0) wykonuje w fazie AI
@@ -40446,6 +40488,7 @@ async function boot(): Promise<void> {
         const ledgerAnnexBefore = snapshotOwnersStock([csOwnerId, annexerId], o => ownerResourceStockAll(cities, o));
         lossCounters = recordCityLoss(lossCounters, csOwnerId, annexerId); // LOSS-COUNTERS: anektowanie miasta-państwa
         city.ownerId = annexerId;
+        noteCityOwnerChangeForTest(city, csOwnerId, annexerId, 'annexCityState'); // PLRREVOLT: instrumentacja
         recordOwnersStockDeltaToPending(ledgerAnnexBefore, o => ownerResourceStockAll(cities, o), `wchloniecie-miasta|${city.id}`,
           o => (o === annexerId ? { kind: 'przejecie_miasta', label: 'Przyłączenie miasta-państwa' } : { kind: 'przejecie_miasta', label: 'Oddanie miasta' }));
         // R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1: to samo gaszenie oznaczenia co na
@@ -41435,6 +41478,7 @@ async function boot(): Promise<void> {
         },
       );
       settleWonderTransfer(wonderWatchCapture);
+      noteCityOwnerChangeForTest(city, oldOwner, city.ownerId, 'applyCityCaptureToMap'); // PLRREVOLT: instrumentacja (stack = wolajacy: bitwa/szturm/puste miasto)
       triggerRebelProtectionWarConsequence(wasProtectedRebel, rebelPrevOwnerSnapshot, atkOwner);
       // R-WEB-PEACE-RULES-R8R9-Q1 R9: brak auto-końca wojen wymuszonych po zdobyciu miast.
       maybeResolveRegularWarOnCityCapture(oldOwner, atkOwner);
@@ -41833,7 +41877,9 @@ async function boot(): Promise<void> {
     function transferCityToRebelFactionWithLedger(city: City): void {
       const ledgerRebelBefore = snapshotOwnersStock([city.ownerId, REBEL_FACTION_OWNER_ID], o => ownerResourceStockAll(cities, o));
       lossCounters = recordCityLoss(lossCounters, city.ownerId, REBEL_FACTION_OWNER_ID); // LOSS-COUNTERS: bunt
+      const rebelOldOwnerForLog = city.ownerId;
       city.ownerId = REBEL_FACTION_OWNER_ID;
+      noteCityOwnerChangeForTest(city, rebelOldOwnerForLog, REBEL_FACTION_OWNER_ID, 'transferCityToRebelFactionWithLedger'); // PLRREVOLT: instrumentacja
       recordOwnersStockDeltaToPending(ledgerRebelBefore, o => ownerResourceStockAll(cities, o), `bunt-miasta|${city.id}`,
         o => (o === REBEL_FACTION_OWNER_ID ? { kind: 'przejecie_miasta', label: 'Bunt miasta (przejęte)' } : { kind: 'przejecie_miasta', label: 'Bunt miasta (utrata)' }));
     }
@@ -41872,6 +41918,7 @@ async function boot(): Promise<void> {
       const ledgerCessionBefore = snapshotOwnersStock([fromOwnerId, toOwnerId], o => ownerResourceStockAll(cities, o));
       lossCounters = recordCityLoss(lossCounters, fromOwnerId, toOwnerId); // LOSS-COUNTERS: cesja traktatowa
       city.ownerId = toOwnerId;
+      noteCityOwnerChangeForTest(city, fromOwnerId, toOwnerId, 'transferCityByTreaty'); // PLRREVOLT: instrumentacja
       recordOwnersStockDeltaToPending(ledgerCessionBefore, o => ownerResourceStockAll(cities, o), `cesja-miasta|${city.id}`,
         o => (o === toOwnerId ? { kind: 'przejecie_miasta', label: 'Cesja miasta (otrzymane)' } : { kind: 'przejecie_miasta', label: 'Cesja miasta (oddane)' }));
       settleWonderTransfer(wonderWatchCession);

@@ -1,100 +1,128 @@
-# Gracz: bunt a ostatnie miasto (R-WEB-PLAYER-LASTCITY-REVOLT-Q1, obrona Operatora r2)
+# Gracz: bunt a ostatnie miasto (R-WEB-PLAYER-LASTCITY-REVOLT-Q1, runda 3 Operatora)
 
-STATUS: POMIAR CZĘŚCIOWY. Wiążący stan na dzień: 9 żywych biegów do t60 wykonano (plus 1 replika V4), dane w
-`dyspozycje/autobot/runs/R-WEB-PLAYER-LASTCITY-REVOLT-Q1/dane/`. Porządek gracza, mechanizm zmiany właściciela
-w t29 oraz skutek w UI po utracie ostatniego miasta NIE ZMIERZONO (opis w §4).
-Baza: origin/main 2e50241cd; kod gry bez zmian (`git diff -- gra/src gra/data` = 0). Kandydat r2: 858b4c981.
+STATUS: POMIAR WYKONANY NA ŻYWO (runda 3). Baza: origin/main 909a057fa. Jedyna zmiana w `gra/src`: instrumentacja
+`civTest` w `gra/src/main.ts` (tylko odczyt i dopisywanie do tablicy; poza `?civTest=1` brak skutku). Dane:
+`dyspozycje/autobot/runs/R-WEB-PLAYER-LASTCITY-REVOLT-Q1/dane-r3/` (jsonl.gz, run.log z readbackiem ustawień, zrzuty
+ekranu porażki). Tabela z danych: `node gra/tools/plrrevolt-r3-table.cjs <dane-r3>`.
 
-## 1. Wniosek w skrócie
+## 0. STAN WIĄŻĄCY (wnioski runda 3)
 
-- W 10 biegach (9 + replika V4) gracz NIE zgłosił ani jednego wpisu buntu `[Rebelia]` dla swojego miasta i żadne
-  miasto gracza nie przeszło do owner −99 (rebelianci). Częstość buntu gracza w tych biegach: 0 z 10 (zob. §3,
-  zastrzeżenie: nie mierzono Porządku, więc nie wiadomo, jak blisko progu były miasta gracza).
-- Utrata OSTATNIEGO miasta gracza wystąpiła w 3 z 10 biegów: V4 normalny/normalny s4242 (t29), latwy-s7 (t59),
-  normalny-s7 (t58). Przyczyna NIE ROZSTRZYGNIĘTA (§2). Żadna z nich nie była buntem (brak −99 i brak wpisu
-  `[Rebelia]` dla miasta gracza w zdarzeniach konsoli).
-- Kod NIE chroni ostatniego miasta gracza przed buntem: ochrona `aiKeepsLastCity` dotyczy wyłącznie AI
-  (`gra/src/game/society-breakdown.ts:530-532`). Możliwość utraty ostatniego miasta przez bunt istnieje w mechanice
-  i nie została w tych biegach zaobserwowana.
+1. **Utrata miasta gracza w tych biegach NIE jest buntem. To barbarzyńcy.** W 9 biegach (kultura gracza łatwy / normalny /
+   trudny x ziarna 4242, 7, 778899; pasywny gracz, maksimum ustawień) gracz traci JEDYNE miasto: t16 / t29 / t12 (ziarno
+   4242 / 7 / 778899), niezależnie od kultury. Każda zmiana właściciela to `0 -> -1` (BARBARIAN_OWNER_ID), ścieżka
+   `applyCityCaptureToMap`. **Zmian na -99 (rebelianci): 0 w 9 + 7 dodatkowych biegach.**
+2. **Mechanizm t16 (V4 normalny/normalny, ziarno 4242), potwierdzony stosem wywołań** (build bez minifikacji, bieg
+   `V4-nomin-normalny-s4242`): `applyCityCaptureToMap <- applyMapBattleOutcome <- applyMapBattleOutcomeWithSummary <-
+   doMapAutoResolveIncoming <- onAuto <- showPreBattle`. To jest bitwa barbarzyńców o miasto, rozstrzygnięta przyciskiem
+   „Auto” z okna przedbitewnego. W momencie ataku gracz miał 0 jednostek wojskowych i 1 cywilną (stan z `cityThreatProbe`:
+   `jednostkiWojskowe=0`, `miastaWojsko[0].wojsko=0`, 3 jednostki barbarzyńców w promieniu 3 od miasta w t14-15).
+   Porządek miasta w chwili utraty: 49% (Niepokój), próg skrajnego buntu 12%.
+3. **Dawny „t29 V4/4242” z AIBAL2** nie odtworzył się w t29: w świecie z barbarzyńcami Trudny (jak w REALDEF4) ten sam
+   wariant ginie w t16. Rozbieżność z REALDEF4 wyjaśniona (pkt 6).
+4. **Bunt gracza nie jest osiągalny w tych warunkach (60 tur, maksimum), bo miasta gracza mają immunitet osiedla.** Miasto
+   o populacji 1-4 nie wchodzi w bunt (`isOsiedleRevoltImmune`, próg `prawo_bonus_osada_prog` = 4 na każdym poziomie,
+   `society-breakdown.ts:491-499`). Biegi z wyłączonymi barbarzyńcami (diagnostyka, pkt 5): w t60 gracz ma 1 miasto o
+   populacji 3, Porządek 26-36% (nigdy poniżej 26,1%; próg buntu 12%).
+5. **Ochrona ostatniego miasta gracza przed buntem: NIE MA** (kod: `society-breakdown.ts:522-533`, ochrona tylko AI;
+   dla gracza `ownerIsHuman` zawsze zezwala). Bunt ostatniego miasta gracza pozostaje możliwy w mechanice, ale w 15
+   żywych biegach nie wystąpił i w opisanych warunkach (miasto do pop 4, Porządek >= 26%) wystąpić nie może.
+   NIE ZMIERZONO: bunt przy populacji >= 5 (gracz nie dociągnął do niej w 60 turach).
+6. **Czemu poprzednie rundy dawały 7/9 przeżyć do t60 (r2) przeciw 4/5 ginie t10-16 (REALDEF4):** runner r1/r2 miał
+   zaszyte `barbariansLevel: "normalny"` oraz `kosztJednostekPace: "normalny"` (nadpisywane domyślnym `--pace`). Teraz
+   runner startuje z `barbariansLevel` = Trudny (`--barb`, domyślnie trudny) i `--pace wysoki`; readback każdego biegu
+   jest w `*.run.log` (linia `[readback-plr]`, pole `live.barbariansLevel` z gry).
+7. **Skutek w UI po utracie ostatniego miasta (zmierzone, 9/9 biegów pasywnych + 2/3 autopilota):** gra kończy się
+   natychmiast (`gameOver`), pokazuje się pełnoekranowa karta „TWOJE IMPERIUM UPADŁO / KLĘSKA” z liczbami (tury
+   przetrwane, ostatnia epoka, zbadane technologie, cywilizacja, utracone miasta 1, utracone jednostki 1) i DWOMA
+   przyciskami: „WCZYTAJ GRĘ” i „ROZPOCZNIJ OD NOWA” (przeładowanie strony). **Nie ma „Wróć na mapę” ani kontynuacji;**
+   „Zakończ turę” jest zablokowane (`[EndTurn] blocked: gameOver`). Zrzuty: `dane-r3/*-defeat.png`. Gracz nie dostaje
+   żadnego komunikatu o przyczynie (barbarzyńcy vs bunt) na ekranie porażki.
 
-## 2. Utrata miasta gracza w danych (tabela z zapisów)
+## 1. Tabela 9 biegów (pasywny gracz, maksimum: Trudny, Koszty jednostek Wysoki x4, Dyplomacja trudna, barbarzyńcy Trudny, kultura AI normalny)
 
-Źródło: `dane/*.jsonl.gz` (zapisy tury), narzędzie `gra/tools/plrrevolt-table.cjs` (tylko odczyt; wynik poniżej
-surowo, bez korekt). Liczby owner 1 i citiesAll to LICZNIKI z zapisu tury, nie identyfikacja miasta.
+Porządek = `porPct` miast gracza z `cityOrderState` (min / średnia po turach do utraty). Skrajny bunt = `porPct < 12`.
+Wszystkie biegi: 1 miasto, 0 jednostek wojskowych, populacja miasta 1-3 (osiedle = immunitet buntu).
 
-| bieg | ostatnia tura | tura utraty miast gracza | licznik owner 1 w tej turze | citiesAll w tej turze | pierwsza tura owner −99 | jednostki wojskowe gracza min..max |
+| kultura gracza | ziarno | tura utraty miasta | kto (stary -> nowy) | Porządek min / śr | tura wejścia w skrajny bunt | zmian na -99 |
 |---|---|---|---|---|---|---|
-| V4-normalny-normalny-s4242 | t35 | t29 | 5→6 | 86→91 | brak | 0..0 |
-| latwy-s4242 | t60 | brak | brak | brak | brak | 0..0 |
-| latwy-s7 | t60 | t59 | 15→16 | 170→171 | brak | 0..0 |
-| latwy-s778899 | t60 | brak | brak | brak | brak | 0..0 |
-| normalny-s4242 | t60 | brak | brak | brak | brak | 0..0 |
-| normalny-s7 | t60 | t58 | 15→16 | 169→169 | brak | 0..0 |
-| normalny-s778899 | t60 | brak | brak | brak | brak | 0..0 |
-| trudny-s4242 | t60 | brak | brak | brak | brak | 0..0 |
-| trudny-s7 | t60 | brak | brak | brak | brak | 0..0 |
-| trudny-s778899 | t60 | brak | brak | brak | brak | 0..0 |
+| łatwy | 4242 | 16 | 0 -> -1 | 64,5 / 67,8 | brak | 0 |
+| łatwy | 7 | 29 | 0 -> -1 | 59,8 / 69,0 | brak | 0 |
+| łatwy | 778899 | 12 | 0 -> -1 | 75,0 / 75,0 | brak | 0 |
+| normalny | 4242 | 16 | 0 -> -1 | 52,9 / 52,9 | brak | 0 |
+| normalny | 7 | 29 | 0 -> -1 | 44,9 / 54,9 | brak | 0 |
+| normalny | 778899 | 12 | 0 -> -1 | 59,5 / 59,5 | brak | 0 |
+| trudny | 4242 | 16 | 0 -> -1 | 37,4 / 37,4 | brak | 0 |
+| trudny | 7 | 29 | 0 -> -1 | 39,2 / 42,3 | brak | 0 |
+| trudny | 778899 | 12 | 0 -> -1 | 43,9 / 43,9 | brak | 0 |
 
-Uwagi do tabeli (zastrzeżenia do poprzedniej wersji dokumentu, przyjęte w obronie):
-- Wcześniejsze zdanie „podbój przez AI owner 1” NIE jest udowodnione. Zapis tury zawiera liczniki miast per właściciel,
-  a właściciel −1 (barbarzyńcy) NIE jest w liście `owners`, więc zmiana 0→−1 nie jest widoczna w liczniku owner 1.
-  Przy `normalny-s7` (t58) licznik owner 1 rośnie o 1, a `citiesAll` nie zmienia się (169→169), co jest zgodne
-  zarówno z przejęciem przez AI 1, jak i z przejściem do −1 przy innym źródle wzrostu licznika owner 1. Przy
-  `latwy-s7` (t59) `citiesAll` rośnie o 1 (nowe miasto w świecie). Rozstrzygnięcie wymaga śladu per miasto (nie
-  istnieje w zapisie; patrz §4).
-- W `normalny-s7` licznik owner 1 spada z 16 do 15 w t59 (owner 7 zyskuje +1 w tej samej turze). Miasto mogło więc
-  zmienić właściciela dwa razy; nie ustalono tego.
-- W V4 licznik owner 1 rośnie 5→6 w t29, gdy miasto gracza znika; to jest zgodne z przejęciem przez AI 1, ale też z
-  przejęciem przez barbarzyńców, bo −1 nie jest liczone.
-- Linia konsoli `[Barbarzyncy] Miasto city0: spawn Wojownik Sherden @ (80,54)` z biegu `normalny-s7` nie ma numeru tury
-  i identyfikator `city0` może oznaczać różne miasta w różnych cywilizacjach. Nie jest dowodem przejęcia przez
-  barbarzyńców.
+Wszystkie 9: ścieżka `applyCityCaptureToMap` (wejście barbarzyńców do miasta), gracz bez obrońcy.
 
-## 3. Bunt gracza i miasta z buntem
+### 1a. Dodatkowo: autopilot gracza (`--player-ai 1`, kultura trudny, barbarzyńcy Trudny)
 
-- Zdarzenia konsoli (`dane/*.events.txt`): 0 wpisów `[Rebelia]` dotyczących miasta gracza we wszystkich 10 biegach.
-  Wpisy `[Bunt] Tura N <miasto> → migracja −1 do <miasto>` (9–16 na bieg) dotyczą miast AI.
-- Zapisy nie zawierają pola Porządku miast (`porPctSuma`, `krytyczne`, `ponizejProgu`) dla właściciela 0 w tych
-  biegach. Minimalnego Porządku gracza NIE ZMIERZONO w tej rundzie.
-- Wniosek o „częstości buntu gracza 0/9” zastąpiony: 0 zaobserwowanych buntów gracza w 10 biegach, z których gracz
-  miał 1 miasto i 0 jednostek wojskowych (gracz pasywny). Taka próba NIE pozwala oszacować częstości buntu przy
-  realnej grze; ten wniosek nie jest podstawą decyzji o balansie.
+| ziarno | wynik | Porządek min / śr |
+|---|---|---|
+| 4242 | utrata miasta t18, `0 -> -1`, `applyCityCaptureToMap` | 26,4 / 27,1 |
+| 7 | przeżycie do t25 (koniec segmentu), 1 miasto | 32,1 / 42,0 |
+| 778899 | utrata miasta t15, `0 -> -1`, `applyCityCaptureToMap` | 32,9 / 37,6 |
 
-## 4. Czego NIE zmierzono (zamknięte uczciwie)
+Autopilot (decyzje jak AI) nie ratuje miasta przed barbarzyńcami Trudny w t15-18 w 2 z 3 ziaren.
 
-- Porządek gracza (min/śr po turach): NIE ZMIERZONO. Zapisy PLRREVOLT go nie zawierają; `cityOrderState` (main.ts, lokalna
-  mapa) nie ma hooka odczytu bez zmiany `gra/src`, a zmiana kodu była poza zakresem tematu.
-- Dokładna linia kodu, która ustawiła owner −1 dla miasta gracza w t29 (V4): NIE ZMIERZONO i NIE ZIDENTYFIKOWANO.
-  Pętla buntu (`main.ts:45254-45289`) nie prowadzi do −1 (`shouldStartCityRebellion` zwraca false dla właściciela −1,
-  `isAiOwner(−1)` = false, `human-owners.ts:47-52`). Źródłem może być przejęcie przez barbarzyńców (`barbarians.ts:51`),
-  ale tego nie udowodniono.
-- Etykieta „Bunt skrajny” przy owner −1 w t30–31 i flaga „osiedle”: NIE WYJAŚNIONE.
-- Skutek w UI po utracie ostatniego miasta: NIE ZMIERZONO. Statycznie: `victory.ts:217` zwraca `rodzaj: 'przegrana'`
-  dla gracza bez miast (gdy był kiedyś miastem); ekran porażki to `pokazEkranPorazki` (`main.ts:39043`, wywołania
-  `main.ts:39055-39061`). Runner pracował z wyłączonym zwycięstwem (`suppressVictory`) i kontynuował tury po utracie
-  miasta (ostatnia tura 60 w biegach z utratą), więc ekran NIE był odczytywany.
-- Odtworzenie minimalne utraty ostatniego miasta przez bunt: NIE WYKONANO (żaden bieg nie wywołał buntu gracza).
-- Warunki wyzwalające bunt miasta gracza przy niskim Porządku: NIE ZMIERZONO na żywo; kod (§5) jest jedynym źródłem.
-- Porządek w danych AIBAL2 (osobne biegi, `analiza-zapisow-aibal2.txt`): wcześniejsza wersja tego dokumentu podawała
-  zakres 26–49% dla gracza; ten zakres NIE został odtworzony w tej rundzie (narzędzie porządku nie było w tej gałęzi)
-  i nie jest podstawą wniosków.
+### 1b. Diagnostyka POZA maksimum (barbarzyńcy WYŁĄCZENI, kultura trudny, pasywny, do t60)
 
-## 5. Kod (potwierdzone na bazie 858b4c981, numery linii z `grep -n`)
+Poziom barbarzyńców `brak` jest poniżej maksimum; użyty wyłącznie po to, by sprawdzić, czy bunt jest w ogóle osiągalny,
+gdy gracz przeżywa. Wartości maksymalne pozostałych ustawień bez zmian.
+
+| ziarno | tura końca | miasta | populacja w t60 | Porządek min / śr | tura < 12% | zmian na -99 |
+|---|---|---|---|---|---|---|
+| 4242 | 60 | 1 | 3 | 26,8 / 33,4 | brak | 0 |
+| 7 | 60 | 1 | 3 | 26,1 / 36,4 | brak | 0 |
+| 778899 | 60 | 1 | 3 | 26,7 / 36,2 | brak | 0 |
+
+Porządek spada wraz z populacją (np. 4242: pop 1 = 37,4%, pop 2 = 33,5%, pop 3 = 29,4%), więc miasto, które urosłoby do
+pop >= 5 (koniec immunitetu osiedla), byłoby przy kulturze trudnej wyraźnie bliżej progu 12%. NIE ZMIERZONO (brak takiego
+miasta w 60 turach).
+
+## 2. Log zmian właściciela (hak `__cityOwnerChangeLogDebug`, `gra/src/main.ts`)
+
+- Dopisywanie do tablicy w miejscach zmiany `city.ownerId`: `resolveSiegeSurrender` (kapitulacja po oblężeniu),
+  `annexCityState` (aneksja miasta-państwa), `transferCityToRebelFactionWithLedger` (bunt; -99), `transferCityByTreaty`
+  (cesja), `applyCityCaptureToMap` (zdobycie bitwą/szturmem/wejściem do pustego miasta; wołający widać w stosie).
+  Każdy wpis: tura, id i nazwa miasta, stary -> nowy właściciel, ścieżka, stos wywołań, populacja, `porPct`, pasmo,
+  łaska buntu, ostrzeżenie, flaga rebelii, flaga osiedla. Funkcja `noteCityOwnerChangeForTest` wraca od razu, gdy
+  nie jest `?civTest=1`.
+- Odczyt: `log()`, `clear()`, `humanCities()` (Porządek miast gracza w bieżącej turze), `settings()` (readback poziomu
+  barbarzyńców). Hak jest w istniejącym bloku civTest (obok `__aiEconomyMeasure`).
+- Brak wpływu na grę: `tsc` 0; `ai-test` 297/0, `logic-test` 213/213 (zob. §4); dwa biegi tego samego ziarna (bundle
+  zminifikowany i niezminifikowany, `pas-normalny-s4242` vs `V4-nomin-normalny-s4242`) mają identyczny skrót
+  (`owners`, `terytorium`, `wars`) we wszystkich 15 turach. **NIE ZMIERZONO:** porównanie z bundlem BEZ haka
+  (kandydat 909a057fa) bit w bit; opieramy się na przeglądzie kodu (hak tylko czyta `cityOrderState`/`cities`) i na
+  bramkach.
+- Wpisy w biegach: t8 `annexCityState` Kanesz 6 -> 5 (AI); t11 `applyCityCaptureToMap` Ostia 27 -> -1 (barbarzyńcy zdobyli
+  miasto-państwo, `applyMapBattleOutcome <- doAutoPowerMapBattle`); t16 Rzym 0 -> -1 (miasto gracza).
+
+## 3. Kod (bez zmian względem r2; numery linii z bazy 909a057fa)
 
 - `gra/src/game/society-breakdown.ts:218-219` — `REVOLT_CRITICAL_POR_PCT = 12`, `REVOLT_GRACE_TURNS = 3`.
-- `gra/src/game/society-breakdown.ts:232` — `REBEL_FACTION_OWNER_ID = -99`.
-- `gra/src/game/society-breakdown.ts:522-533` — `shouldStartCityRebellion`: `aiKeepsLastCity = ownerIsAi && ownerOtherCities < 1`
-  (:530); zwrot `shouldTriggerRebellion && !hasRebelState && (ownerIsHuman || (aiCityRebellionEnabled && !aiKeepsLastCity))` (:531-532).
-  Dla gracza brak warunku na liczbę miast.
-- `gra/src/main.ts:41836` — `city.ownerId = REBEL_FACTION_OWNER_ID` (w `transferCityToRebelFactionWithLedger`).
-- `gra/src/main.ts:31628` — `c.ownerId = REBEL_FACTION_OWNER_ID` (hak testowy `stageRebelCity`).
-- `gra/src/main.ts:45254` — `rebelByPlayer = isHuman(rebelOwnerPrev)`; `:45289` — komunikat buntu gracza („Miasto nie jest już Twoje”).
-- `gra/src/game/barbarians.ts:51` — `BARBARIAN_OWNER_ID = -1`.
-- `gra/src/game/victory.ts:217` — `rodzaj: 'przegrana'`.
+- `gra/src/game/society-breakdown.ts:232` — `REBEL_FACTION_OWNER_ID = -99`; `barbarians.ts:51` — `BARBARIAN_OWNER_ID = -1`.
+- `gra/src/game/society-breakdown.ts:522-533` — `shouldStartCityRebellion`: ochrona ostatniego miasta (`aiKeepsLastCity`)
+  tylko dla AI; dla gracza brak warunku na liczbę miast.
+- `gra/src/game/society-breakdown.ts:477-499` — immunitet osiedla (pop <= `prawo_bonus_osada_prog` = 4).
+- `gra/src/main.ts` pętla buntu (`rebelByPlayer = isHuman(...)`, komunikat „Miasto nie jest już Twoje”) oraz
+  `transferCityToRebelFactionWithLedger` (`city.ownerId = REBEL_FACTION_OWNER_ID`).
+- `gra/src/game/victory.ts:217` — `rodzaj: 'przegrana'` dla gracza bez miast; ekran: `pokazEkranPorazki`.
 
-## 6. Propozycje (NIE decyzja; bez zmiany balansu)
+## 4. Bramki (kod r3, po `npm ci --ignore-scripts`, w worktree tej rundy)
 
-1. Pomiar: dopisać do runnera zapis zmiany `ownerId` każdego miasta gracza z przyczyną (bunt / barbarzyńcy / podbój
-   AI) i odczyt Porządku. Wymaga zmiany `gra/src` (hak tylko do odczytu) — osobny temat z zgodą orkiestratora.
-2. Decyzja o ochronie ostatniego miasta gracza przed buntem: pytanie ABC do właściciela dopiero po punkcie 1.
-3. Dziewięć biegów z pełnym Porządkiem i wpisami przyczyn — po punkcie 1.
+`tsc --noEmit` 0 błędów; `logic-test` 213/213; `tech-tree-test` 20/0; `research-test` 33/33; `unit-replace-test` 21/21;
+`combat-test` 6/6; `society-breakdown-test` 56 OK / 0 FAIL; `ai-city-rebellion-gate-test` PASS=37 FAIL=0;
+`ai-city-order-need-wiring-test` 267/0; `ai-test` 297/0.
+
+## 5. Zastrzeżenia
+
+- Gracz w biegach jest pasywny (0 jednostek wojskowych) lub na autopilocie AI; to nie jest „rozsądna gra” człowieka
+  (REALDEF5 bada obronę startu). Wniosek o częstości buntu dotyczy tej próby (15 biegów, 1 miasto o pop 1-3).
+- Biegi 60-turowe wykonano w jednym segmencie (wznowienie ze slotu sypało Chromium dwa razy z rzędu, `diag-brak-trudny-s4242`
+  powtórzono od zera). Kultura AI = normalny we wszystkich biegach.
+- Propozycje (NIE decyzje; bez zmiany balansu): (a) ekran porażki może podawać przyczynę utraty (barbarzyńcy / bunt);
+  (b) decyzja o ochronie ostatniego miasta gracza przed buntem: pytanie ABC do właściciela dopiero po turnieju, i tylko
+  jeśli bunt okaże się osiągalny przy populacji >= 5 (dziś niezmierzone).

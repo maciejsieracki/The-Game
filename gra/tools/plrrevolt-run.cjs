@@ -273,6 +273,10 @@ async function launch(chromium, profileDir) {
 
 /** Start: `newgame` (domyslnie) = prawdziwa nowa gra (__nnsMeasureDebug.startGame -> doStartGame), bez scenariusza playtest;
  *  `playtest` = scenariusz ?playtest=mapa (ustawia podzialPracy miasta, ktorego zapis gry nie zachowuje). */
+/** PLRREVOLT r3: poziom barbarzyncow (domyslnie 'trudny' = MAKSIMUM; r1/r2 mialy zaszyte 'normalny' -- przyczyna rozbieznosci z REALDEF4). */
+const BARB = arg('barb', 'trudny');
+/** PLRREVOLT r3: --suppress 0 = NIE wyciszaj zwyciestwa/porazki (gameOver i ekran porazki dzialaja realnie). Domyslnie 1 (jak AIBAL2). */
+const SUPPRESS = arg('suppress', '1') !== '0';
 const START = arg('start', 'newgame');
 function gameUrl() {
   const base = 'file://' + path.join(DIST, 'index.html');
@@ -294,6 +298,7 @@ function attachDiagnostics(page) {
 
 /** Wycisza zwyciestwo/porazke dla pomiaru (jak trade-runner): bez tego koniec gry przerywa 100-turowy przebieg. */
 async function suppressVictory(page) {
+  if (!SUPPRESS) return;
   await page.evaluate(() => { const t = window.__truceTestDebug; if (t && t.suppressVictoryForTest) t.suppressVictoryForTest(); });
 }
 
@@ -309,20 +314,20 @@ async function openGame(ctx, { fresh }) {
   if (START === 'newgame') {
     // AIBAL2: start przez __settingsLive.startNewGame (REALNY doStartGame) z pelnym zestawem ustawien, w tym
     // advanced.diplomacyWarLevel (__nnsMeasureDebug.startGame go nie przyjmuje -> AIBAL mierzylo Dyplomacje=latwa).
-    await page.evaluate(([seed, kr, kai, kj, diff, dwl, cs]) => window.__settingsLive.startNewGame({
+    await page.evaluate(([seed, kr, kai, kj, diff, dwl, cs, barb]) => window.__settingsLive.startNewGame({
       civId: "rzymianie", civName: "Rzymianie", epoch: "Epoka Brązu", epochId: "braz", difficulty: ({ trudny: "Trudny", normalny: "Normalny", latwy: "Łatwy" })[diff],
       mapSize: "Standardowy", rivals: String(cs), speed: "Normalna", worldType: "Kontynenty", typSwiata: "kontynenty", seed,
       mapQualityLabel: "Wysoka", mapQuality: "high", renderQualityLabel: "Wysoka", mapDetailQualityLabel: "Wysoka",
       renderQuality: "high", mapDetailQuality: "high", civTypesCount: 15, cityStatesCount: cs,
       worldDensityLabels: { resources: "Normalnie", rivers: "Normalnie", desert: "Normalnie", forest: "Normalnie", relief: "Normalnie" },
       advanced: {
-        barbariansLevel: "normalny", battleAlwaysManual: false, victoryMode: "moc_i_dominacja", buildingCostPace: "niski",
+        barbariansLevel: barb, battleAlwaysManual: false, victoryMode: "moc_i_dominacja", buildingCostPace: "niski",
         kosztJednostekPace: kj, wzrostLudnosciPace: "wysoki", ruchSwiataPace: "krotki", landFractionPercent: 30, landFractionCustom: false,
         cityStateDifficultyOverride: "normal", cityLimitBase: 10, diplomacyWarLevel: dwl,
         kulturaReligiaLevel: kr, kulturaReligiaLevelAI: kai || undefined,
       },
       villageRewardsEnabled: true,
-    }), [SEED, arg("kr", "trudny"), arg("kr-ai", ""), arg("koszt-jednostek", "wysoki"), arg("difficulty", "trudny"), arg("dyplo", "trudna"), CS]);
+    }), [SEED, arg("kr", "trudny"), arg("kr-ai", ""), arg("koszt-jednostek", "wysoki"), arg("difficulty", "trudny"), arg("dyplo", "trudna"), CS, BARB]);
     await page.waitForFunction(() => { try { return window.__aiTradeWiringTestDebug.state().turn >= 1; } catch (_) { return false; } }, null, { timeout: 180000 });
     // r3: doStartGame jest asynchroniczny -- klastry AI/miasta-panstwa powstaja DOPIERO po zniknieciu nakladki
     // „Tworzenie swiata”. Zalozenie miasta gracza przed tym (r1/r2) dawalo AI = 0 miast. Czekamy jak ai-army-live-measure.cjs.
@@ -395,13 +400,50 @@ async function stopDump(page, extra) {
   }
 }
 
+/** PLRREVOLT r3: odczyt (tylko odczyt gry): miasta gracza (Porzadek), zmiany wlasciciela od ostatniej tury (z przyczyna), wrogowie w promieniu 3. */
+async function collectPlr(page) {
+  return page.evaluate(() => {
+    const d = window.__cityOwnerChangeLogDebug;
+    const out = { humanCities: null, ownerChanges: [], threat: null };
+    if (d) {
+      out.humanCities = d.humanCities();
+      out.ownerChanges = d.log(); d.clear();
+    }
+    try {
+      const ids = new Set((out.humanCities || []).map(c => c.cityId));
+      const probe = window.__defeatTestDebug && window.__defeatTestDebug.cityThreatProbe ? window.__defeatTestDebug.cityThreatProbe() : [];
+      out.threat = probe.filter(c => ids.has(c.id)).map(c => ({ id: c.id, ownerId: c.ownerId, playerOnHex: c.playerOnHex.length, foreignNear: c.foreignNear.map(u => u.owner + ':' + u.typeId) }));
+    } catch (e) { out.threat = 'ERR:' + String(e).slice(0, 80); }
+    return out;
+  });
+}
+
+/** PLRREVOLT r3: skutek w UI po przegranej (gameOver): tekst ekranu porazki, przyciski, zrzut ekranu (PLR_SHOT=<sciezka png>). */
+async function captureGameOverUi(page) {
+  const info = await page.evaluate(() => {
+    const ov = document.getElementById('__victory_screen__');
+    const d = window.__cityOwnerChangeLogDebug;
+    return {
+      isGameOver: window.__defeatTestDebug ? window.__defeatTestDebug.isGameOver() : null,
+      overlayOpen: !!ov,
+      overlayClass: ov ? ov.className : null,
+      overlayText: ov ? ov.innerText.replace(/\s+/g, ' ').slice(0, 900) : null,
+      buttons: ov ? Array.from(ov.querySelectorAll('button')).map(b => ({ id: b.id, text: b.innerText.trim() })) : [],
+      ownerChangesTail: d ? d.log().slice(-3) : null,
+    };
+  });
+  const shot = process.env.PLR_SHOT;
+  if (shot) { try { await page.screenshot({ path: shot }); info.screenshot = shot; } catch (e) { info.screenshot = 'ERR:' + String(e).slice(0, 80); } }
+  return info;
+}
+
 /** Jedna tura: bramka NNS gracza (opcjonalnie dosypka), koniec tury, pomiar. Zwraca rekord albo {stop: powod}. */
 async function playOneTurn(page, ctxState) {
   const t0 = Date.now();
   const before = await turnOf(page);
   // AIBAL2: przegrana gracza (gameOver) = wynik przebiegu, nie cannot-end (wzorzec endstall-fortring-live.cjs).
   const over = await page.evaluate(() => { try { return window.__defeatTestDebug ? window.__defeatTestDebug.isGameOver() : null; } catch (e) { return null; } });
-  if (over === true) return { stop: 'gameover', tura: before };
+  if (over === true) return { stop: 'gameover', tura: before, why: await captureGameOverUi(page) };
   const gateBefore = await readGateStats(page);
   const modalBefore = {};
   for (const k of MODAL_KEYS) modalBefore[k] = ctxState[k];
@@ -513,6 +555,7 @@ async function playOneTurn(page, ctxState) {
   if (UNIT_FLOW) rec.unitFlow = await page.evaluate(() => window.__aiEconomyMeasure.unitFlowTurn());
   if (CITY_STATE) rec.cityState = await page.evaluate(p => window.__aiEconomyMeasure.cityStateTurn(p), CITY_STATE_PROG);
   if (CITY_STATE) rec.cityTransfers = await page.evaluate(() => window.__aiEconomyMeasure.cityTransfersLast());
+  rec.plr = await collectPlr(page);
   rec.wars = await collectWars(page, m.owners);
   rec.upkeepGate = gateDelta(gateBefore, await readGateStats(page));
   // R-WEB-LEDGER-PERF-DEFAULT-CONFIG-MEASURE-Q1: rozmiar dziennika w pamieci (co 10 tur, tura koncowa i pierwsza tura po starcie segmentu; poza pomiarem tury).
@@ -570,6 +613,9 @@ async function runSeries(ctx, { resumeFromSlot, stopAt }) {
   }
   // R-WEB-AI-CULT-BALANCE-MEASURE-Q1 (AIBAL): readback ustawien (kultura gracza i AI, tempo, trudnosc) do logu biegu.
   console.log('[readback] ' + JSON.stringify(await page.evaluate(() => (window.__settingsLive ? window.__settingsLive.getSettings() : null))) + ' pace=' + PACE + ' resume=' + resumeFromSlot);
+  // PLRREVOLT r3: readback barbarzyncow z gry (hak __cityOwnerChangeLogDebug.settings) + argumenty biegu -- do logu KAZDEGO biegu.
+  const plrSettings = await page.evaluate(() => (window.__cityOwnerChangeLogDebug && window.__cityOwnerChangeLogDebug.settings ? window.__cityOwnerChangeLogDebug.settings() : null));
+  console.log('[readback-plr] ' + JSON.stringify({ seed: SEED, barbArg: BARB, suppress: SUPPRESS, playerAi: PLAYER_AI, kr: arg('kr', 'trudny'), krAi: arg('kr-ai', ''), kosztJednostek: arg('koszt-jednostek', 'wysoki'), difficulty: arg('difficulty', 'trudny'), dyplo: arg('dyplo', 'trudna'), live: plrSettings }));
   const startTurn = await turnOf(page);
   RUN_START_TURN = startTurn;
   // Linia bazowa licznika przyrostu jednostek (po starcie lub wczytaniu slotu): delta pierwszej tury liczona od tego punktu.
