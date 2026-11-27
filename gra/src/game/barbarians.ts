@@ -685,6 +685,28 @@ export function barbariansActive(
   return turn >= params.startTurn;
 }
 
+/**
+ * R-WEB-EARLY-GRACE-15-IMPL-Q1 (decyzja Q41-A, 2026-11-27): okno łaski barbarzyńców.
+ * Tury 1..graceTurns (włącznie) barbarzyńcy nie wykonują żadnej tury (brak spawnu,
+ * ruchu, ataków, oblężeń, rajdów morskich, garnizonów miast barbarzyńskich); od tury
+ * graceTurns+1 działają jak dotąd. Bramka wołana w main.ts obok barbariansActive
+ * (pozostawia barbariansActive i jego piny bez zmian).
+ * / EN: grace window -- barbarians take no turn on turns 1..graceTurns inclusive.
+ */
+export function barbariansGraceActive(turn: number, graceTurns: number): boolean {
+  if (!Number.isFinite(turn) || !Number.isFinite(graceTurns)) return false;
+  return turn >= 1 && turn <= graceTurns;
+}
+
+/** Klucz ai-params.json: liczba tur okna łaski barbarzyńców (domyślnie 15). */
+export const BARBARIAN_GRACE_TURNS_KEY = 'barbarzyncy_okno_laski_tury';
+export const BARBARIAN_GRACE_TURNS_DEFAULT = 15;
+
+/** Czyta okno łaski barbarzyńców z data.aiParams (fallback BARBARIAN_GRACE_TURNS_DEFAULT). */
+export function loadBarbGraceTurns(data: GameData): number {
+  return readParam(data, BARBARIAN_GRACE_TURNS_KEY, BARBARIAN_GRACE_TURNS_DEFAULT);
+}
+
 /** Od epoki Średniowiecze (4) barbarzyńcy wyłączeni — buntownicy mapowi (11=C*). */
 export const EPOKA_SREDNIOWIECZE_BARBARZY = 4;
 

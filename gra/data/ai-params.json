@@ -439,6 +439,16 @@
     "sekcja": "§3 Ekspansja",
     "opis": "R-WEB-AI-AVOID-POLAR-CITIES-Q1: kara rankingowa kandydata na miasto AI za heks Polarny w promieniu 1 (połowa przy promieniu 2). Sam heks Polarny jest zakazany, o ile istnieje kandydat niepolarny. 0 = wyłączona."
   },
+  "barbarzyncy_okno_laski_tury": {
+    "wartosc": 15,
+    "sekcja": "§5 Barbarzyncy",
+    "opis": "R-WEB-EARLY-GRACE-15-IMPL-Q1: tury 1..N (wlacznie), w ktorych barbarzyncy nie wykonuja zadnej tury (brak spawnu, ruchu i atakow) na kazdym poziomie trudnosci."
+  },
+  "utrzymanie_gracza_okno_laski_tury": {
+    "wartosc": 15,
+    "sekcja": "§5 Barbarzyncy",
+    "opis": "R-WEB-EARLY-GRACE-15-IMPL-Q1: tury 1..N (wlacznie), w ktorych wszystkie jednostki gracza-czlowieka maja utrzymanie 0 (zywnosc, pieniadz, surowce); koszt zakupu bez zmian."
+  },
   "barbarzyncy_start_tura": {
     "wartosc": 5,
     "sekcja": "§5 Barbarzyncy",

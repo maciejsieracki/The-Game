@@ -1015,7 +1015,7 @@ import aiParamsRaw from '../data/ai-params.json';
 import aiUpkeepParamsRaw from '../data/ai-upkeep-params.json';
 // R-WEB-AI-FREE-UNIT-UPKEEP-40-TURNS-Q1: darmowe utrzymanie jednostek AI w turach 1..tury (flaga w danych).
 import aiFreeUnitUpkeepParamsRaw from '../data/ai-free-unit-upkeep-params.json';
-import { setAiFreeUnitUpkeepContext, paceUtrzymaniaWlasciciela, type AiFreeUnitUpkeepParams } from './game/ai-free-unit-upkeep';
+import { setAiFreeUnitUpkeepContext, paceUtrzymaniaWlasciciela, PLAYER_UPKEEP_GRACE_TURNS_KEY, PLAYER_UPKEEP_GRACE_TURNS_DEFAULT, type AiFreeUnitUpkeepParams } from './game/ai-free-unit-upkeep';
 import { aiUpkeepRunwayAllowsRecruit } from './game/ai-upkeep-runway';
 // R-WEB-DIPLO-TICK-WAR-BRAKE-Q1 r2: P3/P4/P6/P7 — wszystko za flagą isDiploTickWarBrakeEnabled().
 import diplomacyTickParams from '../data/diplomacy-tick-params.json';
@@ -1506,7 +1506,7 @@ import {
 } from './ui/victoryScreen';
 import type { VictoryScreenData } from './ui/victoryScreen';
 import {
-  loadBarbParams, barbariansActive, spawnCamps, tickCamps, decideBarbarianMoves,
+  loadBarbParams, barbariansActive, barbariansGraceActive, loadBarbGraceTurns, spawnCamps, tickCamps, decideBarbarianMoves,
   scaleBarbParamsForLevel, pickBronzeBarbUnit, isCampRaidReady, migrateBarbariansLevel,
   seaPeoplesBoostActive, boostBarbParamsForSeaPeoples, shouldEmitSeaPeoplesEpochNotice,
   BARBARIAN_OWNER_ID, isBarbarian,
@@ -13981,6 +13981,8 @@ async function boot(): Promise<void> {
     const clearedBarbCampHexes = new Set<string>();
     /** Barbarian params loaded from ai-params.json (with fallbacks). */
     const barbParams = loadBarbParams(data);
+    // R-WEB-EARLY-GRACE-15-IMPL-Q1: okno łaski barbarzyńców (tury 1..15) -- bramka tury niżej.
+    const barbGraceTurns = loadBarbGraceTurns(data);
     /** Flag: game ended (victory or defeat). Prevents repeated end-game messages. */
     let gameOver = false;
     /** R-WEB-TRUCE-Q1 (r5): wyłącznie hak live `__truceTestDebug.suppressVictoryForTest` — mapa testowa ma 2 miasta i kończy grę zwycięstwem przy pierwszym EOT. Domyślnie false. */
@@ -14994,6 +14996,8 @@ async function boot(): Promise<void> {
       getTurn: () => aiUpkeepTickTurnOverride ?? turn,
       isHumanOwner: (oid: number) => isHuman(oid),
       params: aiFreeUnitUpkeepParamsRaw as AiFreeUnitUpkeepParams,
+      // R-WEB-EARLY-GRACE-15-IMPL-Q1: okno łaski utrzymania GRACZA (tury 1..N, każdy fotel ludzki).
+      playerGraceTurns: (aiParamsRaw as Record<string, { wartosc?: number }>)[PLAYER_UPKEEP_GRACE_TURNS_KEY]?.wartosc ?? PLAYER_UPKEEP_GRACE_TURNS_DEFAULT,
     });
     // R-HOTSEAT-ETAP-1-OWNERID-ISAIOWNER-Q1: pierwszy realny konsument isAiOwner
     // (gra/src/game/human-owners.ts, Etap 0). Dziś zawsze dokładnie jeden fotel
@@ -49135,7 +49139,8 @@ async function boot(): Promise<void> {
           // save's newGameParams after load, without crashing on an unknown string.
           const barbLevel = migrateBarbariansLevel(_menuAdvanced?.barbariansLevel);
           const barbLive = scaleBarbParamsForLevel(barbParams, barbLevel, _menuDifficulty);
-          if (barbariansActive(turn, barbLive, player.era, barbLevel)) {
+          // R-WEB-EARLY-GRACE-15-IMPL-Q1: w oknie łaski (tury 1..barbGraceTurns) barbarzyńcy nie działają wcale.
+          if (barbariansActive(turn, barbLive, player.era, barbLevel) && !barbariansGraceActive(turn, barbGraceTurns)) {
             const seaBarbParams = loadSeaBarbParams(data, _menuDifficulty);
 
             // R-LUDY-MORZA-Q1=A: w Brązie zero obozów naval — usuń stare z save.

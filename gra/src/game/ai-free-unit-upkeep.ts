@@ -39,11 +39,33 @@ export function aiFreeUnitUpkeepActive(
   return turn >= 1 && turn <= params.tury;
 }
 
+/** Klucz ai-params.json i domyślne okno łaski utrzymania gracza (tury 1..N). */
+export const PLAYER_UPKEEP_GRACE_TURNS_KEY = 'utrzymanie_gracza_okno_laski_tury';
+export const PLAYER_UPKEEP_GRACE_TURNS_DEFAULT = 15;
+
+/**
+ * R-WEB-EARLY-GRACE-15-IMPL-Q1 (decyzja Q41-A, 2026-11-27): okno łaski utrzymania GRACZA.
+ * Gracz-człowiek (każdy fotel ludzki) nie płaci utrzymania jednostek w turach 1..graceTurns
+ * włącznie (żywność, pieniądz, surowce). Koszt zakupu nie jest tu dotykany.
+ * Czysta funkcja; graceTurns spoza skali (brak/NaN) = okno wyłączone.
+ */
+export function playerUnitUpkeepGraceActive(
+  turn: number,
+  isHumanOwner: boolean,
+  graceTurns: number | undefined,
+): boolean {
+  if (!isHumanOwner) return false;
+  if (!Number.isFinite(turn) || graceTurns === undefined || !Number.isFinite(graceTurns)) return false;
+  return turn >= 1 && turn <= graceTurns;
+}
+
 /** Kontekst instalowany raz przez main.ts (tura bieżąca, fotele ludzkie, parametry). */
 export interface AiFreeUnitUpkeepContext {
   getTurn: () => number;
   isHumanOwner: (ownerId: number) => boolean;
   params: AiFreeUnitUpkeepParams;
+  /** Okno łaski utrzymania gracza (tury 1..N); brak = wyłączone. */
+  playerGraceTurns?: number;
 }
 
 let _ctx: AiFreeUnitUpkeepContext | null = null;
@@ -54,7 +76,8 @@ export function setAiFreeUnitUpkeepContext(ctx: AiFreeUnitUpkeepContext | null):
 }
 
 /**
- * Tempo utrzymania dla właściciela: 0 gdy okno darmowe AI jest aktywne, inaczej `pace` bez zmian.
+ * Tempo utrzymania dla właściciela: 0 gdy okno darmowe AI jest aktywne albo (gracz-człowiek)
+ * okno łaski gracza (R-WEB-EARLY-GRACE-15-IMPL-Q1) jest aktywne; inaczej `pace` bez zmian.
  * Jedyny punkt wejścia dla ścieżek liczących utrzymanie per właściciel.
  */
 export function paceUtrzymaniaWlasciciela<P extends KosztJednostekPace | number | null | undefined>(
@@ -64,7 +87,10 @@ export function paceUtrzymaniaWlasciciela<P extends KosztJednostekPace | number 
   const c = _ctx;
   if (!c) return pace;
   try {
-    return aiFreeUnitUpkeepActive(ownerId, c.getTurn(), c.isHumanOwner(ownerId), c.params) ? 0 : pace;
+    const turn = c.getTurn();
+    const human = c.isHumanOwner(ownerId);
+    if (playerUnitUpkeepGraceActive(turn, human, c.playerGraceTurns)) return 0;
+    return aiFreeUnitUpkeepActive(ownerId, turn, human, c.params) ? 0 : pace;
   } catch {
     return pace;
   }
