@@ -11389,3 +11389,8 @@ R-WEB-MAP-ISLANDS-ORPHAN-FIX-Q1 (wf_d7ad9b86-4bd; Operator Haiku → Evaluator S
 ### 2026-11-27 · VLIVE2 r2 FC FAIL → runda 3 (Operator SONNET) · zegar maszyny `date -u` 08:15 UTC
 - r2: Operator BLOCK (bieg w tle przeniesiony i niedokończony; load 8–12), Obrona przeniosła pliki pracy na e6f3fd4b6 (1c6794a5d, 25 plików, zero gra/src), FC FAIL: na bieżącej bazie zero pomiarów pozycji 1–2 — load 7–9 nie jest blokadą techniczną. Pole „deklarujący wojnę” wymaga zmiany gra/src → poza zakresem (decyzja inżynierska). Pozycje 3–5 → VLIVE3.
 - Dwie kolejne rundy Haiku (r1 FAIL, r2 FAIL) tego samego ID → runda 3 z Operatorem SONNET (args.haikuFailures=2, args.sonnetWhy), cand = 1c6794a5d. refs/keep/VLIVE2-r2-{op,eval,obrona,fc}.
+
+### 2026-11-27 · AIPLUS10 r2 FC PASS-WITH-NOTES → runda 3 (weryfikacja przed deployem) · zegar maszyny `date -u` 08:53 UTC
+- FC r2: PASS-WITH-NOTES na 3c0ac171d (raport c67af3665): bramki zielone, formuła addytywna zgodna z potwierdzoną tabelą właściciela, 5 mutacji czerwonych. Pomiar max (Trudny/Trudny/Wysoki ×4, 60 tur): AI poniżej progu 14% z ~60–80 miast do 0–1, Porządek AI t60 z ~21% do ~52–56%, jednostki AI 159–205→205–322 (zmiana całego pakietu od bazy 44649038c, nie tylko formuły).
+- Blokady przed READY_FOR_DEPLOY (decyzja orkiestratora: najpierw zweryfikować, potem wdrażać): odczyt D/G w żywej grze i round-trip zapisu nowego pola kulturaReligiaLevelAI NIE ZMIERZONO; newgame-settings-layout-reposition-test czerwony (16 vs 14 pozycji, czerwony już w bazie); biegi bez --pace wysoki. Scalenie z origin/main (FALE 928–929) czyste wg merge-tree.
+- Runda 3 tego samego ID (Haiku; FC PASS, więc bez Sonneta), cand = c67af3665. refs/keep/AIPLUS10-r2-{op,eval,obrona,fc}. Po FC PASS: dep3 + finalize jako FALA 930.
