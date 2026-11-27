@@ -1,4 +1,8 @@
 'use strict';
+// UWAGA (REALDEF r3, 2026-11-27): ten runner (i defeat-cause-live.cjs) zaklada miasto zaraz po `startNewGame`, gdy `awaitingFirstCity()`
+// jest juz true na swiecie STARTOWYM (podglad, 1008 heksow); swiat nowej gry (7992 heksow) podmienia stan po ok. 20 s.
+// Wyniki z tego runnera NIE opisuja gry (patrz dyspozycje/analizy/OBRONA-STARTU-GRACZ-ROZSADNY-2026-11-27.md §1).
+// Poprawny start (czekanie na log `[ClusterStart]`): gra/tools/realdef-econ-live.cjs.
 // R-WEB-EARLY-DEFENSE-REALISTIC-Q1 (tag REALDEF), runda 2: przezywalnosc pierwszych 20 tur przy GRZE ROZSADNEGO
 // GRACZA na MAKSIMUM (Trudny / dyplomacja trudna / Wysoki x4 / kultura trudny / barbarzyncy TRUDNY), zywa gra w Chromium.
 //
