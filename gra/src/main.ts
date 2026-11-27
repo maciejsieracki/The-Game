@@ -29558,7 +29558,7 @@ async function boot(): Promise<void> {
         // Tura 1 = 4000 p.n.e.; potem −50 lat/turę (nie turn×50 — to zjadało rok już na starcie).
         getYearLabel: () => Math.max(0, 4000 - (turn - 1) * 50) + ' p.n.e.',
         onExecutePending: () => executeFirstBlockingEvent(),
-        canEndTurn: () => canPlayerInitiateEndTurn(),
+        canEndTurn: () => canPlayerInitiateEndTurn(true),
         getEndTurnTooltip: () => nnsEndTurnTooltipText(),
         hideEndTurn: () => playtestWalkaActive,
         getBlockingCount: () => countBlockingEvents(),
@@ -43604,14 +43604,22 @@ async function boot(): Promise<void> {
       return g.blokada ? g.komunikat : '';
     }
 
-    function canPlayerInitiateEndTurn(): boolean {
+    /**
+     * quiet=true: wersja cicha dla pasywnych odczytów (cykl synchronizacji HUD co 500 ms,
+     * render przycisku). Ten sam wynik i te same efekty uboczne (healStaleEndTurnBlockers),
+     * tylko bez console.warn. Klik gracza i advanceSeat() wołają wersję głośną (quiet=false).
+     * / EN: quiet=true is the silent variant for passive reads (500 ms HUD sync cycle, button
+     * render). Same result and same side effects (healStaleEndTurnBlockers), no console.warn.
+     * Player clicks and advanceSeat() use the loud variant (quiet=false).
+     */
+    function canPlayerInitiateEndTurn(quiet = false): boolean {
       healStaleEndTurnBlockers();
       if (playtestWalkaActive) {
-        console.warn('[EndTurn] blocked: playtestWalkaActive');
+        if (!quiet) console.warn('[EndTurn] blocked: playtestWalkaActive');
         return false;
       }
       if (isAwaitingFirstPlayerCity()) {
-        console.warn('[EndTurn] blocked: awaitingFirstPlayerCity');
+        if (!quiet) console.warn('[EndTurn] blocked: awaitingFirstPlayerCity');
         return false;
       }
       // F3 (Evaluator FAIL 136fefbb, runda 3, Maciej 2026-08-14): rozszerzone o
@@ -43628,23 +43636,23 @@ async function boot(): Promise<void> {
       // request would only surface from the NEXT turn's `finally`, showing a roster from
       // before that turn (the second half of round-1 recommendation 1, skipped in round 2).
       if (isPreBattleOpen() || hasPendingAutoPreBattle()) {
-        console.warn('[EndTurn] blocked: preBattleOpen', { pending: hasPendingAutoPreBattle() });
+        if (!quiet) console.warn('[EndTurn] blocked: preBattleOpen', { pending: hasPendingAutoPreBattle() });
         return false;
       }
       if (galleryOn) {
-        console.warn('[EndTurn] blocked: galleryOn');
+        if (!quiet) console.warn('[EndTurn] blocked: galleryOn');
         return false;
       }
       if (gameOver) {
-        console.warn('[EndTurn] blocked: gameOver');
+        if (!quiet) console.warn('[EndTurn] blocked: gameOver');
         return false;
       }
       if (endTurnInProgress) {
-        console.warn('[EndTurn] blocked: endTurnInProgress');
+        if (!quiet) console.warn('[EndTurn] blocked: endTurnInProgress');
         return false;
       }
       if (aiTurnAwaitingBattle || aiCmdResume) {
-        console.warn('[EndTurn] blocked: aiTurnAwaitingBattle/resume', {
+        if (!quiet) console.warn('[EndTurn] blocked: aiTurnAwaitingBattle/resume', {
           aiTurnAwaitingBattle,
           aiCmdResume: aiCmdResume != null,
         });
@@ -43653,18 +43661,18 @@ async function boot(): Promise<void> {
       // R-WEB-DIPLO-DEALS-SENSIBLE-Q1 (B2): opcja „Wymagaj rozpatrzenia ofert handlowych" —
       // oferta handlowa AI->gracz czeka na decyzję (przyjmij / modyfikuj / odrzuć).
       if (hasBlockingAiTradeOfferForPlayer()) {
-        console.warn('[EndTurn] blocked: oferta handlowa AI czeka na decyzję gracza');
+        if (!quiet) console.warn('[EndTurn] blocked: oferta handlowa AI czeka na decyzję gracza');
         return false;
       }
       // R-WEB-ECON-NO-NEGATIVE-STOCKS-B-Q1: skarbiec/spichlerz po turze < 0 i istnieje ruch naprawczy.
       if (nnsGateForPlayer().blokada) {
-        console.warn('[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)');
+        if (!quiet) console.warn('[EndTurn] blocked: prognoza skarbca/spichlerza < 0 (NNS)');
         return false;
       }
       // PENDING-FORCED-PEACE-Q1: dopóki wisi pokój wymuszony z graczem, nie da się zakończyć tury.
       prunePendingForcedPeace();
       if (pendingForcedPeaceTreaties.length > 0) {
-        console.warn('[EndTurn] blocked: oczekujący pokój wymuszony');
+        if (!quiet) console.warn('[EndTurn] blocked: oczekujący pokój wymuszony');
         return false;
       }
       return true;
