@@ -31,3 +31,12 @@ ZNACZENIE: plus (G) rośnie z epoką o TĘ SAMĄ bezwzględną różnicę, któr
 MINUSY (D) bez zmian względem dzisiejszego kodu (mnożone przez skalę epoki): łatwy −10/−16/−23, normalny −15/−24/−34,5, trudny −20/−32/−46 — dla gracza i AI.
 Wartość linii (Kultura i Religia osobno, do Szczęścia i do Prawa) = D_e + (G_e − D_e)·udział_własnej, D_e = D·skala_epoki, G_e jak wyżej (G_e = G_epoka1 + 10·(skala_epoki − 1)). Poziom null (zgodność, stare zapisy) bez zmian; poziom łatwy dla gracza ma pozostać dokładnie dzisiejszym wzorem (bit-w-bit).
 Testy: tabela epok 1/2/3 dla gracza i AI na wszystkich poziomach (powyższe wartości G i D), mutacje czerwone (G gracza mnożone zamiast dodawane → czerwone; AI = gracz → czerwone).
+
+---
+# DODATEK 2 (korekta właściciela 2026-11-27) — MINUSY też rosną z epoką ADDYTYWNIE (nadpisuje zdanie o minusach z DODATKU 1)
+Cytat właściciela: „I minusy też powinny być większe w zależności od epoki, zarówno dla gracza, jak i dla AI. Po czym dalej w [kolejnych] epokach, to ten minus mniej będzie ważył.”
+ZNACZENIE (interpretacja orkiestratora — ta sama reguła addytywna co dla plusa; „mniej ważył” = addytywny przyrost jest relatywnie mniejszy niż mnożenie): D_e = D_epoka1 − 10·(skala_epoki − 1), czyli różnica −0 / −6 / −13 DODANA do minusa epoki 1 (zamiast mnożenia przez skalę):
+- Minus (gracz i AI jednakowo): łatwy −10 / −16 / −23; normalny −15 / −21 / −28; trudny −20 / −26 / −33 (epoka 1/2/3).
+- Plus G: AI na każdym poziomie 10 / 16 / 23; gracz łatwy 10 / 16 / 23, normalny 5 / 11 / 18, trudny 0 / 6 / 13.
+Wartość linii = D_e + (G_e − D_e)·udział_własnej (Kultura i Religia osobno, do Szczęścia i do Prawa). To ZMIENIA dzisiejszy kod także dla minusów (dziś: mnożenie D·skala = −16/−24/−34,5/−32/−46). Poziom łatwy dla gracza: wartości 10/16/23 i −10/−16/−23 są identyczne z dzisiejszymi (D·k i G·k dają to samo przy |D|=G=10) — zachowaj dokładny dzisiejszy wzór dla łatwego gracza tylko jeśli wynik jest bit-w-bit; w przeciwnym razie test równoważności numerycznej z tolerancją 1e-9. Null (zgodność) bez zmian.
+Testy: tabela epok 1/2/3 × poziomy × (gracz, AI) dla G i D z powyższych wartości; mutacje czerwone (D mnożone zamiast dodawane → czerwone; G gracza = G AI → czerwone).
