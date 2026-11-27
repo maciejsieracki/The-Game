@@ -1370,7 +1370,7 @@ import {
   type SaveToLocalResult,
   type GraczSaveV3,
 } from './game/save';
-import { serializeMapForSave } from './map/mapSnapshot';
+import { serializeMapForSave, buildGameMapFromSnapshot, isValidMapSnapshot } from './map/mapSnapshot';
 import { loadMapForSave } from './game/load-map-source';
 import {
   ensureFsaAutosaveReady, fsaRotatingAutosaveWrite, getFsaReadinessState,
@@ -10591,6 +10591,22 @@ async function boot(): Promise<void> {
         ?? typSwiataFromMenuLabel(loadParams.worldType || 'Kontynenty');
       if (ts !== _menuTypSwiata) return true;
       return false;
+    }
+    /**
+     * R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1: czy ZYWA mapa roznic sie od `mapSnapshot` zapisu. `loadNeedsMapRebuild` dla wczytania
+     * z menu pauzy (ten sam seed/rozmiar/typ) zwraca false i mapa zostawala ZYWA -- ze zmianami po zapisie (np. las wyciety przez AI
+     * po zapisie wracal do zapisanego stanu gry bez zapisanej mapy, plony drewna miast liczone z lasu, ktorego w zapisie nie ma).
+     * Porownanie serializacji (ta sama funkcja co przy zapisie). Zapis bez poprawnego `mapSnapshot` (legacy) = false (zachowanie bez zmian).
+     * Blad serializacji = true (bezpiecznie: odbudowa z zapisu).
+     */
+    function liveMapDiffersFromSave(saved: SaveGame): boolean {
+      const snap = saved.mapSnapshot;
+      if (!snap || !isValidMapSnapshot(snap)) return false;
+      try {
+        return JSON.stringify(serializeMapForSave(map)) !== JSON.stringify(snap);
+      } catch {
+        return true;
+      }
     }
     function civKeyForOwnerId(ownerId: number): string {
       // Gameplay effects require a real owner-to-civ mapping. Keep civTypeForOwner's
@@ -33720,6 +33736,30 @@ async function boot(): Promise<void> {
     if (typeof location !== 'undefined' && /[?&]civTest=1/.test(location.search)) {
       (window as any).__detHarness = {
         snapshotJson: (): string => JSON.stringify(buildSaveGameSnapshot('det-harness')),
+        /**
+         * R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1: wczytanie jak z menu pauzy (ta sama sesja/seed, `fromInGamePause`): ta sama decyzja
+         * co `loadGameFromSlot` (`loadNeedsMapRebuild` + `liveMapDiffersFromSave`); gdy mapa wymaga odbudowy, heksy sa podmieniane
+         * IN PLACE z `mapSnapshot` (zamiennik `regenerateWorldForLoad` bez sceny 3D). Zwraca { rebuild }. Tylko civTest.
+         */
+        restoreJsonAsPauseLoad: (s: string): { rebuild: boolean } => {
+          const o = JSON.parse(s);
+          const lp = newGameParamsForLoad(o);
+          const ls = o.seed ?? lp?.seed ?? _gameSeed;
+          const rebuild = loadNeedsMapRebuild(lp, ls, true) || (!!lp && liveMapDiffersFromSave(o));
+          if (rebuild && o.mapSnapshot && isValidMapSnapshot(o.mapSnapshot)) {
+            const m2 = buildGameMapFromSnapshot(o.mapSnapshot);
+            for (const k of Object.keys(map.hexes)) {
+              const h: any = map.hexes[k];
+              const n: any = (m2.hexes as any)[k];
+              if (!n) continue;
+              for (const f of Object.keys(h)) delete h[f];
+              Object.assign(h, n);
+            }
+            ensureDepositEraMeta(map.hexes);
+          }
+          restoreGameFromSave(o);
+          return { rebuild };
+        },
         restoreJson: (s: string): void => { restoreGameFromSave(JSON.parse(s)); },
         dropMetaKeys: (s: string, keys: string[]): string => { const o = JSON.parse(s); for (const k of keys) delete (o.meta as any)[k]; return JSON.stringify(o); },
         counters: () => ({ turn, detIdSeq: _detIdSeq, abTurn: _autoBattleSeqTurn, abSeq: _autoBattleSeq, dipSeq: _dipUnitSeq }),
@@ -52169,7 +52209,8 @@ async function boot(): Promise<void> {
         const loadParams = newGameParamsForLoad(saved);
         const loadSeed = saved.seed ?? loadParams?.seed ?? _gameSeed;
 
-        const mustRebuildMap = loadNeedsMapRebuild(loadParams, loadSeed, fromInGamePause);
+        const mustRebuildMap = loadNeedsMapRebuild(loadParams, loadSeed, fromInGamePause)
+          || (fromInGamePause && !!loadParams && liveMapDiffersFromSave(saved));
 
         if (!mustRebuildMap && loadParams) {
           applyMenuParams({ ...loadParams, seed: loadSeed });
