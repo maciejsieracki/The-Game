@@ -80,11 +80,20 @@ const SOUTH_BELT_EXTRA_ROWS = 3;
 function southBeltStart(H) {
   return H - b - M.earthSouthOceanRows(H) - SOUTH_BELT_EXTRA_ROWS;
 }
+// Najwyższy wiersz pasa (start) przecina też ląd Ameryki Południowej (~27–29% szerokości)
+// i Nowej Zelandii (~90%) — to nie Antarktyda. Dlatego w tym wierszu liczy się tylko środkowe
+// pasmo 35–65% szerokości (miejsce Antarktydy); pozostałe wiersze pasa — pełna szerokość.
+function inSouthBelt(q, r, Wd, Hd) {
+  const start = southBeltStart(Hd);
+  if (r < start || r >= Hd - b || q < b || q >= Wd - b) return false;
+  if (r === start) return q >= Math.floor(Wd * 0.35) && q < Math.floor(Wd * 0.65);
+  return true;
+}
 function southBeltLandMask(Wd, Hd) {
   let n = 0;
   for (let r = southBeltStart(Hd); r < Hd - b; r++) {
     for (let q = b; q < Wd - b; q++) {
-      if (M.earthTemplateLandAt(q, r, Wd, Hd) > 0) n++;
+      if (inSouthBelt(q, r, Wd, Hd) && M.earthTemplateLandAt(q, r, Wd, Hd) > 0) n++;
     }
   }
   return n;
@@ -92,11 +101,10 @@ function southBeltLandMask(Wd, Hd) {
 function southBeltLandTerrain(m) {
   const Hm = m.wysokoscR;
   const Wm = m.szerokoscQ;
-  const start = southBeltStart(Hm);
   let n = 0;
   for (const key of Object.keys(m.hexes)) {
     const [q, r] = key.split(',').map(Number);
-    if (r < start || r >= Hm - b || q < b || q >= Wm - b) continue;
+    if (!inSouthBelt(q, r, Wm, Hm)) continue;
     const tb = m.hexes[key].terenBazowy;
     if (tb !== 'morze' && tb !== 'plytkie_morze') n++;
   }
