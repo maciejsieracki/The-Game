@@ -1,0 +1,15 @@
+{
+ "variant": "on",
+ "seed": 4242,
+ "lastTurn": 34,
+ "counters": {
+  "gateBypass": 1,
+  "battlesAuto": 0,
+  "offersRejected": 2,
+  "forcedPeaceAccepted": 0
+ },
+ "done": false,
+ "stopReason": null,
+ "roundTrip": null,
+ "errors": []
+}
