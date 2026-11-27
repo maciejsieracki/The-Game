@@ -111,3 +111,25 @@ Testy z próbki uruchomiono z domyślnymi ustawieniami harnessu (seed 11 / 4242 
 - Ekran powitalny pojawia się przy pierwszym kontakcie z cywilizacją. Testy w próbce mogły zakończyć się przed tym kontaktem. Zero trafień nie dowodzi, że ekran nie blokuje testów w późniejszych turach. NIE ZMIERZONO dla tur po pierwszym kontakcie.
 - Pozostałe ok. 340 testów z listy kandydatów NIE ZMIERZONO (poza próbką).
 - Kompilacja: `node ./node_modules/vite/bin/vite.js build` z `gra/`, wyjście poza repo. Build bazowy znajduje się w katalogu roboczym poza repo i został usunięty po pomiarze.
+
+## 7. Obrona Operatora (runda 2) — pomiar sondą na żywym buildzie
+
+Runda 2 odpowiada na zarzuty Evaluatora (`30-obrona-claude.md`). Pomiar wykonany sondami w `dyspozycje/autobot/runs/R-WEB-LIVE-TESTS-WELCOME-GATE-Q1/probe/` (surowe wyjścia `out-*.txt`). Build bazowy 6319eaf66 (`civTest=1`, `civSeed=4242`, mapa Maly, 15 cywilizacji, 2 państwa-miasta, ustawienia startGame domyślne). Przeglądarka: Chromium `/opt/pw-browsers/chromium`.
+
+**Korekta wcześniejszego wniosku (sekcja 6 powyżej jest nieaktualna w tym punkcie):** ekran powitalny NIE pojawia się dopiero przy pierwszym kontakcie. Na tym seedzie jest OTWARTY zaraz po `startGame` (tura 1) i zasłania przycisk „Zakończ turę” (`elementFromPoint` w środku przycisku trafia w `#civ-welcome-screen-root`).
+
+| Sonda | Kroki | Wynik |
+|---|---|---|
+| `probe-welcome.cjs` (sample co turę) | start, 8× endTurn, bez helperów | ekran otwarty w turach 1–9; przycisk zasłonięty w każdej próbce; tura nie rośnie (1 → 1) |
+| `probe-gate.cjs` mode `bare` | klik „Zakończ turę” bez helperów, 3× endTurn hakiem | klik: timeout 4 s (przycisk `aria-disabled=true`); tura 1 → 1 po 3 endTurn |
+| `probe-gate.cjs` mode `gateonly` | bramka naprawiona (`prepareEndTurnGate`), ekran NIE zamknięty | klik: timeout 4 s, przycisk `aria-disabled=false`, ekran zasłania (MUTANT: helper bez zamknięcia ekranu → test czerwony) |
+| `probe-gate.cjs` mode `full` | `closeCivWelcome` + `prepareEndTurnGate` + klik | klik: CLICK-OK, tura 2; kolejne endTurn: 3, 4, 5 |
+
+Wnioski z tej sondy:
+- Test, który klika „Zakończ turę” bez zamknięcia ekranu powitalnego i bez bramki, jest czerwony (klik nie przechodzi). Test z obydwoma helperami jest zielony. To jest mutacja z dispatchu, wykonana na żywym buildzie (nie na pliku testu).
+- Bramka tury na tym seedzie blokuje turę 1 (`skarbiec` prognoza −2, `canEnd=false`). Hak `endTurn` bez `prepareEndTurnGate` NIE przesuwa tury — to jest zgodne z objawem „endTurn nie ustabilizował się” dla części testów, ale NIE ZMIERZONO, czy dotyczy to testów `playtest=mapa` (np. `forced-war-*`, `era-change-toast`), które startują inaczej.
+- Ekran powitalny nie blokuje hooka `endTurn` (tura rośnie przy otwartym ekranie w trybie `gateonly`), blokuje wyłącznie kliki.
+
+Czego NIE zrobiono w tej rundzie: nie przepięto żadnego testu `*-test.cjs` na helper i nie uruchomiono ponownie 26 testów z próbki; testy `end-turn-gate-live-test`, `end-turn-block-event-live-test`, `forced-war-*`, `era-change-toast`, `diplo-truce`, `sidepanel-diplo` NIE ZMIERZONO w tej rundzie. Liczby z sekcji 2 pozostają wynikiem rundy 1, bez potwierdzenia surowymi logami.
+
+Ustawienia maksymalne: sondy używają domyślnych parametrów `startGame` (seed, Maly, 15 cywilizacji, 2 państwa-miasta). Poziom maksymalny suwaków/trudności NIEJEDNOZNACZNY (nie wystawiony w tym haku) — NIE ZMIERZONO na poziomie maksymalnym.

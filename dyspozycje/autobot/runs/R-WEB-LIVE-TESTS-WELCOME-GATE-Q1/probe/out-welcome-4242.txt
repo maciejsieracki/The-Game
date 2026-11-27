@@ -1,0 +1,10 @@
+{"label":"after-start","welcomeOpen":true,"btnFound":true,"btnHit":false,"covered":"welcome","canEnd":false,"turn":1,"endInProgress":false}
+{"label":"after-end-1","welcomeOpen":true,"btnFound":true,"btnHit":false,"covered":"welcome","canEnd":false,"turn":1,"endInProgress":false}
+{"label":"after-end-2","welcomeOpen":true,"btnFound":true,"btnHit":false,"covered":"welcome","canEnd":false,"turn":1,"endInProgress":false}
+{"label":"after-end-3","welcomeOpen":true,"btnFound":true,"btnHit":false,"covered":"welcome","canEnd":false,"turn":1,"endInProgress":false}
+{"label":"after-end-4","welcomeOpen":true,"btnFound":true,"btnHit":false,"covered":"welcome","canEnd":false,"turn":1,"endInProgress":false}
+{"label":"after-end-5","welcomeOpen":true,"btnFound":true,"btnHit":false,"covered":"welcome","canEnd":false,"turn":1,"endInProgress":false}
+{"label":"after-end-6","welcomeOpen":true,"btnFound":true,"btnHit":false,"covered":"welcome","canEnd":false,"turn":1,"endInProgress":false}
+{"label":"after-end-7","welcomeOpen":true,"btnFound":true,"btnHit":false,"covered":"welcome","canEnd":false,"turn":1,"endInProgress":false}
+{"label":"after-end-8","welcomeOpen":true,"btnFound":true,"btnHit":false,"covered":"welcome","canEnd":false,"turn":1,"endInProgress":false}
+DONE pageerrors=0
