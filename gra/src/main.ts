@@ -31989,6 +31989,22 @@ async function boot(): Promise<void> {
         updateDiplomacyPanel();
       },
     };
+    // R-WEB-AI-CAPITAL-REBEL-EFFECTS-Q1 (CAPREBEL): WYŁĄCZNIE ODCZYT (zero zapisu stanu gry).
+    // Odczyt budynków miasta (cityBuilt) i Mennicy osieroconej/aktywnej dla pomiaru skutków buntu stolicy AI.
+    (window as any).__capRebelReadTestDebug = {
+      buildingsOf: (cityId: string): string[] => (cityBuilt.get(cityId) ?? []).slice(),
+      ownerMennicaInCapital: (ownerId: number): boolean => {
+        const capId = capitalCityIdForOwner(ownerId);
+        return !!capId && (cityBuilt.get(capId) ?? []).includes('mennica');
+      },
+      ownerOrphanMennica: (ownerId: number): string[] => {
+        const capId = capitalCityIdForOwner(ownerId);
+        return cities.filter(c => c.ownerId === ownerId && c.id !== capId && (cityBuilt.get(c.id) ?? []).includes('mennica')).map(c => c.id);
+      },
+      cityIdsWithMennicaAnyOwner: (): Array<{ cityId: string; ownerId: number }> =>
+        cities.filter(c => (cityBuilt.get(c.id) ?? []).includes('mennica')).map(c => ({ cityId: c.id, ownerId: c.ownerId })),
+    };
+
     (window as any).__cityCessionTestDebug = {
       cityOwner: (cityId: string): number | null => cities.find(c => c.id === cityId)?.ownerId ?? null,
       ownerCityIds: (ownerId: number): string[] => cities.filter(c => c.ownerId === ownerId).map(c => c.id),
