@@ -1506,7 +1506,7 @@ import {
 } from './ui/victoryScreen';
 import type { VictoryScreenData } from './ui/victoryScreen';
 import {
-  loadBarbParams, barbariansActive, barbariansGraceActive, loadBarbGraceTurns, spawnCamps, tickCamps, decideBarbarianMoves,
+  loadBarbParams, barbariansActive, barbariansGraceBlocksTurnEnd, loadBarbGraceTurns, spawnCamps, tickCamps, decideBarbarianMoves,
   scaleBarbParamsForLevel, pickBronzeBarbUnit, isCampRaidReady, migrateBarbariansLevel,
   seaPeoplesBoostActive, boostBarbParamsForSeaPeoples, shouldEmitSeaPeoplesEpochNotice,
   BARBARIAN_OWNER_ID, isBarbarian,
@@ -49140,7 +49140,8 @@ async function boot(): Promise<void> {
           const barbLevel = migrateBarbariansLevel(_menuAdvanced?.barbariansLevel);
           const barbLive = scaleBarbParamsForLevel(barbParams, barbLevel, _menuDifficulty);
           // R-WEB-EARLY-GRACE-15-IMPL-Q1: w oknie łaski (tury 1..barbGraceTurns) barbarzyńcy nie działają wcale.
-          if (barbariansActive(turn, barbLive, player.era, barbLevel) && !barbariansGraceActive(turn, barbGraceTurns)) {
+          // Faza domyka turę N (turn = N+1 po turn++) -- okno liczone dla N, jak utrzymanie.
+          if (barbariansActive(turn, barbLive, player.era, barbLevel) && !barbariansGraceBlocksTurnEnd(turn, barbGraceTurns)) {
             const seaBarbParams = loadSeaBarbParams(data, _menuDifficulty);
 
             // R-LUDY-MORZA-Q1=A: w Brązie zero obozów naval — usuń stare z save.

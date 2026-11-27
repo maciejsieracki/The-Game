@@ -105,9 +105,33 @@ t('barbariansActive nie zmienione (startTurn nadal gate; okno jest osobna bramka
   assert.equal(M.barbariansActive(P.startTurn - 1, P), false);
 });
 
+t('barbariansGraceBlocksTurnEnd: domkniecie tury 15 (turn=16 po turn++) = zablokowane; 16 = nie', () => {
+  assert.equal(M.barbariansGraceBlocksTurnEnd(2, GRACE), true, 'domkniecie tury 1');
+  assert.equal(M.barbariansGraceBlocksTurnEnd(16, GRACE), true, 'domkniecie tury 15');
+  assert.equal(M.barbariansGraceBlocksTurnEnd(17, GRACE), false, 'domkniecie tury 16 (od 16 jak dzis)');
+});
+t('barbariansGraceBlocksTurnEnd spojne z utrzymaniem: ta sama tura domykana (N = turn-1)', () => {
+  for (let n = 1; n <= 20; n++) {
+    assert.equal(M.barbariansGraceBlocksTurnEnd(n + 1, GRACE), M.playerUnitUpkeepGraceActive(n, true, GRACE), 'tura domykana ' + n);
+  }
+});
+for (const diff of DIFFS) {
+  t(`okno barbarzyncow na poziomie ${diff}: dane (15) i domkniecie tur 1..15 blokowane`, () => {
+    const dataDiff = { aiParams: require(path.join(GRA, 'data/ai-params.json')) };
+    assert.equal(M.loadBarbGraceTurns(dataDiff), 15, diff);
+    for (let n = 1; n <= GRACE; n++) assert.equal(M.barbariansGraceBlocksTurnEnd(n + 1, M.loadBarbGraceTurns(dataDiff)), true, diff + ' tura ' + n);
+    assert.equal(M.barbariansGraceBlocksTurnEnd(GRACE + 2, M.loadBarbGraceTurns(dataDiff)), false, diff + ' tura 16');
+  });
+}
+t('dane: klucze okna w ai-params.json = 15 (pin wartosci, nie tylko fallback)', () => {
+  const ai = require(path.join(GRA, 'data/ai-params.json'));
+  assert.equal(ai[M.BARBARIAN_GRACE_TURNS_KEY] && ai[M.BARBARIAN_GRACE_TURNS_KEY].wartosc, 15, 'barbarzyncy');
+  assert.equal(ai[M.PLAYER_UPKEEP_GRACE_TURNS_KEY] && ai[M.PLAYER_UPKEEP_GRACE_TURNS_KEY].wartosc, 15, 'utrzymanie gracza');
+});
+
 t('wiring: main.ts bramka tury barbarzyncow zawiera okno laski (pin tekstowy)', () => {
   const src = fs.readFileSync(path.join(GRA, 'src/main.ts'), 'utf8');
-  assert.ok(src.includes('&& !barbariansGraceActive(turn, barbGraceTurns)'), 'brak bramki w main.ts');
+  assert.ok(src.includes('&& !barbariansGraceBlocksTurnEnd(turn, barbGraceTurns)'), 'brak bramki w main.ts');
   assert.ok(src.includes('playerGraceTurns: (aiParamsRaw as Record<string, { wartosc?: number }>)[PLAYER_UPKEEP_GRACE_TURNS_KEY]?.wartosc ?? PLAYER_UPKEEP_GRACE_TURNS_DEFAULT'), 'brak wiringu utrzymania gracza');
 });
 
@@ -159,8 +183,8 @@ t('kontekst bez playerGraceTurns: gracz tura 1 nie dostaje zera (regresja wylacz
 });
 
 const goldOf = (r) => (r && typeof r.utrzymanieRazem === 'number' ? r.utrzymanieRazem : NaN);
-const previewFor = (ownerId, turn, pace) => withCtx(ctx(turn), () =>
-  M.previewTurn(ownerId, [], data, 'normal', new Map(), mkUnits(ownerId, 3), 1, new Set(), undefined, undefined, new Map(), pace));
+const previewFor = (ownerId, turn, pace, diff = 'normal') => withCtx(ctx(turn), () =>
+  M.previewTurn(ownerId, [], data, diff, new Map(), mkUnits(ownerId, 3), 1, new Set(), undefined, undefined, new Map(), pace));
 const foodFor = (ownerId, turn, pace) => withCtx(ctx(turn), () =>
   M.militaryFoodConsumptionWithSpichlerz(mkUnits(ownerId, 3), ownerId, upkeepParams, foodTbl, { kosztJednostekPace: pace }));
 const resFor = (ownerId, turn, pace) => withCtx(ctx(turn), () => {
@@ -180,11 +204,22 @@ t('zywnosc jednostek gracza: tura 1 i 15 = 0 (wysoki), tura 16 > 0', () => {
   assert.equal(foodFor(HUMAN, 15, 'wysoki'), 0);
   assert.ok(foodFor(HUMAN, 16, 'wysoki') > 0, 'food t16');
 });
-t('surowce utrzymania gracza: tura 1 i 15 = 0, tura 16 >= 0 (liczone)', () => {
+t('surowce utrzymania gracza: tura 1 i 15 = 0, tura 16 > 0 (liczone, nie tylko >= 0)', () => {
   assert.equal(resFor(HUMAN, 1, 'wysoki'), 0);
   assert.equal(resFor(HUMAN, 15, 'wysoki'), 0);
-  assert.ok(resFor(HUMAN, 16, 'wysoki') >= 0);
+  assert.ok(resFor(HUMAN, 16, 'wysoki') > 0, 'surowce t16 = ' + resFor(HUMAN, 16, 'wysoki'));
 });
+for (const diff of DIFFS) {
+  t(`zloto/zywnosc/surowce gracza na poziomie ${diff}: t1 i t15 = 0, t16 > 0`, () => {
+    assert.equal(goldOf(previewFor(HUMAN, 1, 'wysoki', diff)), 0, 'gold t1');
+    assert.equal(goldOf(previewFor(HUMAN, 15, 'wysoki', diff)), 0, 'gold t15');
+    assert.ok(goldOf(previewFor(HUMAN, 16, 'wysoki', diff)) > 0, 'gold t16');
+    assert.equal(foodFor(HUMAN, 15, 'wysoki'), 0, 'food t15');
+    assert.ok(foodFor(HUMAN, 16, 'wysoki') > 0, 'food t16');
+    assert.equal(resFor(HUMAN, 15, 'wysoki'), 0, 'res t15');
+    assert.ok(resFor(HUMAN, 16, 'wysoki') > 0, 'res t16');
+  });
+}
 t('AI w turze 1 nadal bez utrzymania (FALA 890 bez zmian)', () => {
   assert.equal(foodFor(AI, 1, 'wysoki'), 0);
 });

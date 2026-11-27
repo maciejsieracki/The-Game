@@ -15,12 +15,20 @@ Decyzja właściciela: pytanie R-WEB-EARLY-DEFENSE-START-Q41, odpowiedź A + dop
    - Najmniej inwazyjne miejsce: bramka wejścia całej tury barbarzyńców w pętli tury, nie wewnątrz logiki ruchu.
      Cały blok `if (barbariansActive(...))` w `gra/src/main.ts` (ok. linia 49143) obejmuje spawn obozów, tick obozów,
      spawny rajdów morskich, garnizony miast barbarzyńskich i `decideBarbarianMoves`. Dodany warunek
-     `&& !barbariansGraceActive(turn, barbGraceTurns)`.
+     `&& !barbariansGraceBlocksTurnEnd(turn, barbGraceTurns)`.
+     Licznik `turn` jest już N+1 (po `turn++`), a faza barbarzyńców domyka turę N, więc
+     `barbariansGraceBlocksTurnEnd(t, g)` sprawdza `barbariansGraceActive(t - 1, g)`. Tak samo liczy się utrzymanie
+     (`aiUpkeepTickTurnOverride = N`). Bez tej korekty barbarzyńcy działali raz po domknięciu tury 15
+     (gra w turze 16 na liczniku, bramka wyłączona). Pomiar: test `barbariansGraceBlocksTurnEnd` (domknięcie 16 = blok,
+     domknięcie 17 = brak bloku) i mutacja `turnAfterIncrement` zamiast `turnAfterIncrement - 1` = 5 czerwonych.
    - `gra/src/game/barbarians.ts`: `barbariansGraceActive(turn, graceTurns)` (ok. linia 696), `BARBARIAN_GRACE_TURNS_KEY`,
      `BARBARIAN_GRACE_TURNS_DEFAULT = 15`, `loadBarbGraceTurns(data)` (ok. linie 702-707).
    - `barbariansActive` i jego piny w `barbarians-test.cjs` nie zmienione (okno jest osobną bramką).
    - Skutek: w turach 1..15 nie ma spawnu obozów ani ruchu barbarzyńców. Obozy mogą istnieć, ale stoją bez tury.
      Od tury 16 działa jak dotąd.
+   - ZAŁOŻENIE (do decyzji orkiestratora): bramka blokuje cały blok, więc także spawn i tick obozów. Pierwszy
+     spawn obozu możliwy jest dopiero przy domknięciu tury 16. Dispatch mówił „mogą powstawać (spawn)”; wybór
+     najmniej inwazyjnego punktu z dispatchu nie pozwala zostawić spawnu przy blokadzie ruchu bez przepisania bloku.
    - Parametr w danych: `gra/data/ai-params.json`, klucz `barbarzyncy_okno_laski_tury` = 15.
 
 3. **Utrzymanie jednostek gracza-człowieka = 0 w turach 1..15.**
@@ -44,7 +52,8 @@ Decyzja właściciela: pytanie R-WEB-EARLY-DEFENSE-START-Q41, odpowiedź A + dop
 - gra/src/main.ts (import, wiring kontekstu, bramka tury barbarzyńców)
 - gra/data/ai-params.json (2 klucze)
 - gra/tools/ai-difficulty-bonus-test.cjs (pin: `hard` 0 -> 1, wprost z decyzji)
-- gra/tools/early-grace-15-test.cjs (nowy, 24 testy)
+- gra/tools/early-grace-15-test.cjs (nowy, 33 testy, 33/0 po rundzie 2; mutacje rundy 2: wartość
+  klucza w ai-params.json 15→5 (czerwone), domknięcie tury N+1 zamiast N (5 czerwonych); mutacje M1–M3 z rundy 1 nie powtórzone)
 
 ## Testy
 
@@ -82,9 +91,8 @@ Deterministyczne testy (node, bez przeglądarki), wyniki z surowego wyjścia:
     testami bramkowymi i nie były uruchamiane w pełni.
 
 Uwaga środowiskowa: w sandboxie brakowało `node_modules` (three, esbuild, jsdom); zainstalowano je poza repo
-(katalog scratchpad) i podlinkowano do worktree. `tsc --noEmit` (sandboxowy typescript 6.0.2, z `--ignoreDeprecations 6.0`)
-zwraca 177 błędów, wszystkie w plikach nietkniętych tym tematem (typy `three`, implicit any w main.ts). Nie zmierzono
-bazy na czystym origin/main, więc nie stwierdzono różnicy; w zmienionych plikach nie ma błędów.
+(katalog scratchpad) i podlinkowano do worktree. `tsc --noEmit` w wersji z `gra/package-lock.json` (typescript 5.9.3) zwraca 0 błędów (korekta: wcześniejszy
+wynik 177 dotyczył sandboxowego typescript 6.0.2 i nie jest miarodajny).
 
 ## Pomiar na żywo: NIE ZMIERZONO
 - Chromium / pasywny gracz na ziarnach 4242 i 778899 na poziomie maksymalnym: NIE ZMIERZONO (brak czasu w tej rundzie).
@@ -94,7 +102,10 @@ bazy na czystym origin/main, więc nie stwierdzono różnicy; w zmienionych plik
   utrzymanie gracza w t1 wynosi 0 (złoto, żywność, surowce) dla armii 3 jednostek przy Wysoki; oznacza to, że
   darmowe utrzymanie zmienia bilans t1 w stronę dodatnią. Czy blokada tury w t1 znika, nie sprawdzono.
 - Wpływ na AI (barbarzyńcy nie atakują AI w t1–15, AI rozwija się szybciej; AIEMPTY lub miasta AI w t30): NIE ZMIERZONO.
-- Aktualizacja tekstów wiki/tooltip "Barbarzyńcy": NIE SPRAWDZONO (nie wykonano przeglądu tekstów).
+- Aktualizacja tekstów wiki/tooltip "Barbarzyńcy": NIE SPRAWDZONO (nie wykonano przeglądu tekstów; decyzja: tylko
+  jeśli tekst wprost przeczy regule, zadanie dla kolejnej rundy).
+- Powód braku pomiaru na żywo w tej rundzie: środowisko ma Chrome (/usr/bin/google-chrome), ale wymagany bieg
+  2 ziaren × 16+ tur na maksimum nie został wykonany w czasie rundy 2; wynik zostaje NIE ZMIERZONO.
 
 ## Zakres poza tematem
 - Zakup jednostek nie zmieniony (zgodnie z decyzją).
