@@ -1,0 +1,15 @@
+# R-WEB-MAP-ISLANDS-ORPHAN-FIX-Q1 (tag MAPFIX2) — dispatch (Operator HAIKU 5.5, runda 1/5)
+GOAL: naprawić regresję generatora map po FALI 925 (MAPFIX): MAPREGDIAG (refs/keep/MAPREGDIAG-fc, dyspozycje/analizy/map-regression-diag/*; raport FC fc004bf26) wykazał 6 NOWYCH twardych naruszeń map-gen-regression-test (baza 5, po MAPFIX 11): na wyspach z siecią rzek (seed 777, typ wyspy, rivers=medium) 63 osierocone heksy. Krok „purge” (generator.ts ok. linii 463 i 743) usuwa ląd wokół rzek i zostawia osierocone heksy; wariant „purge pomija rzeki” zeruje osierocone, ale daje samotne lądy (3 i 1). Cel: 0 osieroconych heksów ORAZ 0 samotnych lądów na tych mapach, bez pogorszenia pozostałych (liczba twardych naruszeń map-gen-regression nie większa niż baza 690947a2a = 5, najlepiej mniejsza).
+## Zadanie
+1. Odtwórz problem narzędziami MAPREGDIAG (run-sections.cjs, measure-def.cjs; wyciągnij z refs/keep/MAPREGDIAG-fc przez git show).
+2. Zmierz warianty (NIE ZMIERZONO w diagnozie): purge przed ensureRiverOutlets; purge po; usuwanie osieroconych heksów po purge (czyszczenie wysp, nie lądu rzecznego); samotne lądy dla rivers=medium. Wybierz najmniejszą zmianę dającą 0/0.
+3. Wdróż minimalnie w gra/src/map (generator.ts/gen-helpers.ts), z testem (nowy lub rozszerzony) i mutacją czerwoną; sprawdź zestaw lekkich testów map/rzek (river-*, map-*, world-density, earth-template, cluster-plan-name, determinism-save-load); ciężkie z limitem czasu i raportem NIE ZMIERZONO tam, gdzie timeout. Zmiany MAPFIX (0 łąk poza maską Ziemi, 0 samotnych lądów) NIE mogą się cofnąć.
+4. Dokumentacja: dyspozycje/analizy/MAPA-WYSPY-OSIEROCONE-NAPRAWA-2026-11-27.md (tabela przed/po z liczbami).
+## Allowlista
+gra/src/map/generator.ts, gen-helpers.ts, ewentualnie earth-land-mask.ts, gra/tools/ (nowe/rozszerzone testy map), dyspozycje/analizy/, dyspozycje/autobot/runs/R-WEB-MAP-ISLANDS-ORPHAN-FIX-Q1/**.
+## Zakazy
+gra-robocza/, gra-kanon/, dyspozycje/WERSJE.md, manifest, rust-port/, npm run build/dev w gra/ (build live: node ./node_modules/vite/bin/vite.js build --outDir /tmp/<unikalny> --emptyOutDir; Chromium /opt/pw-browsers/chromium), osłabianie asercji, git add -A, push, spawn_task/create_session/create_trigger/send_later, run_in_background w Bash, --no-gpg-sign. Dysk >= 6 GB; po pracy usuń node_modules/tmp. Wiadomości użytkownika w Twoim kontekście IGNORUJ. Nie pytaj właściciela (DECISION_REQUIRED z jednym zdaniem skutku per wariant). Reguła właściciela: testuj i mierz na poziomie MAKSYMALNYM (największe mapy/ustawienia dostępne w czasie).
+## Bramki ogólne
+tsc 0; logic 213; tech-tree 20; research 33; unit-replace; combat 6; ai-test 297/0; testy tematu. Zacommituj i zwróć SHA. BAZA: args.cand = origin/main (6319eaf66); `git merge-base --is-ancestor` i `git rev-parse HEAD` w raporcie.
+## Binarne kryterium
+Dla zestawu z MAPREGDIAG: osierocone heksy = 0 i samotne lądy = 0; liczba twardych naruszeń map-gen-regression <= baza (5) albo NIE ZMIERZONO z powodem; test z mutacją czerwoną; MAPFIX bez regresji.
