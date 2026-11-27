@@ -1,5 +1,5 @@
 'use strict';
-// R-WEB-EARLY-DEFENSE-REALISTIC-Q1 (tag REALDEF), runda 3: INWENTARZ EKONOMII STARTU gracza na MAKSIMUM
+// R-WEB-EARLY-DEFENSE-MAX-GAPS-Q1 (tag REALDEF5, runda obrony 1): luki REALDEF4 na MAKSIMUM. Baza: REALDEF r3 (INWENTARZ EKONOMII STARTU gracza na MAKSIMUM)
 // (Trudny / dyplomacja trudna / Wysoki x4 / kultura trudny / barbarzyncy TRUDNY / Maly / Kontynenty), zywa gra w Chromium.
 //
 // Polityki:
@@ -11,6 +11,8 @@
 //         przyciskiem „Wróć na mapę”. Zadnych haków tworzacych jednostki ani zmieniajacych skarb/zasoby/manpower.
 //         Panel NIE jest otwierany w turach, w ktorych zakup nie jest mozliwy (brak czasu-rzeczywistego/bezczynnosci).
 //
+//  - p3 = jak p1, ale w turze 1 suwak Skarb ustawiany fizycznym kliknieciem myszy (page.mouse) w prawy kraniec suwaka (bez haku setTaxSplit/dispatchEvent).
+//  - p4 = jak p3, ale 'Zakoncz ture' w kazdej turze to fizyczny klik przycisku button.end-turn[data-end] (bez __civTest.endTurn), z fallbackiem na hak tylko gdy klik sie nie powiedzie (flaga endClick w wierszu).
 //  - p2 = jak p1, ale dodatkowo w turze 1 gracz przesuwa suwak podzialu Handlu na 100% Pieniadz (ta sama funkcja co suwak
 //         w UI: applyPodzialHandluGracza) -- poziom MAKSYMALNY dzwigni dochodu Skarbu (regula „testuj na maksimum”).
 //  - dopen / dclose / didle = DIAGNOZA artefaktu `owner=null` z r2 (pasywne jak p0 + jedna zmiana harnessu):
@@ -24,7 +26,8 @@
 //                 (= liczba ukonczonych tur + 1, czyli pierwsza tura, w ktorej gracz widzi stan z utracone miastem).
 //   Wiersz „turns[i]” opisuje stan na POCZATKU tury turn=i+1 (przed jakakolwiek akcja gracza w tej turze).
 //
-// Uruchomienie (z gra/): node tools/realdef-econ-live.cjs <katalog_poza_repo> <p0|p1|p2|dopen|dclose|didle> <seed> [tury=12] [run=1]
+// Uruchomienie (z gra/): node tools/realdef-max-gaps.cjs <katalog_poza_repo> <p0|p1|p2|p3|p4|dopen|dclose|didle> <seed> [tury=20] [run=1]
+// Uwaga (REALDEF5): p2 uzywa haku setTaxSplit (zakazany w pomiarze) -- NIE uzywac do wynikow; wyniki REALDEF5 = p3/p4.
 // Wynik: wiersz w <katalog>/econ.jsonl (jeden na przebieg) + log <katalog>/econ-<pol>-s<seed>-r<run>.txt (nie commitowany).
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -41,9 +44,9 @@ const GRA = path.resolve(__dirname, '..');
 const OUT = path.resolve(process.argv[2] || '/nonexistent-out');
 const POLICY = process.argv[3];
 const SEED = parseInt(process.argv[4] || '4242', 10);
-const TURNS = parseInt(process.argv[5] || '12', 10);
+const TURNS = parseInt(process.argv[5] || '20', 10);
 const RUN = parseInt(process.argv[6] || '1', 10);
-if (!process.argv[2] || OUT.startsWith(path.resolve(GRA, '..')) || !['p0', 'p1', 'p2', 'p3', 'dopen', 'dclose', 'didle'].includes(POLICY) || !Number.isFinite(SEED)) {
+if (!process.argv[2] || OUT.startsWith(path.resolve(GRA, '..')) || !['p0', 'p1', 'p2', 'p3', 'p4', 'dopen', 'dclose', 'didle'].includes(POLICY) || !Number.isFinite(SEED)) {
   console.error('Uzycie: <katalog_poza_repo> <p0|p1|p2|p3|dopen|dclose|didle> <seed> [tury=12] [run=1]'); process.exit(2);
 }
 const LIVE_TOOL = path.join(GRA, 'tools', 'test-hook-setcitylimit-live-bundle.cjs');
@@ -119,8 +122,20 @@ async function clearBattles(page) {
 }
 
 // Pelny odczyt stanu (WYLACZNIE odczyt): ekonomia, zasoby, wiersze rekrutacji, produkcja miasta, zagrozenie.
+function forestCount(cq, cr, rad) {
+  let n = 0;
+  for (let dq = -rad; dq <= rad; dq++) {
+    for (let dr = Math.max(-rad, -dq - rad); dr <= Math.min(rad, -dq + rad); dr++) {
+      const h = window.__cityForestTestDebug.hexNakladka(cq + dq, cr + dr);
+      if (h !== null && h === window.__cityForestTestDebug.lasValue()) n++;
+    }
+  }
+  return n;
+}
+
 async function readState(page, cityId) {
-  return page.evaluate((id) => {
+  return page.evaluate(({ id, forestSrc }) => {
+    const forestCount = new Function('return ' + forestSrc)();
     const gi = window.__nnsMeasureDebug.gateInfo();
     const all = window.__defeatTestDebug.cityThreatProbe();
     const c = all.find(x => x.id === id);
@@ -138,9 +153,12 @@ async function readState(page, cityId) {
       owner: c ? c.ownerId : null, cityQ: c ? c.q : null, cityR: c ? c.r : null,
       playerOnHex: c ? c.playerOnHex : [],
       foreignNear: c ? c.foreignNear : [],
+      forestR5: c ? forestCount(c.q, c.r, 5) : null,
+      forestR3: c ? forestCount(c.q, c.r, 3) : null,
+      taxSplit: window.__nnsMeasureDebug.getTaxSplit(),
       battle: window.__aiTradeWiringTestDebug.battleState(),
     };
-  }, cityId);
+  }, { id: cityId, forestSrc: forestCount.toString() });
 }
 
 function affordability(st) {
@@ -223,6 +241,8 @@ async function main() {
         playerMil: st.playerOnHex.filter(u => !MILITARY_EXCL.has(String(u.typeId).toLowerCase()) && u.category !== 'zwiadowca').length,
         playerOnHex: st.playerOnHex.map(u => u.typeId), recruitQueue: st.recruitQueue,
         foreignNear: barb.map(u => u.owner + ':' + u.typeId), barbMinDist: dists.length ? Math.min(...dists) : null,
+        barbByDist: barb.map((u, k) => ({ typeId: u.typeId, q: u.q, r: u.r, dist: dists[k] })),
+        forestR5: st.forestR5, forestR3: st.forestR3, taxSplit: st.taxSplit,
         canEnd: st.canEnd, gateBlock: st.gateBlock,
       };
       turns.push(rec);
@@ -235,20 +255,26 @@ async function main() {
         logLine({ kind: 'p2-tax', ...taxProbe });
       }
       // P3 (REALDEF5): podatek 100% na Skarb KLIKNIETYM suwakiem w panelu miasta (realny event 'input' suwaka, bez haku setTaxSplit).
-      if (POLICY === 'p3' && i === 0) {
+      if ((POLICY === 'p3' || POLICY === 'p4') && i === 0) {
         await page.evaluate((id) => window.__hotSeatTestDebug.openCityPanelForTest(id), cityId);
         await page.waitForTimeout(400);
         const tabOk = await page.evaluate(() => { const b = document.querySelector('#cs-icon-rail-right button[aria-label*="suwaki Skarb"]'); if (!b) return false; b.click(); return true; });
         await page.waitForTimeout(400);
+        // REALDEF5 obrona (zarzut 5): fizyczny klik myszą w prawy kraniec suwaka (bez dispatchEvent i bez haku).
         const sl = await page.evaluate(() => {
           const inp = document.querySelector('.handel-w4-sliders input[type=range]');
           if (!inp) return { ok: false, why: 'brak suwaka Skarb w .handel-w4-sliders' };
           if (inp.disabled) return { ok: false, why: 'suwak wylaczony' };
-          const before = inp.value;
-          inp.value = '100';
-          inp.dispatchEvent(new Event('input', { bubbles: true }));
-          return { ok: true, before, max: inp.max };
+          inp.scrollIntoView({ block: 'center' });
+          const r = inp.getBoundingClientRect();
+          return { ok: true, before: inp.value, max: inp.max, min: inp.min, x: r.right - 2, y: r.top + r.height / 2, w: r.width };
         });
+        if (sl.ok) {
+          await page.mouse.click(sl.x, sl.y);
+          const after = await page.evaluate(() => document.querySelector('.handel-w4-sliders input[type=range]').value);
+          sl.afterClick = after;
+          sl.clickMethod = 'page.mouse.click na prawy kraniec suwaka';
+        }
         await page.waitForTimeout(300);
         const gi2 = await page.evaluate(() => window.__nnsMeasureDebug.gateInfo());
         const split = await page.evaluate(() => window.__nnsMeasureDebug.getTaxSplit());
@@ -273,7 +299,7 @@ async function main() {
         }
       }
       // P1/P2: dokladnie jedna proba zakupu REALNA sciezka UI, wylacznie gdy odczyt pokazuje, ze gracza STAC.
-      if ((POLICY === 'p1' || POLICY === 'p2' || POLICY === 'p3') && purchaseTurn === null && af.both) {
+      if ((POLICY === 'p1' || POLICY === 'p2' || POLICY === 'p3' || POLICY === 'p4') && purchaseTurn === null && af.both) {
         await page.evaluate((id) => window.__hotSeatTestDebug.openCityPanelForTest(id), cityId);
         await page.waitForTimeout(400);
         const tab = await page.evaluate(() => { const t = document.querySelector('button[aria-label="Jednostki do rekrutacji"]'); if (!t) return false; t.click(); return true; });
@@ -320,7 +346,40 @@ async function main() {
         result = { outcome: 'zatrzymanie', turn: st.turn, gate: gp.gateBlock };
         break;
       }
-      await page.evaluate(() => window.__civTest.endTurn());
+      let endClick = 'hook';
+      if (POLICY === 'p4') {
+        const etSel = '.civ-bottom-bar button.end-turn[data-end]';
+        // Diagnoza (zarzut 5): przycisk bywa aria-disabled=true mimo canEnd=true w bramce — czekamy na przerysowanie HUD
+        // oraz wykonujemy realny ruch myszy nad pasek; wynik zapisujemy (ariaPoCzekaniu).
+        const ariaNow = await page.evaluate((sel) => { const b = document.querySelector(sel); return b ? b.getAttribute('aria-disabled') : 'brak'; }, etSel);
+        if (ariaNow === 'true') {
+          const bb = await page.evaluate((sel) => { const b = document.querySelector(sel); if (!b) return null; const r = b.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, etSel);
+          for (let w = 0; w < 15 && bb; w++) {
+            await page.mouse.move(bb.x + (w % 3), bb.y + (w % 2));
+            await page.waitForTimeout(200);
+            const a2 = await page.evaluate((sel) => { const b = document.querySelector(sel); return b ? b.getAttribute('aria-disabled') : 'brak'; }, etSel);
+            if (a2 !== 'true') break;
+          }
+        }
+        rec.ariaPrzedKlikiem = ariaNow;
+        rec.ariaPoCzekaniu = await page.evaluate((sel) => { const b = document.querySelector(sel); return b ? b.getAttribute('aria-disabled') : 'brak'; }, etSel);
+        try {
+          await page.waitForSelector(etSel, { state: 'visible', timeout: 15000 });
+          await page.locator(etSel).click({ timeout: 8000 });
+          endClick = 'ui';
+        } catch (e) {
+          const diag = await page.evaluate((sel) => {
+            const b = document.querySelector(sel);
+            const bar = document.querySelector('.civ-bottom-bar');
+            let cover = null;
+            if (b) { const rr = b.getBoundingClientRect(); const top = document.elementFromPoint(rr.left + rr.width / 2, rr.top + rr.height / 2); cover = top ? (top.className || top.tagName).toString().slice(0, 80) : null; }
+            return { barPresent: !!bar, btnPresent: !!b, btnDisabled: b ? b.disabled : null, btnAria: b ? b.getAttribute('aria-disabled') : null, covered_by: cover };
+          }, etSel);
+          endClick = 'hook (klik nieudany: ' + String(e.message).split('\n')[0].slice(0, 80) + ' ' + JSON.stringify(diag) + ')';
+        }
+      }
+      if (endClick !== 'ui') await page.evaluate(() => window.__civTest.endTurn());
+      rec.endClick = endClick;
       await page.waitForFunction((t) => window.__nnsMeasureDebug.gateInfo().turn > t && !window.__nnsMeasureDebug.isEndTurnInProgress(), st.turn, { timeout: 180000, polling: 200 });
       await closeModals(page);
       completed += 1;
