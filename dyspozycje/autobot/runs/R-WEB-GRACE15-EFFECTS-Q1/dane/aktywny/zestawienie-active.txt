@@ -1,0 +1,38 @@
+=== p1 seed 4242 (barb trudny, Standardowy, 1 rywal, maksimum) outcome=zatrzymanie turnsCompleted=15 purchaseTurn=null errors=0
+tura | skarb | prognoza_skarbu(delta) | spichlerz(granary) | prognoza_zywnosci(delta) | drewno | Łucznik(koszt/zasoby) | blokada | miasto_gracza | barb_blisko
+1 | 0 | 3 | 0 | 0 | 0 | 12/brak | nie | 1 | 0
+2 | 3 | 2 | 0 | 0 | 0 | 12/brak | nie | 1 | 0
+3 | 5 | 2 | 0 | 0 | 0 | 12/brak | nie | 1 | 0
+4 | 7 | 2 | 0 | 0 | 0 | 12/brak | nie | 1 | 0
+5 | 9 | 2 | 0 | 0 | 0 | 12/brak | nie | 1 | 0
+6 | 11 | 2 | 0 | 0 | 0 | 12/brak | nie | 1 | 0
+7 | 13 | 2 | 0 | 0 | 0 | 12/brak | nie | 1 | 0
+8 | 15 | 2 | 0 | 0 | 0 | 12/brak | nie | 1 | 0
+9 | 17 | 2 | 0 | 0 | 0 | 12/brak | nie | 1 | 0
+10 | 19 | 2 | 0 | 0 | 0 | 12/brak | nie | 1 | 0
+11 | 21 | 2 | 0 | 0 | 0 | 12/brak | nie | 1 | 0
+12 | 23 | 2 | 0 | 0 | 0 | 12/brak | nie | 1 | 0
+13 | 25 | 2 | 0 | 0 | 0 | 12/brak | nie | 1 | 0
+14 | 27 | 2 | 0 | 0 | 0 | 12/brak | nie | 1 | 0
+15 | 29 | 2 | 0 | 0 | 0 | 12/brak | nie | 1 | 0
+16 | 31 | -14 | 0 | -16 | 0 | 12/brak | TAK | 1 | 0
+
+=== p2 seed 7 (barb trudny, Standardowy, 1 rywal, maksimum) outcome=zatrzymanie turnsCompleted=15 purchaseTurn=5 errors=0
+tura | skarb | prognoza_skarbu(delta) | spichlerz(granary) | prognoza_zywnosci(delta) | drewno | Łucznik(koszt/zasoby) | blokada | miasto_gracza | barb_blisko
+1 | 0 | 2 | 0 | 0 | 0 | 12/brak | nie | 1 | 0
+2 | 5 | 5 | 0 | 0 | 4 | 12/brak | nie | 1 | 0
+3 | 10 | 5 | 0 | 0 | 8 | 12/brak | nie | 1 | 0
+4 | 15 | 5 | 0 | 0 | 12 | 12/brak | nie | 1 | 0
+5 | 20 | 5 | 0 | 0 | 16 | 12/ok | nie | 1 | 0
+6 | 13 | 5 | 0 | 0 | 7 | 12/brak | nie | 1 | 0
+7 | 18 | 5 | 0 | 0 | 11 | 12/brak | nie | 1 | 0
+8 | 23 | 5 | 0 | 0 | 15 | 12/ok | nie | 1 | 0
+9 | 28 | 5 | 0 | 0 | 19 | 12/ok | nie | 1 | 0
+10 | 33 | 5 | 0 | 0 | 23 | 12/ok | nie | 1 | 0
+11 | 38 | 5 | 0 | 0 | 27 | 12/ok | nie | 1 | 0
+12 | 43 | 5 | 0 | 0 | 31 | 12/ok | nie | 1 | 0
+13 | 48 | 5 | 0 | 0 | 35 | 12/ok | nie | 1 | 0
+14 | 53 | 5 | 0 | 0 | 39 | 12/ok | nie | 1 | 0
+15 | 58 | 10 | 0 | 2 | 43 | 12/ok | nie | 1 | 0
+16 | 68 | -22 | 2 | -30 | 45 | 12/ok | TAK | 1 | 0
+
