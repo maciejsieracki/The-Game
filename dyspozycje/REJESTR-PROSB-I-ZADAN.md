@@ -11424,3 +11424,10 @@ R-WEB-MAP-ISLANDS-ORPHAN-FIX-Q1 (wf_d7ad9b86-4bd; Operator Haiku → Evaluator S
 
 ### 2026-11-27 · AIBAL start (R-WEB-AI-CULT-BALANCE-MEASURE-Q1) · zegar maszyny `date -u` 10:56 UTC
 - Wolny slot po FALI 930. Priorytet 2 (pomiar potrzebny do decyzji o balansie): jak zmieniła się rozgrywka AI po FALACH 926–930 w wariantach poziomów kultury i religii gracza/AI na maksimum reszty ustawień (jednostki, miasta, Porządek, bunty, puste miasta, wojny). Zero zmian gry. cand = origin/main c0a55450945535a0680b569b0cf5c650314c86f9; Operator HAIKU.
+
+### 2026-11-27 · TAXNET FC PASS-WITH-NOTES → ZINTEGROWANE do main (doc-only, bez deployu) · zegar maszyny `date -u` 11:01 UTC
+- Dokument dyspozycje/analizy/TARGOWISKO-NETTO-PODATEK-2026-11-27.md (kod FC aff147775, raport 9b2781a99; zero zmian gra/): 20 Podatku z zamiany 100 Żywności (kurs 0,2) w tej turze rozkłada się wg wzoru: korupcja ~1%, podział puli wg suwaków 60/30/10 → Nauka ~11, Skarb ~6, Zamożność ~2 (zakres Skarbu 5–7 przez zaokrąglenia); zmierzone B−A = 6 w żywej grze (VLIVE3) zgodne z modelem. Wniosek z KODU (nie z pomiaru składników w żywej grze): zamierzone wg wzoru — podatek z zamiany jest dzielony jak każdy podatek (komentarze w kodzie mówią wprost, że nie trafia 1:1 do Skarbu); brak rozjazdu z dokumentacją.
+- NIE ZMIERZONO: rozkład składników w żywej grze (brak read-only haka odczytu perCity.nauka/wealthState — hak w gra/src wymaga zgody), pula bazowa ramienia A, ustawienia inne niż Trudny, Mennica.
+- Informacja dla właściciela (NIE pytanie ABC — zachowanie spójne z istniejącą zasadą podziału podatku): czy podatek z Żywność→Podatek ma trafiać do Skarbu wg suwaków (dziś ok. 30% z 20 = 6) czy mieć stały, większy udział — do decyzji tylko jeśli właściciel uzna dzisiejszy wynik za zbyt mały.
+- Otwarte: przerwany koniec tury w t12 (VLIVE3, ON, bez modala) — kandydat na osobny temat.
+- refs/keep/TAXNET-r1-{op,eval,obrona,fc}; worktree TAXNET usunięte.
