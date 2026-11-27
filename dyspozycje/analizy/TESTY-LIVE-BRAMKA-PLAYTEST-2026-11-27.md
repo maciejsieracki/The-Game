@@ -1,12 +1,19 @@
 # Testy live: bramka „Zakończ turę” w ?playtest=mapa (R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1, runda 1)
 
+> **STATUS DOKUMENTU (runda 3, kandydat 9d6b8e89f→obrona r3):** wiążące są WYŁĄCZNIE sekcje „Runda 2 (R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1, baza 5c187d3be)” oraz „Runda 3 (obrona, zarzuty Evaluatora)” na końcu pliku.
+> Sekcje „Ustalenia o haku i bramce”, „Inwentaryzacja (105 plików…)” i „Podsumowanie grep” (rundy 1) oraz „Runda 2 (obrona): pomiar PRZED/PO…” (linie ok. 129–240) są NIEAKTUALNE i zostają tylko jako historia. Ich tezy skorygowano poniżej.
+> Korekty tez rundy 1 (stan kandydata 9d6b8e89f):
+> - Hak `__nnsMeasureDebug` NIE jest dostępny tylko pod `?civTest=1` w sensie „brak innej drogi”; jest on pod `?civTest=1` (tak jest w kodzie) i przepięte testy (forced-war, sidepanel, era-change-toast) dodają `civTest=1`. Teza „nie da się bez zmiany gra/src” była FAŁSZYWA dla tych testów: przepięcie wykonano bez zmian w gra/src.
+> - `prepareEndTurnGate` JEST wpięty w 3 testy (forced-war-player-target-live-test, sidepanel-diplo-dismiss-real-render-test, era-change-toast-live-test) oraz w `live-nns-gate-smoke-test.cjs`. Teza „0 trafień” dotyczyła stanu sprzed rundy 2.
+> - Kolumna „blokuje ekran powitalny” w inwentaryzacji rundy 1 i 2 to HIPOTEZA z grep, a nie wynik uruchomienia.
+
 Kandydat (baza): c2749691b686f4ece6b2cb5e35b3438d0427c365 (origin/main). Inwentaryzacja: `grep -c` na plikach `gra/tools/*-live-test.cjs` (105 plików).
 
 ## Ustalenia o haku i bramce
 
 - `gra/tools/_live-ready.cjs` eksportuje `prepareEndTurnGate`, który korzysta z `window.__nnsMeasureDebug` (`gateInfo`, `setPlayerTreasury`, `setPlayerGranary`). Wg raportu FC LIVEGATE (`dyspozycje/autobot/runs/R-WEB-LIVE-TESTS-WELCOME-GATE-Q1/50-final-control-claude.md`) hak ten jest dostępny tylko pod `?civTest=1`.
-- `forced-war-player-target-live-test.cjs` działa na `?playtest=mapa` bez `civTest=1`, więc `prepareEndTurnGate` nie da się w nim użyć bez zmiany w bloku playtest w `gra/src/main.ts` (przepuszczenie setterów skarbca/spichlerza) albo przeniesienia testu na `?civTest=1`. Warunek strażnika przy `__nnsMeasureDebug` (main.ts ok. linii 34841) NIE został zweryfikowany wierszem kodu w tej rundzie.
-- `prepareEndTurnGate` nie jest wpięty w żaden z 105 plików `*-live-test.cjs` (grep: 0 trafień). Jedyne użycie to `gra/tools/live-nns-gate-smoke-test.cjs`.
+- [KOREKTA r3] `forced-war-player-target-live-test.cjs` po przepięciu używa `?playtest=mapa&civTest=1`; `prepareEndTurnGate` działa bez zmian w `gra/src`. Strażnik `__nnsMeasureDebug` w `gra/src/main.ts` (blok civTest) zweryfikowano wierszem kodu w rundzie 3.
+- [KOREKTA r3] Stan z rundy 1 ("0 trafień") był sprzed przepięć rundy 2. Obecnie `prepareEndTurnGate` jest w 3 testach *-live-test/real-render oraz w `live-nns-gate-smoke-test.cjs`.
 
 ## Inwentaryzacja (105 plików *-live-test.cjs)
 
@@ -279,3 +286,32 @@ Z grep: 105 plików; 55 z hipotezą „prawdopodobnie TAK”. Pełna tabela (pli
 Uruchomione w tej rundzie: 4 testy live (forced-war, sidepanel, era-change-toast, diplo-truce). Pozostałe: NIE ZMIERZONO.
 
 Kolumna `prepareEndTurnGate` w plikach testów: po zmianach tej rundy wystąpienia w 3 plikach (forced-war, sidepanel, era-change-toast). Pozostałe testy: 0.
+
+## Runda 3 (obrona, zarzuty Evaluatora; kandydat 9d6b8e89f)
+
+### Zarzut 1: poziom maksymalny (PRZYJĘTY, pomiar wykonany na ścieżce kreatora)
+
+- Hak `window.__settingsLive` istnieje (`gra/src/main.ts`, blok `?civTest=1`, `startNewGame` = realny `doStartGame`). Poprzednie zdanie obrony rundy 2 „żaden test nie ma haka do podniesienia ustawień” było NIEPRAWDZIWE. Używa go 5+ testów `verify-live-*` (np. `verify-live-diplo-war-level-test.cjs`).
+- Maksimum wg kreatora (`gra/src/ui/newGameFlow.ts`): Dyplomacja i wojna `trudna` (kary ×3, bonusy ÷3); Koszty jednostek `wysoki` (×4); Kultura i religia `trudny`; poziom trudności `Trudny` (`difficulty: 'hard'` w echo); rozmiar mapy: najwyższy w menu `Super Huge` (`ROZMIAR_MENU_LABELS` w `gra/src/map/generator.ts`). Max wzrostu surowców: „Wzrost surowców z epoką” to ustawienie WŁ./WYŁ., przyjęto WYŁ. (wartość domyślna, bez skali). Liczba przeciwników: w kreatorze `rivals` 2 (nie znaleziono wyższej wartości przy tej ścieżce).
+- Runner: `gra/tools/live-playtest-gate-max-measure.cjs` (nowy plik, allowlista `live-playtest-gate-*.cjs`). Uruchomienie: `LIVE_WORK=<katalog poza repo> node tools/live-playtest-gate-max-measure.cjs`.
+- Wynik (surowe: `dyspozycje/autobot/runs/R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1/logi/MAX-live-playtest-gate-r3.txt`): echo ustawień potwierdza `diplomacyWarLevel: trudna`, `kulturaReligiaLevel: trudny`, `kosztJednostekPace: wysoki`, `difficulty: hard`. `prepareEndTurnGate` ustawia skarbiec 5000 i spichlerz 999 (gate nie jest przyczyną). Mimo to `canEnd: false` w turze 1.
+- PRZYCZYNA (zmierzona, nie hipoteza): log konsoli gry: 10× `[EndTurn] blocked: awaitingFirstPlayerCity`. Przy świeżej grze z `startNewGame` gracz musi najpierw założyć miasto. Bramka skarbca/spichlerza nie jest tu blokadą.
+- Wniosek: pomiar bramki na maksimum wymaga stanu z założonym pierwszym miastem (scenariusz `?playtest=mapa` to dostarcza, ale przy domyślnych ustawieniach). Połączenie: maksymalne ustawienia kreatora + założone miasto NIE ZOSTAŁO zmierzone w tej rundzie. Oznaczone NIE ZMIERZONO (do osobnego tematu: hak zakładania pierwszego miasta w civTest albo wywołanie akcji osadnika).
+- Testy live objęte tematem (forced-war, sidepanel, era-change-toast) dalej działają na `?playtest=mapa` z domyślnymi ustawieniami tego scenariusza; ich przepięcie nie zmienia tego faktu.
+
+### Zarzut 2: czas forced-war (PRZYJĘTY, wyjątek zgłoszony, test NIE skrócony)
+
+- forced-war-player-target-live-test po przepięciu: 364 s (runda 2 operatora, `POST2-forced-war-player-target-full.txt`) i 457 s (pomiar Evaluatora, maszyna współdzielona). Limit z dispatchu: 280 s. Przekroczenie PRZYJĘTE i zgłoszone jako wyjątek limitu czasu. Skrócenie testu wymagałoby osłabienia kroków (zakazane) albo osobnego tematu (rozbicie scenariusza). Decyzję o wyjątku/rozbiciu podejmuje orkiestrator.
+
+### Zarzut 4: era-change-toast, sekcja F i Escape (PRZYJĘTY, przyczyna NIEZBADANA)
+
+- PRE (`logi/PRE-era-change-toast.txt`): C/D/E FAIL (bramka); Escape OK, ale karta technologii pusta (`sections:0`), więc wynik Escape w PRE jest wątpliwy.
+- PO (`logi/POST-era-change-toast.txt`): C/D/E PASS; F FAIL (`sections:0`, jak w PRE); Escape FAIL; TimeoutError na `[data-act=tree]`.
+- Przyczyna FAIL Escape w PO NIE ustalona. Nie twierdzę, że jest to wyłącznie skutek sekcji F. Era-change-toast NIE jest zaliczany jako test zmieniający wynik PRZED→PO w całości (zmienia się tylko do sekcji E).
+
+### Zarzut 3: sprzeczne sekcje (PRZYJĘTY)
+
+- Dokument oznaczony na początku (STATUS); sekcje rundy 1 i obrony rundy 2 oznaczone jako nieaktualne i skorygowane w miejscach sprzecznych (patrz wyżej).
+- Kolumna „blokuje ekran powitalny” = hipoteza z grep (55 „prawdopodobnie TAK”), nie wynik uruchomienia.
+
+### Zarzut 5: pełne bramki (uruchomione przez obronę, patrz raport 30-obrona-claude.md)

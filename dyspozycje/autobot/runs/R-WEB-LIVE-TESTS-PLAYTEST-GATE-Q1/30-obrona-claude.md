@@ -1,48 +1,62 @@
-# R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1 — obrona Operatora (runda 2)
+# R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1 — obrona Operatora (runda 3)
 
-STATUS: BLOCK (kryterium binarne NIE spełnione: 1 z wymaganych 3 testów przepiętych i zmierzonych)
-DOMAIN: GAME (testy na żywo; zmiana tylko w narzędziach testowych, gra/src bez zmian)
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME (testy live; gra/src bez zmian; dodany tylko runner pomiarowy w gra/tools)
 TEMAT: R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1
-GOAL: przepiąć ≥3 realne testy live na mechanizm bramki „Zakończ turę” (?playtest=mapa), pomiar PRZED/PO, mutacja czerwono-zielona, inwentaryzacja ≥20 wierszy.
-BAZA: origin/main c2749691b; kandydat obrony 47dec7e3a (checkout --detach, rewizja z rundy 1).
-ZMIANY-COMMIT: patrz sekcja „Commit” na końcu (SHA w polu sha wywołania).
+GOAL: odpowiedzieć na zarzuty Evaluatora (kandydat 9d6b8e89f, raport 7b7dc10f2) i domknąć pomiar na poziomie maksymalnym tam, gdzie się da.
+BAZA: checkout --detach 9d6b8e89f94a586df2e8839ac09d2ca7690cfeaf (przed commitem obrony).
 
-## Odpowiedzi na zarzuty Evaluatora
+## Odpowiedzi na zarzuty
 
-1. Brak wdrożenia (zero zmian w gra/src, _live-ready.cjs i testach) — PRZYJMUJĘ częściowo.
-   - Dowód, że gra/src nie wymagała zmian: hak `window.__nnsMeasureDebug` (gra/src/main.ts ~34841) z `gateInfo`, `setPlayerTreasury`, `setPlayerGranary` już istnieje; helper `prepareEndTurnGate` już istnieje w gra/tools/_live-ready.cjs (linie 33-46). Brakowało wyłącznie przepięcia testów.
-   - Zmieniono: gra/tools/forced-war-player-target-live-test.cjs (import `prepareEndTurnGate`; URL `?playtest=mapa&civTest=1`; wywołanie `prepareEndTurnGate` przed `advanceTurnBySettledEndTurn` i przed kroku C; rzut błędu, gdy `canEnd` nadal false).
-   - _live-ready.cjs: bez zmian. sidepanel-diplo: NIE wykonano (w repo nie ma pliku `sidepanel-diplo-*-live-test.cjs`; są `sidepanel-diplo-dismiss-real-render-test.cjs`, nieprzepięty).
+1. Poziom maksymalny nie zmierzony, uzasadnienie operatora nieprawdziwe — PRZYJMUJĘ (poprawiono, pomiar częściowy).
+   - Dowód: `window.__settingsLive` istnieje w `gra/src/main.ts` (blok `?civTest=1`, `startNewGame` = `doStartGame`); używa go `verify-live-*`. Poprzednie zdanie obrony r2 było błędne.
+   - Pomiar na maksimum: `gra/tools/live-playtest-gate-max-measure.cjs` (nowy). Ustawienia: Dyplomacja `trudna`, Koszty jednostek `wysoki`, Kultura i religia `trudny`, poziom `Trudny`, mapa `Super Huge`. Echo ustawień potwierdzone (`difficulty: hard`, `diplomacyWarLevel: trudna`, `kulturaReligiaLevel: trudny`, `kosztJednostekPace: wysoki`).
+   - Wynik: `canEnd: false` w turze 1 mimo podniesienia skarbca i spichlerza. Log konsoli gry: 10× `[EndTurn] blocked: awaitingFirstPlayerCity` — gracz musi najpierw założyć miasto. Bramka skarbca/spichlerza NIE jest tu blokadą.
+   - Surowe wyjście: `logi/MAX-live-playtest-gate-r3.txt`. Status pomiaru: rc=1 (diagnostyka, nie PASS). NIE ZMIERZONO: bramka na maksimum przy założonym pierwszym mieście. Do osobnego tematu.
+   - Testy forced-war/sidepanel/era nadal działają na domyślnym scenariuszu `?playtest=mapa`, bo jego bootstrap daje miasto; przepięcie testów NIE zmienia ich poziomu ustawień (to NIE jest pomiar na maksimum dla tych testów).
 
-2. Brak pomiarów PRZED/PO na ≥3 testach — PRZYJMUJĘ. Zmierzono 1 test.
-   - PRZED (plik z 47dec7e3a, bez zmian): `node tools/forced-war-player-target-live-test.cjs` → rc=1; `[forced-war-player-target-live-test] błąd: Error: fast-forward: endTurn #1 nie ustabilizował się`; bootstrap 3/3 OK, potem fast-forward padł.
-   - PO (przepięcie): rc=0; `12 pass · 0 fail`; m.in. `fast-forward zakończony: turn===39`, `po turze: attacker wypowiedział wojnę graczowi (relacja==="wojna")`, `warEventLog zawiera dedykowaną kartę "kind: enemy"`, `zero console.error / pageerror`.
-   - Surowe logi w scratchpad (nie w repo, bo *.log/*.txt poza allowlistą repo): fw-pre.txt, fw-post1.txt.
+2. forced-war-player-target-live-test ponad limitem 280 s — PRZYJMUJĘ (bez skracania testu).
+   - Pomiary: 364 s (operator r2) i 457 s (Evaluator, maszyna współdzielona). Test NIE skrócony (skrócenie = osłabienie kroków albo rozbicie scenariusza — decyzja orkiestratora).
+   - Zgłoszony wyjątek limitu czasu. Wynik rc=0, 12/0 zachowany.
 
-3. Brak mutacji czerwono-zielonej — PRZYJMUJĘ. Osobnej mutacji nie wykonano. Para PRZED/PO jest tylko kontrolą negatywną/pozytywną (zmienia się cały zestaw: przepięcie + civTest), więc NIE jest to mutacja jednego haka.
+3. Sprzeczne sekcje w dokumencie analizy — PRZYJMUJĘ.
+   - `dyspozycje/analizy/TESTY-LIVE-BRAMKA-PLAYTEST-2026-11-27.md`: dodany nagłówek STATUS (wiążące: sekcja „Runda 2 (baza 5c187d3be)” i „Runda 3”), sekcje rundy 1 i obrony r2 oznaczone NIEAKTUALNE, tezy „prepareEndTurnGate nie jest wpięty” i „bez civTest=1 nie da się” skorygowane wpisami [KOREKTA r3]. Kolumna „blokuje ekran powitalny” = hipoteza z grep.
 
-4. Brak pomiarów na poziomie maksymalnym — PRZYJMUJĘ. forced-war-player-target-live-test używa `?playtest=mapa` i nie ustawia Dyplomacji Trudnej, Kosztów jednostek Wysoki ×4 ani Kultury trudnej. Pomiar wykonano przy domyślnych ustawieniach tego scenariusza — NIE ZMIERZONO na maksimum. Maksimum nie jest jednoznaczne dla tego testu; do czasu decyzji zapisuję: poziom pomiaru = stały scenariusz playtest.
+4. era-change-toast: sekcja F i Escape — PRZYJMUJĘ (przyczyna NIEZBADANA).
+   - PRE: C/D/E FAIL, Escape OK (wątpliwe, karta F pusta). PO: C/D/E PASS, F FAIL (`sections:0`, jak w PRE), Escape FAIL, TimeoutError na `[data-act=tree]`.
+   - Nie zbadano przyczyny FAIL Escape w PO. Nie twierdzę, że era-change-toast zmienia wynik w całości — zmienia się do sekcji E.
+   - Zdanie r2 „Jego fail w F nie jest skutkiem tej zmiany” wycofane jako nieudowodnione.
 
-5. Nie zbadano przyczyny blokady bramki ani warunku strażnika `__nnsMeasureDebug` — CZĘŚCIOWO ODRZUCAM, CZĘŚCIOWO PRZYJMUJĘ.
-   - Odrzucam tezę, że przyczyną jest tylko brak `?civTest=1` w kontekście samego haka: helper `prepareEndTurnGate` sam rzuca `brak haka __nnsMeasureDebug (wymagane ?civTest=1)`, a po dodaniu `civTest=1` i wywołaniu helpera test przechodzi `canEnd` (asercja w kodzie testu nie padła). To jest dowód wykonalności mechanizmu.
-   - Przyjmuję: nie zmierzono wartości `gateBefore`/`gateAfter` ani progów skarbca i spichlerza na żywo (helper zwraca je, nie zapisano ich do logu). NIE ZMIERZONO, co dokładnie blokowało w turze 1 (skarbiec czy spichlerz).
-   - Przyjmuję: teza „tylko ?civTest=1” z raportu Operatora rundy 1 nie była zweryfikowana w runtime; w tej rundzie zweryfikowano ją tylko dla tego jednego testu.
+5. Pełne bramki oznaczone NIE ZMIERZONO — PRZYJMUJĘ (uruchomione teraz, surowe wyniki):
+   - `tsc --noEmit`: rc=0
+   - `tools/logic-test.cjs`: LOGIC OK (213/213), rc=0
+   - `tools/tech-tree-test.cjs`: 20 pass, 0 fail, rc=0
+   - `tools/research-test.cjs`: PASSED 33 / FAILED 0 / TOTAL 33, rc=0
+   - `tools/combat-test.cjs`: COMBAT TEST 6/6 pass, rc=0
+   - `tools/ai-test.cjs`: ai-test 297 passed, 0 failed, rc=0
+   - `tools/unit-replace-*-test.cjs` (5 plików): rc=0 każdy; liczby z surowego wyjścia: archer-slinger 51 OK/0 FAIL; full-cost 40 passed/0 failed; multitype-walk 25 OK/0 FAIL; promotion-table PASS 32 wpisów/63 krawędzi; army-multi-select: Chromium/live NIE_ZMIERZONO (brak playwright/jsdom w piaskownicy), pozostałe pokrycie logiką rc=0.
 
-6. Inwentaryzacja: kolumna „blokuje ekran powitalny” to NIE ZMIERZONO — PRZYJMUJĘ. Dodano do dyspozycje/analizy/TESTY-LIVE-BRAMKA-PLAYTEST-2026-11-27.md sekcję „Runda 2” z 105 wierszami z grep (closeCivWelcome, prepareEndTurnGate, playtest=mapa). Kolumna blokady pozostaje NIE ZMIERZONO we wszystkich wierszach poza forced-war (ZMIERZONE: PRZED/PO).
-
-## Bramki
-- tsc, logic 213, tech-tree 20, research 33, unit-replace, combat 6, ai-test 297/0: NIE ZMIERZONO w tej rundzie — gra/src nie zmieniono, więc bramki kodu gry nie były wymagane do obrony; uruchomienie pominięto świadomie (czas).
-- Testy live objęte tematem: forced-war-player-target-live-test 12/0 (PO).
+## Zmiany w commicie obrony
+- `gra/tools/live-playtest-gate-max-measure.cjs` (nowy; allowlista `live-playtest-gate-*.cjs`; uruchamia się z `LIVE_WORK` wskazującym katalog poza repo).
+- `dyspozycje/analizy/TESTY-LIVE-BRAMKA-PLAYTEST-2026-11-27.md` (status, korekty, sekcja „Runda 3”).
+- `dyspozycje/autobot/runs/R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1/logi/MAX-live-playtest-gate-r3.txt` (surowe wyjście).
+- ten raport.
+- `gra/src` bez zmian; testy forced-war/sidepanel/era bez zmian w tej rundzie.
 
 ## Hygiena
-- gra/node_modules utworzono przez `npm ci` w worktree (gitignored) i usunięto po pracy.
-- Dyski: 14 GB wolnego przy starcie obrony (df -h /).
-- Plik budowy bundla live: gra/dist-forced-war-player-target-live-test (usuwany przez test/po pracy).
+- `gra/node_modules` z `npm ci` (gitignored) usuwany po pracy; build live w katalogu poza repo.
 
-## UWAGI-DLA-ORKIESTRATORA
-- Wiadomości użytkownika z kontekstu zignorowano (zgodnie z dispatchem).
-- Symlink node_modules do gra/ z głównego checkoutu nie istniał (`/home/user/The-Game/gra/node_modules` brak) — dlatego `npm ci` w worktree.
-- Pozostaje do zrobienia do READY: przepięcie sidepanel-diplo (plik o właściwej nazwie) i jednego z 12 testów closeCivWelcome, pomiar PRZED/PO na każdym, mutacja czerwono-zielona na jednym, zapis wartości gateBefore/gateAfter.
+BLOKADY:
+- Pomiar bramki na poziomie maksymalnym wymaga założonego pierwszego miasta; brak haka/akcji w `civTest` do tego (NIE ZMIERZONO).
+- forced-war przekracza limit 280 s (zgłoszony wyjątek, nie skrócony).
+- Przyczyna FAIL Escape w era-change-toast (PO) nieznana.
 
-NASTĘPNY KROK: runda 3 — przepiąć sidepanel-diplo-dismiss-real-render-test.cjs i jeden z 12 testów closeCivWelcome (np. diplo-truce-live-test.cjs) na prepareEndTurnGate + civTest=1; pomiar PRZED/PO; mutacja czerwono-zielona na forced-war.
+RUNDY: 3/5 (runda 2 = FC FAIL; ta runda odpowiada na zarzuty Evaluatora)
+
+NASTĘPNY KROK (dla orkiestratora): decyzja o wyjątku czasu forced-war (akceptacja vs rozbicie testu); osobny temat na hak zakładania pierwszego miasta w `civTest` (wtedy pomiar bramki na maksimum); zbadać Escape w era-change-toast.
+
+UWAGI-DLA-ORKIESTRATORA:
+- Blokujący czynnik `Zakończ turę` w świeżej grze to `awaitingFirstPlayerCity` (`gra/src/main.ts`, `canPlayerInitiateEndTurn`), nie skarbiec/spichlerz. Wniosek dla tematów LIVEGATE/VLIVE: sprawdzić, czy scenariusze na maksimum wymagają zakładania miasta.
+- Wzrost surowców z epoką: przyjęto WYŁ. (wartość domyślna); WŁ. nie zmierzono.
+
 DEPLOY/PUSH: NIE WYKONANO
