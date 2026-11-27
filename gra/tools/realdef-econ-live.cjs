@@ -303,6 +303,8 @@ async function main() {
       completed += 1;
       const post = await readState(page, cityId);
       const mil = post.playerOnHex.filter(u => !MILITARY_EXCL.has(String(u.typeId).toLowerCase()) && u.category !== 'zwiadowca');
+      // UWAGA (korekta obrony REALDEF4): mil liczy KAZDA jednostke wojskowa na miescie, takze startowego Wojownika
+      // (konfiguracja domyslna startuje z Wojownikiem na miescie, max nie). Nie oznacza zakupionego obroncy.
       if (firstDefenderTurn === null && mil.length) firstDefenderTurn = post.turn;
       if (post.owner !== 0 && lossTurn === null) {
         lossTurn = post.turn;
@@ -326,7 +328,7 @@ async function main() {
       }));
     }
     const row = {
-      kind: 'result', runda: 3, policy: POLICY, seed: SEED, run: RUN, barb: BARB_LEVEL, turnsRequested: TURNS, turnsCompleted: completed,
+      kind: 'result', runda: 3, policy: POLICY, seed: SEED, run: RUN, barb: ADV.barbariansLevel, turnsRequested: TURNS, turnsCompleted: completed,
       ...result, cityOwnerAfter: ownerAfter, cityLost: ownerAfter !== 0, lossTurn, survived: ownerAfter === 0,
       conqueror: ownerAfter === -1 ? 'barbarzyncy' : (ownerAfter === 0 ? null : 'nieznany(owner=' + ownerAfter + ')'),
       firstGoldAffordTurn: firstGoldTurn, firstGoldAndStockAffordTurn: firstBothTurn,
