@@ -11368,3 +11368,6 @@ R-WEB-MAP-ISLANDS-ORPHAN-FIX-Q1 (wf_d7ad9b86-4bd; Operator Haiku → Evaluator S
 - Co w grze: w nowych grach (Kultura i religia ≠ zgodność) miasta AI w buncie skrajnym po łasce buntują się jak miasta gracza; ostatnie miasto AI nie buntuje się. Pomiar max (60 tur, Trudny/Kultura trudny/Wysoki ×4): bunty AI 10 (seed 4242) i 16 (seed 7); miasta AI ~148/137 (bez wyraźnej zmiany).
 - NIE ZMIERZONO: round-trip zapisu, hotseat, wygląd wpisu w przeglądarce, skutki utraty stolicy przez AI z ≥2 miastami, runtime pętli tury, skuteczność ochrony ostatniego miasta (pomiar jej nie wywołał). Wpis buntu AI trafia do dziennika Wydarzeń (tylko przy kontakcie z właścicielem), nie do listy „Wydarzenia na świecie” — informacja dla właściciela.
 - Sprzątanie: worktree AIREBEL usunięte, refs/keep/AIREBEL-{op,eval,obrona,fc,r3-*} zachowane, /tmp/civ-deploy-out usunięty.
+
+### 2026-11-27 · AIREBELNEWS start (R-WEB-AI-REBEL-WORLD-NEWS-Q1) · zegar maszyny `date -u` 08:03 UTC
+- Wolny slot po FALI 928. Priorytet 1 (zmiana w grze): wpis o buncie AI w trwałej liście „Wydarzenia na świecie” (pkt 3 specyfikacji 39B, pominięty w AIREBEL z powodu allowlisty). Operator HAIKU, cand = origin/main e6f3fd4b6.
