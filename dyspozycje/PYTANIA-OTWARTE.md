@@ -32697,3 +32697,7 @@ Właściciel zatwierdził pozycje 1–5 (Emporion per trasa +1 slot; zmęczenie 
 
 ## P-TECH-SZTUKA-WOJENNA-TOP3-20261110 — ODPOWIEDZIANE
 Wcześniej wysłane pytanie asynchroniczne o sprzeczność opisu24jednostki vsNIE_USTALONO. Odpowiedź właściciela2026-11-10: „Opis «Odblokowuje jednostki epoki Żelaza», bez liczby (zalecane)”. Wdrożyć w R-WEB-TECH-CARDS-TOP5-TEST-DEBT-Q1; nie zmieniać kosztów/prereq/odblokowań.
+
+## R-WEB-EARLY-DEFENSE-START-Q41 (2026-11-27 21:02 UTC, pytanie 41, turniej C-018 zakończony) · STATUS: **OTWARTE — CZEKA NA WŁAŚCICIELA**
+
+Pytanie: czy na najwyższym poziomie trudności gracz ma mieć realną szansę obronić pierwsze miasto przed barbarzyńcami w pierwszych ~15 turach i jak (A: jeden Wojownik na starcie + 15 tur bez utrzymania (Rekomendowane); B: barbarzyńcy nie atakują albo słabsi przez ~15 tur; C: bez zmian). Pełny tekst: dyspozycje/autobot/runs/R-WEB-EARLY-DEFENSE-START-Q41/PYTANIE-ABC-Q41.md; turniej: TURNIEJ-C018.md; dane: dyspozycje/analizy/OBRONA-STARTU-*.md. Pokazane w czacie 21:02 UTC. Do odpowiedzi literą dla pełnego ID — zero zmian kodu w tej sprawie.
