@@ -65,6 +65,20 @@ const MAX_PARAMS = {
   advanced: ADV,
   villageRewardsEnabled: true,
 };
+// REALDEF4 (R-WEB-EARLY-DEFENSE-VERIFY-Q1): konfiguracje pomiaru, wybierane zmienna REALDEF_CFG (domyslnie 'max').
+//  max          = maksimum jak wyzej (Trudny, barbarzyncy Trudny, kultura trudna, dyplomacja trudna, Wysoki x4 ludnosc/koszt jednostek).
+//  domyslna     = domyslna gra: Normalny, barbarzyncy Normalni, dyplomacja Latwa, kultura Latwa, tempa Normalne.
+//  wysoki-latwi = maksimum z barbarzyncami Latwymi (reszta jak w max).
+const CFG = process.env.REALDEF_CFG || 'max';
+if (CFG === 'domyslna') {
+  MAX_PARAMS.difficulty = 'Normalny';
+  Object.assign(ADV, { barbariansLevel: 'normalny', diplomacyWarLevel: 'latwa', kulturaReligiaLevel: 'latwy',
+    kosztJednostekPace: 'normalny', wzrostLudnosciPace: 'normalny', buildingCostPace: 'normalny', ruchSwiataPace: 'normalny' });
+} else if (CFG === 'wysoki-latwi') {
+  Object.assign(ADV, { barbariansLevel: 'latwy' });
+} else if (CFG !== 'max') {
+  console.error('REALDEF_CFG: nieznana konfiguracja ' + CFG); process.exit(2);
+}
 const UNITS = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'units.json'), 'utf8'));
 const UNIT_NAMES = UNITS.map(u => u.Jednostka).filter(Boolean).sort((a, b) => b.length - a.length);
 const MILITARY_EXCL = new Set(['zwiadowca', 'osadnik', 'robotnik']);
@@ -289,6 +303,8 @@ async function main() {
       completed += 1;
       const post = await readState(page, cityId);
       const mil = post.playerOnHex.filter(u => !MILITARY_EXCL.has(String(u.typeId).toLowerCase()) && u.category !== 'zwiadowca');
+      // UWAGA (korekta obrony REALDEF4): mil liczy KAZDA jednostke wojskowa na miescie, takze startowego Wojownika
+      // (konfiguracja domyslna startuje z Wojownikiem na miescie, max nie). Nie oznacza zakupionego obroncy.
       if (firstDefenderTurn === null && mil.length) firstDefenderTurn = post.turn;
       if (post.owner !== 0 && lossTurn === null) {
         lossTurn = post.turn;
@@ -312,7 +328,7 @@ async function main() {
       }));
     }
     const row = {
-      kind: 'result', runda: 3, policy: POLICY, seed: SEED, run: RUN, barb: BARB_LEVEL, turnsRequested: TURNS, turnsCompleted: completed,
+      kind: 'result', runda: 3, policy: POLICY, seed: SEED, run: RUN, barb: ADV.barbariansLevel, turnsRequested: TURNS, turnsCompleted: completed,
       ...result, cityOwnerAfter: ownerAfter, cityLost: ownerAfter !== 0, lossTurn, survived: ownerAfter === 0,
       conqueror: ownerAfter === -1 ? 'barbarzyncy' : (ownerAfter === 0 ? null : 'nieznany(owner=' + ownerAfter + ')'),
       firstGoldAffordTurn: firstGoldTurn, firstGoldAndStockAffordTurn: firstBothTurn,
