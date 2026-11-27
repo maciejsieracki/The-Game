@@ -16,22 +16,19 @@ use std::collections::{HashMap, HashSet};
 
 use civ_engine::domain::player_order_attack::{
     attack_move_order_step, attack_move_path, attack_move_threats, attack_order_step,
-    first_step_on_attack_move_path, AttackEnemy, AttackOrderEnv, AttackOrderInput,
-    AttackOrderStep, AttackPathGrid, AttackRoute, Occupant,
+    first_step_on_attack_move_path, AttackEnemy, AttackOrderEnv, AttackOrderInput, AttackOrderStep,
+    AttackPathGrid, AttackRoute, Occupant,
 };
 use civ_engine::domain::player_order_move::{
     perform_player_order, MoveGrid, MoveOrderGates, MoveOrderInput, OrderDoctrine, PerformOrder,
     PlayerOrder, BF_COLS, BF_ROWS,
 };
-use civ_engine::domain::siege_tactics_autobatch::{
-    cell_key, AutoBatchEnv, BatchBoard, BatchState,
-};
+use civ_engine::domain::siege_tactics_autobatch::{cell_key, AutoBatchEnv, BatchBoard, BatchState};
 use civ_engine::domain::siege_tactics_autophase::AutoBatchIntent;
 use civ_engine::domain::siege_tactics_pathstep::first_step_along_path_to_attack;
 use serde_json::Value;
 
-const VECTORS: &str =
-    include_str!("p6_k5loop_wiring_a_pin_vectors/attack_order_step_vectors.json");
+const VECTORS: &str = include_str!("p6_k5loop_wiring_a_pin_vectors/attack_order_step_vectors.json");
 const PIN: &str = "07d2fbd72f758705f8e1d59cc4968027ffbafe75";
 const PIN_SHA256: &str = "3eeeb760bc0efdbb8108ac3dcf36efe5a202a8f1bec5583ede354abc0d4da34d";
 
@@ -71,6 +68,9 @@ fn unit_id(s: &str) -> u64 {
     }
 }
 
+/// Wywołanie `_firstStepAlongPathToAttack`: (allow podany, cel, wynik).
+type FsCall = (bool, usize, Option<(i64, i64)>);
+
 /// Plansze nieprzejezdności (`_passableForUnit`) per scena i rodzaj jednostki.
 struct Boards {
     impassable: HashMap<String, HashSet<(i64, i64)>>,
@@ -80,12 +80,7 @@ impl Boards {
     fn new(v: &Value) -> Self {
         let mut impassable = HashMap::new();
         for (k, list) in v["impassable"].as_object().expect("impassable") {
-            let set = list
-                .as_array()
-                .expect("lista")
-                .iter()
-                .map(pair)
-                .collect();
+            let set = list.as_array().expect("lista").iter().map(pair).collect();
             impassable.insert(k.clone(), set);
         }
         Self { impassable }
@@ -103,7 +98,7 @@ struct Scene<'a> {
     /// Zapytania `_canStrikeTargetFrom` portu spoza dziennika pinu (rozbieżność).
     missing: RefCell<Vec<(i64, i64, usize)>>,
     /// Ślad `_firstStepAlongPathToAttack` portu: (allow podany, cel, wynik).
-    fs_calls: RefCell<Vec<(bool, usize, Option<(i64, i64)>)>>,
+    fs_calls: RefCell<Vec<FsCall>>,
 }
 
 impl<'a> Scene<'a> {
@@ -173,7 +168,10 @@ impl AttackPathGrid for Scene<'_> {
         !self.impassable.contains(&(col, row))
     }
     fn occupant(&self, col: i64, row: i64) -> Occupant {
-        self.occ.get(&(col, row)).copied().unwrap_or(Occupant::Empty)
+        self.occ
+            .get(&(col, row))
+            .copied()
+            .unwrap_or(Occupant::Empty)
     }
     fn blockade_allows(&self, col: i64) -> bool {
         self.col(&self.blockade, col)
@@ -250,7 +248,9 @@ impl AttackOrderEnv for Scene<'_> {
         // Pin `_firstStepAlongPathToAttack` (`:8565-8622`) = port T4a; `occByKey` z przypadku (z jednostką `ru`).
         let mut board = BatchBoard::default();
         for &(c, r) in self.occ.keys() {
-            board.occ.insert(cell_key(c as f64, r as f64), format!("occ@{c},{r}"));
+            board
+                .occ
+                .insert(cell_key(c as f64, r as f64), format!("occ@{c},{r}"));
         }
         let st = BatchState::new(board);
         let start = self
@@ -419,7 +419,9 @@ fn rozkazy_attack_i_attack_move_zgodne_z_pinem() {
             last_auto_move_from: last_before,
         };
         let compute = || match order {
-            PlayerOrder::AttackMove { col, row } => attack_move_order_step(&inp, (col, row), &scene),
+            PlayerOrder::AttackMove { col, row } => {
+                attack_move_order_step(&inp, (col, row), &scene)
+            }
             PlayerOrder::Attack { target_id } => attack_order_step(&inp, target_id, &scene),
             _ => unreachable!(),
         };
@@ -437,7 +439,10 @@ fn rozkazy_attack_i_attack_move_zgodne_z_pinem() {
             if via != PerformOrder::SiegeManual || e["ret"] != true {
                 fails.push(format!("#{i}: oblężenie ręczne {via:?}"));
             }
-            bump(format!("{}/oblezenie-reczne", c["order"].as_str().expect("o")));
+            bump(format!(
+                "{}/oblezenie-reczne",
+                c["order"].as_str().expect("o")
+            ));
             continue;
         }
         let PerformOrder::Attack(step) = via else {
@@ -455,7 +460,7 @@ fn rozkazy_attack_i_attack_move_zgodne_z_pinem() {
             ));
         }
         // Ślad `_firstStepAlongPathToAttack`: (allow podany, cel, wynik) w kolejności wywołań.
-        let pin_fs: Vec<(bool, usize, Option<(i64, i64)>)> = e["fsCalls"]
+        let pin_fs: Vec<FsCall> = e["fsCalls"]
             .as_array()
             .expect("fsCalls")
             .iter()
@@ -498,7 +503,10 @@ fn rozkazy_attack_i_attack_move_zgodne_z_pinem() {
                         || opt_path(&pin_am[1]["out"])
                             != attack_move_path(&scene, inp.pos, (col, row), false)))
             {
-                fails.push(format!("#{i}: ślad _attackMovePath ({} wywołań)", pin_am.len()));
+                fails.push(format!(
+                    "#{i}: ślad _attackMovePath ({} wywołań)",
+                    pin_am.len()
+                ));
             }
             let threats = attack_move_threats(&inp, route.as_deref(), &scene);
             if threats.len() > 1 {
@@ -508,16 +516,30 @@ fn rozkazy_attack_i_attack_move_zgodne_z_pinem() {
                     bump("attackMove/remis-priorytetu".into());
                 }
             }
-            if ens.iter().any(|x| x.removed && !x.dead && !x.fading_out && !x.routed)
+            if ens
+                .iter()
+                .any(|x| x.removed && !x.dead && !x.fading_out && !x.routed)
                 && !threats.is_empty()
             {
                 bump("attackMove/removed-w-rosterze".into());
             }
             let fs_out = pin_fs.first().map(|f| f.2);
-            if !pin_fs.is_empty() && !matches!(step, AttackOrderStep::Move { route: AttackRoute::Threat, .. }) {
+            if !pin_fs.is_empty()
+                && !matches!(
+                    step,
+                    AttackOrderStep::Move {
+                        route: AttackRoute::Threat,
+                        ..
+                    }
+                )
+            {
                 bump(format!(
                     "attackMove/zagrozenie-bez-kroku-{}",
-                    if fs_out.flatten().is_some() { "blokada" } else { "brak" }
+                    if fs_out.flatten().is_some() {
+                        "blokada"
+                    } else {
+                        "brak"
+                    }
                 ));
             }
         } else if !pin_am.is_empty() {
@@ -529,7 +551,10 @@ fn rozkazy_attack_i_attack_move_zgodne_z_pinem() {
             AttackOrderStep::NoStep => "brak-kroku".to_string(),
             AttackOrderStep::BlockadeBlocked { route, .. } => format!("blokada-{route:?}"),
             AttackOrderStep::Move { route, prev, .. } => {
-                format!("ruch-{route:?}{}", if prev.is_some() { "-prev" } else { "" })
+                format!(
+                    "ruch-{route:?}{}",
+                    if prev.is_some() { "-prev" } else { "" }
+                )
             }
         };
         bump(format!("{}/{kind}", c["order"].as_str().expect("o")));
@@ -715,11 +740,17 @@ fn kolejnosc_zagrozen_priorytet_potem_manhattan() {
     let s = S {
         prio: vec![0.0, 1.0, 1.0, 1.0],
     };
-    assert_eq!(attack_move_threats(&inp, Some(&route), &s), vec![0, 1, 3, 2]);
+    assert_eq!(
+        attack_move_threats(&inp, Some(&route), &s),
+        vec![0, 1, 3, 2]
+    );
     let s = S {
         prio: vec![1.45, 1.0, f64::NAN, 1.0],
     };
     // NaN: komparator wraca do Manhattan (`NaN || m`); wynik jak w V8 dla tej tablicy (sortowanie wstawianiem).
-    assert_eq!(attack_move_threats(&inp, Some(&route), &s), vec![1, 3, 2, 0]);
+    assert_eq!(
+        attack_move_threats(&inp, Some(&route), &s),
+        vec![1, 3, 2, 0]
+    );
     assert!(attack_move_threats(&inp, None, &s).is_empty());
 }

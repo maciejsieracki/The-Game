@@ -84,10 +84,7 @@ pub fn attack_move_path<G: AttackPathGrid + ?Sized>(
                 continue;
             }
             let next = (nq, nr);
-            if parent.contains_key(&next)
-                || !grid.passable(nq, nr)
-                || !grid.blockade_allows(nq)
-            {
+            if parent.contains_key(&next) || !grid.passable(nq, nr) || !grid.blockade_allows(nq) {
                 continue;
             }
             match grid.occupant(nq, nr) {
@@ -201,7 +198,11 @@ pub enum AttackOrderStep {
     /// Brak kroku: `done()`, rozkaz bez zmian (`:18390`, `:18415`).
     NoStep,
     /// `_destAllowedByBlockade` odmawia kroku (`:18392`, `:18417`): `done()`, rozkaz bez zmian.
-    BlockadeBlocked { col: i64, row: i64, route: AttackRoute },
+    BlockadeBlocked {
+        col: i64,
+        row: i64,
+        route: AttackRoute,
+    },
     /// `_doMove(ru, col, row, cb)`; rozkaz zachowany. `prev` = `previousPosition` zapisywane w callbacku jako
     /// `ru.lastAutoMoveFrom` (tylko `attack` przy `_shouldAvoidAutoBacktrack`, `:18418-18421`).
     Move {
