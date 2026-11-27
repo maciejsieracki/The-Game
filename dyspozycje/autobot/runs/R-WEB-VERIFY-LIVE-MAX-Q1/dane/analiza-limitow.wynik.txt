@@ -1,0 +1,8 @@
+wiersze: 98 tury: 2 .. 99
+maks. par w wojnie naraz (cala gra) [liczba, tura]: (7, 85)
+maks. wojen jednej cywilizacji wg wyliczenia [liczba, tura]: (2, 69)
+licznik wojnyRownolegleMax zgodny z wyliczeniem w kazdym wierszu: True
+maks. par ze statusem sojusz [liczba, tura]: (0, None)
+sojuszeAiAi w wierszach (zbior wartosci): [0]
+wojny gracza (id 0), maks. na typ wojny w jednej turze: {'naturalna': 1, 'epoki': 1}
+zerwaniaZeroZaufania: pierwszy wiersz 0 ostatni 40
