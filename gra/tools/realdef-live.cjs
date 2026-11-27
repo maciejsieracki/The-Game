@@ -1,24 +1,31 @@
 'use strict';
-// R-WEB-EARLY-DEFENSE-REALISTIC-Q1 (tag REALDEF): przeżywalność pierwszych 20 tur przy GRZE ROZSĄDNEGO GRACZA
-// na MAKSIMUM (Trudny / trudna / Wysoki ×4 / kultura trudny / barbarzyńcy TRUDNY), żywa gra w Chromium.
-// Bazuje na runnerze defeat-cause-live.cjs (ta sama konfiguracja startu, to samo zamknięcie ekranów,
-// ta sama bramka tury), różnice:
-//  - polityka p0 = pasywny (kontrola, jak DEFEAT);
-//  - p1 (budowa jednostki obronnej) ZABLOKOWANA w tym runnerze: karta „Rekrutuj” nie jest dostępna w widoku miasta
-//    (brak kart w panelu), a jedyny hak zakupu (__siegeBlockTestDebug.tryPurchase) kupuje PIERWSZĄ jednostkę
-//    z listy (w praktyce cywilną Zwiadowcę, nie wojskową); wybór konkretnej jednostki wymagałby zmiany main.ts
-//    (poza allowlistą). Patrz raport w dyspozycje/autobot/runs/R-WEB-EARLY-DEFENSE-REALISTIC-Q1/10-operator-claude.md.
-//  - p2 / p3 NIE są zaimplementowane (NIE ZMIERZONO).
-// Uruchomienie (z gra/): node tools/realdef-live.cjs <katalog_poza_repo> p0 <seed> [tury=20]
-// Surowy log: linie `REALDEF <json>` w pliku <katalog>/realdef-<polityka>-s<seed>.txt. Jeden wiersz wyniku
-// na przebieg: linia `REALDEF {"kind":"result",...}`; po zakończeniu runner dopisuje ją też do <katalog>/dane.jsonl.
+// R-WEB-EARLY-DEFENSE-REALISTIC-Q1 (tag REALDEF), runda 2: przezywalnosc pierwszych 20 tur przy GRZE ROZSADNEGO
+// GRACZA na MAKSIMUM (Trudny / dyplomacja trudna / Wysoki x4 / kultura trudny / barbarzyncy TRUDNY), zywa gra w Chromium.
+//
+// Polityki:
+//  - p0 = pasywny (kontrola): bez zadnych akcji gracza, BEZ wymuszonego fortu (forceFortLive nie jest uzywany).
+//  - p1 = budowa jednostki obronnej REALNA sciezka UI: w kazdej turze gracz otwiera panel miasta (openCityPanelForTest =
+//         to samo co klikniecie miasta), klika zakladke „Jednostki do rekrutacji” i klika przycisk „.unit-recruit-submit”
+//         najtanszej dostepnej jednostki wojskowej. Koszt, skarb, pula rekrutow i drewno sprawdza gra (przycisk jest
+//         wylaczony, gdy brakuje czegos). Zadnych hakow tworzacych jednostki ani zmieniajacych skarb.
+//  - p2 / p3 NIE sa zaimplementowane w tym runnerze (NIE ZMIERZONO, patrz raport).
+//
+// Haki civTest uzyte WYLACZNIE do odczytu i sterowania harnessem: __settingsLive.startNewGame/getSettings,
+// __defeatTestDebug.cityThreatProbe/isGameOver, __nnsMeasureDebug.gateInfo/awaitingFirstCity/foundFirstCity,
+// __hotSeatTestDebug.openCityPanelForTest (realne otwarcie panelu), __civTest.endTurn (kończenie tury).
+// NIE uzywane: __siegeBlockTestDebug.tryPurchase (cheat: skarb 999999, pula 99999), forceFortLive,
+// prepareEndTurnGate (podnosi skarb i spichlerz do progow — zmienia stan gry; tu tylko odczyt gateInfo().canEnd).
+//
+// Uruchomienie (z gra/): node tools/realdef-live.cjs <katalog_poza_repo> <p0|p1> <seed> [tury=20] [run=1]
+// Wynik: linia `REALDEF {"kind":"result",...}` w logu <katalog>/realdef-<polityka>-s<seed>-r<run>.txt oraz wiersz
+// w <katalog>/dane.jsonl. Logi *.txt nie sa commitowane.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { chromium } = require('playwright');
 const { resolveChromePath } = require('./_chrome-path.cjs');
-const { closeCivWelcome, prepareEndTurnGate } = require('./_live-ready.cjs');
+const { closeCivWelcome } = require('./_live-ready.cjs');
 const { TECH_SIDE_CLOSE_SEL, TECH_MAIN_CLOSE_SEL } = require('./measure-close-modals.cjs');
 const { rejectAwaitingAiOffers } = require('./measure-reject-offers.cjs');
 const { acceptForcedPeace } = require('./measure-forced-peace.cjs');
@@ -28,13 +35,13 @@ const OUT = path.resolve(process.argv[2] || '/nonexistent-out');
 const POLICY = process.argv[3];
 const SEED = parseInt(process.argv[4] || '4242', 10);
 const TURNS = parseInt(process.argv[5] || '20', 10);
-if (!process.argv[2] || OUT.startsWith(path.resolve(GRA, '..')) || POLICY !== 'p0' || !Number.isFinite(SEED)) {
-  console.error('Uzycie: <katalog_poza_repo> p0 <seed> [tury]  (p1 zablokowany: brak hooka zakupu konkretnej jednostki)'); process.exit(2);
+const RUN = parseInt(process.argv[6] || '1', 10);
+if (!process.argv[2] || OUT.startsWith(path.resolve(GRA, '..')) || !['p0', 'p1'].includes(POLICY) || !Number.isFinite(SEED)) {
+  console.error('Uzycie: <katalog_poza_repo> <p0|p1> <seed> [tury=20] [run=1]'); process.exit(2);
 }
 const LIVE_TOOL = path.join(GRA, 'tools', 'test-hook-setcitylimit-live-bundle.cjs');
-const LOG = path.join(OUT, `realdef-${POLICY}-s${SEED}.txt`);
+const LOG = path.join(OUT, `realdef-${POLICY}-s${SEED}-r${RUN}.txt`);
 const DANE = path.join(OUT, 'dane.jsonl');
-// Maksimum (jak DEFEAT r2): barbarzyńcy TRUDNY. Nadpisanie tylko do odtworzenia starych danych.
 const BARB_LEVEL = process.env.DEFEAT_BARB_LEVEL || 'trudny';
 const ADV = {
   barbariansLevel: BARB_LEVEL, battleAlwaysManual: false, victoryMode: 'moc_i_dominacja', buildingCostPace: 'niski',
@@ -51,6 +58,12 @@ const MAX_PARAMS = {
   advanced: ADV,
   villageRewardsEnabled: true,
 };
+// Nazwy jednostek z danych gry (tylko do rozpoznania wiersza karty w panelu; dane nie sa modyfikowane).
+const UNIT_NAMES = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'units.json'), 'utf8')).map(u => u.Jednostka).filter(Boolean)
+  .sort((a, b) => b.length - a.length);
+// Kolejnosc wyboru jednostki wojskowej (P1): najtansze bez wymagan technologii najpierw (koszt bazowy Pieniadz: 3, 3, 5, 15).
+const MIL_PRIORITY = ['Oszczepnik', 'Łucznik', 'Wojownik', 'Rydwan (woły)'];
+const MILITARY_EXCL = new Set(['zwiadowca', 'osadnik', 'robotnik']);
 
 function logLine(obj) {
   const line = 'REALDEF ' + JSON.stringify(obj);
@@ -59,7 +72,6 @@ function logLine(obj) {
 }
 
 const KEEP_RE = /Diag|Load\]|Save|Zapis|Victory|Oblezenie|[Bb]itw|[Bb]attle|zdob|[Pp]odb|[Bb]arbar|[Ww]ojn|[Ww]ar|[Cc]ession|[Cc]ytad|[Bb]unt|[Rr]ebel|Autosave\] rotacyjny|Ekonomia\] Tura/;
-const MILITARY_EXCL = new Set(['zwiadowca', 'osadnik', 'robotnik']);
 
 async function closeModals(page) {
   await page.evaluate(({ side, main }) => {
@@ -88,13 +100,44 @@ async function clearBattles(page) {
   return n;
 }
 
-async function probe(page, trackIds) {
-  return page.evaluate((ids) => {
+// Odczyt wierszy karty rekrutacji (tylko odczyt DOM). Nazwa wiersza = pierwsza z nazw jednostek, od ktorej zaczyna sie
+// tekst najblizszego przodka przycisku „.unit-recruit-submit”.
+function readRecruitRowsScript(names) {
+  return ({ names }) => {
+    const body = document.querySelector('.civ-v-recruit-body');
+    if (!body) return { open: false, rows: [], pool: null, panel: null };
+    const pool = document.querySelector('.unit-recruit-pool');
+    const rows = [...body.querySelectorAll('.unit-recruit-submit')].map(b => {
+      let name = null; let rowText = '';
+      for (let p = b.parentElement; p && p !== body.parentElement; p = p.parentElement) {
+        const t = (p.innerText || '').trim();
+        const hit = names.find(n => t.startsWith(n));
+        if (hit) { name = hit; rowText = t; break; }
+      }
+      return { name, disabled: !!b.disabled, text: rowText.replace(/\s+/g, ' ').slice(0, 140) };
+    });
+    return { open: true, rows, pool: pool && pool.dataset ? (pool.dataset.available ?? null) : null, panel: body.innerText.slice(0, 700) };
+  };
+}
+
+async function readRecruitRows(page) {
+  return page.evaluate(readRecruitRowsScript(UNIT_NAMES), { names: UNIT_NAMES });
+}
+
+async function probe(page, cityId) {
+  return page.evaluate((id) => {
     const all = window.__defeatTestDebug.cityThreatProbe();
-    const tracked = all.filter(c => ids.includes(c.id));
-    const others = all.filter(c => !ids.includes(c.id)).map(c => ({ id: c.id, owner: c.ownerId, q: c.q, r: c.r }));
-    return { turn: window.__nnsMeasureDebug.gateInfo().turn, gameOver: window.__defeatTestDebug.isGameOver(), tracked, otherCities: others.length, battle: window.__aiTradeWiringTestDebug.battleState() };
-  }, trackIds);
+    const c = all.find(x => x.id === id);
+    const gi = window.__nnsMeasureDebug.gateInfo();
+    return {
+      turn: gi.turn, treasury: gi.treasury, granary: gi.granary, canEnd: gi.canEnd, gate: gi.gate && gi.gate.blokada,
+      gameOver: window.__defeatTestDebug.isGameOver(),
+      owner: c ? c.ownerId : null,
+      playerOnHex: c ? c.playerOnHex : [],
+      foreignNear: c ? c.foreignNear : [],
+      battle: window.__aiTradeWiringTestDebug.battleState(),
+    };
+  }, cityId);
 }
 
 async function main() {
@@ -113,77 +156,146 @@ async function main() {
     if (m.type() === 'warning' && /^\[EndTurn\] blocked/.test(t)) endTurnBlocks.push(t);
     if (KEEP_RE.test(t)) logLine({ kind: 'console', type: m.type(), text: t.slice(0, 260) });
   });
-  const run = { policy: POLICY, seed: SEED, adv: ADV };
-  let completed = 0;
-  let trackIds = [];
+  let cityId = null;
+  let lossTurn = null;
   let firstDefender = null;
+  let purchaseTurn = null;
+  let purchases = 0;
+  let gateStops = 0;
+  let barbNearMax = 0;
+  let barbNearAtLoss = null;
+  let completed = 0;
+  let result = null;
   try {
     await page.goto('file://' + html + '?civTest=1', { waitUntil: 'load', timeout: 120000 });
     await page.waitForFunction(() => !!window.__settingsLive, null, { timeout: 60000 });
-    // Readback ustawień: parametry startu i odczyt po starcie (kontrola maksimum).
     await page.evaluate((p) => window.__settingsLive.startNewGame(p), MAX_PARAMS);
     await page.waitForFunction(() => window.__nnsMeasureDebug.awaitingFirstCity() === true, null, { timeout: 600000, polling: 500 });
     const founded = await page.evaluate(() => window.__nnsMeasureDebug.foundFirstCity());
     assert.ok(founded, 'foundFirstCity=true');
     await page.waitForTimeout(4000);
     await closeCivWelcome(page);
-    // Wymuszenie fortu jak w DEFEAT (wspólna baza porównania z kontrolą P0 z r2).
-    const forced = await page.evaluate(() => window.__settingsLive.forceFortLive(0));
-    assert.ok(forced, 'wymuszenie fortu: wolny heks przy miescie gracza');
+    // Brak forceFortLive: zadna akcja harnessu nie stawia fortu ani nie zmienia stanu miasta.
     const c0 = await page.evaluate(() => window.__defeatTestDebug.cityThreatProbe().filter(c => c.ownerId === 0));
-    trackIds = c0.map(c => c.id);
-    const readback = await page.evaluate(() => ({ turn: window.__nnsMeasureDebug.gateInfo().turn, treasury: window.__nnsMeasureDebug.gateInfo().treasury }));
-    // Readback faktycznych ustawień z gry (hak __settingsLive.getSettings, tylko odczyt) — porównać z `adv`.
+    assert.equal(c0.length, 1, 'dokladnie jedno miasto gracza na starcie');
+    cityId = c0[0].id;
     const settingsReadback = await page.evaluate(() => window.__settingsLive.getSettings());
-    logLine({ kind: 'start', policy: POLICY, seed: SEED, adv: ADV, settingsReadback, playerCities: c0.map(c => ({ id: c.id, q: c.q, r: c.r })), readback });
-    const gate0 = await prepareEndTurnGate(page);
-    logLine({ kind: 'gate0', gate0 });
-    let result = null;
+    const start = await probe(page, cityId);
+    logLine({ kind: 'start', policy: POLICY, seed: SEED, run: RUN, adv: ADV, settingsReadback, cityId, turn: start.turn, treasury: start.treasury });
+
     for (let i = 0; i < TURNS && !result; i++) {
       await closeModals(page);
-      const battles = await clearBattles(page);
+      await clearBattles(page);
       const seen = new Set();
-      const offers = await rejectAwaitingAiOffers(page, seen);
-      const forcedPeace = await acceptForcedPeace(page, {}, null);
-      const pre = await page.evaluate(() => ({ turn: window.__nnsMeasureDebug.gateInfo().turn, treasury: window.__nnsMeasureDebug.gateInfo().treasury }));
-      let gate = await prepareEndTurnGate(page);
-      for (let k = 0; k < 6 && !gate.canEnd; k++) {
+      await rejectAwaitingAiOffers(page, seen);
+      await acceptForcedPeace(page, {}, null);
+      const pre = await probe(page, cityId);
+
+      if (POLICY === 'p1' && pre.owner === 0) {
+        // Realna sciezka produkcji: panel miasta -> zakladka rekrutacji -> przycisk najtanszej dostepnej jednostki wojskowej.
+        await page.evaluate((id) => window.__hotSeatTestDebug.openCityPanelForTest(id), cityId);
+        await page.waitForTimeout(1200);
+        let snap = { open: false, rows: [], pool: null, panel: null };
+        const tabClicked = await page.evaluate(() => {
+          const t = document.querySelector('button[aria-label="Jednostki do rekrutacji"]');
+          if (!t) return false;
+          t.click();
+          return true;
+        });
+        await page.waitForTimeout(400);
+        if (tabClicked) snap = await readRecruitRows(page);
+        else logLine({ kind: 'recruit-error', turn: pre.turn, message: 'brak zakladki Jednostki do rekrutacji', opened });
+        let clicked = null;
+        if (snap.open) {
+          for (const name of MIL_PRIORITY) {
+            const row = snap.rows.find(r => r.name === name && !r.disabled);
+            if (!row) continue;
+            clicked = await page.evaluate((nm) => {
+              const body = document.querySelector('.civ-v-recruit-body');
+              const btns = [...body.querySelectorAll('.unit-recruit-submit')];
+              for (const b of btns) {
+                let p = b.parentElement; let hit = null;
+                for (; p && p !== body.parentElement; p = p.parentElement) {
+                  if ((p.innerText || '').trim().startsWith(nm)) { hit = p; break; }
+                }
+                if (hit && !b.disabled) { b.click(); return nm; }
+              }
+              return null;
+            }, name);
+            if (clicked) break;
+          }
+          if (clicked) {
+            purchases += 1;
+            if (purchaseTurn === null) purchaseTurn = pre.turn;
+            await page.waitForTimeout(300);
+          }
+        }
+        logLine({ kind: 'recruit', turn: pre.turn, treasury: pre.treasury, open: snap.open, pool: snap.pool, clicked,
+          rows: snap.rows.map(r => ({ n: r.name, d: r.disabled, t: r.text })), panel: snap.panel && snap.panel.slice(0, 500) });
+        // Zamkniecie panelu miasta (ta sama sciezka co przycisk „Wróć na mapę”, jesli jest widoczny).
+        // Panel zostaje otwarty (przycisk „WRÓĆ NA MAPĘ” nie jest klikany: w tym harnessie zamykanie panelu tym
+        // przyciskiem zrywa stan sesji; NIE ZMIERZONO, czy to blad gry, czy artefakt haka).
+
+      }
+
+      // Miasto gracza zniknelo z listy miast (zdobyte/zniszczone podczas tury) = utrata, nie zatrzymanie harnessu.
+      const alive = await probe(page, cityId);
+      if (alive.owner === null || alive.owner !== 0) {
+        lossTurn = lossTurn ?? pre.turn;
+        result = { outcome: 'przegrana-miasto', turn: pre.turn };
+        logLine({ kind: 'loss', turn: pre.turn, cityOwner: alive.owner, treasury: alive.treasury, note: 'miasto gracza nieobecne na liscie miast przed bramka tury' });
+        break;
+      }
+      // Bramka tury: tylko odczyt canEnd (bez podnoszenia skarbu/spichlerza).
+      let gp = await probe(page, cityId);
+      for (let k = 0; k < 6 && !gp.canEnd; k++) {
         await closeModals(page);
         await clearBattles(page);
         await rejectAwaitingAiOffers(page, seen);
         await acceptForcedPeace(page, {}, null);
         await new Promise(r => setTimeout(r, 500));
-        gate = await prepareEndTurnGate(page);
+        gp = await probe(page, cityId);
       }
-      if (!gate.canEnd) {
-        const over = await page.evaluate(() => window.__defeatTestDebug.isGameOver());
-        if (over) { result = { outcome: 'przegrana', turn: pre.turn }; break; }
-        logLine({ kind: 'stop', reason: 'cannot-end', turn: pre.turn, battles, offers, forcedPeace, endTurnBlocks: endTurnBlocks.splice(0) });
+      if (!gp.canEnd) {
+        if (gp.gameOver) { result = { outcome: 'przegrana', turn: pre.turn }; break; }
+        if (gp.owner === null) { lossTurn = lossTurn ?? pre.turn; result = { outcome: 'przegrana-miasto', turn: pre.turn }; break; }
+        gateStops += 1;
+        logLine({ kind: 'stop', reason: 'cannot-end', turn: pre.turn, gate: gp.gate, endTurnBlocks: endTurnBlocks.splice(0).slice(0, 3) });
         result = { outcome: 'zatrzymanie', turn: pre.turn };
         break;
       }
       await page.evaluate(() => window.__civTest.endTurn());
       await page.waitForFunction((t) => window.__nnsMeasureDebug.gateInfo().turn > t && !window.__nnsMeasureDebug.isEndTurnInProgress(), pre.turn, { timeout: 180000, polling: 200 });
       await closeModals(page);
-      const pr = await probe(page, trackIds);
+      const post = await probe(page, cityId);
       completed += 1;
-      const defenders = pr.tracked.length ? pr.tracked[0].playerOnHex.filter(u => !MILITARY_EXCL.has(String(u.typeId).toLowerCase()) && u.category !== 'zwiadowca') : [];
-      if (!firstDefender && defenders.length) firstDefender = { turn: pr.turn, units: defenders.map(u => ({ typeId: u.typeId, category: u.category, inGarnizon: u.inGarnizon })) };
-      logLine({ kind: 'turn', turn: pr.turn, gameOver: pr.gameOver, tracked: pr.tracked, otherCities: pr.otherCities, battle: pr.battle, errors: errors.length, endTurnBlocks: endTurnBlocks.splice(0) });
-      if (pr.gameOver) { result = { outcome: 'przegrana', turn: pr.turn }; }
+      const mil = post.playerOnHex.filter(u => !MILITARY_EXCL.has(String(u.typeId).toLowerCase()) && u.category !== 'zwiadowca');
+      if (firstDefender === null && mil.length) firstDefender = { turn: post.turn, inGarnizon: mil.some(u => u.inGarnizon), units: mil.map(u => u.typeId) };
+      const barbNear = post.foreignNear.filter(u => u.owner !== 0).length;
+      barbNearMax = Math.max(barbNearMax, barbNear);
+      logLine({ kind: 'turn', turn: post.turn, treasury: post.treasury, owner: post.owner, gameOver: post.gameOver,
+        playerOnHex: post.playerOnHex.map(u => ({ t: u.typeId, g: u.inGarnizon })), barbNear, battle: post.battle, errors: errors.length,
+        endTurnBlocks: endTurnBlocks.splice(0) });
+      if (post.owner !== 0 && lossTurn === null) {
+        lossTurn = post.turn;
+        barbNearAtLoss = barbNear;
+      }
+      if (post.gameOver) { result = { outcome: 'przegrana', turn: post.turn }; }
     }
     if (!result) result = { outcome: 'dokonczone', turn: null };
-    // Strata miasta: tura, w której właściciel miasta gracza przestał być 0 (z pierwszego przebiegu probe).
-    const lastTurn = await probe(page, trackIds);
-    const ownerNow = lastTurn.tracked.length ? lastTurn.tracked[0].ownerId : null;
+    const last = await probe(page, cityId);
     const row = {
-      kind: 'result', policy: POLICY, seed: SEED, barb: BARB_LEVEL, ...result, turnsCompleted: completed,
-      cityOwnerAfter: ownerNow, cityLost: ownerNow !== 0, errors: errors.length,
+      kind: 'result', policy: POLICY, seed: SEED, run: RUN, barb: BARB_LEVEL, turnsRequested: TURNS, turnsCompleted: completed,
+      ...result, cityOwnerAfter: last.owner, cityLost: last.owner !== 0, lossTurn,
+      survived: last.owner === 0,
+      firstDefenderTurn: firstDefender ? firstDefender.turn : null,
+      firstDefenderInGarnizon: firstDefender ? firstDefender.inGarnizon : null,
+      purchaseTurn, purchases, barbNearAtLoss, barbNearMax, gateStops, errors: errors.length, fortForced: false,
     };
     logLine(row);
     fs.appendFileSync(DANE, JSON.stringify(row) + '\n');
     assert.deepEqual(errors, [], 'brak pageerror');
-    logLine({ kind: 'done', policy: POLICY, seed: SEED, turnsCompleted: completed, errors: errors.length, run: run.policy });
+    logLine({ kind: 'done', policy: POLICY, seed: SEED, run: RUN, turnsCompleted: completed, errors: errors.length });
   } finally {
     await browser.close();
   }
