@@ -1,5 +1,5 @@
 'use strict';
-const { closeCivWelcome } = require('./_live-ready.cjs');
+const { closeCivWelcome, prepareEndTurnGate } = require('./_live-ready.cjs');
 /**
  * sidepanel-diplo-dismiss-real-render-test.cjs — P-DYPLO-KARTA-DECYZJI-DISMISS-Q1 (Operator
  * Sonnet 5, effort high, runda 1, worktree izolowany).
@@ -81,7 +81,9 @@ const argOf = (flag) => {
 const SHOTS = argOf('--shots');
 const DIST_ARG = argOf('--dist');
 const OUT_DIR = DIST_ARG !== null ? path.resolve(DIST_ARG) : path.join(GRA_DIR, 'dist-sp-diplo-dismiss-test');
-const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html') + '?playtest=mapa';
+// R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1: ?civTest=1 udostepnia hak __nnsMeasureDebug (bramka „Zakończ turę”
+// przygotowana przez prepareEndTurnGate). Tylko test-only, bez zmiany logiki gry.
+const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html') + '?playtest=mapa&civTest=1';
 
 let pass = 0;
 let fail = 0;
@@ -133,6 +135,9 @@ async function gotoPlaytestMapa(page) {
 }
 
 async function endTurnAndSettle(page, timeoutMs = 90000) {
+  // R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1: bramka „Zakończ turę” (skarbiec/spichlerz) przygotowana przez hak pomiarowy.
+  const gate = await prepareEndTurnGate(page);
+  if (!gate.canEnd) throw new Error('bramka Zakończ turę nadal zamknięta po prepareEndTurnGate: ' + JSON.stringify(gate));
   await page.evaluate(() => window.__eraTestDebug.endTurn());
   const t0 = Date.now();
   let sawInProgress = false;

@@ -1,0 +1,105 @@
+| R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| ai-general-war-campaign-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| ai-trade-wiring-e2e-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| ambush-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| army-auto-recruit-general-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| army-panel-general-label-multiselect-live-test.cjs | NIE (kod: helper closeCivWelcome obecny) | tak | nie |
+| autoclear-priority-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| battle-banner-retreat-overlap-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| battle-damage-colors-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| battle-hud-tempo-minimap-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| battle-large-return-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| battle-manual-control-multicycle-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| battle-manual-full-roster-pointer-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| battle-manual-melee-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| battle-manual-queued-order-lifecycle-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| battle-pace-equal-line-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| battle-player-always-blue-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| battle-save-disabled-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| battle-side-colors-3d-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| battle-skip-siege-parity-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| build-request-obywatele-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| city-clears-forest-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| city-founding-limit-greyed-fullgame-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| city-founding-limit-greyed-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| city-panel-refresh-at-turn-start-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| city-ro-loop-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| city-state-offensive-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| city-state-start-units-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| civ-music-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| civ-welcome-screen-brand-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| defeat-last-city-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| defeat-screen-summary-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| diplo-aggressor-marker-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| diplo-aggressor-ui-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| diplo-forced-peace-d2-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| diplo-nap-trust-30-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| diplo-peace-auto-stale-offer-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| diplo-respect-military-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| diplo-treaty-payment-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| diplo-truce-ai-table-live-test.cjs | NIE (kod: helper closeCivWelcome obecny) | tak | nie |
+| diplo-truce-live-test.cjs | NIE (kod: helper closeCivWelcome obecny) | tak | tak |
+| diplo-truce-saveload-live-test.cjs | NIE (kod: helper closeCivWelcome obecny) | tak | nie |
+| diplo-war-peace-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| diplomacy-border-era-penalty-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| diplomacy-city-cession-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| diplomacy-direct-negotiation-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| diplomacy-relacje-ai-ai-audiencja-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| diplomacy-relation-deal-text-consistent-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| diplomacy-relation-value-mismatch-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| diplomacy-sensible-deals-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| diplomacy-trade-era-saveload-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| dyplo-mapa-odkrycie-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| dyplo-sojusz-widocznosc-ciagla-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| empire-recruit-all-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| empire-recruit-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| end-turn-block-event-live-test.cjs | NIE (kod: helper closeCivWelcome obecny) | tak | nie |
+| end-turn-gate-live-test.cjs | NIE (kod: helper closeCivWelcome obecny) | tak | nie |
+| era-change-toast-live-test.cjs | NIE (kod: helper closeCivWelcome obecny) | tak | tak |
+| events-one-turn-lifetime-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| forced-war-iron-player-target-live-test.cjs | NIE (kod: helper closeCivWelcome obecny) | tak | nie |
+| forced-war-player-no-contact-live-test.cjs | NIE (kod: helper closeCivWelcome obecny) | tak | nie |
+| forced-war-player-target-live-test.cjs | NIE (kod: helper closeCivWelcome obecny) | tak | tak |
+| forced-war-r9-no-auto-end-live-test.cjs | NIE (kod: helper closeCivWelcome obecny) | tak | nie |
+| forced-war-trojstronna-domino-live-test.cjs | NIE (kod: helper closeCivWelcome obecny) | tak | nie |
+| fort-outpost-territory-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| hotseat-etap6d-podetap-a-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| hotseat-etap6d-podetap-b-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| hotseat-etap6d-podetap-e-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| hud-zetony-ekonomia-brutto-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| improvement-build-highlight-lifecycle-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| improvement-growth-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| interaction-latency-vs-citycount-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| map-controls-behind-panels-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| march-multiturn-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| mgla-sciezka-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| minimap-viewport-rect-follow-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| minimapa-ikona-robotnik-kolor-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| minimapa-pasek-narzedzi-reorganizacja-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| open-panel-refresh-after-tech-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| perf-endturn-ai-phase-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| perf-endturn-render-hud-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| perf-endturn-render-progress-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| perf-large-empire-stress-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| perf-late-game-interaction-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| perf-late-game-interaction-r2-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| perf-long-session-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| praca-global-default-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| praca-pula-100-budynki-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| rebel-city-notification-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| rebel-protection-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| resource-ledger-realpath-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| saveload-hud-cache-hotseat-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| saveload-praca-pool-hotseat-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| saveload-praca-pool-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| scout-start-units-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| siege-auto-breach-replay-e2e-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| siege-badge-zorder-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| siege-surrender-forecast-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| stadnina-kon-koszt-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| starting-army-first-city-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| test-hook-setcitylimit-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |
+| trade-route-remove-stock-flow-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| war-era-counter-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| war-rules-multiwar-live-test.cjs | prawdopodobnie TAK (kod: ?playtest=mapa bez closeCivWelcome) | nie | nie |
+| wyrab-wycinka-nazwa-live-test.cjs | NIE ZMIERZONO (kod: brak ?playtest=mapa) | nie | nie |

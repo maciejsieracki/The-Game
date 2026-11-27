@@ -1,5 +1,5 @@
 'use strict';
-const { closeCivWelcome } = require('./_live-ready.cjs');
+const { closeCivWelcome, prepareEndTurnGate } = require('./_live-ready.cjs');
 /**
  * era-change-toast-live-test.cjs — P-EPOKA-BRAK-INFO-REGRESJA-BRAZ (Operator Sonnet 5,
  * 2026-08-16, worktree izolowany).
@@ -61,7 +61,8 @@ const { execSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
 const OUT_DIR = path.join(GRA_DIR, 'dist-era-change-toast-live-test');
-const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html') + '?playtest=mapa';
+// R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1: ?civTest=1 udostepnia hak __nnsMeasureDebug (prepareEndTurnGate). Test-only.
+const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html') + '?playtest=mapa&civTest=1';
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 let pass = 0;
@@ -160,6 +161,9 @@ async function main() {
     assert('po prepare: zbadaneSize===11 (12 - Brązownictwo)', afterPrep.zbadaneSize === 11, afterPrep);
 
     console.log('\n-- C. Realny triggerPlayerEndTurn() (ta sama funkcja co przycisk "Zakończ turę") --');
+    // R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1: bramka „Zakończ turę” (spichlerz/skarbiec) przez hak pomiarowy.
+    const gateC = await prepareEndTurnGate(page);
+    if (!gateC.canEnd) throw new Error('bramka Zakończ turę (C) nadal zamknięta: ' + JSON.stringify(gateC));
     await page.evaluate(() => window.__eraTestDebug.endTurn());
     const t0 = Date.now();
     let sawInProgress = false;
