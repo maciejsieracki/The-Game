@@ -1,3 +1,9 @@
+## ROBOCZA edbfe177 -- 2026-11-27 -- FALA 931: Stolica po buncie lub cesji: przejęcie faktycznej stolicy daje plunder i sukcesję (testowa)
+
+- przejęcie faktycznej stolicy (wg capitalCityIdForOwner) uruchamia przejęcie stolicy (plunder skarbca + sukcesja) także gdy jawny wpis stolicy jest nieaktualny po buncie, cesji lub dwóch buntach; przejęcie ostatniego miasta będącego faktyczną stolicą przy nieaktualnym wpisie daje teraz eliminację
+- Weryfikacja: tsc 0; logic 213/213; capital-capture 107/107; stale-designation 12/0 (S5 NIE ZMIERZONO); society-breakdown 56/0; ai-test 297/0; live PRZED FAIL 9/9, PO PASS 9/9 (Trudny, Wysoki x4, kultura trudny; ziarna 4242, 7, 11 wg Operatora; FC potwierdził 4242)
+- Limity: NIE ZMIERZONO: kwota plunderu w żywej grze, S2, S5 (round-trip), podbój armią, aneksja; seed 7 w pomiarze FC (crash Chromium)
+
 ## ROBOCZA 62871a80 -- 2026-11-27 -- FALA 930: Kultura i religia: plus i minus rosną z epoką, osobne poziomy dla gracza i AI (testowa)
 
 - Kultura i religia w Szczęściu i Prawie: wspólny model addytywny (plus rośnie z epoką: gracz wg poziomu 10/16/23 łatwy, 5/11/18 normalny, 0/6/13 trudny; AI zawsze 10/16/23; minusy 10/16/23, 15/21/28, 20/26/33 wg poziomu każdej strony). Dwa niezależne selektory w kreatorze nowej gry (poziom dla gracza i dla AI), nowe pole zapisu poziomu AI (brak = poziom gracza), tryb zgodności bez zmian; podpowiedź selektora i panel miasta zgodne z nowym modelem.
