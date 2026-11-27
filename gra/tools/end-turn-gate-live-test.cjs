@@ -61,7 +61,7 @@ async function openGame(browser, seed, errors) {
   if (await page.evaluate(() => window.__nnsMeasureDebug.awaitingFirstCity())) {
     await page.evaluate(() => window.__nnsMeasureDebug.refoundPlayerAnywhere());
   }
-    await closeCivWelcome(page);
+  await closeCivWelcome(page);
   await wait(800);
   return page;
 }

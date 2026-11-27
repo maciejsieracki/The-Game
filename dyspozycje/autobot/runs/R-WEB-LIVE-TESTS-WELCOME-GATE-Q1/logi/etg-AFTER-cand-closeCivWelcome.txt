@@ -1,0 +1,11 @@
+FAIL a@t1 NIE_ZMIERZONO: nawet maksymalny podatek nie daje dodatniego przyrostu (netMax=0)
+FAIL b@t1 oczekiwano blokady (canEnd=false), tooltipu „po zakończeniu tury”, propozycji podatku krokowej, braku końca tury i braku efektów ubocznych odczytu bramki
+FAIL c@t1 brak propozycji podatku (patrz b)
+PASS d@t1
+FAIL d2@t2 oczekiwano blokady przy Auto wyłączonym, prognozie Spichlerza<0 i dostępnej dźwigni racji
+PASS e@t3
+FAIL a@t11 oczekiwano canEnd=true przy Skarbcu<0 i prognozie>=0
+FAIL b@t11 oczekiwano blokady (canEnd=false), tooltipu „po zakończeniu tury”, propozycji podatku krokowej, braku końca tury i braku efektów ubocznych odczytu bramki
+FAIL c@t11 brak propozycji podatku (patrz b)
+WYNIK new: 2/9 PASS; błędy strony: 0
+EXIT 1

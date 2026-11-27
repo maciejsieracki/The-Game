@@ -57,3 +57,26 @@ Maksimum dla testów live wg dispatchu: Dyplomacja „Trudna”, Koszty jednoste
 - Liczby „ile z ~102 testów jest blokowanych ekranem” — nie zmierzono na pełnej próbce; zmierzono tylko, że ekran zasłania przycisk w sondzie i że w 3 testach nie zmienia wyniku, bo blokuje bramka.
 - Wyniki testów na poziomie maksymalnym (pkt 6).
 - Pełne przebiegi przed/po dla 9 z 12 przepiętych testów.
+
+## 9. Obrona runda 2 (Operator HAIKU 5.5) — odpowiedzi na zarzuty Evaluatora
+
+Dowody surowe: `dyspozycje/autobot/runs/R-WEB-LIVE-TESTS-WELCOME-GATE-Q1/logi/` (pliki `.txt`, bo `*.log` jest w `.gitignore`; suma SHA256 w `SHA256SUMS.txt`). Bramki: tsc 0 błędów (`tsc-r2.txt`), logic 213/213 (`logic-r2.txt`), ai-test 297 passed / 0 failed (`ai-r2.txt`).
+
+| Zarzut | Odpowiedź | Dowód / stan |
+|---|---|---|
+| 1. Brak prepareEndTurnGate w 12 testach | PRZYJMUJĘ częściowo. Dla testów `end-turn-gate` i `end-turn-block-event` ODRZUCAM wpięcie: to właśnie bramka jest przedmiotem testu (scenariusz b wymaga canEnd=false), a helper podniósłby skarbiec i spichlerz. Dla 9 pozostałych testów (`?playtest=mapa`, bez `civTest`) helper nie ma haka `__nnsMeasureDebug` (hak istnieje tylko przy `?civTest=1`, komentarz w `diplo-truce-live-test.cjs` linia 67), więc wpięcie rzuciłoby wyjątek. NIE ZROBIONE: wpięcie w `diplo-truce-live-test.cjs` (civTest) — nie przetestowane. |  |
+| 2. Brak inwentaryzacji i klasyfikacji | PRZYJMUJĘ. NIE ZMIERZONO. | Brak klasyfikacji 102 testów. |
+| 3. Próbka przed/po < 20 | PRZYJMUJĘ. Zmierzono 1 test w 2 wersjach (`end-turn-gate`), nie 3 i nie 20. | Sekcja 4 i logi. |
+| 4. Brak gateInfo/canEnd per test | PRZYJMUJĘ. Dla `end-turn-gate` odczyt wyników jest w logu, ale nie dla pozostałych testów. | NIE ZMIERZONO dla pozostałych. |
+| 5. Brak mutacji na realnym teście | PRZYJMUJĘ i WYKONANO na `end-turn-gate-live-test.cjs`: wersja bazowa (bez `closeCivWelcome`) = 2/9 PASS; wersja z helperem = 2/9 PASS. Mutacja NIE daje czerwieni przy braku helpera, a wynik nie zmienia się z helperem. Kryterium mutacji NIE spełnione. | `etg-BEFORE-base-commit.txt`, `etg-AFTER-cand-closeCivWelcome.txt` (sha w SHA256SUMS). |
+| 6. Brak poziomu maksymalnego | PRZYJMUJĘ. Wszystkie pomiary na mapie Mały, ustawienia domyślne (`--map Maly`, bez suwaków). NIE ZMIERZONO na maksimum. | |
+| 7. Bramka „zielone jak przed” niespełniona | PRZYJMUJĘ. Dla zmierzonego testu wynik przed = po = 2/9; brak zielonego przepiętego testu. | Tabela w sekcji 4 i wyżej. |
+| 8. Niespójne wcięcie po migracji | PRZYJMUJĘ i NAPRAWIONO w `end-turn-gate-live-test.cjs` i `diplo-truce-saveload-live-test.cjs` (wcięcie zgodne z blokiem). Pozycja importu przed nagłówkiem komentarza pozostaje (nie blokuje). | Diff tej rundy. |
+| 9. Surowe logi nieobecne w commicie | PRZYJMUJĘ. Przyczyna: wzorzec `*.log` w `.gitignore:20`. Logi zapisano jako `.txt` i dodano do commita; `SHA256SUMS.txt` przepisano tylko na pliki rzeczywiście w repo (wcześniejsze wpisy `ai-test.log`, `tsc.log` itd. bez plików usunięto jako niezweryfikowalne). | `logi/*.txt`. |
+
+## Wynik zmierzony tej rundy (end-turn-gate-live-test, seed 11, Mały, domyślne ustawienia, limit 280 s)
+
+- Wersja bazowa (cf8c26b22, bez closeCivWelcome): WYNIK base 2/9 PASS, 0 błędów strony.
+- Wersja kandydat (ec42bda7a, z closeCivWelcome): WYNIK new 2/9 PASS, 0 błędów strony.
+- Różnica między wersjami: brak. Błędy z obu przebiegów są te same (a@t1, b@t1, c@t1, d2@t2, a@t11, b@t11, c@t11): scenariusze blokady i podatku, nie ekran powitalny.
+- Wniosek: ekran powitalny zasłania przycisk w sondzie, ale dla tego testu nie jest przyczyną niepowodzeń. Przyczyną jest logika bramki/prognozy opisana w logu (np. „nawet maksymalny podatek nie daje dodatniego przyrostu”, netMax=0). Kandydat do osobnego tematu (błąd gry albo błąd scenariusza), nie do naprawy helperem.

@@ -98,7 +98,7 @@ async function openGame(ctx, errors) {
     undefined,
     { timeout: 100000 },
   );
-    await closeCivWelcome(page);
+  await closeCivWelcome(page);
   console.log('[saveload] stan po starcie strony: ' + JSON.stringify(await page.evaluate(() => window.__eraTestDebug.getWorldState())).slice(0, 200));
   await page.evaluate(() => window.__truceTestDebug.suppressVictoryForTest());
   return page;
