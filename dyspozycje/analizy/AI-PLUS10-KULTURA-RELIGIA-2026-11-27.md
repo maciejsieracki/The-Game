@@ -1,7 +1,10 @@
-# AI „Kultura i religia” — wspólna formuła addytywna i osobny poziom AI (R-WEB-CULT-REL-AI-PLUS10-Q1, runda 2)
+# AI „Kultura i religia” — wspólna formuła addytywna i osobny poziom AI (R-WEB-CULT-REL-AI-PLUS10-Q1, obrona rundy 3)
 
-Data: 2026-11-27. Baza kodu: origin/main `44649038c`. Kandydat rundy 2: `c2152fdbf` (kod i testy), na gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (ten dokument w commicie raportu).
-Decyzje właściciela 2026-11-27 (DODATKI 1–3 i potwierdzenie tabeli): plus G rośnie z epoką, minusy D też rosną z epoką, obie wartości **addytywnie** (nie mnożone przez skalę); gracz i AI mają **osobne poziomy** „Kultura i religia”.
+Data: 2026-11-27. Ten dokument zastępuje wcześniejsze wersje (runda 2 i pomiar z bazy `44649038c`): ich sekcje „NIE ZMIERZONO” i tabele PRZED/PO są nieaktualne.
+
+- PRZED = origin/main `3608af1ce` (baza gałęzi; zawiera FALE 928–929 AIREBEL). Dzięki temu różnica PRZED/PO obejmuje wyłącznie zmiany tego tematu.
+- PO = kandydat `78363f7b0` scalony z origin/main `3608af1ce` (merge), zob. SHA w raporcie `30-obrona-claude.md`.
+- Decyzje właściciela 2026-11-27 (potwierdzona tabela): plus G rośnie z epoką, minusy D też rosną z epoką, obie wartości **addytywnie** (nie mnożone przez skalę); gracz i komputer (AI) mają **osobne poziomy** „Kultura i religia”.
 
 ## Reguła (obowiązuje dla gracza i AI)
 
@@ -16,113 +19,88 @@ Decyzje właściciela 2026-11-27 (DODATKI 1–3 i potwierdzenie tabeli): plus G 
 | Plus G — GRACZ (hotseat: każdy człowiek) | +10 / +16 / +23 | +5 / +11 / +18 | 0 / +6 / +13 |
 | Plus G — AI (każdy poziom) | +10 / +16 / +23 | +10 / +16 / +23 | +10 / +16 / +23 |
 
-Poziom gracza steruje minusem i plusem gracza. Poziom AI steruje minusem AI; plus AI jest stały (+10 w epoce 1, rośnie z epoką). Poziom `null` (tryb zgodności, stare zapisy bez pola) działa bit-w-bit jak dotąd i linii Prawa nie ma.
+Poziom gracza steruje minusem i plusem gracza. Poziom AI steruje minusem AI; plus AI jest stały na każdym poziomie (+10 w epoce 1, rośnie z epoką). Poziom `null` (tryb zgodności, stare zapisy bez pola) działa bit-w-bit jak dotąd i linii Prawa nie ma.
 
-Zmiana względem rundy 1 i względem wersji sprzed AI-PLUS10:
-- minusy gracza i AI w epokach 2/3 są teraz addytywne (wcześniej mnożone przez skalę: np. trudny −32 / −46 zamiast −26 / −33; normalny −24 / −34,5 zamiast −21 / −28);
-- plus gracza normalnego i trudnego w epokach 2/3 jest addytywny (normalny 11 / 18 zamiast 8 / 11,5; trudny 6 / 13 zamiast 0 / 0);
+Zmiana względem wersji sprzed AI-PLUS10:
+- minusy gracza i AI w epokach 2/3 są addytywne (wcześniej mnożone przez skalę: trudny −32 / −46 zamiast −26 / −33; normalny −24 / −34,5 zamiast −21 / −28);
+- plus gracza normalnego i trudnego w epokach 2/3 jest addytywny (normalny +11 / +18 zamiast +8 / +11,5; trudny +6 / +13 zamiast 0 / 0);
 - poziom łatwy dla gracza daje te same wartości co przed zmianą (−10/−16/−23 i +10/+16/+23).
 
 ## Osobny poziom AI (ustawienie nowej gry)
 
 - Kreator: dwa selektory „Kultura i religia” — „dla gracza” i „dla komputera (AI)”. Domyślnie AI = poziom gracza.
-- Zapis: pole `advanced.kulturaReligiaLevelAI` obok `kulturaReligiaLevel`. Stary zapis bez pola AI = poziom gracza.
-- Gracz `null` (zgodność) = AI `null`.
+- Zapis: pole `advanced.kulturaReligiaLevelAI` obok `kulturaReligiaLevel`. Zapis bez pola AI = poziom gracza.
+- Poziom gracza `null` (zgodność) = poziom AI `null`.
 
 ## Implementacja (jedna formuła, dwa źródła poziomu)
 
 - `gra/src/game/culture-religion-level.ts`: `cultureReligionLineValue(level, scaleEra, udzial, bounds, ownerIsHuman, basePts)` — jedna gałąź addytywna dla obu właścicieli; `ownerIsHuman` wybiera tylko plus (G gracza albo GAi). `getCulturaReligiaLevelForOwner(ownerIsHuman)` wybiera poziom gracza albo AI.
 - `gra/src/game/society-breakdown.ts`: `kultReligLinePoints` — jedno miejsce liczenia linii, używane przez Szczęście i Prawo; `evaluateOrderFromBreakdown` przekazuje typ właściciela.
-- `gra/src/main.ts`: zapis, wczytanie i start pola AI; typ właściciela dla miast AI.
-- `gra/src/ui/newGameFlow.ts`: drugi selektor, podsumowanie, opis.
+- `gra/src/main.ts`: zapis, wczytanie i start pola AI (hak startGame: `kulturaReligiaLevelAI`); typ właściciela dla miast AI; `__settingsLive.getSettings` zwraca oba poziomy.
+- `gra/src/ui/newGameFlow.ts`: drugi selektor, podsumowanie, opis (tabela addytywna).
 - `gra/data/society-params.json` → `kultura_religia_poziomy`: D, G, G_ai na poziom; opis zaktualizowany do formuły addytywnej.
 
-## Testy
+## Testy (stan po scaleniu z origin/main `3608af1ce`, gra/, ta runda)
 
-| Plik | Wynik (ta runda) | Uwagi |
+| Test | Wynik | Uwagi |
 |---|---|---|
-| `gra/tools/culture-religion-level-test.cjs` | 59 / 0 | 10 oczekiwanych wartości gracza w epokach 2/3 zmienionych na addytywne (przed → po: trudny e2 −32→−26, trudny e3 −46→−33, normalny e2 +8→+11, trudny Prawo/Szczęście e3 religia −23→−10) |
-| `gra/tools/ai-plus10-culture-test.cjs` | 72 / 0 | 1 oczekiwanie zmienione (gracz trudny 100% e2: 0→+6); dodane: +13 e3, −26 e2, normalny +11 e2 |
-| `gra/tools/ai-plus10-matrix-test.cjs` | 190 / 0 | tabela gracza przepisana do formuły addytywnej; macierz 3×3 poziomów × epoki 1–3 przez pełne Szczęście |
-| `gra/tools/culture-religion-test.cjs` | 65 / 0 | bez zmiany asercji |
-| `gra/tools/society-breakdown-test.cjs` | 56 OK / 0 FAIL | bez zmiany asercji |
-| `gra/tools/ai-city-order-need-test.cjs` | 35 / 0 | bez zmiany asercji |
-| `gra/tools/ai-city-order-need-wiring-test.cjs` | 231 / 0 | bez zmiany asercji |
 | `tsc --noEmit` | exit 0 | |
-| logic / tech-tree / research / combat | 213/213 · 20/0 · 33/0 · 6/6 | |
-| unit-replace (6 plików) | 21/21 · 51 OK · 40 · 25 OK · 32 PASS · live panel NIE ZMIERZONO | |
-| ai-test | 297 / 0 | bez zmian (zgodność dla `null`) |
+| logic-test | 213 / 213 | |
+| tech-tree-test | 20 / 0 | |
+| research-test | 33 / 33 | |
+| unit-replace-test | exit 0 | |
+| combat-test | 6 / 6 | |
+| ai-test | 297 / 0 | zgodność dla `null` bez zmian |
+| culture-religion-level-test | 108 / 0 | sekcja 8: AI (tabela, rozdział poziomów gracz/AI) |
+| ai-plus10-matrix-test | 190 / 0 | macierz 3×3 poziomów × epoki 1–3 |
+| ai-plus10-culture-test | 72 / 0 | |
+| culture-religion-test | 65 / 0 | |
+| society-breakdown-test | 56 OK / 0 FAIL | |
+| ai-city-order-need-test | 35 / 0 | |
+| ai-city-order-need-wiring-test | 267 / 0 | T0 (AI trudny = 4; AI niezależny od poziomu gracza), T0b (plus AI jednakowy) |
+| ai-plus10-wizard-ui-test (Chromium, bundle newGameFlow) | 6 / 0 | dwa selektory, parametry startu `kulturaReligiaLevel=trudny`, `kulturaReligiaLevelAI=latwy`, przeżycie zamknięcia okna |
+| newgame-settings-layout-reposition-test | PASS | 14 kart siatki, 18 pozycji okna zaawansowanego; w tej rundzie poprawiono stale komunikaty (były „12 / 13”) — asercje bez zmian |
+| ai-plus10-live-roundtrip-test (NOWY, żywa gra, `?civTest=1`) | 4 / 4 | start przez `startNewGame` (REALNY doStartGame) + `saveRoundTrip` (REALNE persistSaveToSlot + loadGameFromSlot): gracz trudny / AI łatwy; gracz łatwy / AI trudny; brak pola AI (= poziom gracza); zgodność (oba `null`). Po wczytaniu ustawienia = przed zapisem we wszystkich scenariuszach |
 
-Mutacje czerwone (kod przywracany po każdej; wynik = liczba nieudanych asercji w trzech testach: level / ai-plus10-culture / matrix):
-- M1 — minus D mnożony przez skalę zamiast dodawany: 7 / 1 / 36 — czerwone.
-- M2 — plus gracza mnożony przez skalę: 4 / 3 / 16 — czerwone.
-- M3 — AI używa plusu gracza (G zależne od poziomu gracza): 0 / 21 / 30 — czerwone (level-test nie testuje AI).
-- M4 — AI czyta poziom gracza: 0 / 0 / 19 — czerwone, ale tylko w macierzy 3×3 (ai-plus10-culture-test tego nie wychwytuje).
+Mutacje czerwone (wyniki z obron rund 2, NIE powtarzane w rundzie 3; formuła w tej rundzie się nie zmieniła): minus D mnożony zamiast dodawany — czerwone; plus gracza mnożony — czerwone; AI czyta plus gracza — czerwone; AI czyta poziom gracza — czerwone (w macierzy 3×3); typ właściciela ignorowany w `kultReligLinePoints` — culture-level 106 pass / 2 fail, wiring 29 pass / 1 fail; AI czyta poziom gracza — culture-level 103 / 3 fail, wiring 27 / 2 fail; plus AI z G gracza — culture-level 100 / 6 fail.
 
-## Pomiar PRZED / PO (poziom MAKSYMALNY)
+## Pomiar PRZED / PO (poziom MAKSYMALNY, tym samym runnerem)
 
-Warunki (wszystkie biegi tym samym runnerem `gra/tools/ai-cult-rel-measure-run.cjs --unit-flow 1 --city-state 1`, 60 tur, Chromium headless, bundle vite zbudowany z odpowiedniego źródła):
-- gra Trudny, Kultura i religia gracza = Trudny, Kultura i religia AI = Trudny (AI domyślnie = poziom gracza; brak osobnego biegu „AI łatwy”, patrz NIE ZMIERZONO), Koszty jednostek = Wysoki (×4) (`--pace wysoki`), seed 4242 i 7.
-- PRZED = baza `44649038c` (przed AI-PLUS10). PO = kandydat `c2152fdbf`.
-- Surowe dane poza repo: `/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/aiplus10/r2/` (pre-4242, post-4242, pre-7, post-7; `seed*.jsonl`, `summary.json`). Zestawienie: `gra/tools/ai-cult-rel-measure-flow.cjs`.
+Warunki: `gra/tools/ai-cult-rel-measure-run.cjs --pace wysoki --koszt-jednostek wysoki --kr trudny --difficulty trudny --city-state 1 --turns 60` (seed 7: 58 tur, zob. zastrzeżenia). Gra Trudny; Kultura i religia gracza = Trudny; **PRZED** (bazowy bundle `3608af1ce`, jeden poziom) i **PO** (kandydat scalony) z tym samym runnerem. Koszty jednostek = Wysoki (×4). `unitCostPace` w każdym rekordzie = `wysoki` (potwierdzone w 4 biegach).
 
-Suma AI (owner > 0), tura 60:
+Surowe dane (jsonl, summary, zestawienie): `dyspozycje/autobot/runs/R-WEB-CULT-REL-AI-PLUS10-Q1/dane/` (`PRZED-s4242.jsonl`, `PO-s4242.jsonl`, `PRZED-s7.jsonl`, `PO-s7.jsonl`, `*.summary.json`, `przed-po-zestawienie-wynik.txt`, skrypt `przed-po-zestawienie.cjs`).
 
-| Wielkość | s4242 PRZED | s4242 PO | s7 PRZED | s7 PO |
+Suma AI (właściciele inni niż człowiek; Porządek śr. = Σ porPctSuma / Σ miasta):
+
+| Wielkość | s4242 PRZED t10 / t30 / t60 | s4242 PO t10 / t30 / t60 | s7 PRZED t10 / t30 / t58 | s7 PO t10 / t30 / t58 |
 |---|---|---|---|---|
-| Miasta AI | 153 | 188 | 149 | 189 |
-| Jednostki wojskowe AI | 159 | **205** | 138 | **265** |
-| Puste miasta (0 wojska) | 56 (37%) | 56 (30%) | 59 (40%) | 35 (19%) |
-| Porządek śr. (PorPct), t60 | 21,2 | **55,6** | 19,1 | **52,9** |
-| Miasta poniżej 14% (bunt skrajny), t60 | 60 (39%) | **0** | 75 (50%) | **0** |
-| Porządek śr., t10 | 19,3 | **65,8** | 20,8 | **65,4** |
-| Miasta poniżej 14%, t10 | 14 | 0 | 15 | 0 |
-| Nowe jednostki AI (t2–60) | 208 | 273 | 202 | 288 |
-| Skarbiec AI, t60 | 3 731 | 7 478 | 4 375 | 12 492 |
-| Utrata miast AI (AI→AI) | 30 | 26 | 27 | 33 |
+| Jednostki wojskowe AI | 57 / 118 / **142** | 57 / 172 / **214** | 57 / 111 / **133** | 56 / 190 / **259** |
+| Miasta AI | 42 / 68 / **160** | 42 / 126 / **188** | 42 / 71 / **151** | 44 / 127 / **183** |
+| Miasta AI poniżej 14% (bunt skrajny) | 14 / 5 / **67** | 0 / 0 / **1** | 15 / 9 / **75** | 0 / 0 / **1** |
+| Porządek AI śr. (%) | 19,3 / 34,2 / **19,3** | 65,8 / 62,9 / **55,4** | 20,8 / 31,6 / **19,8** | 65,4 / 66,0 / **52,4** |
 
-Oś czasu jednostek AI (t10 / t20 / t30 / t40 / t50 / t60):
-- PRZED s4242: 57 / 76 / 118 / 179 / 142 / 159
-- PO s4242: 57 / 95 / 159 / 249 / 201 / 205
-- PRZED s7: 57 / 70 / 111 / 187 / 138 / 138
-- PO s7: 56 / 98 / 191 / 267 / 257 / 265
+Bieg „AI łatwy, gracz trudny” (`--kr-ai latwy`) nie został powtórzony w tej rundzie; PRZED dla tego wariantu nie istnieje (baza nie ma osobnego poziomu AI). Wynik z wcześniejszej rundy nie jest tu powoływany jako dowód.
 
-Odniesienie z dispatcha (diagnoza AICULT, PRZED bez kultury trudnej): jednostki 221 (s4242) i 230 (s7). PO jest na tym poziomie lub powyżej dla s7 (265 vs 230) i nieco poniżej dla s4242 (205 vs 221). Poziomy odniesienia pochodzą z innego biegu i są podane do porównania, nie jako dowód.
+Wnioski z pomiaru (tylko tury AI, kierunek zgodny na obu ziarnach):
+- Porządek AI na poziomie trudnym wzrósł z ~20% do ~52–55% przy t60; miasta AI poniżej progu buntu skrajnego (14%) spadły z 67/75 do 1/0.
+- Liczba jednostek wojskowych AI wzrosła o ~50–95% (zgodnie z wcześniejszą diagnozą AICULT: niski Porządek ograniczał produkcję).
+- Liczba miast AI wzrosła (mniej buntów).
 
-Zastrzeżenia do pomiaru:
-- Różnica PRZED/PO obejmuje całą zmianę od bazy `44649038c`: plus AI, addytywny minus AI, addytywne plus i minus gracza (wpływa na miasta gracza, nie na tę tabelę) oraz plumbing poziomu AI. Nie rozdzielono wkładu poszczególnych elementów.
-- Mierzone są tury AI. Ruchy gracza sterowane są prostym endTurn z harnessu (bez autopilota), więc wynik dla gracza nie jest mierzony; w szczególności „gracz trudny” w sensie nowych plusów nie jest zmierzony osobnym biegiem.
-- Porządek AI t60 w PO jest wyższy o ~35 pkt; liczba miast i jednostek rośnie. Nie stwierdzono buntów skrajnych ani rebelii (bunt 0–1 w obu wariantach, rebelia 0).
-- Nie zmierzono skutków w widokach poza turą (panel miasta, `growth-happiness.ts`, `turn-economy.ts`, `conquest-stability.ts`): nie dostały typu właściciela i mogą pokazywać wartości gracza dla miast AI. Tury liczy `evaluateOrderFromBreakdown`, więc wynik pomiaru tego nie dotyczy.
+## Zastrzeżenia do pomiaru (jawne)
 
-## NIE ZMIERZONO
+- Seed 7: PRZED i PO zmierzone do tury 58 (nie 60). Bieg PO zatrzymał się na turze 58 przez limit czasu polecenia (wiersze 2–58 zapisane); wznowienie ze slotu kończyło się crashem Chromium (SIGSEGV, znany problem harnessu, #90). Bieg PRZED zrobiono świeżo do 58 tury. Porównanie na seedzie 7 jest więc na tym samym horyzoncie (58).
+- Różnica PRZED/PO obejmuje całą zmianę tematu: plus AI, addytywny minus AI, addytywne plus i minus gracza (wpływa na miasta gracza, nie na tabelę AI) oraz plumbing poziomu AI. Nie rozdzielono wkładu poszczególnych elementów.
+- Mierzone są tury AI. Ruchy gracza sterowane są prostym endTurn z harnessu, więc wynik dla gracza nie jest mierzony.
+- Porównanie z dokumentem AICULT (liczby 221/230 jednostek z innego biegu) nie jest dowodem i nie jest tu używane.
+- Liczby poniżej progu zależą od dzisiejszego progu 14% (bez zmian).
+- Widoki poza turą (panel miasta, `growth-happiness.ts`, `turn-economy.ts`, `conquest-stability.ts`): nie mierzono; tury liczy `evaluateOrderFromBreakdown`.
 
-- Weryfikacja UI kreatora w przeglądarce (dwa selektory, zrzut, odczyt D/G przez hak civTest, zapis i wczytanie pól przez UI) — NIE WYKONANA w tej rundzie. Zapis/wczytanie pól obu poziomów pokryte testem macierzy.
-- Bieg „AI łatwy, gracz trudny” (seed 4242) — runner ustawia tylko poziom gracza (`startGame({kulturaReligiaLevel})`); poziom AI nie jest przekazywany przez hak `__nnsMeasureDebug`. Wymaga zmiany haka w `main.ts` poza zakresem tej rundy.
-- Bieg gracza (wartości gracza w grze pod nowymi plusami) — NIE ZMIERZONO.
-- Pozostałe poziomy (łatwy, normalny dla AI) — NIE ZMIERZONO (decyzja: maksymalny poziom).
+## Weryfikacja żywa — stan
 
-## Runda 3 — pomiar PRZED/PO z `--pace wysoki` (tabela domyka rundę 2)
-
-Warunki: runner `gra/tools/ai-cult-rel-measure-run.cjs --pace wysoki --koszt-jednostek wysoki --kr trudny --kr-ai trudny --city-state 1 --unit-flow 1 --difficulty trudny --turns 60`. `unitCostPace` w każdym rekordzie = `wysoki` (potwierdzone w jsonl). PRZED = baza `44649038c` (osobny build z `git archive`). PO = kandydat z merge `3aff4be25` (origin/main 99375f77e scalony; kod gry identyczny z `85b8e79a9`, różnica to tylko test kreatora). Surowe dane poza repo (scratchpad, `seed*.jsonl`). Liczby z jsonl przez `summ.py`: miasta AI = suma `miasta` właścicieli ≠ 0/−1; jednostki AI = suma `jednostkiWojskowe`; poniżej progu = suma `ponizejProgu` z `cityState` (AI); Porządek śr. = Σ`porPctSuma` / Σ`miasta` (AI).
-
-| Wielkość | s4242 PRZED t10/t30/t60 | s4242 PO t10/t30/t60 | s7 PRZED t10/t30/t60 | s7 PO t10/t30/t60 |
-|---|---|---|---|---|
-| Jednostki wojskowe AI | 57 / 118 / **159** | 57 / 172 / **214** | 57 / 111 / **138** | 56 / 190 / **262** |
-| Miasta AI | 42 / 68 / **153** | 42 / 126 / **187** | 42 / 71 / **149** | 44 / 127 / **184** |
-| Miasta AI poniżej 14% | 14 / 6 / **60** | 0 / 0 / **1** | 15 / 9 / **75** | 0 / 0 / **0** |
-| Porządek AI śr. (%) | 19,3 / 33,9 / **21,2** | 65,8 / 62,9 / **55,4** | 20,8 / 31,6 / **19,1** | 65,4 / 66,0 / **51,8** |
-
-Dodatkowy bieg „AI łatwy, gracz trudny” (PO, seed 4242, `--kr trudny --kr-ai latwy`): t10 57 jedn. / 0 poniżej / Porządek 68,7; t30 183 / 0 / 65,0; t60 **236** jedn., 193 miasta AI, 1 poniżej progu, Porządek 57,4. PRZED dla tego wariantu NIE ZMIERZONO (baza nie ma osobnego poziomu AI).
-
-Zastrzeżenia:
-- Baza `44649038c` nie zawiera FALI 928–929 (AIREBEL: bunt AI). Różnica PRZED/PO obejmuje więc także tę zmianę, której efekt na miasta poniżej progu nie został odizolowany.
-- Pomiar nie rozdziela wkładu plusa AI, minusa AI i addytywnej formuły gracza.
-- Wartości gracza w grze NIE ZMIERZONO (runner nie steruje ruchami gracza; brak haka odczytu breakdown).
-- Liczby poniżej progu zależą od wartości dzisiejszego progu 14% (bez zmian, zgodnie z dispatchem).
-
-## Runda 3 — weryfikacja żywa i zapis (stan)
-
-- Odczyt D/G (civTest) gracz/AI w żywej grze: NIE ZMIERZONO. Powód techniczny: brak istniejącego haka zwracającego rozbicie Kultury i Religii per miasto/właściciel; dodanie haka wymagałoby zmiany `gra/src` poza wykonaną tu zmianą. Wartości potwierdzone testami jednostkowymi (`ai-plus10-matrix` 190/0, `ai-plus10-culture` 72/0, `culture-religion-level` 108/0).
-- Round-trip zapisu/wczytania (`kulturaReligiaLevelAI`): kod sprawdzony przeglądem. `setCulturaReligiaLevel(gracz, AI)` zapisuje AI = poziom gracza, gdy pola brak; `null` (zgodność) zostaje `null`. Test żywy zapisu NIE ZMIERZONO.
-- Kreator w przeglądarce: zrzut i test wizard-UI 6/0 z poprzedniej rundy; ponowna weryfikacja po merge NIE ZMIERZONO.
+- Zapis/wczytanie obu pól poziomów w żywej grze: **ZMIERZONE** (`ai-plus10-live-roundtrip-test.cjs`, 4/4, wynik w `dane/live-roundtrip-wynik.txt`).
+- Start nowej gry z dwoma różnymi poziomami (przez REALNE doStartGame): **ZMIERZONE** w tym samym teście (odczyt `getSettings`: gracz i AI mają właściwe poziomy).
+- Odczyt D/G wartości linii per miasto/właściciel w żywej grze: **NIE ZMIERZONO**. Powód techniczny: brak istniejącego haka zwracającego rozbicie Kultury i Religii per właściciel (`cityOrderState` / `computeHappinessBreakdown` nie są wystawione na `window`). Dodanie haka wymagałoby zmiany `gra/src` poza zakresem tej rundy. Wartości potwierdzone testami funkcji (`ai-plus10-matrix` 190/0, `ai-plus10-culture` 72/0, `culture-religion-level` 108/0). Dług dla orkiestratora.
+- Ustawienie zapisu starego formatu (bez pola AI) z dysku: NIE ZMIERZONO na żywo; pokryte pozycją „brak pola AI = poziom gracza” w teście żywym (start bez pola) i testami jednostkowymi wczytania.
+- Kreator w przeglądarce: test UI 6/0 (Chromium) po scaleniu; zrzut `dane/kreator-dwa-selektory-kultura.png` z rundy 2.
+- Wartości gracza w grze pod nowymi plusami: NIE ZMIERZONO (runner nie steruje ruchami gracza).
+- Poziomy łatwy i normalny dla AI w pomiarze PO: NIE ZMIERZONO w tej rundzie (poza biegiem „AI łatwy” z poprzedniej obrony, bez przeliczenia na bazie).

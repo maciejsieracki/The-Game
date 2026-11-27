@@ -2,7 +2,7 @@
 
 /**
  * Real Chromium regression for the new-game settings layout (krok 4 kreatora).
- * R-WEB-NEWGAME-MENU-REORDER-Q1: układ 12 kart głównej siatki (2 kolumny) + 13 pozycji
+ * R-WEB-NEWGAME-MENU-REORDER-Q1: układ 14 kart głównej siatki (2 kolumny) + 18 pozycji okna zaawansowanego (stan po R-WEB-CULT-REL-AI-PLUS10-Q1)
  * okna „Zaawansowane opcje" bez duplikatów; wartości zapisują się i trafiają do parametrów startu.
  */
 const assert = require('assert');
@@ -115,7 +115,7 @@ window.__openWizard();
     assert.strictEqual(await glyphOf('Trudność miast-państw'), 'TM', 'city-state difficulty uses its own glyph');
     assert.strictEqual(await glyphOf('Chatki z nagrodami'), 'Ch', 'village rewards uses its own glyph');
 
-    // 3. Okno zaawansowane: 13 pozycji w dokładnej kolejności, bez duplikatów z siatką.
+    // 3. Okno zaawansowane: 18 pozycji w dokładnej kolejności, bez duplikatów z siatką.
     await page.locator('.civ-newgame .btn-adv').click();
     await page.waitForSelector('.civ-newgame .adv-overlay.open');
     const advLabels = (await page.locator('.civ-newgame .adv-modal .adv-lbl').allTextContents()).map(x => x.trim());
@@ -186,7 +186,7 @@ window.__openWizard();
     // więc oczekiwana wartość wynika z etykiety wybranej w teście (true tylko dla „ręczna i automatyczna").
     const expectedBattleAlwaysManual = selectedBattleMode === 'Bitwa ręczna i automatyczna';
     assert.strictEqual(params.advanced.battleAlwaysManual, expectedBattleAlwaysManual, 'selected battle mode reaches game-start params');
-    console.log('newgame-settings-layout-reposition-test: PASS — 13-card grid order, 13-row advanced order, persistence and game-start params verified');
+    console.log('newgame-settings-layout-reposition-test: PASS — 14-card grid order, 18-row advanced order, persistence and game-start params verified');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

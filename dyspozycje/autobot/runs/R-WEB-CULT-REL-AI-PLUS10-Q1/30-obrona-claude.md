@@ -1,97 +1,79 @@
 STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
-TEMAT: R-WEB-CULT-REL-AI-PLUS10-Q1 (obrona rundy 2, kandydat cb1e032b1; raport Evaluatora 9d44f3b9b)
-GOAL: odpowiedzieć na 5 zarzutów Evaluatora: UI w przeglądarce (dwa selektory, wartości, zapis), pomiar AI łatwy / gracz trudny, opis w kreatorze zgodny z tabelą, luki testowe (mutacje AI), widoki poza turą.
-BAZA: cb1e032b1 (checkout --detach). Kod silnika nie zmieniany w tej obronie; zmiany: hint kreatora, testy, hak pomiaru.
+TEMAT: R-WEB-CULT-REL-AI-PLUS10-Q1 (obrona rundy 3; kandydat 78363f7b0; raport Evaluatora 7a3dc3d78; zarzuty 1–7)
+GOAL: zamknąć zarzuty Evaluatora r3: żywy round-trip zapisu/wczytania obu pól poziomu, pomiar PRZED/PO z surowymi danymi w repo i poprawną bazą PRZED, poprawne komunikaty testu kreatora, spójny dokument, integracja z aktualnym origin/main.
+BAZA: PRZED = origin/main 3608af1ce (baza gałęzi; zawiera FALE 928–929). PO = 78363f7b0 scalony z origin/main 3608af1ce (merge b7ba86688; `git merge-tree` czysty, bez konfliktów). Kod silnika (`culture-religion-level.ts`, `society-breakdown.ts`, `ai-city-order-need.ts`) NIE zmieniany w tej obronie.
 
 ## Odpowiedzi na zarzuty
 
-1. UI w przeglądarce — PRZYJMUJĘ, CZĘŚCIOWO WYKONANE.
-   - WYKONANE: nowy test `gra/tools/ai-plus10-wizard-ui-test.cjs` (Chromium headless, bundle newGameFlow.ts): 6 pass / 0 fail. Dwa selektory „Kultura i religia — dla gracza” i „— dla komputera (AI)” w oknie zaawansowanym; domyślnie oba „Mały wpływ (łatwy)”; wybór gracz „Duży wpływ (trudny)” + komputer „Mały wpływ (łatwy)” przeżywa zamknięcie i ponowne otwarcie okna; parametry startu `advanced.kulturaReligiaLevel=trudny`, `advanced.kulturaReligiaLevelAI=latwy`.
-   - ZRZUT: dyspozycje/autobot/runs/R-WEB-CULT-REL-AI-PLUS10-Q1/dane/kreator-dwa-selektory-kultura.png
-   - WYKONANE (ścieżka żywej gry): pomiar z hakiem startu z polem AI (patrz pkt 2). Różnica wyników AI przy AI łatwy vs trudny potwierdza, że poziom AI dochodzi do silnika w żywej grze.
-   - NIE WYKONANE: (a) odczyt D/G gracza i AI przez hak civTest w żywej grze (oczekiwane gracz D −20/G 0, AI D −10/G +10 w epoce 1) — nie dodano haka odczytu; wartości silnika pokrywa test macierzy/funkcji (ai-plus10-matrix-test 190/0, culture-religion-level-test 108/0); (b) round-trip ZAPISU i WCZYTANIA obu pól w żywej grze (kod: main.ts getSettings ~34479 i wczytanie ~52244, nie uruchomiony) — NIE ZMIERZONO.
+1. Round-trip zapisu/wczytania (DODATEK 5 pkt 1b) — PRZYJMUJĘ, WYKONANE.
+   - Nowy test żywy `gra/tools/ai-plus10-live-roundtrip-test.cjs` (Chromium, bundle z `?civTest=1` przez `tools/test-hook-setcitylimit-live-bundle.cjs`): start przez REALNY doStartGame (`__settingsLive.startNewGame`), zapis i wczytanie przez REALNE persistSaveToSlot + loadGameFromSlot (`__settingsLive.saveRoundTrip`).
+   - Wynik: 4/4 scenariusze zielone: gracz trudny / AI łatwy; gracz łatwy / AI trudny; brak pola AI (= poziom gracza); zgodność (oba null). Po wczytaniu ustawienia = przed zapisem. Surowe wyjście: `dane/live-roundtrip-wynik.txt`.
+   - Kod z zarzutu (zapis legacy bez pola AI) nie był odtwarzany jako plik z dysku; pokryte startem bez pola i testami jednostkowymi wczytania (zob. ograniczenia w raporcie).
 
-2. Pomiar AI łatwy / gracz trudny — PRZYJMUJĘ, WYKONANE (seed 4242, 60 tur). Dodano do haka startGame (main.ts, minimalny plumbing: `kulturaReligiaLevelAI`, `kosztJednostekPace`) i do runnera opcje `--kr-ai`, `--koszt-jednostek`. Wyniki w tabeli niżej.
+2. Odczyt D/G w żywej grze — PRZYJMUJĘ JAKO DŁUG, NIE WYKONANO (z przyczyną technyczną).
+   - Brak istniejącego haka zwracającego rozbicie Kultury i Religii per właściciel (cityOrderState / computeHappinessBreakdown nie są wystawione na window). Dodanie haka = zmiana `gra/src/main.ts` poza zakresem tej rundy (dispatch dopuszcza src tylko przy błędzie weryfikacji). Odnotowane jako dług dla orkiestratora. Wartości potwierdzone testami funkcji (matrix 190/0, culture 72/0, level 108/0).
+   - Żywo zmierzono natomiast, że silnik dostaje właściwe poziomy gracza i AI (getSettings w scenariuszach testu).
 
-3. Podpowiedź selektora „dla gracza” — PRZYJMUJĘ, WDROŻONE. Stary opis („od −20 do 0 (bez plusów)”, „proporcjonalnie”) zastąpiony tabelą addytywną (gracz trudny: od −20 do 0 w epoce 1, od −33 do +13 w epoce 3). Opis AI: minus wg poziomu, plus +10/+16/+23 na każdym poziomie. Plik: gra/src/ui/newGameFlow.ts (hint obu selektorów). Test UI sprawdza brak „bez plusów” i obecność zakresu.
+3. Surowe dane pomiaru poza repo — PRZYJMUJĘ, WYKONANE.
+   - Pomiar powtórzony na tej bazie w tej rundzie: PRZED (3608af1ce, świeży build z `git archive`) i PO (kandydat scalony), seed 4242 (60 tur) i seed 7 (58 tur, zob. pkt 4). Wszystkie z `--pace wysoki --koszt-jednostek wysoki --kr trudny --difficulty trudny --city-state 1`.
+   - Surowe jsonl i summary w `dane/` (PRZED-s4242, PO-s4242, PRZED-s7, PO-s7), zestawienie `dane/przed-po-zestawienie-wynik.txt` (skrypt `dane/przed-po-zestawienie.cjs`). `unitCostPace=wysoki` w każdym rekordzie (4/4).
 
-4. Luki w testach — PRZYJMUJĘ, WDROŻONE, z mutacjami czerwonymi (uruchomione i przywrócone, `cmp` potwierdzony):
-   - culture-religion-level-test: nowa sekcja 8 (AI: tabela plus 10/16/23 i minus wg poziomu; gracz; rozdział poziomów gracz/AI przez computeHappinessBreakdown i computeLawBreakdown; zgodność AI). Wcześniej 59/0 bez asercji AI; teraz 108/0.
-   - ai-city-order-need-wiring-test: nowy T0 (AI trudny = 4; AI łatwy niezależny od poziomu gracza) i T0b (udział 100%: plus AI jednakowy na każdym poziomie AI). Wcześniej 231/0; teraz 267/0.
-   Mutacje (wynik po zmianie):
-   - M-A typ właściciela ignorowany w kultReligLinePoints (society-breakdown.ts:750 → true): culture-level 106 pass / 2 fail; wiring 29 pass / 1 fail (T0b) → CZERWONE (zarzut Evaluatora nr 4 wcześniej: wiring 231/0 zielony — teraz wykrywa).
-   - M-B AI czyta poziom gracza (getCulturaReligiaLevelForOwner → activeLevel): culture-level 103 pass / 3 fail; wiring 27 pass / 2 fail → CZERWONE.
-   - M-C plus AI liczony z G gracza (culture-religion-level.ts: gE = raw.G + delta): culture-level 100 pass / 6 fail → CZERWONE.
-   Po przywróceniu: culture-religion-level-test 108/0, wiring 267/0.
+4. PRZED bez FALI 928–929 — PRZYJMUJĘ, WYKONANE.
+   - PRZED = 3608af1ce (zawiera AIREBEL), więc różnica PRZED/PO nie miesza rebelii AI. Stara tabela z bazy 44649038c usunięta z dokumentu.
+   - Zastrzeżenie: seed 7 w obu wariantach zmierzony do tury 58 (nie 60), bo wznowienie slotu PO kończyło się crashem Chromium (SIGSEGV, znany problem harnessu #90). Opisane w dokumencie.
 
-5. Widoki poza turą — CZĘŚCIOWO ODRZUCAM z dowodem, cityPanel PRZYJMUJĘ jako zrobione.
-   - Dowód: w src/ wywołania computeHappinessBreakdown / evaluateOrderFromBreakdown / computeLawBreakdown są w: src/main.ts:45024 (tura), src/ui/cityPanel.ts:3417 (widok miasta) oraz src/game/society-breakdown.ts (definicje). Pozostałe trafienia w growth-happiness.ts, turn-economy.ts, conquest-stability.ts to WYŁĄCZNIE komentarze (grep: brak wywołań funkcji w kodzie tych plików; growth-happiness.ts:5 wprost mówi „nie jest pełny evaluateOrderFromBreakdown”). Nie ma więc tam wartości dla miast AI do poprawienia.
-   - cityPanel: już podaje typ właściciela (`isHumanOwner` w main.ts:14976, 35738, 50639 → cityPanel.ts:3429 `ownerIsHuman`). Widok miasta AI liczy poziom AI.
+5. Dokument sprzeczny (sekcje r2 NIE ZMIERZONO vs r3) — PRZYJMUJĘ, WYKONANE.
+   - `dyspozycje/analizy/AI-PLUS10-KULTURA-RELIGIA-2026-11-27.md` przepisany: jedna aktualna wersja, testy z tej rundy, pomiar PRZED/PO z 3608af1ce, sekcja „Weryfikacja żywa — stan” zgodna z testami.
 
-## Pomiar (kod: silnik cb1e032b1, bez zmian w tej obronie; runner ai-cult-rel-measure-run.cjs; 60 tur; --city-state 1 --unit-flow 1; hak startGame: Trudny, Kultura gracza, Koszty jednostek = wysoki)
+6. Stale komunikaty newgame-settings-layout-reposition-test — PRZYJMUJĘ, WYKONANE.
+   - Komentarz nagłówka i komunikat PASS: 14 kart siatki, 18 pozycji okna zaawansowanego (były „12/13”). Asercje bez zmian (deepStrictEqual na 14 i 18 pozycjach). Test: PASS (exit 0).
 
-Dane: pole `cityState` z jsonl (AI = właściciele inni niż człowiek i barbarzyńcy); Porządek śr. = suma porPctSuma / liczba miast AI; poniżej progu = suma pola ponizejProgu (próg nie zweryfikowany w tym haku — podaję pole z gry).
+7. Integracja z origin/main 3608af1ce — PRZYJMUJĘ, WYKONANE.
+   - `git merge --no-ff origin/main` na kandydacie: czysto (merge b7ba86688). Pełne bramki na wyniku scalenia (poniżej).
 
-| Wariant | Seed | t60 miasta AI | t60 jednostki AI | t60 poniżej progu | Porządek AI śr. t10 | Porządek AI śr. t60 |
-|---|---|---|---|---|---|---|
-| PRZED (baza 44649038c, jeden poziom, AI w starej formule) | 4242 | 159 | 187 | 63 | 19,5% | 21,3% |
-| PO (cb1e032b1) gracz trudny / AI trudny | 4242 | 200 | 292 | 1 | 65,8% | 56,1% |
-| PRZED | 7 | 165 | 205 | 81 | 21,6% | 19,5% |
-| PO gracz trudny / AI trudny | 7 | 192 | 322 | 0 | 65,4% | 52,6% |
-| PO gracz TRUDNY / AI ŁATWY | 4242 | 203 | 283 | 0 | 68,7% | 61,2% |
-
-- Różnica AI łatwy vs trudny (seed 4242, t60): jednostki 283 vs 292; Porządek śr. 61,2% vs 56,1% (AI łatwy ma mniejsze minusy → wyższy Porządek). Potwierdza, że poziom AI dochodzi do silnika.
-- Uwaga: PRZED to bieg czysty na bazie 44649038c (nie cytat z dokumentu). Różnica wartości PRZED względem dokumentu AICULTDIAG (jednostki 159 w s4242) wynika z innego przebiegu, nie z tej zmiany.
-- Pierwszy bieg PRZED seed 7 padł (SIGSEGV Chromium przy załadowaniu, ~t0); powtórzony bez zmian warunków — wynik z powtórki.
-- NIE ZWERYFIKOWANO: pole `unitCostPace` w rekordach każdego biegu pokazuje „normalny”, a nie „wysoki”, mimo że hak startGame dostał `kosztJednostekPace: 'wysoki'`. Nie ustalono, czy to błąd pola rekordu, czy ustawienie nie dotarło. Do sprawdzenia przez orkiestratora przed przyjęciem liczb kosztów jednostek.
-- Dodatkowe: metryki są z pól gry (cityState, owners), nie z osobnego haka Porządku.
-
-## Zmiany w kodzie (ścieżki)
-- gra/src/ui/newGameFlow.ts — hint obu selektorów (tabela po epokach; AI +10/+16/+23).
-- gra/src/main.ts — hak `window.__nnsMeasureDebug.startGame`: opcje `kulturaReligiaLevelAI`, `kosztJednostekPace` (domyślnie 'niski' = dzisiejsze zachowanie). Bez zmiany silnika.
-- gra/tools/ai-cult-rel-measure-run.cjs — opcje `--kr-ai`, `--koszt-jednostek` (domyślnie jak dotąd).
-- gra/tools/culture-religion-level-test.cjs — sekcja 8 (AI i rozdział poziomów).
-- gra/tools/ai-city-order-need-wiring-test.cjs — T0, T0b (typ właściciela w wpięciu).
-- gra/tools/ai-plus10-wizard-ui-test.cjs — NOWY (test UI kreatora, Chromium).
-- dyspozycje/autobot/runs/R-WEB-CULT-REL-AI-PLUS10-Q1/dane/kreator-dwa-selektory-kultura.png — zrzut.
-- dyspozycje/autobot/runs/R-WEB-CULT-REL-AI-PLUS10-Q1/30-obrona-claude.md — ten raport.
-Nie zmieniano: gra-robocza/, gra-kanon/, WERSJE.md, manifest, rust-port/, silnik (culture-religion-level.ts, society-breakdown.ts — mutacje przywrócone, git diff czysty), wartości D/G, progi buntu.
-
-## TESTY (surowe wyniki w tej obronie, gra/)
-- tsc --noEmit: exit 0 (bez błędów)
+## TESTY (surowe wyniki, gra/, po merge b7ba86688 i po poprawce komunikatów)
+- tsc --noEmit: exit 0
 - logic-test: LOGIC OK (213/213)
 - tech-tree-test: 20 pass, 0 fail
-- research-test: ALL GREEN
-- combat-test: All sanity checks passed.
+- research-test: PASSED 33 / FAILED 0 ALL GREEN
+- unit-replace-test: exit 0
+- combat-test: COMBAT TEST 6/6 pass
 - ai-test: 297 passed, 0 failed
-- culture-religion-level-test: 108 pass / 0 fail (poprzednio 59/0)
-- ai-city-order-need-wiring-test: 267 passed, 0 failed (poprzednio 231/0)
+- culture-religion-level-test: 108 pass / 0 fail
+- ai-city-order-need-wiring-test: 267 passed, 0 failed
 - ai-plus10-matrix-test: 190 pass / 0 fail
 - ai-plus10-culture-test: 72 pass / 0 fail
 - culture-religion-test: 65 passed, 0 failed
+- society-breakdown-test: 56 OK, 0 FAIL
 - ai-city-order-need-test: 35 passed, 0 failed
-- society-breakdown-test: 56 OK, 0 FAIL (w tej obronie, bez zmiany asercji)
-- ai-plus10-wizard-ui-test (nowy): 6 pass / 0 fail
-- newgame-settings-layout-reposition-test: FAIL (patrz BLOKADY, pkt 1)
-- Mutacje czerwone: M-A, M-B, M-C (patrz pkt 4).
-- Bieg pomiarów: 4 biegi PO/PRZED + 1 AI łatwy (60 tur każdy), wszystkie z jsonl.
+- ai-plus10-wizard-ui-test (Chromium): 6 pass / 0 fail
+- newgame-settings-layout-reposition-test: PASS (exit 0), 14-card grid, 18-row advanced
+- ai-plus10-live-roundtrip-test (NOWY, żywa gra): 4 / 4 scenariuszy zielonych
+- Pomiar PRZED/PO (60 tur seed 4242; 58 tur seed 7), wyniki w `dane/` i w dokumencie.
+
+Pomiar (jednostki AI / miasta AI / poniżej 14% / Porządek AI śr. %):
+- s4242 t60: PRZED 142 / 160 / 67 / 19,3 — PO 214 / 188 / 1 / 55,4
+- s7 t58: PRZED 133 / 151 / 75 / 19,8 — PO 259 / 183 / 1 / 52,4
+- `unitCostPace=wysoki` potwierdzone w 4 biegach.
+
+Mutacje czerwone: wyniki z obrony r2 (przywołane w dokumencie, nie powtarzane w tej rundzie; formuła się nie zmieniła).
 
 ## BLOKADY
-1. newgame-settings-layout-reposition-test.cjs: CZERWONY przed tą obroną i nadal czerwony. Lista zaawansowanych oczekuje 14 pozycji; kreator ma już 18 (`Wzrost surowców z epoką` i `Dyplomacja i wojna` były już w bazie 44649038c, a tę kolejność test nie zawiera; dwie pozycje „Kultura i religia” dodaje ten temat). Poprawka wymaga zmiany ADV_ORDER w tym teście — plik poza allowlistą tematu. DECYZJA ORKIESTRATORA: dopisać allowlistę albo rozdzielić.
-2. Zapis i wczytanie obu pól w żywej grze (round-trip) — NIE ZMIERZONO.
-3. Odczyt D/G przez hak civTest w żywej grze — NIE ZMIERZONO (wartości w teście funkcji).
-4. unitCostPace w rekordach pomiaru = „normalny” przy haku „wysoki” — NIE ZWERYFIKOWANO (patrz pomiar).
-5. Widoki poza turą dla AI: cityPanel OK; pozostałe moduły bez wywołań (dowód wyżej).
+1. Odczyt D/G per miasto w żywej grze: NIE ZMIERZONO (brak haka rozbicia per właściciel; dług dla orkiestratora, pkt 2).
+2. Wartości gracza w grze pod nowymi plusami: NIE ZMIERZONO (runner nie steruje ruchami gracza).
+3. Zapis legacy z dysku bez pola AI: NIE ZMIERZONO na żywo (pokryte startem bez pola i testami jednostkowymi).
+4. Seed 7 PO/PRZED na 58 turach, nie 60 (crash Chromium przy wznowieniu slotu, #90).
+5. Kreator w przeglądarce po merge: test UI 6/0; zrzut z rundy 2 (dane/kreator-dwa-selektory-kultura.png), bez nowego zrzutu.
 
 ## UWAGI-DLA-ORKIESTRATORA
-- Pomiar kosztów jednostek: sprawdzić pole unitCostPace (pkt 4 blokad) przed przyjęciem liczb.
-- Chromium: w biegu PRZED seed 7 pierwsza próba padła (SIGSEGV przy starcie); powtórka OK. Znane ryzyko harnessu (#90), nie błąd gry.
-- Temat AIREBEL (rebelia AI) nie dotykany.
-- Dwa zestawy wyników PO różnią się od dokumentu AI-PLUS10 (plik nie aktualizowany w tej obronie); jeśli orkiestrator chce liczby w dokumencie, użyć tabeli powyżej.
+- Test `ai-plus10-live-roundtrip-test.cjs` używa `os.tmpdir()` dla bundle (zgodnie z dispatchem /tmp/<unikalny>); po pracy katalogi tymczasowe bundle można usunąć.
+- Worktree i node_modules gra/ zostają do sprzątania przez orkiestratora. Scratchpad zawiera świeże buildy PO/PRZED (`dist-po`, `dist-prz`) i katalog `prz/` (git archive 3608af1ce).
+- Dług testowy: rozbicie Kultury/Religii per właściciel jako hak civTest (do odczytu D/G żywo), osobny temat, wymaga decyzji o zmianie gra/src.
+- Temat AIREBEL (rebelia AI) nie dotykany w tej obronie.
 
 ## NASTĘPNY KROK
-Integracja orkiestratora po decyzji o blokadzie 1 (allowlista newgame-settings-layout-reposition-test.cjs). Przed READY_FOR_DEPLOY: round-trip zapisu/wczytania i odczyt D/G w żywej grze (blokady 2–3), albo jawna decyzja o przyjęciu z tą blokadą.
+Integracja orkiestratora po FC (kandydat = czubek tej obrony). Przed READY_FOR_DEPLOY: decyzja, czy dług odczytu D/G (pkt 2) jest akceptowany, czy wymaga osobnego tematu z haka w src.
 
-RUNDY: 2/5 (obrona po FC r1 PASS-WITH-NOTES; to jest obrona rundy 2)
+RUNDY: 3/5 (obrona po FC r2 PASS-WITH-NOTES)
 DEPLOY/PUSH: NIE WYKONANO
