@@ -31,6 +31,7 @@ use civ_engine::domain::siege_battle_session::{
     SceneInput, SessionData, SiegeBattleSession, TerrainRangeRow, DEF_ID_BASE,
 };
 use civ_engine::domain::siege_prod_manual::ManualRun;
+use civ_engine::domain::siege_tactics_autobatch::cell_key;
 use civ_engine::domain::siege_tactics_blow_env::TerrainRow;
 use civ_engine::domain::siege_tactics_doctrine_state::GroupDoctrine;
 use civ_engine::domain::siege_tactics_doctrine_step::DoctrineAction;
@@ -231,6 +232,34 @@ struct Outcome {
     group_meta_after: BTreeSet<String>,
     pos: (i64, i64),
     refused: bool,
+    /// Wszystkie jednostki po aktywacji: (q, r, czy `occ_by_key` na tym polu wskazuje te jednostkę), rostery atk i def.
+    units_after: [Vec<(i64, i64, bool)>; 2],
+    occ_size: usize,
+    /// Uczestnicy ciosów wykonanych PRZEZ CIAŁO w tej aktywacji (doktryna: cel albo kontratakowany atakujący), którzy w Rust
+    /// zginęli albo uciekli (`dead`/`routed`/`removed` zdejmują zajętość): pin stubuje `_doAttack` (bez obrażeń), więc zdjęcie zajętości zabitego jest różnicą atrapy, nie decyzji.
+    blown: Vec<(usize, usize)>,
+}
+
+/// Stan wszystkich jednostek po aktywacji (kolejność rosterów): pozycja i czy `occ_by_key` wskazuje tę jednostkę
+/// (pin: `occByKey.get(ck(q, r)) === u`).
+fn units_after_of<R: civ_engine::domain::siege_tactics_blow::RollSource>(
+    body: &ProdBody<R>,
+) -> [Vec<(i64, i64, bool)>; 2] {
+    [0usize, 1].map(|sx| {
+        let tag = if sx == 0 { "atk" } else { "def" };
+        body.units[sx]
+            .iter()
+            .enumerate()
+            .map(|(i, u)| {
+                let (q, r) = (u.activate.q, u.activate.r);
+                let occ = body
+                    .occ_by_key()
+                    .get(&cell_key(q as f64, r as f64))
+                    .is_some_and(|t| *t == format!("{tag}{i}"));
+                (q, r, occ)
+            })
+            .collect()
+    })
 }
 
 fn order_json(o: PlayerOrder, ids: &[Vec<String>; 2], actor_side: BattleSide) -> String {
@@ -469,6 +498,20 @@ fn run_case(
         group_meta_after: body.group_meta.keys().cloned().collect(),
         pos,
         refused: matches!(run, ManualRun::Move { .. }) && pos == pos0,
+        units_after: units_after_of(body),
+        occ_size: body.occ_by_key().len(),
+        blown: body
+            .blows
+            .get(blows_before..)
+            .unwrap_or_default()
+            .iter()
+            .flat_map(|b| [b.target, b.attacker])
+            .map(|u| (six(u.side), u.idx))
+            .filter(|&(sx, i)| {
+                let c = if sx == 0 { &st.atk[i].c } else { &st.def[i].c };
+                c.dead || c.routed || c.removed
+            })
+            .collect(),
     })
 }
 
@@ -495,6 +538,16 @@ fn expected(c: &Value) -> Outcome {
             .collect(),
         pos: pair(&e["pos"]),
         refused: e["refused"] == true,
+        units_after: ["atk", "def"].map(|sd| {
+            e["unitsAfter"][sd]
+                .as_array()
+                .expect("unitsAfter")
+                .iter()
+                .map(|u| (int(&u[0]), int(&u[1]), u[2] == true))
+                .collect()
+        }),
+        occ_size: e["occSize"].as_u64().expect("occSize") as usize,
+        blown: Vec::new(),
     }
 }
 
@@ -535,6 +588,32 @@ fn diff(a: &Outcome, b: &Outcome) -> Vec<String> {
     }
     if a.pos != b.pos {
         out.push(format!("pozycja {:?} != pin {:?}", a.pos, b.pos));
+    }
+    // Stan jednostek po aktywacji: pozycje zawsze identyczne; zajętość identyczna z wyjątkiem celów ciosu wykonanego przez ciało
+    // (Rust zdejmuje zajętość zabitego uczestnika ciosu, atrapa pinu `_doAttack` nic nie robi); rozmiar `occByKey` różni się DOKŁADNIE o
+    // liczbę takich celów.
+    let mut lost = 0usize;
+    let mut unit_diffs = Vec::new();
+    for sx in 0..2 {
+        for (i, (ra, pb)) in a.units_after[sx].iter().zip(&b.units_after[sx]).enumerate() {
+            let allowed = ra.2 != pb.2 && !ra.2 && pb.2 && a.blown.contains(&(sx, i));
+            if allowed {
+                lost += 1;
+            } else if ra != pb {
+                unit_diffs.push((sx, i, *ra, *pb));
+            }
+        }
+    }
+    if !unit_diffs.is_empty() {
+        out.push(format!(
+            "stan jednostek po (strona, idx, rust, pin) {unit_diffs:?}"
+        ));
+    }
+    if a.occ_size + lost != b.occ_size {
+        out.push(format!(
+            "rozmiar occByKey {} (+{lost} zabici w ciosie) != pin {}",
+            a.occ_size, b.occ_size
+        ));
     }
     out
 }
@@ -610,6 +689,11 @@ fn tags_of(c: &Value) -> Vec<String> {
                     .unwrap();
                 if u["q"] == actor["q"] && u["r"] == actor["r"] {
                     t.push("attack/cel-pozycja".to_owned());
+                    for flag in ["dead", "fadingOut", "routed", "removed"] {
+                        if u[flag] == true {
+                            t.push(format!("attack/cel-pozycja-{flag}"));
+                        }
+                    }
                 }
             }
         }
@@ -697,17 +781,23 @@ fn tryb_reczny_ciala_zgodny_z_pinem_na_wektorach_kroku() {
     }
     // Podprzyczyny rozkazu `attack` na nieczynny cel i cel = pozycja (warunek Obrony #416, kryterium 4).
     at_least("attack/cel-dead", 10);
-    at_least("attack/cel-fadingOut", 5);
-    at_least("attack/cel-routed", 5);
-    at_least("attack/cel-removed", 5);
+    at_least("attack/cel-fadingOut", 13);
+    at_least("attack/cel-routed", 20);
+    at_least("attack/cel-removed", 12);
     at_least("attack/cel-nie-wrog", 10);
+    // Cel nieczynny stojący NA POLU aktora (generator `NAOA`): `removed` rozkaz `attack` nie filtruje (pin `:18397`).
+    at_least("attack/cel-pozycja", 50);
+    at_least("attack/cel-pozycja-removed", 20);
+    at_least("attack/cel-pozycja-routed", 5);
+    at_least("attack/cel-pozycja-dead", 5);
+    at_least("attack/cel-pozycja-fadingOut", 5);
     at_least("attackMove/cel-pozycja", 10);
     at_least("move/cel-pozycja", 10);
 }
 
 /// Marsz ATOMOWY (`march_incremental = false`, konfiguracja ciała bez sesji): rozkazy `move` / `attack` / `attackMove` /
 /// `hold` (jeden krok rozkazu = jedna decyzja; `none` z doktryną AUTO maszeruje wielokrokowo, więc poza porównaniem) z
-/// pinem na co czwartym przypadku i na wszystkich odmowach bramki muru.
+/// pinem na WSZYSTKICH przypadkach bez `none` (zarzut Evaluatora r2: wcześniej co czwarty) i na wszystkich odmowach bramki muru.
 #[test]
 fn tryb_reczny_ciala_marsz_atomowy_zgodny_z_pinem() {
     let v = vectors();
@@ -717,13 +807,10 @@ fn tryb_reczny_ciala_marsz_atomowy_zgodny_z_pinem() {
         .expect("cases")
         .iter()
         .enumerate()
-        .filter(|(i, c)| {
-            !c["label"].as_str().unwrap().starts_with("none")
-                && (i % 4 == 0 || c["expect"]["refused"] == true)
-        })
+        .filter(|(_, c)| !c["label"].as_str().unwrap().starts_with("none"))
         .map(|(_, c)| c)
         .collect();
-    assert!(cases.len() >= 250, "przypadków {}", cases.len());
+    assert!(cases.len() >= 1000, "przypadków {}", cases.len());
     assert!(
         cases
             .iter()

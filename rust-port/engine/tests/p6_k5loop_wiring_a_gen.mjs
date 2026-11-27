@@ -2056,6 +2056,7 @@ if (process.env.WIRING_A_MANUAL_BODY_STEPS) {
     wallMove: Number(process.env.WIRING_A_MANUAL_BODY_NWM ?? 120),
     wallAttack: Number(process.env.WIRING_A_MANUAL_BODY_NWA ?? 90),
     wallNone: Number(process.env.WIRING_A_MANUAL_BODY_NWN ?? 60),
+    attackOnActor: Number(process.env.WIRING_A_MANUAL_BODY_NAOA ?? 60),
   };
   const cases = [];
   const inputs = {};
@@ -2192,6 +2193,12 @@ if (process.env.WIRING_A_MANUAL_BODY_STEPS) {
             lastAutoMoveFrom: ru.lastAutoMoveFrom ? [ru.lastAutoMoveFrom.q, ru.lastAutoMoveFrom.r] : null,
             groupMetaAfter: [...bs._groupMeta.keys()],
             pos: [ru.q, ru.r],
+            // Stan WSZYSTKICH jednostek i zajetosci po aktywacji (kolejnosc rosterow): [q, r, czy `occByKey` na tym polu wskazuje te jednostke].
+            unitsAfter: {
+              atk: bs.atk.map((u) => [u.q, u.r, bs.occByKey.get(ck(u.q, u.r)) === u]),
+              def: bs.def.map((u) => [u.q, u.r, bs.occByKey.get(ck(u.q, u.r)) === u]),
+            },
+            occSize: bs.occByKey.size,
           },
         });
         ok = true;
@@ -2319,6 +2326,24 @@ if (process.env.WIRING_A_MANUAL_BODY_STEPS) {
       return { ru, order: { type: 'none' } };
     });
     wallOn = false;
+    // Wariant `attack`: cel NIECZYNNY (`removed`/`routed`/`dead`/`fadingOut`) stoi na polu aktora (`cel = pozycja` takze dla `attack`;
+    // `removed` rozkaz `attack` nie filtruje, pin `:18397`). Layout (`used`) takiego ukladu nie konstruuje, wiec jest on wstawiany
+    // po fakcie. Osobny strumien RNG (ziarno poza glownym), by wszystkie dotychczasowe przypadki zostaly bajt w bajt te same.
+    const mainSeed = seed;
+    seed = (0x417a0000 + BASES.indexOf(base)) >>> 0;
+    gen('attack', N.attackOnActor, (pool) => {
+      const ru = pick(pool);
+      setState(ru, 'rand');
+      const roster = rosterOf(ru);
+      const tgt = pick(roster);
+      const kind = pick(['removed', 'removed', 'routed', 'dead', 'fadingOut']);
+      if (bs.occByKey.get(ck(tgt.q, tgt.r)) === tgt) bs.occByKey.delete(ck(tgt.q, tgt.r));
+      tgt.dead = false; tgt.fadingOut = false; tgt.routed = false; tgt.removed = false;
+      tgt[kind] = true;
+      tgt.q = ru.q; tgt.r = ru.r;
+      return { ru, order: { type: 'attack', targetId: tgt.bu.id } };
+    });
+    seed = mainSeed;
     console.error(`${base.name}: przypadki ${cases.length} odrzucone ${JSON.stringify(dropped)} (${Date.now() - tS} ms)`);
   }
   const shaS = hash.digest('hex');
