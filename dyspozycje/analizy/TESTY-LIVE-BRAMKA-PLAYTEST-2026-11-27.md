@@ -1,0 +1,127 @@
+# Testy live: bramka „Zakończ turę” w ?playtest=mapa (R-WEB-LIVE-TESTS-PLAYTEST-GATE-Q1, runda 1)
+
+Kandydat (baza): c2749691b686f4ece6b2cb5e35b3438d0427c365 (origin/main). Inwentaryzacja: `grep -c` na plikach `gra/tools/*-live-test.cjs` (105 plików).
+
+## Ustalenia o haku i bramce
+
+- `gra/tools/_live-ready.cjs` eksportuje `prepareEndTurnGate`, który korzysta z `window.__nnsMeasureDebug` (`gateInfo`, `setPlayerTreasury`, `setPlayerGranary`). Wg raportu FC LIVEGATE (`dyspozycje/autobot/runs/R-WEB-LIVE-TESTS-WELCOME-GATE-Q1/50-final-control-claude.md`) hak ten jest dostępny tylko pod `?civTest=1`.
+- `forced-war-player-target-live-test.cjs` działa na `?playtest=mapa` bez `civTest=1`, więc `prepareEndTurnGate` nie da się w nim użyć bez zmiany w bloku playtest w `gra/src/main.ts` (przepuszczenie setterów skarbca/spichlerza) albo przeniesienia testu na `?civTest=1`. Warunek strażnika przy `__nnsMeasureDebug` (main.ts ok. linii 34841) NIE został zweryfikowany wierszem kodu w tej rundzie.
+- `prepareEndTurnGate` nie jest wpięty w żaden z 105 plików `*-live-test.cjs` (grep: 0 trafień). Jedyne użycie to `gra/tools/live-nns-gate-smoke-test.cjs`.
+
+## Inwentaryzacja (105 plików *-live-test.cjs)
+
+Kolumna „blokuje ekran powitalny” to NIE ZMIERZONO dla każdego wiersza (wymaga uruchomienia testu). Kolumny closeCivWelcome i prepareEndTurnGate to liczba wystąpień w pliku wg grep. Tryb URL to parametry znalezione w pliku wg grep.
+
+| plik | blokuje ekran powitalny | ma closeCivWelcome | ma prepareEndTurnGate | tryb URL (grep) |
+|---|---|---|---|---|
+| R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-live-test.cjs | NIE ZMIERZONO | 0 | 0 | brak parametru w grep |
+| ai-general-war-campaign-live-test.cjs | NIE ZMIERZONO | 0 | 0 | brak parametru w grep |
+| ai-trade-wiring-e2e-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 playtest=mapa |
+| ambush-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 |
+| army-auto-recruit-general-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 playtest=mapa |
+| army-panel-general-label-multiselect-live-test.cjs | NIE ZMIERZONO | 3 | 0 | brak parametru w grep |
+| autoclear-priority-live-test.cjs | NIE ZMIERZONO | 0 | 0 | brak parametru w grep |
+| battle-banner-retreat-overlap-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| battle-damage-colors-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| battle-hud-tempo-minimap-live-test.cjs | NIE ZMIERZONO | 0 | 0 | brak parametru w grep |
+| battle-large-return-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| battle-manual-control-multicycle-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| battle-manual-full-roster-pointer-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| battle-manual-melee-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| battle-manual-queued-order-lifecycle-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| battle-pace-equal-line-live-test.cjs | NIE ZMIERZONO | 0 | 0 | brak parametru w grep |
+| battle-player-always-blue-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| battle-save-disabled-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| battle-side-colors-3d-live-test.cjs | NIE ZMIERZONO | 0 | 0 | brak parametru w grep |
+| battle-skip-siege-parity-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=oblezenie |
+| build-request-obywatele-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| city-clears-forest-live-test.cjs | NIE ZMIERZONO | 0 | 0 | brak parametru w grep |
+| city-founding-limit-greyed-fullgame-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 |
+| city-founding-limit-greyed-live-test.cjs | NIE ZMIERZONO | 0 | 0 | brak parametru w grep |
+| city-panel-refresh-at-turn-start-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 |
+| city-ro-loop-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 |
+| city-state-offensive-live-test.cjs | NIE ZMIERZONO | 0 | 0 | brak parametru w grep |
+| city-state-start-units-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa playtest=miasto |
+| civ-music-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| civ-welcome-screen-brand-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 |
+| defeat-last-city-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| defeat-screen-summary-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| diplo-aggressor-marker-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| diplo-aggressor-ui-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| diplo-forced-peace-d2-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 playtest=mapa |
+| diplo-nap-trust-30-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| diplo-peace-auto-stale-offer-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 playtest=mapa |
+| diplo-respect-military-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 playtest=mapa |
+| diplo-treaty-payment-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| diplo-truce-ai-table-live-test.cjs | NIE ZMIERZONO | 2 | 0 | playtest=mapa |
+| diplo-truce-live-test.cjs | NIE ZMIERZONO | 2 | 0 | civTest=1 playtest=mapa |
+| diplo-truce-saveload-live-test.cjs | NIE ZMIERZONO | 2 | 0 | playtest=mapa |
+| diplo-war-peace-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| diplomacy-border-era-penalty-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 playtest=mapa |
+| diplomacy-city-cession-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| diplomacy-direct-negotiation-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| diplomacy-relacje-ai-ai-audiencja-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| diplomacy-relation-deal-text-consistent-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 playtest=mapa |
+| diplomacy-relation-value-mismatch-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 playtest=mapa |
+| diplomacy-sensible-deals-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| diplomacy-trade-era-saveload-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| dyplo-mapa-odkrycie-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| dyplo-sojusz-widocznosc-ciagla-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| empire-recruit-all-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 playtest=mapa |
+| empire-recruit-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 playtest=mapa |
+| end-turn-block-event-live-test.cjs | NIE ZMIERZONO | 2 | 0 | civTest=1 |
+| end-turn-gate-live-test.cjs | NIE ZMIERZONO | 2 | 0 | civTest=1 |
+| era-change-toast-live-test.cjs | NIE ZMIERZONO | 2 | 0 | playtest=mapa |
+| events-one-turn-lifetime-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 playtest=mapa |
+| forced-war-iron-player-target-live-test.cjs | NIE ZMIERZONO | 2 | 0 | playtest=mapa |
+| forced-war-player-no-contact-live-test.cjs | NIE ZMIERZONO | 2 | 0 | playtest=mapa |
+| forced-war-player-target-live-test.cjs | NIE ZMIERZONO | 2 | 0 | playtest=mapa |
+| forced-war-r9-no-auto-end-live-test.cjs | NIE ZMIERZONO | 2 | 0 | playtest=mapa |
+| forced-war-trojstronna-domino-live-test.cjs | NIE ZMIERZONO | 2 | 0 | playtest=mapa |
+| fort-outpost-territory-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| hotseat-etap6d-podetap-a-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| hotseat-etap6d-podetap-b-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| hotseat-etap6d-podetap-e-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| hud-zetony-ekonomia-brutto-live-test.cjs | NIE ZMIERZONO | 0 | 0 | brak parametru w grep |
+| improvement-build-highlight-lifecycle-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| improvement-growth-live-test.cjs | NIE ZMIERZONO | 0 | 0 | brak parametru w grep |
+| interaction-latency-vs-citycount-live-test.cjs | NIE ZMIERZONO | 0 | 0 | brak parametru w grep |
+| map-controls-behind-panels-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 |
+| march-multiturn-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 |
+| mgla-sciezka-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| minimap-viewport-rect-follow-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| minimapa-ikona-robotnik-kolor-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| minimapa-pasek-narzedzi-reorganizacja-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| open-panel-refresh-after-tech-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 |
+| perf-endturn-ai-phase-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=stress |
+| perf-endturn-render-hud-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=stress |
+| perf-endturn-render-progress-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=stress |
+| perf-large-empire-stress-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=stress |
+| perf-late-game-interaction-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=stress |
+| perf-late-game-interaction-r2-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=stress |
+| perf-long-session-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| praca-global-default-live-test.cjs | NIE ZMIERZONO | 0 | 0 | brak parametru w grep |
+| praca-pula-100-budynki-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 |
+| rebel-city-notification-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| rebel-protection-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| resource-ledger-realpath-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 |
+| saveload-hud-cache-hotseat-live-test.cjs | NIE ZMIERZONO | 0 | 0 | brak parametru w grep |
+| saveload-praca-pool-hotseat-live-test.cjs | NIE ZMIERZONO | 0 | 0 | brak parametru w grep |
+| saveload-praca-pool-live-test.cjs | NIE ZMIERZONO | 0 | 0 | brak parametru w grep |
+| scout-start-units-live-test.cjs | NIE ZMIERZONO | 0 | 0 | brak parametru w grep |
+| siege-auto-breach-replay-e2e-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=oblezenie |
+| siege-badge-zorder-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 playtest=mapa |
+| siege-surrender-forecast-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 playtest=mapa |
+| stadnina-kon-koszt-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| starting-army-first-city-live-test.cjs | NIE ZMIERZONO | 0 | 0 | brak parametru w grep |
+| test-hook-setcitylimit-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 |
+| trade-route-remove-stock-flow-live-test.cjs | NIE ZMIERZONO | 0 | 0 | civTest=1 playtest=mapa |
+| war-era-counter-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| war-rules-multiwar-live-test.cjs | NIE ZMIERZONO | 0 | 0 | playtest=mapa |
+| wyrab-wycinka-nazwa-live-test.cjs | NIE ZMIERZONO | 0 | 0 | brak parametru w grep |
+
+## Podsumowanie grep
+
+- Pliki z closeCivWelcome: 12 (army-panel-general-label-multiselect, diplo-truce-ai-table, diplo-truce, diplo-truce-saveload, end-turn-block-event, end-turn-gate, era-change-toast, forced-war-iron-player-target, forced-war-player-no-contact, forced-war-player-target, forced-war-r9-no-auto-end, forced-war-trojstronna-domino).
+- Pliki z prepareEndTurnGate w *-live-test.cjs: 0.
+- Pomiary PRZED/PO na ekranie powitalnym oraz pomiar poziomu maksymalnego w tym przebiegu: NIE ZMIERZONO.
