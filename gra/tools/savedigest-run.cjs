@@ -13,6 +13,7 @@
  *   aionly  -- jak default, ale kulturaReligiaLevelAI = trudny (tylko poziom AI rozni sie od gracza)
  * Uzycie (z gra/, dist poza repo):
  *   node tools/savedigest-run.cjs --dist <abs katalog z index.html> --mode rt --cfg max --seed 4242 --n 5 --out <abs.json> [--snap <abs>]
+ *   tryb A/B z buntem stolicy AI w 1. turze po zapisie: dodaj --bunt 1 (cfg max = konfiguracja iii)
  * Wynik: JSON z rekordami {phase, turn, digest}. Digest = __detHarness.digest() (units+cities, FNV i dlugosc).
  */
 const fs = require('fs');
@@ -26,9 +27,10 @@ const CFG = arg('cfg', 'max');
 const SEED = Number(arg('seed', '4242'));
 const N = Number(arg('n', '5'));
 const K = Number(arg('k', '3'));
+const BUNT = arg('bunt', '0') === '1'; // iii: bunt stolicy AI w PIERWSZEJ turze po zapisie (forceRevoltEligible jak CAPREBEL2)
 const SNAP = path.resolve(arg('snap', path.join(DIST, 'snap.json')));
 const OUT = path.resolve(arg('out', path.join(DIST, 'run.json')));
-const PW = path.resolve(GRA_DIR, 'node_modules', 'playwright');
+const PW = process.env.PW_PATH || path.resolve(GRA_DIR, 'node_modules', 'playwright');
 const CHROME = process.env.CHROME_PATH || '/opt/pw-browsers/chromium';
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const log = (...a) => console.log(new Date().toISOString().slice(11, 19), MODE, CFG, SEED, ...a);
@@ -106,6 +108,14 @@ async function main() {
         await wait(300);
       }
     };
+    // Bunt stolicy AI (tryb --bunt 1): pierwsza AI-stolica; forceRevoltEligible jak w caprebel2-live.cjs (sl).
+    const forceBunt = async () => page.evaluate(() => {
+      for (let o = 1; o <= 8; o++) {
+        const c = window.__cityCessionTestDebug.capitalOf(o);
+        if (c) { window.__rebelNotifyTestDebug.forceRevoltEligible(c); return { owner: o, capId: c }; }
+      }
+      throw new Error('brak stolicy AI');
+    });
     const digest = () => page.evaluate(() => window.__detHarness.digest());
     const turnNow = () => page.evaluate(() => window.__eraTestDebug.getWorldState().turn);
     // Pelny zrzut (units+cities) po kazdej turze -- do diffu z odfiltrowaniem pol domyslnych (savedigest-diff.cjs).
@@ -129,14 +139,14 @@ async function main() {
       fs.writeFileSync(SNAP, snap); fs.writeFileSync(SNAP + '.full', await page.evaluate(() => window.__detHarness.full()));
       res.snapBytes = snap.length;
       res.records.push({ phase: 'snap', turn: await turnNow(), digest: await digest() });
-      for (let i = 0; i < K; i++) { const t = await endTurn(); res.records.push({ phase: 'cont', turn: t, digest: await digest() }); await dumpFull('cont' + t); flush(); }
+      for (let i = 0; i < K; i++) { if (BUNT && i === 0) res.bunt = await forceBunt(); const t = await endTurn(); res.records.push({ phase: 'cont', turn: t, digest: await digest() }); await dumpFull('cont' + t); flush(); }
     } else if (MODE === 'B') {
       const snap = fs.readFileSync(SNAP, 'utf8');
       await page.evaluate((s) => window.__detHarness.restoreJson(s), snap);
       await wait(300);
       fs.writeFileSync(OUT + '.full', await page.evaluate(() => window.__detHarness.full()));
       res.records.push({ phase: 'restore', turn: await turnNow(), digest: await digest() });
-      for (let i = 0; i < K; i++) { const t = await endTurn(); res.records.push({ phase: 'resumed', turn: t, digest: await digest() }); await dumpFull('resumed' + t); flush(); }
+      for (let i = 0; i < K; i++) { if (BUNT && i === 0) res.bunt = await forceBunt(); const t = await endTurn(); res.records.push({ phase: 'resumed', turn: t, digest: await digest() }); await dumpFull('resumed' + t); flush(); }
     } else {
       throw new Error('nieznany --mode ' + MODE);
     }

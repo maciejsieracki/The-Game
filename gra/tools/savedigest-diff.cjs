@@ -23,12 +23,15 @@ const bump = (kind, p, size) => {
 const norm = (p) => p.replace(/\[\d+\]/g, '[]');
 const sz = (v) => (v === undefined ? 0 : JSON.stringify(v).length);
 
-function walk(a, b, p, ctx) {
+// Rozmiar wpisu obiektu = nazwa klucza + wartosc (JSON), zeby dodany klucz liczyl sie w znakach z nazwa.
+function szKey(key, v) { return key === undefined ? sz(v) : JSON.stringify(key).length + 1 + sz(v); }
+
+function walk(a, b, p, ctx, key) {
   if (a === b) return;
   const ta = a === null ? 'null' : Array.isArray(a) ? 'array' : typeof a;
   const tb = b === null ? 'null' : Array.isArray(b) ? 'array' : typeof b;
-  if (a === undefined) { bump('added', norm(p), sz(b)); return; }
-  if (b === undefined) { bump('removed', norm(p), sz(a)); return; }
+  if (a === undefined) { bump('added', norm(p), szKey(key, b)); return; }
+  if (b === undefined) { bump('removed', norm(p), szKey(key, a)); return; }
   if (ta !== tb || ta !== 'object' && ta !== 'array') { bump('changed', norm(p), sz(a) + sz(b)); return; }
   if (ta === 'array') {
     const n = Math.max(a.length, b.length);
@@ -36,7 +39,7 @@ function walk(a, b, p, ctx) {
     return;
   }
   const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
-  for (const k of keys) walk(a[k], b[k], p + '.' + k, ctx);
+  for (const k of keys) walk(a[k], b[k], p + '.' + k, ctx, k);
 }
 
 // Dopasowanie po id (kolejnosc tablic moze sie roznic po restore).
@@ -53,7 +56,7 @@ function matchById(arrA, arrB, name) {
     const a = mA.get(k); const b = mB.get(k);
     if (a === undefined) { missingA++; bump('added', name + '[*]', sz(b)); continue; }
     if (b === undefined) { missingB++; bump('removed', name + '[*]', sz(a)); continue; }
-    walk(a, b, name + '[' + k + ']', {});
+    walk(a, b, name + '[' + k + ']', {}, undefined);
   }
   return { missingA, missingB, orderDiff, count: [arrA.length, arrB.length] };
 }
@@ -62,7 +65,7 @@ const res = {};
 res.units = matchById(A.units || [], B.units || [], 'units');
 res.cities = matchById(A.cities || [], B.cities || [], 'cities');
 // Pola na poziomie korzenia (poza units/cities) -- full() ich nie zawiera, ale na wszelki wypadek:
-for (const k of new Set([...Object.keys(A), ...Object.keys(B)])) if (k !== 'units' && k !== 'cities') walk(A[k], B[k], '$.' + k, {});
+for (const k of new Set([...Object.keys(A), ...Object.keys(B)])) if (k !== 'units' && k !== 'cities') walk(A[k], B[k], '$.' + k, {}, k);
 
 const total = Object.values(cls).reduce((s, x) => s + x.chars, 0);
 const rows = Object.values(cls).sort((x, y) => y.chars - x.chars);
