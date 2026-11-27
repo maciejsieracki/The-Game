@@ -184,6 +184,7 @@ import { createDirtyRenderSync } from './game/dirtyRenderSync';
 import { trimSidePanelEventLog } from './game/retained-side-panel-events';
 import {
   worldDiploNewsEntry,
+  worldDiploNewsRebellionEntry,
   worldDiploNewsPush,
   worldDiploNewsSanitize,
   worldDiploNewsVisibleList,
@@ -27261,6 +27262,12 @@ async function boot(): Promise<void> {
      *  właściciela (obie strony odkryte nie są wymagane: wystarczy kontakt z cywilizacją). Bez okna/modala. */
     function recordAiCityRebellionNews(cityName: string, prevOwnerId: number, cityId: string): void {
       if (!getDiplomaticContacts().has(prevOwnerId)) return;
+      // R-WEB-AI-REBEL-WORLD-NEWS-Q1: ten sam wpis w TRWAŁEJ liście „Wydarzenia na świecie” (okno dyplomacji).
+      const worldEntry = worldDiploNewsRebellionEntry({
+        cityName, cityId, ownerId: prevOwnerId, ownerLabel: ownerDiploLabel(prevOwnerId),
+        turn, discovered: getDiplomaticContacts(),
+      });
+      if (worldEntry !== null) worldDiploNewsList = worldDiploNewsPush(worldDiploNewsList, worldEntry);
       const evId = `ai-city-rebel-${turn}-${cityId}`;
       if (warEventLog.some(e => e.id === evId)) return;
       warEventLog.unshift({
