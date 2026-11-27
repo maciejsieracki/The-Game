@@ -61,3 +61,71 @@ Uwagi do tabeli (uczciwie):
 ## 7. Podsumowanie
 
 Pomiar ograniczony do t1 na dwóch ziarnach w konfiguracji maksimum. Cykl 500 ms nie dał mierzalnego kosztu w wywołaniu bramki tury. Nie zmierzono: t30/t60, stanu zablokowanego (konsola), odwrotnego przypadku (aria/canEnd), zawieszonego wskaźnika pointer. Zidentyfikowane ryzyka kodowe i niestabilność klikania w t2+ wymagają osobnych tematów.
+
+## 8. Obrona Operatora, runda 2 (odpowiedzi na zarzuty Evaluatora bc247f80)
+
+Dodatkowy pomiar na żywo (ta sama konfiguracja MAKSIMUM, checkpoint t1, `gra/tools/endturn-perf-probe.cjs`
+rozszerzony o partię 1000 wywołań `gateInfo()` w jednym `page.evaluate`; średnia = czas partii / 1000,
+bo pojedyncze wywołanie jest poniżej rozdzielczości `performance.now()`):
+
+| Ziarno | Tura | Partia 1000 wywołań gateInfo(): średnia [ms] | Pojedyncze wywołania n=200: mediana / p95 / max [ms] | canEnd | Konsola 30 s (10 s + 20 s): warn / error / log | Klatki rAF 10 s: mediana / p95 [ms], n | Klatki rAF 20 s: mediana / p95 [ms], n |
+|---|---|---|---|---|---|---|---|
+| 4242 | 1 | 0,0042 | 0 / 0 / 0,2 | true | 0 / 0 / 0 | 550 / 800,1, n=18 | 516,6 / 683,3, n=38 |
+| 7 | 1 | 0,0018 | 0 / 0 / 0,2 | true | 0 / 0 / 0 | 500 / 683,3, n=19 | 533,4 / 783,4, n=36 |
+
+Uwagi: pomiar obejmuje `gateInfo()` (zawiera `nnsGateForPlayer()` i `canPlayerInitiateEndTurn()`), więc
+jest to GÓRNE ograniczenie kosztu `canEndTurn()`; osobnego hooka na samą funkcję w grze nie ma i nie dodawano go
+(zakaz zmian w gra/src). Przy 2 wywołaniach na sekundę koszt to rzędu 10 µs na sekundę.
+
+### 8.1 Odpowiedzi na zarzuty
+
+1. **t30/t60 NIE ZMIERZONO — PRZYJMUJĘ.** Nie da się tego zrobić w jednym wywołaniu Bash (limit 590 s,
+   zakaz uruchomień w tle), a runner nie jest wznawialny między wywołaniami. Pomiar t30/t60 wymaga osobnego
+   tematu z wznawialnym runnerem (wzór: DIPLOMEASURE). Wyniki t30/t60 nie są podane.
+2. **Pomiar gateInfo — PRZYJMUJĘ i poprawiam.** Dodano partię 1000 wywołań: 0,0042 ms (seed 4242) i 0,0018 ms (seed 7)
+   na t1 w stanie „tura możliwa”. Mediana/p95 = 0 nadal wynika z rozdzielczości; liczba z partii jest właściwym
+   oszacowaniem górnym.
+3. **Liczba wywołań cyklu i porównanie klatek z bazą — PRZYJMUJĘ jako NIE ZMIERZONO.** Liczba wywołań z kodu:
+   `setInterval(syncEndTurnState, 500)` (bottomBarHud.ts, `endSyncTimer`) daje 20 wywołań na 10 s; to wynik
+   odczytu kodu, nie pomiaru. Porównanie z buildem bazowym 32b3f1718 wymaga zbudowania wersji bazowej i pracy
+   na sprzęcie z GPU; środowisko renderuje ~2 klatki/s, więc narzut cyklu nie jest rozdzielny od szumu. Nie
+   wnioskuję o wpływie na klatkę.
+4. **Punkty 3 i 4 dispatchu — wykonane częściowo (kod), live NIE ZMIERZONO.**
+   - Odwrotny przypadek (tabela tura × aria × canEnd × skutek kliku), analiza kodu, bez zmian w grze:
+     - Klik na `[data-end]` zawsze wywołuje `config.onEndTurn()` (bottomBarHud.ts ~l.294–297), chyba że
+       `hideEndTurn()` — `aria-disabled` NIE blokuje kliku.
+     - `onEndTurn` = `advanceSeat()` (main.ts l.29565). `advanceSeat()` wywołuje `canPlayerInitiateEndTurn()`
+       i przy `false` robi `hintEndTurnBlocked()` i `return` (main.ts ~l.49956–49958); `endActiveHumanTurn()`
+       ma tę samą bramkę (main.ts ~l.49683–49686).
+     - Wniosek: aria=true + canEnd=false → klik NIE kończy tury, pokazuje podpowiedź blokady. Aria=false +
+       canEnd=true → klik kończy turę. Aria=false + canEnd=false (opóźnienie cyklu ≤500 ms lub zablokowany
+       render) → klik NIE kończy tury (bramka), a gracz widzi włączony przycisk przez maks. ~0,5 s; to jest
+       jedyny rozjazd wizualny. Poprawność kończenia tury zależy wyłącznie od bramki, nie od aria.
+     - Tabela na żywo NIE ZMIERZONO (brak tury zablokowanej w biegu; zmiana stanu gry hakami zakazana).
+   - Zawieszony `activeEndTurnPointers` (kod): `onEndTurnPointerDown` dodaje `pointerId` przy pointerdown na
+     `[data-end]`; `onEndTurnPointerRelease` usuwa go na `pointerup`/`pointercancel` słuchanym na `document`
+     w fazie capture (bottomBarHud.ts ~l.339–349). Gdy zbiór niepusty, `render()` jest odkładany, a
+     `syncEndTurnState()` wychodzi wcześniej. Zawieszenie trwa więc do następnego `pointerup`/`pointercancel`
+     gdziekolwiek na dokumencie (samonaprawiające się), a nie „aż do odświeżenia". Ryzyko: okno utraty
+     zwolnienia myszy poza oknem przeglądarki — NIE ZWERYFIKOWANO (CDP nie wysyła zdarzeń poza viewport;
+     zdarzenia syntetyczne nie są dowodem). Obserwowalnego hooka na zbiór nie ma, więc efekt na przycisk nie
+     został zmierzony live.
+5. **Niestabilność kliku t2→t3 — PRZYJMUJĘ jako nierozstrzygniętą.** W tej rundzie nie ponawiano kliku
+   i nie diagnozowano harnessu; to osobny temat (patrz §5 i punkt 1 wyżej). Nie wnioskuję, czy jest to błąd gry.
+6. **healStaleEndTurnBlockers() — CZĘŚCIOWO ODRZUCAM z dowodem, częściowo PRZYJMUJĘ.**
+   - Odrzucam tezę o NOWEJ ścieżce wywołania: komentarz przy `healStaleEndTurnBlockers()` (main.ts l.43375–43385,
+     wpis N1 z 2026-08-14) potwierdza, że funkcja jest wołana z pętli renderu HUD (`canEndTurn`) od przed FALI 933;
+     `render()` w bottomBarHud.ts (l.207) wołał `canEndTurn()` już wcześniej.
+   - Przyjmuję: częstotliwość jest NOWA — cykl wywołuje `canPlayerInitiateEndTurn()` (a więc
+     `healStaleEndTurnBlockers()`) co 500 ms także wtedy, gdy HUD nie jest odświeżany. Zmiana wymaga oceny
+     skutków ubocznych przy 2 Hz (osobny przegląd, bez poprawki w tym temacie).
+
+### 8.2 Wniosek po obronie
+
+- Koszt cyklu: mierzalnie znikomy na t1 (µs na wywołanie, ~10 µs/s). Akceptowalne kosztowo na tym pomiarze.
+- Konsola na t1: 0 wpisów w 30 s. Stan zablokowany NIE ZMIERZONO (ryzyko z kodu: 10 `console.warn` w
+  `canPlayerInitiateEndTurn()` wywoływanych co 500 ms).
+- Poprawność: odwrotny przypadek rozstrzygany przez bramkę w `advanceSeat()`; rozjazd wizualny ≤500 ms.
+- Brak poprawki w `gra/src` (dispatch: tylko po odtworzeniu problemu; problemu nie odtworzono).
+- Otwarte (osobne tematy): t30/t60; stan zablokowany i konsola; zawieszony pointer na prawdziwych zdarzeniach
+  poza oknem; niestabilność kliku t2+; przegląd skutków ubocznych `healStaleEndTurnBlockers()` przy 2 Hz.

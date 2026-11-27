@@ -82,7 +82,13 @@ async function measureGate(page) {
       times.push(performance.now() - t0);
       canEnd = gi.canEnd;
     }
-    return { times, canEnd };
+    // Srednia z partii 1000 wywolan: rozdzielczosc performance.now() (~0,1 ms) nie pozwala zmierzyc
+    // pojedynczego wywolania, wiec sredni koszt liczymy jako (czas partii)/1000. Tylko odczyt.
+    const B = 1000;
+    const tb0 = performance.now();
+    for (let i = 0; i < B; i++) window.__nnsMeasureDebug.gateInfo();
+    const batchMeanMs = (performance.now() - tb0) / B;
+    return { times, canEnd, batchMeanMs, batchN: B };
   });
 }
 
@@ -193,6 +199,7 @@ async function main() {
       const row = {
         seed: SEED, turn, target,
         canEndTurnProxyMs: stats(gate.times), canEnd: gate.canEnd,
+        gateBatchMeanMs: +gate.batchMeanMs.toFixed(5), gateBatchN: gate.batchN,
         frames10s: frames, frames20s: frames30,
         consoleLast30s: { total: win30.length, sample: win30.slice(0, 10) },
         consoleCountsDelta: {
