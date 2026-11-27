@@ -1,0 +1,53 @@
+# CMD seg.sh 7 45 trudna seed7-r3 start 11:49:33 load 11.97 10.08 9.43
+[tmpdir] TMPDIR_RUN_ID=3291-07157c44 DIST=/tmp/vl3-dist PROFILE=/tmp/vl3-prof-seed7-r3 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[diplo] player-ai autopilot=1
+[diplo] diplo-level=trudna
+[diplo] unit-pace=wysoki
+[diplo] culture=trudny
+[diplo] all-flags=1 {"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true}
+[diplo] seed7-all1-lvl-trudna tura=2 pary=78 wojny=0 czas=279s
+[diplo] seed7-all1-lvl-trudna tura=3 pary=78 wojny=0 czas=281s
+[diplo] seed7-all1-lvl-trudna tura=4 pary=78 wojny=0 czas=284s
+[diplo] seed7-all1-lvl-trudna tura=5 pary=78 wojny=0 czas=287s
+[diplo] seed7-all1-lvl-trudna tura=6 pary=78 wojny=0 czas=290s
+[diplo] seed7-all1-lvl-trudna tura=7 pary=78 wojny=0 czas=292s
+[diplo] seed7-all1-lvl-trudna tura=8 pary=78 wojny=0 czas=295s
+[diplo] seed7-all1-lvl-trudna tura=9 pary=78 wojny=0 czas=297s
+[diplo] seed7-all1-lvl-trudna tura=10 pary=79 wojny=0 czas=299s
+[diplo] seed7-all1-lvl-trudna tura=11 pary=79 wojny=0 czas=302s
+[diplo] seed7-all1-lvl-trudna tura=12 pary=79 wojny=0 czas=305s
+[diplo] seed7-all1-lvl-trudna tura=13 pary=80 wojny=0 czas=308s
+[diplo] seed7-all1-lvl-trudna tura=14 pary=80 wojny=0 czas=310s
+[diplo] seed7-all1-lvl-trudna tura=15 pary=80 wojny=0 czas=313s
+[diplo] seed7-all1-lvl-trudna tura=16 pary=80 wojny=0 czas=316s
+[diplo] seed7-all1-lvl-trudna tura=17 pary=80 wojny=0 czas=318s
+[diplo] seed7-all1-lvl-trudna tura=18 pary=80 wojny=0 czas=321s
+[diplo] seed7-all1-lvl-trudna tura=19 pary=80 wojny=0 czas=323s
+[diplo] seed7-all1-lvl-trudna tura=20 pary=80 wojny=0 czas=326s
+[diplo] seed7-all1-lvl-trudna tura=21 pary=80 wojny=0 czas=328s
+[diplo] seed7-all1-lvl-trudna tura=22 pary=80 wojny=0 czas=334s
+[diplo] seed7-all1-lvl-trudna tura=23 pary=80 wojny=0 czas=337s
+[diplo] seed7-all1-lvl-trudna tura=24 pary=80 wojny=0 czas=340s
+[diplo] seed7-all1-lvl-trudna tura=25 pary=80 wojny=0 czas=342s
+[diplo] seed7-all1-lvl-trudna tura=26 pary=80 wojny=0 czas=345s
+[diplo] seed7-all1-lvl-trudna tura=27 pary=80 wojny=0 czas=347s
+[diplo] seed7-all1-lvl-trudna tura=28 pary=80 wojny=0 czas=351s
+[diplo] seed7-all1-lvl-trudna tura=29 pary=80 wojny=0 czas=354s
+[diplo] seed7-all1-lvl-trudna tura=30 pary=80 wojny=0 czas=357s
+[diplo] seed7-all1-lvl-trudna tura=31 pary=80 wojny=0 czas=361s
+[diplo] seed7-all1-lvl-trudna tura=32 pary=80 wojny=0 czas=365s
+[diplo] seed7-all1-lvl-trudna tura=33 pary=80 wojny=0 czas=368s
+[diplo] seed7-all1-lvl-trudna tura=34 pary=80 wojny=0 czas=371s
+[diplo] seed7-all1-lvl-trudna tura=35 pary=80 wojny=0 czas=375s
+[diplo] seed7-all1-lvl-trudna tura=36 pary=80 wojny=0 czas=380s
+[diplo] seed7-all1-lvl-trudna tura=37 pary=80 wojny=0 czas=385s
+[diplo] seed7-all1-lvl-trudna tura=38 pary=80 wojny=0 czas=389s
+[diplo] seed7-all1-lvl-trudna tura=39 pary=80 wojny=0 czas=394s
+[diplo] seed7-all1-lvl-trudna tura=40 pary=80 wojny=3 czas=399s
+[diplo] seed7-all1-lvl-trudna tura=41 pary=80 wojny=3 czas=405s
+[diplo] seed7-all1-lvl-trudna tura=42 pary=80 wojny=4 czas=410s
+[diplo] seed7-all1-lvl-trudna tura=43 pary=80 wojny=4 czas=416s
+[diplo] seed7-all1-lvl-trudna tura=44 pary=80 wojny=4 czas=421s
+[diplo] seed7-all1-lvl-trudna tura=45 pary=80 wojny=4 czas=427s
+[diplo] PODSUMOWANIE {"seed":7,"diploLevel":"trudna","harder":1,"allFlags":1,"playerAi":1,"graczAdnotacja":"gracz = autopilot","turnsRequested":150,"every":1,"endTurn":45,"rows":44,"stop":null,"segment":true,"stopAt":45,"resumed":false,"slot":"dipl-measure-seed7-all1-lvl-trudna","flagi":{"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true},"counters":{"gateActiveTurns":0,"bypassApplied":0,"stuckQueueHeals":0,"battlesAuto":0,"diploAudienceClosed":0,"armyMergeClosed":0,"techNoticeClosed":0,"aiOffersRejected":0,"aiOffersRejectAttempts":0,"forcedPeaceAccepted":0},"aiOffersRejected":0,"aiOffersRejectAttempts":0,"wallSec":427}
+# rc=0 end 11:56:41
