@@ -765,3 +765,287 @@ fn oblezenie_none_z_grupa_dopisuje_wpis_grupy() {
     assert!(b.group_meta.contains_key("g1"), "`_ensureGroupMeta(g1)`");
     assert_eq!(last_run(&b), ManualRun::Done);
 }
+
+// --- (11) OBRONA r1: tłumaczenie decyzji (czyste funkcje produkcyjne), strona obrońcy, marsz krokowy, oblężenie -------
+
+use civ_engine::domain::player_order_attack::{AttackOrderStep, AttackRoute};
+use civ_engine::domain::player_order_move::{MoveOrderStep, MoveRoute};
+use civ_engine::domain::player_order_siege_manual::{ApproachClear, NotHandledAt, SiegeManualStep};
+use civ_engine::domain::siege_prod_manual::{run_of_attack, run_of_move, run_of_siege};
+
+/// `run_of_move` (`:18297-18352`): każda decyzja i jej wpływ na `ru.playerOrder` (Obrona zarzut 3, mutant M4).
+#[test]
+fn run_of_move_tlumaczy_wszystkie_decyzje() {
+    assert_eq!(
+        run_of_move(MoveOrderStep::ReachedTarget),
+        (ManualRun::Done, Some(PlayerOrder::None))
+    );
+    assert_eq!(
+        run_of_move(MoveOrderStep::Attack(3)),
+        (ManualRun::Attack(3), None)
+    );
+    assert_eq!(run_of_move(MoveOrderStep::NoRoute), (ManualRun::Done, None));
+    assert_eq!(
+        run_of_move(MoveOrderStep::CompactBlocked {
+            col: 1,
+            row: 2,
+            route: MoveRoute::Bfs
+        }),
+        (ManualRun::Done, None)
+    );
+    // Odmowa blokady: `order_done` = `playerOrder` już `none` (`:18344`); inaczej rozkaz bez zmian (`:18345-18348`).
+    let blocked = |order_done| MoveOrderStep::BlockadeBlocked {
+        col: 1,
+        row: 2,
+        route: MoveRoute::Bfs,
+        order_done,
+    };
+    assert_eq!(
+        run_of_move(blocked(true)),
+        (ManualRun::Done, Some(PlayerOrder::None))
+    );
+    assert_eq!(run_of_move(blocked(false)), (ManualRun::Done, None));
+    let mv = |order_done| MoveOrderStep::Move {
+        col: 5,
+        row: 6,
+        route: MoveRoute::Bfs,
+        order_done,
+        prev: Some((4, 6)),
+    };
+    let run = ManualRun::Move {
+        tile: (5, 6),
+        prev: Some((4, 6)),
+    };
+    assert_eq!(run_of_move(mv(true)), (run, Some(PlayerOrder::None)));
+    assert_eq!(run_of_move(mv(false)), (run, None));
+}
+
+/// `run_of_attack` (`:18353-18428`): wszystkie decyzje.
+#[test]
+fn run_of_attack_tlumaczy_wszystkie_decyzje() {
+    assert_eq!(
+        run_of_attack(AttackOrderStep::OrderCleared),
+        (ManualRun::Done, Some(PlayerOrder::None))
+    );
+    assert_eq!(
+        run_of_attack(AttackOrderStep::Attack(2)),
+        (ManualRun::Attack(2), None)
+    );
+    assert_eq!(
+        run_of_attack(AttackOrderStep::NoStep),
+        (ManualRun::Done, None)
+    );
+    assert_eq!(
+        run_of_attack(AttackOrderStep::BlockadeBlocked {
+            col: 1,
+            row: 1,
+            route: AttackRoute::Threat
+        }),
+        (ManualRun::Done, None)
+    );
+    assert_eq!(
+        run_of_attack(AttackOrderStep::Move {
+            col: 7,
+            row: 8,
+            route: AttackRoute::Target,
+            prev: None
+        }),
+        (
+            ManualRun::Move {
+                tile: (7, 8),
+                prev: None
+            },
+            None
+        )
+    );
+}
+
+/// `run_of_siege` (`:18435-18475`): każda decyzja (mutanty M11, M12 i pozostałe gałęzie).
+#[test]
+fn run_of_siege_tlumaczy_wszystkie_decyzje() {
+    let ids = |id: u64| (100..103).contains(&id).then(|| (id - 100) as usize);
+    assert_eq!(
+        run_of_siege(&SiegeManualStep::NotHandled(NotHandledAt::Gate), ids),
+        None
+    );
+    // `_siegeRamTowerStep` zwrócił `false` (`:18440`): wołający przechodzi dalej; `true` = obsłużone.
+    assert_eq!(
+        run_of_siege(&SiegeManualStep::RamTower { handled: false }, ids),
+        None
+    );
+    assert_eq!(
+        run_of_siege(&SiegeManualStep::RamTower { handled: true }, ids),
+        Some((ManualRun::SiegeRamTower, None))
+    );
+    assert_eq!(
+        run_of_siege(&SiegeManualStep::Shoot { target: 101 }, ids),
+        Some((ManualRun::Attack(1), None))
+    );
+    assert_eq!(
+        run_of_siege(&SiegeManualStep::ApproachStrike { target: 102 }, ids),
+        Some((ManualRun::Attack(2), None))
+    );
+    // Pomost: `Some(adj)` = `_doAttack`, `None` = `done()` (`:18453-18456`).
+    assert_eq!(
+        run_of_siege(&SiegeManualStep::WalkwayStrike { target: Some(100) }, ids),
+        Some((ManualRun::Attack(0), None))
+    );
+    assert_eq!(
+        run_of_siege(&SiegeManualStep::WalkwayStrike { target: None }, ids),
+        Some((ManualRun::Done, None))
+    );
+    // Cel spoza rosteru wroga = `done()`, bez ataku.
+    assert_eq!(
+        run_of_siege(&SiegeManualStep::Shoot { target: 999 }, ids),
+        Some((ManualRun::Done, None))
+    );
+    assert_eq!(
+        run_of_siege(&SiegeManualStep::Climb, ids),
+        Some((ManualRun::SiegeClimb, None))
+    );
+    assert_eq!(
+        run_of_siege(&SiegeManualStep::InfantryToTower, ids),
+        Some((ManualRun::SiegeInfantry, None))
+    );
+    for why in [ApproachClear::TargetGone, ApproachClear::AtTarget] {
+        assert_eq!(
+            run_of_siege(&SiegeManualStep::ApproachClear(why), ids),
+            Some((ManualRun::Done, Some(PlayerOrder::None)))
+        );
+    }
+    for stepped in [true, false] {
+        assert_eq!(
+            run_of_siege(
+                &SiegeManualStep::ApproachSafe {
+                    col: 3,
+                    row: 4,
+                    stepped
+                },
+                ids
+            ),
+            Some((ManualRun::SiegeSafeApproach { stepped }, None))
+        );
+    }
+}
+
+/// Pomost muru w ciele: atakujący gracz na pomoście z sąsiednim wrogiem uderza (`:18453-18456`), nie `done()`.
+#[test]
+fn oblezenie_pomost_z_sasiadem_uderza() {
+    let (mut b, mut st) = setup(&[(40, 10)], &[(41, 10)], 40, true);
+    b.units[0][0].activate.on_wall_walkway = true;
+    b.set_player_order(A0, PlayerOrder::Attack { target_id: 100 });
+    activate(&mut b, &mut st, A0);
+    assert_eq!(last_run(&b), ManualRun::Attack(0));
+}
+
+/// Strona obrońcy jako gracz: rozkazy obu stron są rozłączne (`side_ix`), a obrońca wykonuje swój rozkaz
+/// (mutant M8: `Defender => 0` aliasował rozkazy obrońcy do atakującego).
+#[test]
+fn obronca_jako_gracz_ma_wlasne_rozkazy() {
+    let (mut b, mut st) = setup(&[(10, 10)], &[(30, 10)], -1, true);
+    b.enable_manual_exec(BattleSide::Defender);
+    st.player_side = BattleSide::Defender;
+    b.set_player_order(A0, PlayerOrder::Move { col: 12, row: 10 });
+    b.set_player_order(D0, PlayerOrder::Move { col: 28, row: 10 });
+    assert_eq!(b.player_order(A0), PlayerOrder::Move { col: 12, row: 10 });
+    assert_eq!(b.player_order(D0), PlayerOrder::Move { col: 28, row: 10 });
+    activate(&mut b, &mut st, D0);
+    assert!(matches!(
+        last_run(&b),
+        ManualRun::Move { tile: (29, 10), .. }
+    ));
+    assert_eq!(pos(&b, D0), (29, 10));
+    // Atakujący nie jest stroną gracza: nie wykonuje rozkazu gracza, rozkaz zostaje.
+    let n = b.manual.records.len();
+    activate(&mut b, &mut st, A0);
+    assert_eq!(b.manual.records.len(), n);
+    assert_eq!(b.player_order(A0), PlayerOrder::Move { col: 12, row: 10 });
+}
+
+/// Obrońca jako gracz: `attack` na jednostkę atakującego (id 1..) z zasięgu.
+#[test]
+fn obronca_jako_gracz_atakuje_wskazany_cel() {
+    let (mut b, mut st) = setup(&[(29, 10)], &[(30, 10)], -1, true);
+    b.enable_manual_exec(BattleSide::Defender);
+    st.player_side = BattleSide::Defender;
+    b.set_player_order(D0, PlayerOrder::Attack { target_id: 1 });
+    activate(&mut b, &mut st, D0);
+    assert_eq!(last_run(&b), ManualRun::Attack(0));
+}
+
+/// Marsz KROKOWY (`march_incremental`) dla rozkazu gracza: pierwszy krok wykonany w `start`, czas 0 (marsz w toku, krok kończy zegar),
+/// bez tagów `unported` (ścieżka `exec_order_move` -> `march_move`).
+#[test]
+fn rozkaz_move_w_marszu_krokowym() {
+    let (mut b, mut st) = setup(&[(10, 10)], &[(40, 40)], -1, true);
+    b.march_incremental = true;
+    b.frame_ms = 16.0;
+    b.set_now(1000.0);
+    b.set_player_order(A0, PlayerOrder::Move { col: 14, row: 10 });
+    let dur = b.start(A0, &st);
+    // Marsz w toku: `start` zwraca 0, krok kończy zegar `_schedule` (D-MI-1), a `done()` zgłasza `take_march_done`.
+    assert_eq!(dur, 0.0);
+    assert!(b.march_pending(A0), "marsz krokowy w toku");
+    let timers = b.take_timers();
+    assert_eq!(timers.len(), 1, "jeden zegar końca kroku: {timers:?}");
+    assert!(timers[0].0 > 0.0);
+    b.fire_timer(timers[0].1, &mut st);
+    assert!(!b.march_pending(A0), "rozkaz ruchu = jeden krok");
+    assert_eq!(b.take_march_done().map(|d| d.0), Some(A0));
+    assert!(matches!(
+        last_run(&b),
+        ManualRun::Move { tile: (11, 10), .. }
+    ));
+    assert_eq!(pos(&b, A0), (11, 10));
+    assert!(
+        !b.unported.iter().any(|(u, _)| *u == A0),
+        "bez tagów: {:?}",
+        b.unported
+    );
+    assert_eq!(b.player_order(A0), PlayerOrder::Move { col: 14, row: 10 });
+}
+
+/// `attack` do dalekiego celu w marszu krokowym: krok, nie cios; rozkaz trwa.
+#[test]
+fn rozkaz_attack_w_marszu_krokowym_idzie_krokiem() {
+    let (mut b, st) = setup(&[(10, 10)], &[(20, 10)], -1, true);
+    b.march_incremental = true;
+    b.frame_ms = 16.0;
+    b.set_now(1000.0);
+    b.set_player_order(A0, PlayerOrder::Attack { target_id: 100 });
+    let dur = b.start(A0, &st);
+    assert_eq!(dur, 0.0);
+    assert!(b.march_pending(A0), "marsz krokowy w toku");
+    assert_eq!(pos(&b, A0), (11, 10));
+    assert_eq!(b.player_order(A0), PlayerOrder::Attack { target_id: 100 });
+}
+
+/// Cel `attack` martwy / znikający / uciekający (`:18397-18401`): rozkaz zdjęty, brak ruchu i ciosu
+/// (Obrona zarzut 2, kryterium 4: podprzyczyny `dead` / `fadingOut` / `routed`).
+#[test]
+fn attack_cele_martwy_znikajacy_uciekajacy() {
+    for which in 0..3 {
+        let (mut b, mut st) = setup(&[(10, 10)], &[(11, 10)], -1, true);
+        match which {
+            0 => st.def[0].c.dead = true,
+            1 => st.def[0].c.fading_out = true,
+            _ => st.def[0].c.routed = true,
+        }
+        b.set_player_order(A0, PlayerOrder::Attack { target_id: 100 });
+        activate(&mut b, &mut st, A0);
+        assert_eq!(last_run(&b), ManualRun::Done, "przyczyna {which}");
+        assert_eq!(b.player_order(A0), PlayerOrder::None, "przyczyna {which}");
+        assert_eq!(pos(&b, A0), (10, 10), "przyczyna {which}");
+    }
+}
+
+/// `attackMove` na własne pole (cel = pozycja, `:18384-18388`): rozkaz zdjęty, bez ruchu.
+#[test]
+fn attack_move_cel_rowny_pozycji() {
+    let (mut b, mut st) = setup(&[(10, 10)], &[(40, 40)], -1, true);
+    b.set_player_order(A0, PlayerOrder::AttackMove { col: 10, row: 10 });
+    activate(&mut b, &mut st, A0);
+    assert_eq!(last_run(&b), ManualRun::Done);
+    assert_eq!(b.player_order(A0), PlayerOrder::None);
+    assert_eq!(pos(&b, A0), (10, 10));
+}
