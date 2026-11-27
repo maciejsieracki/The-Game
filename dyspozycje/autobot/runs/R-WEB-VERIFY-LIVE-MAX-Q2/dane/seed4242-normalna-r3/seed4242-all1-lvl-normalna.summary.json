@@ -1,0 +1,41 @@
+{
+  "seed": 4242,
+  "diploLevel": "normalna",
+  "harder": 1,
+  "allFlags": 1,
+  "playerAi": 1,
+  "graczAdnotacja": "gracz = autopilot",
+  "turnsRequested": 150,
+  "every": 1,
+  "endTurn": 100,
+  "rows": 8,
+  "stop": null,
+  "segment": true,
+  "stopAt": 100,
+  "resumed": true,
+  "slot": "dipl-measure-seed4242-all1-lvl-normalna",
+  "flagi": {
+    "harder": true,
+    "napTor": false,
+    "sojuszTor": true,
+    "koalicja": true,
+    "zeroZaufania": true,
+    "wojnaSilaSojuszu": true,
+    "limitWojen": true
+  },
+  "counters": {
+    "gateActiveTurns": 0,
+    "bypassApplied": 0,
+    "stuckQueueHeals": 0,
+    "battlesAuto": 0,
+    "diploAudienceClosed": 0,
+    "armyMergeClosed": 0,
+    "techNoticeClosed": 0,
+    "aiOffersRejected": 0,
+    "aiOffersRejectAttempts": 0,
+    "forcedPeaceAccepted": 2
+  },
+  "aiOffersRejected": 0,
+  "aiOffersRejectAttempts": 0,
+  "wallSec": 428
+}

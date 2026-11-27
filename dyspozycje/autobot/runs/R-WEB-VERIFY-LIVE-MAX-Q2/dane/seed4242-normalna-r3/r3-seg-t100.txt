@@ -1,0 +1,160 @@
+# CMD seg.sh 4242 100 normalna seed4242-normalna-r3 start 11:26:27 load 5.57 9.09 9.83
+[tmpdir] TMPDIR_RUN_ID=25588-05e15581 DIST=/tmp/vl3-dist PROFILE=/tmp/vl3-prof-seed4242-normalna-r3 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[diplo] seed4242-all1-lvl-normalna WZNOWIENIE ze slotu dipl-measure-seed4242-all1-lvl-normalna (tura 75)
+[diplo] wznowienie: proba 1/3 przerwana (page.waitForFunction: Target page, context or browser has been closed) -- ponawiam start ze slotu
+[diplo] player-ai autopilot=1
+[diplo] diplo-level=normalna
+[diplo] unit-pace=wysoki
+[diplo] culture=trudny
+[diplo] all-flags=1 {"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true}
+[diplo] seed4242-all1-lvl-normalna tura=76 pary=95 wojny=2 czas=416s
+[diplo] seed4242-all1-lvl-normalna tura=77 pary=95 wojny=3 czas=425s
+[diplo] seed4242-all1-lvl-normalna tura=78 pary=95 wojny=3 czas=434s
+[diplo] seed4242-all1-lvl-normalna tura=79 pary=95 wojny=3 czas=443s
+[diplo] seed4242-all1-lvl-normalna tura=80 pary=95 wojny=4 czas=453s
+[diplo] seed4242-all1-lvl-normalna tura=81 pary=95 wojny=2 czas=464s
+[diplo] seed4242-all1-lvl-normalna tura=82 pary=95 wojny=2 czas=473s
+[diplo] seed4242-all1-lvl-normalna tura=83 pary=95 wojny=2 czas=483s
+[diplo] seed4242-all1-lvl-normalna tura=84 pary=95 wojny=2 czas=494s
+[diplo] seed4242-all1-lvl-normalna tura=85 pary=95 wojny=2 czas=503s
+[diplo] seed4242-all1-lvl-normalna tura=86 pary=95 wojny=2 czas=516s
+[diplo] seed4242-all1-lvl-normalna tura=87 pary=95 wojny=1 czas=526s
+[diplo] seed4242-all1-lvl-normalna tura=88 pary=95 wojny=3 czas=535s
+[diplo] seed4242-all1-lvl-normalna tura=89 pary=95 wojny=3 czas=544s
+[diplo] seed4242-all1-lvl-normalna tura=90 pary=95 wojny=3 czas=555s
+[diplo] seed4242-all1-lvl-normalna tura=91 pary=95 wojny=2 czas=564s
+[diplo] seed4242-all1-lvl-normalna tura=92 pary=95 wojny=4 czas=574s
+[diplo] BLAD: page.evaluate: Target page, context or browser has been closed
+    at playOneTurn (/home/user/The-Game/.claude/worktrees/wf_838ff158-2bd-1/gra/tools/diplomacy-harder-measure-run.cjs:341:27)
+    at async main (/home/user/The-Game/.claude/worktrees/wf_838ff158-2bd-1/gra/tools/diplomacy-harder-measure-run.cjs:411:17)
+# rc=124 end 11:36:12
+# CMD seg.sh 4242 100 normalna seed4242-normalna-r3 start 11:36:15 load 5.89 8.80 9.61
+[tmpdir] TMPDIR_RUN_ID=29197-3118717e DIST=/tmp/vl3-dist PROFILE=/tmp/vl3-prof-seed4242-normalna-r3 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[diplo] seed4242-all1-lvl-normalna WZNOWIENIE ze slotu dipl-measure-seed4242-all1-lvl-normalna (tura 92)
+[diplo] wznowienie: proba 1/3 przerwana (page.waitForFunction: Target page, context or browser has been closed) -- ponawiam start ze slotu
+[diplo] wznowienie: proba 2/3 przerwana (page.waitForFunction: Target page, context or browser has been closed) -- ponawiam start ze slotu
+[diplo] BLAD: page.waitForFunction: Target page, context or browser has been closed
+Browser logs:
+
+<launching> /usr/bin/google-chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --no-sandbox --use-gl=swiftshader --enable-unsafe-swiftshader --disable-dev-shm-usage --disable-gpu --mute-audio --user-data-dir=/tmp/vl3-prof-seed4242-normalna-r3 --remote-debugging-pipe about:blank
+<launched> pid=31245
+[pid=31245][err] [31245:31263:1127/113917.624494:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[pid=31245][err] [31245:31263:1127/113917.625041:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31263:1127/113917.631367:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[pid=31245][err] [31245:31263:1127/113917.631528:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[pid=31245][err] [31245:31263:1127/113917.631826:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31263:1127/113917.749585:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31245:1127/113917.828883:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[pid=31245][err] [31245:31245:1127/113917.829021:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[pid=31245][err] [31245:31263:1127/113917.829272:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31263:1127/113917.829301:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31245:1127/113917.833399:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[pid=31245][err] [31245:31263:1127/113917.833696:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31245:1127/113917.842327:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[pid=31245][err] [31245:31263:1127/113917.842337:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[pid=31245][err] [31245:31263:1127/113917.842369:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+[pid=31245][err] [31245:31245:1127/113917.842531:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[pid=31245][err] [31245:31263:1127/113917.842600:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31245:1127/113917.843035:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[pid=31245][err] [31245:31245:1127/113917.844934:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: unknown error type: 
+[pid=31245][err] [31245:31245:1127/113917.845204:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[pid=31245][err] [31245:31263:1127/113917.845277:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31245:1127/113917.848456:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[pid=31245][err] [31245:31263:1127/113917.848552:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31245:1127/113917.849560:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[pid=31245][err] [31277:31277:1127/113921.183435:ERROR:gpu/command_buffer/service/gl_utils.cc:427] [.WebGL-0x367c001c3e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[pid=31245][err] [31277:31277:1127/113921.971633:ERROR:gpu/command_buffer/service/gl_utils.cc:427] [.WebGL-0x367c001c3e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[pid=31245][err] ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+[pid=31245][err] ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+[pid=31245][err] ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+[pid=31245][err] ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+[pid=31245][err] ALSA lib confmisc.c:1342:(snd_func_refer) error evaluating name
+[pid=31245][err] ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+[pid=31245][err] ALSA lib conf.c:5731:(snd_config_expand) Evaluate error: No such file or directory
+[pid=31245][err] ALSA lib pcm.c:2721:(snd_pcm_open_noupdate) Unknown PCM default
+[pid=31245][err] [31467:31467:1127/113924.345482:ERROR:media/audio/alsa/alsa_util.cc:204] PcmOpen: default,No such file or directory
+[pid=31245][err] ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+[pid=31245][err] ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+[pid=31245][err] ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+[pid=31245][err] ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+[pid=31245][err] ALSA lib confmisc.c:1342:(snd_func_refer) error evaluating name
+[pid=31245][err] ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+[pid=31245][err] ALSA lib conf.c:5731:(snd_config_expand) Evaluate error: No such file or directory
+[pid=31245][err] ALSA lib pcm.c:2721:(snd_pcm_open_noupdate) Unknown PCM default
+[pid=31245][err] [31467:31467:1127/113924.345557:ERROR:media/audio/alsa/alsa_util.cc:204] PcmOpen: plug:default,No such file or directory
+[pid=31245][err] [31245:31263:1127/113924.374968:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31263:1127/113924.374993:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31263:1127/113924.374999:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31263:1127/113924.375005:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31263:1127/113924.375009:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31263:1127/113924.375013:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31263:1127/113924.375018:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31263:1127/113924.375022:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31263:1127/113924.375027:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31263:1127/113924.375032:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31263:1127/113924.375036:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31263:1127/113924.375040:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31263:1127/113924.375044:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [31245:31263:1127/113924.375048:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[pid=31245][err] [1127/114208.541491:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq: No such file or directory (2)
+[pid=31245][err] [1127/114208.541573:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq: No such file or directory (2)
+[pid=31245][err] Received signal 11 SEGV_MAPERR 000000000001
+[pid=31245][err] #0 0x55ed2901fbc3 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x6a9abc2)
+[pid=31245][err] #1 0x55ed2dce5494 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0xb760493)
+[pid=31245][err] #2 0x7ff75c845330 (/usr/lib/x86_64-linux-gnu/libc.so.6+0x4532f)
+[pid=31245][err] #3 0x55ed2d1ee3d3 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0xac693d2)
+[pid=31245][err] #4 0x55ed2d1eeb02 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0xac69b01)
+[pid=31245][err] #5 0x55ed2d1ed8c5 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0xac688c4)
+[pid=31245][err] #6 0x55ed2d1ee30a (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0xac69309)
+[pid=31245][err] #7 0x55ed2d1ef963 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0xac6a962)
+[pid=31245][err] #8 0x55ed269ee070 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x446906f)
+[pid=31245][err] #9 0x55ed281ecf14 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x5c67f13)
+[pid=31245][err] #10 0x55ed2833fd96 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x5dbad95)
+[pid=31245][err] #11 0x55ed283414e1 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x5dbc4e0)
+[pid=31245][err] #12 0x55ed25b1616a (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x3591169)
+[pid=31245][err] #13 0x55ed26300ee1 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x3d7bee0)
+[pid=31245][err] #14 0x7ff75d755635 (/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8000.0+0x5d634)
+[pid=31245][err] #15 0x7ff75d7b4bf7 (/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8000.0+0xbcbf6)
+[pid=31245][err] #16 0x7ff75d754ad3 (/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8000.0+0x5cad2)
+[pid=31245][err] #17 0x55ed25b1b27a (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x3596279)
+[pid=31245][err] #18 0x55ed2633b24d (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x3db624c)
+[pid=31245][err] #19 0x55ed2633a936 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x3db5935)
+[pid=31245][err] #20 0x55ed2887dd22 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x62f8d21)
+[pid=31245][err] #21 0x55ed2887e0c3 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x62f90c2)
+[pid=31245][err] #22 0x55ed28553e20 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x5fcee1f)
+[pid=31245][err] #23 0x55ed27398bf4 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x4e13bf3)
+[pid=31245][err] #24 0x55ed28554106 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x5fcf105)
+[pid=31245][err] #25 0x55ed285537a9 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x5fce7a8)
+[pid=31245][err] #26 0x55ed28552b00 (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x5fcdaff)
+[pid=31245][err] #27 0x7ff75c82a1ca (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a1c9)
+[pid=31245][err] #28 0x7ff75c82a28b (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a28a)
+[pid=31245][err] #29 0x55ed292e235a (/opt/pw-browsers/chromium-1243/real/chrome-linux64/chrome+0x6d5d359)
+[pid=31245][err]   r8: 0000000000000000  r9: 000055ed2d1ee360 r10: 0000000000000808 r11: 0000000000000006
+[pid=31245][err]  r12: 00007ffd49720aa0 r13: 00007ffd49720960 r14: 00007ffd49720a30 r15: 0000190c00189900
+[pid=31245][err]   di: 0000190c00189c48  si: 00007ffd49720990  bp: 00007ffd49720950  bx: 0000190c00189c48
+[pid=31245][err]   dx: 0000000000000011  ax: 0000000000000001  cx: 0000000000000010  sp: 00007ffd49720910
+[pid=31245][err]   ip: 000055ed269f286b efl: 0000000000010202 cgf: 002b000000000033 erf: 0000000000000004
+[pid=31245][err]  trp: 000000000000000e msk: 0000000000000000 cr2: 0000000000000001
+[pid=31245][err] [end of stack trace]
+    at openGame (/home/user/The-Game/.claude/worktrees/wf_838ff158-2bd-1/gra/tools/diplomacy-harder-measure-run.cjs:207:14)
+    at async openWithRetry (/home/user/The-Game/.claude/worktrees/wf_838ff158-2bd-1/gra/tools/measure-resume-retry.cjs:67:20)
+    at async main (/home/user/The-Game/.claude/worktrees/wf_838ff158-2bd-1/gra/tools/diplomacy-harder-measure-run.cjs:398:20)
+# rc=1 end 11:42:08
+# CMD seg.sh 4242 100 normalna seed4242-normalna-r3 start 11:42:11 load 6.88 7.84 8.89
+[tmpdir] TMPDIR_RUN_ID=1032-a4d9d9a6 DIST=/tmp/vl3-dist PROFILE=/tmp/vl3-prof-seed4242-normalna-r3 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[diplo] seed4242-all1-lvl-normalna WZNOWIENIE ze slotu dipl-measure-seed4242-all1-lvl-normalna (tura 92)
+[diplo] player-ai autopilot=1
+[diplo] diplo-level=normalna
+[diplo] unit-pace=wysoki
+[diplo] culture=trudny
+[diplo] all-flags=1 {"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true}
+[diplo] seed4242-all1-lvl-normalna tura=93 pary=95 wojny=4 czas=296s
+[diplo] seed4242-all1-lvl-normalna tura=94 pary=95 wojny=3 czas=313s
+[diplo] seed4242-all1-lvl-normalna tura=95 pary=95 wojny=4 czas=334s
+[diplo] seed4242-all1-lvl-normalna tura=96 pary=95 wojny=4 czas=352s
+[diplo] seed4242-all1-lvl-normalna tura=97 pary=95 wojny=3 czas=368s
+[diplo] seed4242-all1-lvl-normalna tura=98 pary=95 wojny=4 czas=386s
+[diplo] seed4242-all1-lvl-normalna tura=99 pary=95 wojny=5 czas=407s
+[diplo] seed4242-all1-lvl-normalna tura=100 pary=95 wojny=5 czas=427s
+[diplo] PODSUMOWANIE {"seed":4242,"diploLevel":"normalna","harder":1,"allFlags":1,"playerAi":1,"graczAdnotacja":"gracz = autopilot","turnsRequested":150,"every":1,"endTurn":100,"rows":8,"stop":null,"segment":true,"stopAt":100,"resumed":true,"slot":"dipl-measure-seed4242-all1-lvl-normalna","flagi":{"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true},"counters":{"gateActiveTurns":0,"bypassApplied":0,"stuckQueueHeals":0,"battlesAuto":0,"diploAudienceClosed":0,"armyMergeClosed":0,"techNoticeClosed":0,"aiOffersRejected":0,"aiOffersRejectAttempts":0,"forcedPeaceAccepted":2},"aiOffersRejected":0,"aiOffersRejectAttempts":0,"wallSec":428}
+# rc=0 end 11:49:19

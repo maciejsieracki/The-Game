@@ -1,0 +1,23 @@
+# CMD seg.sh 4242 105 trudna seed4242-r3 start 08:52:25 load 4.99 8.98 10.20
+[tmpdir] TMPDIR_RUN_ID=9883-9f40092a DIST=/tmp/vl3-dist PROFILE=/tmp/vl3-prof-seed4242-r3 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[diplo] seed4242-all1-lvl-trudna WZNOWIENIE ze slotu dipl-measure-seed4242-all1-lvl-trudna (tura 90)
+[diplo] wznowienie: proba 1/3 przerwana (page.waitForFunction: Target page, context or browser has been closed) -- ponawiam start ze slotu
+[diplo] player-ai autopilot=1
+[diplo] diplo-level=trudna
+[diplo] unit-pace=wysoki
+[diplo] culture=trudny
+[diplo] all-flags=1 {"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true}
+[diplo] seed4242-all1-lvl-trudna tura=91 pary=96 wojny=5 czas=381s
+[diplo] seed4242-all1-lvl-trudna tura=92 pary=96 wojny=5 czas=404s
+[diplo] seed4242-all1-lvl-trudna tura=93 pary=96 wojny=5 czas=424s
+[diplo] seed4242-all1-lvl-trudna tura=94 pary=96 wojny=4 czas=442s
+[diplo] seed4242-all1-lvl-trudna tura=95 pary=96 wojny=4 czas=462s
+[diplo] seed4242-all1-lvl-trudna tura=96 pary=96 wojny=5 czas=482s
+[diplo] seed4242-all1-lvl-trudna tura=97 pary=96 wojny=4 czas=504s
+[diplo] seed4242-all1-lvl-trudna tura=98 pary=96 wojny=5 czas=527s
+[diplo] seed4242-all1-lvl-trudna tura=99 pary=96 wojny=6 czas=552s
+[diplo] seed4242-all1-lvl-trudna tura=100 pary=96 wojny=6 czas=575s
+[diplo] BLAD: page.evaluate: Target page, context or browser has been closed
+    at playOneTurn (/home/user/The-Game/.claude/worktrees/wf_838ff158-2bd-1/gra/tools/diplomacy-harder-measure-run.cjs:341:27)
+    at async main (/home/user/The-Game/.claude/worktrees/wf_838ff158-2bd-1/gra/tools/diplomacy-harder-measure-run.cjs:411:17)
+# rc=124 end 09:02:05

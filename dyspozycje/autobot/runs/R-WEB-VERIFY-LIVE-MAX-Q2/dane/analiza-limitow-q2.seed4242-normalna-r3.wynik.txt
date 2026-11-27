@@ -1,0 +1,10 @@
+wiersze 99 tury 2 - 100
+max par w wojnie naraz (cala gra) 5
+max wojen jednej cywilizacji (wszystkie typy) 2
+max wojen gracza wg typu {'naturalna': 1, 'epoki': 1}
+max wojen AI wg typu {'naturalna': 1, 'epoki': 1}
+tury z wojna gracza 41 tury naruszenia (>1 tego samego typu) 0
+max sojuszy AI<->AI naraz (z pairs) 3 | licznik sojuszeAiAi max 3
+tury z sojuszem AI<->AI 42 | tury z >2 sojuszami 7
+ostatni licznik zerwan 16
+max sojuszy AI na jedna cywilizacje 2 w turze 64 | tury z >2 na cywilizacje 0

@@ -1,0 +1,28 @@
+# CMD seg.sh 4242 100 trudna seed4242-r3 start 08:42:56 load 7.46 8.81 9.98
+[tmpdir] TMPDIR_RUN_ID=6519-989af5a5 DIST=/tmp/vl3-dist PROFILE=/tmp/vl3-prof-seed4242-r3 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[diplo] seed4242-all1-lvl-trudna WZNOWIENIE ze slotu dipl-measure-seed4242-all1-lvl-trudna (tura 75)
+[diplo] player-ai autopilot=1
+[diplo] diplo-level=trudna
+[diplo] unit-pace=wysoki
+[diplo] culture=trudny
+[diplo] all-flags=1 {"harder":true,"napTor":false,"sojuszTor":true,"koalicja":true,"zeroZaufania":true,"wojnaSilaSojuszu":true,"limitWojen":true}
+[diplo] seed4242-all1-lvl-trudna tura=76 pary=95 wojny=4 czas=352s
+[diplo] seed4242-all1-lvl-trudna tura=77 pary=95 wojny=4 czas=364s
+[diplo] seed4242-all1-lvl-trudna tura=78 pary=95 wojny=4 czas=380s
+[diplo] seed4242-all1-lvl-trudna tura=79 pary=95 wojny=4 czas=394s
+[diplo] seed4242-all1-lvl-trudna tura=80 pary=95 wojny=4 czas=409s
+[diplo] seed4242-all1-lvl-trudna tura=81 pary=95 wojny=3 czas=426s
+[diplo] seed4242-all1-lvl-trudna tura=82 pary=95 wojny=3 czas=441s
+[diplo] seed4242-all1-lvl-trudna tura=83 pary=95 wojny=3 czas=453s
+[diplo] seed4242-all1-lvl-trudna tura=84 pary=96 wojny=4 czas=465s
+[diplo] seed4242-all1-lvl-trudna tura=85 pary=96 wojny=5 czas=479s
+[diplo] seed4242-all1-lvl-trudna tura=86 pary=96 wojny=5 czas=492s
+[diplo] seed4242-all1-lvl-trudna tura=87 pary=96 wojny=4 czas=505s
+[diplo] seed4242-all1-lvl-trudna tura=88 pary=96 wojny=5 czas=518s
+[diplo] seed4242-all1-lvl-trudna tura=89 pary=96 wojny=5 czas=532s
+[diplo] seed4242-all1-lvl-trudna tura=90 pary=96 wojny=5 czas=546s
+[diplo] BLAD: page.evaluate: Target page, context or browser has been closed
+    at Object.closeEndTurnModals (/home/user/The-Game/.claude/worktrees/wf_838ff158-2bd-1/gra/tools/ai-economy-measure-run.cjs:186:32)
+    at playOneTurn (/home/user/The-Game/.claude/worktrees/wf_838ff158-2bd-1/gra/tools/diplomacy-harder-measure-run.cjs:342:33)
+    at async main (/home/user/The-Game/.claude/worktrees/wf_838ff158-2bd-1/gra/tools/diplomacy-harder-measure-run.cjs:411:17)
+# rc=124 end 08:52:16
