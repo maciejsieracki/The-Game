@@ -17,3 +17,13 @@ gra-robocza/, gra-kanon/, dyspozycje/WERSJE.md, manifest, rust-port/, npm run bu
 tsc 0; logic 213; tech-tree 20; research 33; unit-replace; combat 6; ai-test 297/0; plus testy live objęte tematem.
 ## Binarne kryterium
 ≥3 realne testy live zmieniają wynik PRZED→PO (z bramki na dalszy etap) z surowym dowodem; mutacja czerwono-zielona na jednym; hak (jeśli dodany) nie zmienia gry bez flagi; tabela inwentaryzacji ≥20 wierszy; bramki zielone.
+
+## DODATEK runda 2/5 (orkiestrator) — BAZA: FC r1 FAIL, kandydat 5c187d3bfecef5a09043135395d4538a93b5d3cc (raport FC 303f60d3b707d401b1b9e33db58b14f000a3fc60); args.cand = 5c187d3bfecef5a09043135395d4538a93b5d3cc
+Co-stan: forced-war-player-target-live-test jest już przepięty (prepareEndTurnGate + ?playtest=mapa&civTest=1; PRZED rc=1 „endTurn #1 nie ustabilizował się”, PO 12 pass/0 fail wg obrony — ten pomiar powtórz SAM i zapisz surowe wyjście .txt, bo FC go nie powtórzył). Hak __nnsMeasureDebug i prepareEndTurnGate już istnieją (gra/src bez zmian jest OK, jeśli wystarcza).
+Zadanie rundy 2 (domknij kryterium binarne):
+1. Przepnij na ten sam mechanizm jeszcze DWA realne testy: (a) gra/tools/sidepanel-diplo-dismiss-real-render-test.cjs (obrona wskazała go jako właściwy; plik „sidepanel-diplo-*-live-test” nie istnieje), (b) jeden z 12 testów z closeCivWelcome, np. gra/tools/diplo-truce-live-test.cjs. Zrób to PO sprawdzeniu, czy dany test w ogóle używa ?playtest=mapa i bramki; jeśli nie — wybierz inny, uzasadnij grepem.
+2. Pomiar PRZED/PO (rc, ostatnia linia, czas) na KAŻDYM z trzech testów, surowe wyjścia w runs/…/logi/*.txt. Poziom MAKSYMALNY: zapisz jawnie, jakie ustawienia test faktycznie ma (Dyplomacja, Koszty jednostek, Kultura i religia, rozmiar mapy), co uznajesz za maksimum osiągalne w tym teście i co NIE da się podnieść (NIE ZMIERZONO tam). Jeśli test przyjmuje parametry/URL do podniesienia ustawień — użyj ich.
+3. Mutacja czerwono-zielona na jednym z trzech testów: zepsuj przepięcie (np. usuń wywołanie prepareEndTurnGate przez kopię pliku, NIE git checkout) → test czerwony na bramce; przywróć → zielony/dalej. Surowe wyjścia.
+4. Tabela inwentaryzacji: kolumnę „blokuje ekran powitalny” wypełnij realnie dla co najmniej 20 wierszy (grep: czy test używa ?playtest=mapa albo bramki end-turn + czy ma closeCivWelcome); resztę zostaw jako NIE ZMIERZONO. To bez uruchamiania Chromium (czytanie kodu).
+5. Bramki: skoro gra/src bez zmian — tsc/logic wystarczą jako sanity; jeśli zmieniasz main.ts, pełny komplet (ai-test 297/0).
+Kryteria FC (NAPRAW): 3 testy z PRZED/PO, mutacja, jawny poziom maksymalny.
