@@ -11403,3 +11403,6 @@ R-WEB-MAP-ISLANDS-ORPHAN-FIX-Q1 (wf_d7ad9b86-4bd; Operator Haiku → Evaluator S
 - Trzy testy live zmieniają wynik PRZED→PO przez ?civTest=1 + prepareEndTurnGate: forced-war rc=1 → 12/0 (364–457 s, ponad limit 280 s — wyjątek zgłoszony); sidepanel-diplo-dismiss 33/4 → 35/0; era-change-toast C/D/E FAIL → PASS. Mutacja czerwono-zielona (sidepanel bez prepareEndTurnGate: 33/4, z nim 35/0) potwierdzona przez FC.
 - NIE ZMIERZONO / otwarte (#108 zostaje częściowo otwarte): pomiar na maksimum (tura 1 blokuje awaitingFirstPlayerCity — wymaga założonego miasta; __settingsLive istnieje); era-change-toast sekcja F (pusta karta technologii) i Escape czerwone, przyczyna niezbadana; diplo-truce-live-test bez zmiany (27/1; blokada isPreBattleOpen, nie bramka NNS); inwentaryzacja 105 testów to hipoteza z grep (55 „prawdopodobnie TAK”), nie z uruchomienia.
 - Sprzątanie: worktree LIVEGATE2 usunięte, refs/keep/LIVEGATE2-r1-*, LIVEGATE2-r2-{op,eval,obrona,fc}.
+
+### 2026-11-27 · VLIVE3 start (R-WEB-VERIFY-LIVE-3-Q1) · zegar maszyny `date -u` 09:24 UTC
+- Wolny slot po integracji LIVEGATE2 (main 3608af1ce). Priorytet 2 (pomiary): Targowisko Żywność→Podatek, cesja >1 miasta, FORTRING na maksimum (wydzielone z VLIVE2). Operator HAIKU, cand = origin/main 3608af1ce2aae306c6fa2f77413f8817d2c7bed0. Hak civTest w main.ts tylko minimalnie.
