@@ -1,47 +1,56 @@
-# R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1 (SAVEFIX) — raport Operatora, runda 1/5
-
 STATUS: BLOCK
 DOMAIN: GAME (integralność zapisu, priorytet 1)
-TEMAT: R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1
-GOAL: znaleźć przyczynę rozbieżności po wczytaniu zapisu (B != A) i naprawić tak, by B == A przez 6 tur po wczytaniu.
-BAZA: 9d6750a73 (origin/main), worktree detached, bez zmian w kodzie gry (instrumentacja tymczasowa wycofana).
-ZMIANY-COMMIT: tylko ten raport (dyspozycje/autobot/runs/R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1/10-operator-claude.md). Brak poprawki kodu.
+TEMAT: R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1 (SAVEFIX), runda 2/5, Operator HAIKU 5.5
+GOAL: znaleźć przyczynę B != A po wczytaniu zapisu i naprawić (B == A co najmniej 6 tur po wczytaniu w 4 konfiguracjach × 2 ziarna × 2 punkty zapisu).
+BAZA: 31a1ad39d93e2f8b64ef37fc6cca974fb2849e63 (origin/main, kandydat r2). Wynik: brak naprawy w kodzie. Zmiana w repo: tylko narzędzie pomiarowe + ten raport.
 
-## 1. Odtworzenie (krok 1 z dispatchu) — POTWIERDZONE
-Seed 4242, cfg max, zapis po t3, K=6 (savedigest-run.cjs, tryb A i B, dist zbudowany `vite build` poza repo).
-- A (ciągły): t4 nUnits 49, nCities 43, lenNoPP 41902, fnvNoPP 837e7646; t5 fnvNoPP 74adf62d; t6 nUnits 65
-- B (wczytany): t4 nUnits 49, lenNoPP 44672, fnvNoPP 5d8f4489; t6 nUnits 66
-- Rozbieżność zaczyna się w TURZE 4 (pierwszy tick po wczytaniu) — zgodnie z dispatchem.
-- Wiersz "restore" (t3) różni się od "snap" tylko reprezentacją (len 44389 vs 41659; lenNoPP 42798 vs 40068): dodane domyślne pola miast (postepBudynkowUsuniete, magazynZywnosci).
+## ZMIANY/COMMIT
+- gra/tools/savedigest-run.cjs: dwie opcje diagnostyczne (`--dumpmod <abs>` w trybie A zrzuca mapy poziomu modułu po migawce; `--inject <abs>` [+ `--injectnames a,b`] w trybie B podstawia je po restore). Bez zmiany zachowania bez tych opcji.
+- dyspozycje/autobot/runs/R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1/diag-savefix-r2-main.patch: EKSPERYMENTALNY patch gra/src/main.ts (NIE do wdrożenia): (a) pola opcjonalne `aiWonderPracaTickByCity` i `aiWonderStuckTurnsByOwner` w meta zapisu/wczytania (bez efektu, patrz niżej); (b) hak `__savefixDiag` (tylko civTest, dump/load 17 map) — do usunięcia przed FC.
+- gra/src/main.ts w commicie: BEZ ZMIAN (eksperymenty cofnięte po pomiarach).
+- Brak poprawki gry, brak nowego testu `save-load-continuity-*.cjs` (nie było naprawy, do której test by się odnosił).
 
-## 2. Diagnoza — dowody
-a) savedigest-diff.cjs (full() po t4, A vs B): jedyne realne różnice to `cities[city16].wealthState.pula` i `cities[city25].wealthState.pula` (A 3.9, B 3.6375; snapshot 2.425). Pozostałe „added" to wyłącznie pola domyślne (do odfiltrowania).
-b) Hak TYMCZASOWY w advanceCityEconomy (tylko miasta-stolice, wyłącznie w buildzie testowym, po teście wycofany) pokazał, że różnica wejścia to `yld.pieniadz` +1 w obu stolicach AI (A 2, B 3). Ponieważ `pula` maleje o `rownowaga * pieniadz`, to wyjaśnia mniejszy przyrost pula w B.
-c) Ten sam zrzut pokazał szerszą różnicę: `pracaTerenu`, `glinaTerenu`, `drewnoTerenu`, `zdrowie` (znak ±2) różnią się w wielu stolicach, czyli RÓŻNY jest zbiór przypisanych pól pracy (`cityWorkedTilesForEconomy` → `resolveWorkedTiles` na `map.hexes`). Parametry miasta (`ec`: podział, ludność, racja, specjaliści) są identyczne; mnożniki `orderMult` identyczne; `wonderCityYieldsByOwner` brak w obu.
-d) Save NIE zawiera mapy w polach stanu gry (buildSaveGameSnapshot nie serializuje `map`), ale zawiera `mapSnapshot: serializeMapForSave(map)` (main.ts ok. 42946) — to jedyne miejsce, gdzie stan hexów (nakladka/ulepszenia/zloze) trafia do zapisu.
-e) Odczyt: `mapSnapshot` jest używany WYŁĄCZNIE w `regenerateWorldForLoad` → `loadMapForSave` (main.ts ok. 50905–50930). Ścieżka ta działa tylko gdy `loadNeedsMapRebuild` zwróci true (main.ts ok. 10580): dla wczytania z pauzy w tej samej grze (ten sam seed i ustawienia mapy) mapa NIE jest odbudowywana i zostaje in-memory mapa z momentu wczytania, czyli po zmianach hexów wykonanych po zapisie.
-f) `__detHarness.restoreJson` (main.ts ok. 33723) woła `restoreGameFromSave` bezpośrednio, bez `mapSnapshot` i bez odbudowy mapy. Tryb B startuje świeżą sesją `startNewGame` (mapa wygenerowana z seeda, bez zmian runtime), więc mapa B nie ma hexowych zmian z turn 1–3, które są w mapie A.
-g) Runtime zmienia `hex.nakladka` (city-hex-clear.ts:51/67/75, playtestMiastoEkonomia.ts, gen-helpers.ts) — to realne zmiany mapy w trakcie gry, nie tylko w generatorze.
+## TESTY (wszystkie pomiary na żywo, Chromium, build vite do katalogu poza repo; index.html 15 045 104 B = zgodny z r1)
+Konfiguracja: cfg max (Trudny, dyplomacja trudna, Wysoki ×4, kultura trudny/AI trudny, flagi ON), seed 4242, zapis po t3, K=6. Maksimum wg dispatchu r1 (cfg max).
+Poziomy wymagane przez dispatch (4 konfiguracje × 2 ziarna × 2 punkty zapisu): NIE ZMIERZONO poza powyższym jednym punktem (cfg max, seed 4242, t3). Seed 7, t10, cfg default/aionly: NIE ZMIERZONO (brak czasu na 5 kolejnych bieg-par ~6 min każdy).
 
-Wniosek ROBOCZY (NIE POTWIERDZONY do końca, wymaga rundy 2): przyczyną jest stan HEKSÓW mapy (nakladka/ulepszenia po zmianach runtime), który jest zapisany w `mapSnapshot`, ale NIE jest przywracany przez `restoreGameFromSave` (ścieżka harnessu) ani przy wczytaniu w tej samej grze (`loadNeedsMapRebuild` = false). Różnice pracy/zdrowia w stolicach są spójne z różnym zbiorem przypisanych pól, a różnica pieniądza +1 wynika z tego samego. Nie wykluczono, że część różnic to inny mechanizm (np. `reconcileAllWorkedTiles` przy wczytaniu, ok. main.ts 52519) — NIE ZMIERZONO.
+1. Odtworzenie (potwierdzone): A (ciągła, runA) vs B (świeża sesja + restoreJson, runB): digest różny od t4 do t6 włącznie. detIdSeq t6: A 65 vs B 66; nUnits zgodne.
+2. Snapshot vs stan po restore (snapA.json.full vs runB.json.full): różnice wyłącznie reprezentacyjne (126 pól obecnych tylko w B: `budowaLista: []`, `magazynZywnosci: 0`, `postepBudynkowUsuniete: {}`, dopisane przez ensureCitySaveDefaults). Stan miast i jednostek po restore = zapis.
+3. Różnice w TURZE 4 (cont4 A vs resumed4 B, cmp.cjs; wartości z surowego full()):
+   - city16 (owner 13): wealthState.pula A 3.9 vs B 3.6375; surowce.drewno A 8 vs B 13.
+   - city25 (owner 22): pula A 3.9 vs B 3.6375; drewno A 8 vs B 50.
+   - city17 (owner 13): drewno A {} (0) vs B 50 (50 z zapisu nie zużyte w B).
+   - city26 (owner 22): manpower A 2000 vs B 0 (tylko to miasto; city10/16/25/37 zgodne).
+   - Glina zgodna we wszystkich miastach; liczba miast i jednostek zgodna.
+   Wniosek: rozjazd startuje w tłumaczeniu stocku drewna i puli Pracy/zamożności stolic AI oraz w manpower jednego miasta — pierwsza tura po wczytaniu.
+4. Porównanie sizes map poziomu modułu (`__turnSlowdownTestDebug.collections()`, 148 map) A@t3 (żywa) vs B po restore: różnią się 13 map: bronzeEraEnterTurnByOwner (A 1 / B 42), villageMeshes (render, pomijane), cityOrderState (43/0), citizenUpkeepByOwner (30/0), buildingResourceUpkeepByOwner (30/0), unitResourceUpkeepByOwner (30/0), lastCityKulturaTick (43/1), aiWonderPracaTickByCity (43/0), aiWonderStuckTurnsByOwner (13/0), lastDiplomaticContactsSnapshot (2/0), aiImprovementBudgetByOwner (29/0), aiSurplusReportByOwner (29/0), powerSnapshotsForTurn (30/0).
+5. BISEKCJA (wykonana, trzy próby):
+   - Próba 1 — zapis+wczytanie dwóch map cudów AI (`aiWonderPracaTickByCity`, `aiWonderStuckTurnsByOwner`) jako pól opcjonalnych (distfix, runAfix/runBfix): A-fixed == A-orig we wszystkich 6 turach (6/6, ciągła gra bez zmian); B-fixed != A od t4 z IDENTYCZNYM wzorcem rozjazdu (pula 3.6375, drewno 13/50, city17 50). WYNIK: NIE przyczyna.
+   - Próba 2 — podstawienie z A (t3) do B WSZYSTKICH 17 map poziomu modułu, które nie są w zapisie (cityOrderState, citizenUpkeepByOwner, buildingResourceUpkeepByOwner, unitResourceUpkeepByOwner, lastCityKulturaTick, aiImprovementBudgetByOwner, aiSurplusReportByOwner, aiWonderPracaTickByCity, aiWonderStuckTurnsByOwner, orderMultMap, orderValueMap, growthMultMap, converterProducedLastTurnByOwner, bronzeEraEnterTurnByOwner, ironEraEnterTurnByOwner, powerSnapshotsForTurn, lastDiplomaticContactsSnapshot): B(all injected) != A od t4 (6/6 różne). WYNIK: żadna z tych map sama ani łącznie nie jest przyczyną.
+   - Próba 3 — analiza użycia (bez pomiaru): buildingResourceUpkeepByOwner/unitResourceUpkeepByOwner/citizenUpkeepByOwner/powerSnapshotsForTurn czytane wyłącznie przez UI (`fallback` przy .get) lub nadpisywane w tej samej turze; aiImprovementBudgetByOwner/aiSurplusReportByOwner przeliczane w każdej turze przed użyciem. Wniosek: nie są stanem międzyturowym wpływającym na symulację.
+   - Brak 3. podzbioru do bisekcji: wszystkie pozostałe mapy poziomu modułu mają identyczne rozmiary A/B.
 
-Odrzucone / nie zawinione w tej analizie: Math.random (seed deterministyczny w addInitScript), liczniki ID (detIdSeq rozjeżdża się dopiero jako skutek), `wealthImmunityRemaining`/`imm` (identyczne), `orderMult` (identyczne), mennica-zloto-grace (pola zapisywane w meta.mennicaZlotoGrace i odtwarzane; NIE ZMIERZONO, czy stan zdolny do różnicy: w zrzucie `mq` = false w obu przebiegach).
+## PRZYCZYNA
+NIE ZIDENTYFIKOWANA. Dziennik prób:
+- P1: aiWonderPracaTickByCity + aiWonderStuckTurnsByOwner zapisane/wczytane -> bez zmiany rozjazdu.
+- P2: 17 map modułu podstawionych z A -> bez zmiany rozjazdu.
+- Hipotezy, których NIE potwierdzono ani nie wykluczono (do sprawdzenia w następnej rundzie):
+  (a) manpower miasta 26 (owner 22): B = 0 w pierwszej turze po wczytaniu, A = 2000; regen liczy się z `civManpowerMatrixMults(ownerCivKey)` i `civManpowerMults(ownerBonusy)` (turn-economy.ts ~3214–3222) — jeśli `ownerBonusy`/`ownerCivKey` w B różni się od A dla tego ownera, to jest jedyne miejsce w tym zbiorze miast; to samo źródło może wpływać na drewno (wydatki z puli) — do zbadania przez zrzut tych dwóch wartości dla ownera 22 w A i B.
+  (b) kolejność iteracji Map odbudowanych przy wczytaniu (wstawianie w innej kolejności niż w ciągłej grze), która zmienia alokację wspólnych pul właściciela między miasta (drewno: suma właściciela nie jest identyczna, więc to nie tylko kolejność — wymaga pomiaru).
+  (c) stan spoza listy 148 map i pól miast/jednostek (np. zmienne `let` w zakresie funkcji, nie będące Mapą/Set) — do przeszukania przez grep `let .* = ` w zakresie buildSaveGameSnapshot/restoreGameFromSave.
 
-## 3. Poprawka — NIE WYKONANA
-Brak poprawki kodu w tej rundzie: przyczyna nie została sprowadzona do jednego pola potwierdzonym bisektem (krok 2 dispatchu wymaga bisekcji po restoreJson lub zrzutu map, nie wykonanej w czasie rundy). Kandydat na rundę 2: (1) zrzut `map.hexes` (nakladka/ulepszenia/zloze) w A po t3 i w B po restore, porównanie; (2) jeśli różne — przywrócenie hexów z `saved.mapSnapshot` w `restoreGameFromSave` (opcjonalne pole, stary zapis bez pola = bez zmian) oraz wymuszenie odbudowy mapy w `loadNeedsMapRebuild` dla wczytania w tej samej grze. Ten kandydat zmienia zachowanie wczytania w grze — wymaga weryfikacji, czy nie wymaga decyzji właściciela (raczej nie: to naprawa zapisu, nie balans).
+## NASTĘPNY KROK
+Runda 3 (Operator, Haiku — 1. runda po NOWYCH wskazówkach; Sonnet NIE uzasadniony): (1) zrzut `ownerBonusy`, `ownerCivKey`, `mpMults` dla ownera 22 i pól manpower/drewno miasta 26 w A@t3 i B po restore, przed endTurn — hak read-only w tym samym bloku co `__savefixDiag` (patch w pliku powyżej); (2) jeśli równe — bisekcja po kolejności iteracji: odbuduj w B Mapy zapisywane z meta w kolejności A (sortuj wg kolejności z zapisu, nie wg kolejności restore) i zmierz; (3) dopiero potem poprawka pól opcjonalnych dla tego, co się potwierdzi.
+Obowiązkowo przed poprawką: powtórzyć B==A na cfg max seed 4242 t3 i dopiero potem na pozostałych konfiguracjach/ziarnach/punktach zapisu.
+Uwaga dla orkiestratora: NIE integrować patcha `diag-savefix-r2-main.patch` (eksperymentalny, zawiera hak diagnostyczny i pola bez efektu). Commit `gra/src/main.ts` nie zmieniony względem bazy.
 
-## 4. Testy
-- Nie dodano nowych testów (brak poprawki). Bramki (tsc, logic 213, ai-test 297/0 itd.) NIE URUCHOMIONE — brak zmian w grze, uruchomienie zbędne w tej rundzie. NIE ZMIERZONO.
-- Pomiar live (savedigest-run.cjs, dist poza repo): seed 4242, cfg max, n=3, k=6 (A i B); instrumentowany (n=3, k=1) — wyniki j.w.
+## BLOKADY
+- Przyczyna rozjazdu nieznana (brak dowodu co naprawić). Bez dowodu nie ma poprawki.
+- Brak pomiarów dla 3 z 4 konfiguracji, drugiego ziarna i drugiego punktu zapisu (czas: ~6 min na bieg A/B w Chromium).
+- Nie wykonano bramek dispatchu (tsc, logic, ai-test, wiring…) — brak zmian w grze, więc bramki gry nie są wymagane do tej rundy; NIE ZMIERZONO.
 
-## 5. Zgodność wsteczna / mutacja czerwona
-NIE ZMIERZONO (brak poprawki).
+## RUNDY
+2/5 (BLOCK bez kodu → zgodnie z regułą ORKIESTRATORA: raport bez commita z pracą = BLOCK; tu praca = narzędzie + raport zacommitowany).
 
-## 6. Uwagi dla orkiestratora
-- Hipoteza z pkt 2d–2f jest istotna także dla gry (wczytanie w tej samej grze może nie przywracać hexów); warto ją zweryfikować w rundzie 2 zanim powstanie kolejny temat.
-- Worktree: node_modules zainstalowany w gra/ (npm ci) do pomiarów; usunę przed zakończeniem.
-- Dysk: 17 GB wolne przed startem.
-
-RUNDY: 1/5 (ostatni werdykt: brak; decyzja wymagana: NIE)
-NASTĘPNY KROK: runda 2 — pomiar różnic hexów (map.hexes) A vs B po t3, potem poprawka przywracania hexów z mapSnapshot, jeśli potwierdzona.
-DEPLOY/PUSH: NIE WYKONANO
+## DEPLOY/PUSH
+NIE WYKONANO (brak integracji, brak push z mojej strony; zgodnie z dispatchem).

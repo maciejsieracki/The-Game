@@ -29,6 +29,10 @@ const N = Number(arg('n', '5'));
 const K = Number(arg('k', '3'));
 const BUNT = arg('bunt', '0') === '1'; // iii: bunt stolicy AI w PIERWSZEJ turze po zapisie (forceRevoltEligible jak CAPREBEL2)
 const SNAP = path.resolve(arg('snap', path.join(DIST, 'snap.json')));
+// SAVEFIX r2 (diagnostyka): --dumpmod <abs> (tryb A) zrzuca mapy poziomu modulu po migawce; --inject <abs> (tryb B) podstawia je po restore; --injectnames a,b (opcjonalnie: tylko wskazane).
+const DUMPMOD = arg('dumpmod', '');
+const INJECT = arg('inject', '');
+const INJECTNAMES = arg('injectnames', '').split(',').filter(Boolean);
 const OUT = path.resolve(arg('out', path.join(DIST, 'run.json')));
 const PW = process.env.PW_PATH || path.resolve(GRA_DIR, 'node_modules', 'playwright');
 const CHROME = process.env.CHROME_PATH || '/opt/pw-browsers/chromium';
@@ -137,6 +141,7 @@ async function main() {
       while ((await turnNow()) < N) { const t = await endTurn(); res.records.push({ phase: 'pre-save', turn: t, digest: await digest() }); flush(); }
       const snap = await page.evaluate(() => window.__detHarness.snapshotJson());
       fs.writeFileSync(SNAP, snap); fs.writeFileSync(SNAP + '.full', await page.evaluate(() => window.__detHarness.full()));
+      if (DUMPMOD) fs.writeFileSync(DUMPMOD, JSON.stringify(await page.evaluate(() => { const d = window.__savefixDiag; const o = {}; for (const n of d.names()) o[n] = d.dump(n); return o; })));
       res.snapBytes = snap.length;
       res.records.push({ phase: 'snap', turn: await turnNow(), digest: await digest() });
       for (let i = 0; i < K; i++) { if (BUNT && i === 0) res.bunt = await forceBunt(); const t = await endTurn(); res.records.push({ phase: 'cont', turn: t, digest: await digest() }); await dumpFull('cont' + t); flush(); }
@@ -144,6 +149,13 @@ async function main() {
       const snap = fs.readFileSync(SNAP, 'utf8');
       await page.evaluate((s) => window.__detHarness.restoreJson(s), snap);
       await wait(300);
+      if (INJECT) {
+        const obj = JSON.parse(fs.readFileSync(INJECT, 'utf8'));
+        const names = INJECTNAMES.length ? INJECTNAMES : Object.keys(obj);
+        await page.evaluate(({ obj, names }) => { for (const n of names) window.__savefixDiag.load(n, obj[n]); }, { obj, names });
+        res.injected = names;
+        log('INJECT ' + names.join(','));
+      }
       fs.writeFileSync(OUT + '.full', await page.evaluate(() => window.__detHarness.full()));
       res.records.push({ phase: 'restore', turn: await turnNow(), digest: await digest() });
       for (let i = 0; i < K; i++) { if (BUNT && i === 0) res.bunt = await forceBunt(); const t = await endTurn(); res.records.push({ phase: 'resumed', turn: t, digest: await digest() }); await dumpFull('resumed' + t); flush(); }

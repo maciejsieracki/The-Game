@@ -1,0 +1,89 @@
+diff --git a/gra/src/main.ts b/gra/src/main.ts
+index c30f53f51..69442b630 100644
+--- a/gra/src/main.ts
++++ b/gra/src/main.ts
+@@ -35250,6 +35250,52 @@ async function boot(): Promise<void> {
+     // w normalnej grze (nic tu nie jest wołane bez testu).
+     // / EN: measurement hook (read-only + city panel open/close via the same function a
+     // map click uses), called ONLY from Playwright; zero cost in normal play.
++    // R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1 (SAVEFIX r2, DIAGNOSTYKA-TYMCZASOWA): odczyt/podstawienie map
++    // poziomu modułu NIE objętych zapisem (bisekcja B != A). Tylko civTest; do usunięcia przed FC.
++    (window as any).__savefixDiag = (() => {
++      const tbl: Record<string, { kind: 'map' | 'set' | 'val'; get: () => any; set?: (v: any) => void }> = {
++        cityOrderState: { kind: 'map', get: () => cityOrderState },
++        citizenUpkeepByOwner: { kind: 'map', get: () => citizenUpkeepByOwner },
++        buildingResourceUpkeepByOwner: { kind: 'map', get: () => buildingResourceUpkeepByOwner },
++        unitResourceUpkeepByOwner: { kind: 'map', get: () => unitResourceUpkeepByOwner },
++        lastCityKulturaTick: { kind: 'map', get: () => lastCityKulturaTick },
++        aiImprovementBudgetByOwner: { kind: 'map', get: () => aiImprovementBudgetByOwner },
++        aiSurplusReportByOwner: { kind: 'map', get: () => aiSurplusReportByOwner },
++        aiWonderPracaTickByCity: { kind: 'map', get: () => aiWonderPracaTickByCity },
++        aiWonderStuckTurnsByOwner: { kind: 'map', get: () => aiWonderStuckTurnsByOwner },
++        orderMultMap: { kind: 'map', get: () => orderMultMap },
++        orderValueMap: { kind: 'map', get: () => orderValueMap },
++        growthMultMap: { kind: 'map', get: () => growthMultMap },
++        converterProducedLastTurnByOwner: { kind: 'map', get: () => converterProducedLastTurnByOwner },
++        bronzeEraEnterTurnByOwner: { kind: 'map', get: () => bronzeEraEnterTurnByOwner },
++        ironEraEnterTurnByOwner: { kind: 'map', get: () => ironEraEnterTurnByOwner },
++        powerSnapshotsForTurn: { kind: 'val', get: () => powerSnapshotsForTurn, set: (v: any) => { powerSnapshotsForTurn = v; } },
++        lastDiplomaticContactsSnapshot: { kind: 'set', get: () => lastDiplomaticContactsSnapshot, set: (v: any) => { lastDiplomaticContactsSnapshot = v; } },
++      };
++      return {
++        names: (): string[] => Object.keys(tbl),
++        dump: (name: string): unknown => {
++          const e = tbl[name];
++          if (!e) throw new Error('savefixDiag: nieznana nazwa ' + name);
++          const v = e.get();
++          if (e.kind === 'map') return Array.from((v as Map<any, any>).entries());
++          if (e.kind === 'set') return Array.from(v as Set<any>);
++          return JSON.parse(JSON.stringify(v));
++        },
++        load: (name: string, data: unknown): void => {
++          const e = tbl[name];
++          if (!e) throw new Error('savefixDiag: nieznana nazwa ' + name);
++          if (e.kind === 'map') {
++            const m = e.get() as Map<any, any>;
++            m.clear();
++            for (const [k, v] of data as Array<[any, any]>) m.set(k, v);
++            return;
++          }
++          if (e.kind === 'set') { e.set!(new Set(data as any[])); return; }
++          e.set!(data);
++        },
++      };
++    })();
+     (window as any).__turnSlowdownTestDebug = {
+       openFirstPlayerCityPanel: (): number => {
+         const c = cities.find(x => isMe(x.ownerId));
+@@ -42805,6 +42851,13 @@ async function boot(): Promise<void> {
+           aiPracaPoolByOwner: Array.from(aiPracaPoolByOwner.entries()),
+           aiNaukaPoolByOwner: Array.from(aiNaukaPoolByOwner.entries()),
+           aiBadanaByOwner: Array.from(aiBadanaByOwner.entries()),
++          // R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1 (SAVEFIX): stan cudów AI żyjący między turami
++          // (ostatni przyrost Pracy na budynki per miasto = wejście `pracaPerTurn` decyzji cudu;
++          // licznik „utykania” = próg relaksacji). Bez zapisu po wczytaniu zerowały się →
++          // pierwsza tura po wczytaniu podejmowała inną decyzję niż ciągła gra. Pole OPCJONALNE:
++          // stary zapis bez niego = wyzerowanie jak dotąd.
++          aiWonderPracaTickByCity: Array.from(aiWonderPracaTickByCity.entries()),
++          aiWonderStuckTurnsByOwner: Array.from(aiWonderStuckTurnsByOwner.entries()),
+           // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 5, naprawa Z-3): znacznik AI CYWILIZACJI,
+           // ktorym ZASADA 3 przekierowala Prace na budynki. Stan, ktory blok ZAPISUJE
+           // (`ownerDefaultPodzialPracy` + `city.podzialPracy`), byl trwaly, a znacznik
+@@ -52992,6 +53045,17 @@ async function boot(): Promise<void> {
+       ownerEraByOwner.clear();
+       ownerStartEraByOwner.clear();
+       aiWonderStuckTurnsByOwner.clear();
++      // R-WEB-SAVE-LOAD-DIVERGENCE-FIX-Q1 (SAVEFIX): odtwórz stan cudów AI z zapisu (pole
++      // opcjonalne; stary zapis bez pola = puste mapy, jak dotąd).
++      aiWonderPracaTickByCity.clear();
++      const savedWonderPraca = saved.meta?.aiWonderPracaTickByCity as Array<[string, number]> | undefined;
++      if (savedWonderPraca?.length) {
++        for (const [cid, v] of savedWonderPraca) aiWonderPracaTickByCity.set(cid, v);
++      }
++      const savedWonderStuck = saved.meta?.aiWonderStuckTurnsByOwner as Array<[number, number]> | undefined;
++      if (savedWonderStuck?.length) {
++        for (const [oid, v] of savedWonderStuck) aiWonderStuckTurnsByOwner.set(oid, v);
++      }
+       restoreAiRosterFromSave(saved);
+       const loadStartEra = (() => {
+         const eid = (saved.meta?.newGameParams as NewGameParams | undefined)?.epochId;
