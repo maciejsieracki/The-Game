@@ -1,37 +1,29 @@
-# KOLEJKA-RUST — priorytety (migawka 2026-11-17 ~07:xx UTC; baza parity `f85622878`)
+# KOLEJKA-RUST — kolejka tematów 3D (migawka 2026-11-27 ~17:20 UTC; WSTRZYMANE na czas odnowienia limitu)
 
-## P0 — aktywne Workflow (4/4)
-- K5DOC-T7b odwrót: integracja r2 (`wf_22aea0c3-510`), z osobnym przebiegiem `p6_8i_pick`.
-- R4 G5 normalizacja kluczy (#332, OPUS): `wf_c2dda485-691`.
-- REJESTR-RUST audyt statusów ZINTEGROWANE (#356): `wf_e58137b5-6a6`.
-- K5DOC-T7a falanga (#261): `wf_30e2308d-50d`.
+Baza kodu: `origin/rust-port/parity-v2` = `617185ba8` (po #416). Stan szczegółowy i instrukcja wznowienia: `REJESTR-RUST.md`, wpis „WSTRZYMANIE 2026-11-27 ~17:10".
+Zasady: 3D po jednym temacie naraz; każdy temat implementacyjny w dwóch częściach (A, potem B); Operator i Obrona = ten sam model (Sonnet 5.5 dla programowania wokół 3D, Opus 5.5 tylko dla renderera/grafiki); Evaluator i Final Control = Sonnet 5.5; dispatch wypchnięty przed Workflow; dysk: engine ≥ 8 GB, renderer ≥ 12 GB; commity bez linii z modelem.
+Heartbeaty `trig_01VcFhTMSsCgeFNvhwxnkZjm` i `trig_01DiSPBEtwmKWjgEKvcGWm7W` WYŁĄCZONE — włączyć przy wznowieniu.
 
-## P1 — integracje renderera (czekają na bramkę ≥ 12 GB, bez równoległych buildów)
-Bramka renderera = jedna integracja zbiorcza. Kolejność: Q5 → R1 → R3 → R5 → R2 (merge) → zbiorcza bramka i FF.
-- Q5 PRIO-3D-1 ADAPTER-OVERLAYS (#269): `922300020`, FC `3d21e5679` PASS-WITH-NOTES. NIE w parity.
-- R1 żetony jednostek (#316): `3dec6ac5d`, FC `c6ab07fb09a5` PASS-WITH-NOTES. NIE w parity.
-- R3 wstęgi rzek (#317): `963148a78`, FC `b82ca9375` PASS-WITH-NOTES. NIE w parity.
-- R5 plakietki miast (#318): `56c84ea45`, FC `84e421c57` PASS-WITH-NOTES. NIE w parity.
-- R2 dekor i las (#320): merge `11d7e4763` (FC PASS, runda 2). NIE w parity; bramka renderera nie uruchomiona.
-- Integracja zbiorcza (#319 / #330): po powyższych.
+## W toku (wstrzymane)
+| # | temat | stan |
+|---|---|---|
+| 417 (A, r2) | K5EXEC-H4 tryb ręczny gracza w ciele bitwy: stan trybu, wykonanie rozkazów hold/none/move/attack/attackMove | FC PASS-WITH-NOTES `28f3680c9` (`origin/rust-port-wip/417a-r2-fc`); NIEZINTEGROWANE — powtórzyć pełny test na drzewie FC, FF `parity-v2`, wpis Przebieg |
 
-## P2 — Opus bez blokady, do wystartowania (po wolnym slocie)
-- P4-1I BATTLE-EVENTS (#218, OPUS): zdarzenia bitwy jako snapshot wg webu (D-DTO-7). Brak blokady w rejestrze — dispatch do napisania (pin: zdarzenia bitwy, `D-DTO-7`).
-- #332 R4 G5 — w toku (P0).
+## Kolejka (kolejność wykonania)
+| # | temat | model | uwagi |
+|---|---|---|---|
+| 417 r3 | oblężenie ręczne ciała (ram_tower :8022, tower_climb :8056, infantry_to_tower :8087, `_siegeSafeApproach` :8107 z fx z portów) + kolejka `_executeUnitsImmediate` :18578-18614 na wektorach + zarzuty 1–2 FC r2 | Sonnet | baza = parity-v2 po FF #417A r2 |
+| 422 (417B) | wektory bitew z rozkazem gracza, wołający produkcyjny, blokada generała, SiegeLoop E2E z trybem ręcznym, ścieżka atomowa | Sonnet | po r3 |
+| 418 | rozpoznanie I5b: co zostało z BATTLE-ACTIONS-SIEGE po I5a (tylko odczyt) | Sonnet | |
+| 419 | audyt tagów `unported` osiągalnych w produkcji (krok-naprzod-brak-terenu, cios/strzal-bez-szablonu, ucieczka-routed, odwrot/marsz-brak-terenu) | Sonnet | po 418 |
+| 420 | SHOT-LAND-AT-RENDER: `hit_at`/`land_at` z chwili klatki (renderer) A/B | Operator+Obrona OPUS | renderer ≥ 12 GB, `--locked` |
+| 423 | #369 K5LOOP-WIRING A/B: ProdBody + SiegeLoop jako produkcyjna pętla (najpierw rozpoznanie stanu) | Sonnet | |
+| 424 | #370 I5 BATTLE-ACTIONS-SIEGE A/B (producent DTO); konsument w rendererze osobno | Sonnet / Opus | po 418 i 423 |
+| 421 | porządek listy zadań (kandydaci do zamknięcia: #218/#365, #107/#121–#125/#128/#162, #338–#347/#268, #353/#369/#113, #397, #329, #371) | Sonnet | na końcu |
 
-## P3 — zależne od integracji P1
-- PRIO-3D-2 ADAPTER-UNITS (#270 / #328, OPUS): po integracji R1.
-- R6 wpięcie produkcyjne RevoltRenderer::sync (#331, OPUS): po integracji R5.
-- StatChipUiState ↔ MapUiState (#324 / #333, OPUS): po integracji Q5.
+## Zablokowane
+- #410 TAURI-GLUE: brak crate'ów `tauri-*` offline.
+- #253/#335/#359 FOG-VIEW: pytanie ABC do właściciela o mgłę fotela (opis, plusy/minusy, rekomendacja — zasada 10).
 
-## P4 — zablokowane decyzją właściciela lub zależnością rdzenia
-- #253 mgła fotela (decyzja) → blokuje #278/#334 TERRITORY-RANGES, #279/#337 revealAllLand, #335 FOG-VIEW.
-- #327 garnizon w czasie wojny (decyzja ABC), #358 mgła i CRED-HAK (decyzja ABC).
-- #280 / #336 BATTLE-ACTIONS-SIEGE (OPUS): pętla oblężnicza K5LOOP (#107/#109/#112/#113).
-- #315 T4e wpięcie ruchu (koszt per jednostka, wiring ProdBody), #263/#264 (ActivateOps #284).
-- #304/#310 ekonomia (wpięcie wymaga stanu PlayableState), #305/#306/#307 bridge.
-
-## Do potwierdzenia / zamknięcia (status w liście nieaktualny)
-- #321 R6 sprite — zintegrowany (`2edc808d7` ∈ parity) → zamknięty.
-- #322 / #329 R4 ulepszenia — zintegrowany (`32c84d6a9` ∈ parity) → zamknięte.
-- #215 OVERLAYS-VIEW (P4-1F) — prawdopodobnie pokryty przez Q5 (#269); potwierdzić przed zamknięciem.
+## Zrobione w sesji 2026-11-26/27 (parity-v2)
+#404 K5EXEC-T3 `bb92c80fa`; #414 FQ-SPEED-MIDCHANGE-VEC-2 `1dedba56c`; #415 K5EXEC-T4 `53e4188f2`; #416 K5EXEC-H3 `617185ba8`.
