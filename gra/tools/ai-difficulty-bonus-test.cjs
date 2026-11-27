@@ -311,7 +311,8 @@ console.log('\n--- T-DB-i: cityStateStartUnitCount (R-MIASTA-PANSTWA-STARTOWE-JE
 
 console.log('\n--- T-DB-j: rozdzielone tabele startowych jednostek (H-MIASTA-PANSTWA-WOJSKO-ODNOWA-Q1) ---');
 {
-  const playerExpected = { easy: 2, normal: 1, hard: 0 };
+  // R-WEB-EARLY-GRACE-15-IMPL-Q1: Trudny gracz startuje z 1 Wojownikiem (było 0).
+  const playerExpected = { easy: 2, normal: 1, hard: 1 };
   const foreignExpected = { easy: 2, normal: 1, hard: 0 };
   const playerTypeCityStateExpected = { easy: 0, normal: 1, hard: 2 };
   for (const difficulty of ['easy', 'normal', 'hard']) {

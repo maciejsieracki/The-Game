@@ -685,6 +685,41 @@ export function barbariansActive(
   return turn >= params.startTurn;
 }
 
+/**
+ * R-WEB-EARLY-GRACE-15-IMPL-Q1 (decyzja Q41-A, 2026-11-27): okno łaski barbarzyńców.
+ * Tury 1..graceTurns (włącznie) barbarzyńcy nie wykonują żadnej tury (brak spawnu,
+ * ruchu, ataków, oblężeń, rajdów morskich, garnizonów miast barbarzyńskich); od tury
+ * graceTurns+1 działają jak dotąd. Bramka wołana w main.ts obok barbariansActive
+ * (pozostawia barbariansActive i jego piny bez zmian).
+ * / EN: grace window -- barbarians take no turn on turns 1..graceTurns inclusive.
+ */
+export function barbariansGraceActive(turn: number, graceTurns: number): boolean {
+  if (!Number.isFinite(turn) || !Number.isFinite(graceTurns)) return false;
+  return turn >= 1 && turn <= graceTurns;
+}
+
+/**
+ * Bramka okna łaski w miejscu wywołania fazy barbarzyńców w main.ts (po `turn++`).
+ * Faza barbarzyńców domyka turę N, a licznik `turn` jest już N+1, więc okno sprawdzamy
+ * dla tury domykanej (N = turnAfterIncrement - 1) -- tak samo jak utrzymanie
+ * (aiUpkeepTickTurnOverride = N). Efekt: po turze 15 gracza barbarzyńcy nie wykonują
+ * ruchu ani ataku; od domknięcia tury 16 działają jak dotąd.
+ * / EN: call-site gate for the barbarian phase; the phase closes turn N while the
+ * counter already reads N+1, so the window is checked for turn N.
+ */
+export function barbariansGraceBlocksTurnEnd(turnAfterIncrement: number, graceTurns: number): boolean {
+  return barbariansGraceActive(turnAfterIncrement - 1, graceTurns);
+}
+
+/** Klucz ai-params.json: liczba tur okna łaski barbarzyńców (domyślnie 15). */
+export const BARBARIAN_GRACE_TURNS_KEY = 'barbarzyncy_okno_laski_tury';
+export const BARBARIAN_GRACE_TURNS_DEFAULT = 15;
+
+/** Czyta okno łaski barbarzyńców z data.aiParams (fallback BARBARIAN_GRACE_TURNS_DEFAULT). */
+export function loadBarbGraceTurns(data: GameData): number {
+  return readParam(data, BARBARIAN_GRACE_TURNS_KEY, BARBARIAN_GRACE_TURNS_DEFAULT);
+}
+
 /** Od epoki Średniowiecze (4) barbarzyńcy wyłączeni — buntownicy mapowi (11=C*). */
 export const EPOKA_SREDNIOWIECZE_BARBARZY = 4;
 
