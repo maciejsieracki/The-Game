@@ -11485,3 +11485,8 @@ R-WEB-MAP-ISLANDS-ORPHAN-FIX-Q1 (wf_d7ad9b86-4bd; Operator Haiku → Evaluator S
 ### 2026-11-27 · RESTART KONTENERA — wznowienie workflowów (zegar maszyny `date -u` 14:15 UTC)
 - Restart kontenera (~14:10 UTC) zatrzymał 4 workflowy: VLIVE2 r3 (Operator Sonnet, 6 h, seed 4242 t2–150 i porównanie Łatwa/Normalna zrobione, seed 7 do t140), AIBAL2 r1 (Operator, start), SAVEDIGEST r1 (op + eval gotowe, w Obronie), REALDEF r2 (op + eval gotowe, w Obronie). System plików i worktree przetrwały (refs/keep 360). INFRA, nie nieudane rundy.
 - Wznowienie: SAVEDIGEST i REALDEF przez resumeFromRunId (cache op/eval); AIBAL2 przez resume (nic w cache, start od zera, cand 85d95fc2a); VLIVE2 jako kontynuacja rundy 3 od commitu 116a8e5fa (dane cząstkowe seed 7 zacommitowane lokalnie do refs/keep/VLIVE2-r3-partial) — DODATEK „kontynuacja po restarcie”.
+
+### 2026-11-27 · REALDEF r2 FC BLOCK → runda 3 (Operator SONNET) · zegar maszyny `date -u` 14:22 UTC
+- r2: P0 bez fortu 11/12 utrat w t8–14; inwentarz t1 (real UI): zero jednostek wojskowych do kupienia (Skarb 0/12, Drewno 0/13); Oszczepnik osiągalny ~t7 tylko w 1/12 przebiegów; tempo skarbu +1/+2 losowe; P1 przez UI niewiarygodny (n=12, owner=null, zależność od czasu rzeczywistego); P2/P3 NIE ZMIERZONO; FC BLOCK (kryteria niespełnione, tezy wycofane uczciwie).
+- Dwie kolejne rundy Haiku (r1, r2) BLOCK/FAIL → runda 3 Sonnet (args.haikuFailures=2 + sonnetWhy), zakres zawężony: inwentarz ekonomii bez UI (3 ziarna × ≥10 przebiegów), czas produkcji przy Wysoki ×4, P1 tylko jeśli wiarygodny (diagnoza owner=null). cand = 0fa94344c. refs/keep/REALDEF-r2-{op,eval,obrona,fc}.
+- Obserwacja do sprawdzenia osobno (niskie ryzyko): przycisk „Wróć na mapę” w panelu miasta w pilotażu kończył grę bez miast (repro NIE ZMIERZONO).
