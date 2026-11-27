@@ -8915,6 +8915,48 @@ export function ensureRiverOutlets(
   return result;
 }
 
+/**
+ * MAPFIX2: purge suchego lądu bez sąsiada-lądu (purgeOpenOceanLandSpecks) zamienia w morze także
+ * heksy rzeczne, przerywając łańcuch rzeki do ujścia — wtedy bramka ujść (ensureRiverOutlets) musi
+ * przyciąć osierocone ścieżki. Purge i bramka powtarzane są, aż nie usuną już żadnego heksu i nie
+ * zostanie żaden osierocony heks sieci rzecznej (zbieżność w kilku przebiegach, bez rand()).
+ */
+export function purgeOpenOceanLandSpecksAndReconcileRivers(
+  hexes: Record<string, Hex>,
+  paths: RiverCoord[][],
+  kinds: RiverPathKind[],
+  width: number,
+  height: number,
+): { paths: RiverCoord[][]; kinds: RiverPathKind[] } {
+  const MAX_PASSES = 4;
+  let cur = { paths, kinds };
+  for (let pass = 0; pass < MAX_PASSES; pass++) {
+    const removed = purgeOpenOceanLandSpecks(hexes);
+    cur = ensureRiverOutlets(hexes, cur.paths, cur.kinds, width, height);
+    clearStrayWaterRiverMarks(hexes, cur.paths);
+    const orphans = verifyRiverNetworkConnectivity(hexes, cur.paths, cur.kinds, width, height).orphanCount;
+    if (removed === 0 && orphans === 0) break;
+  }
+  return cur;
+}
+
+/**
+ * MAPFIX2: znacznik rzeki na heksie wodnym, który nie należy do żadnej zachowanej trasy (dekoracyjny
+ * krawędziowy dopisek syncRiverEdgeBonusHexes przy brzegu), nie jest częścią sieci spływu i bez
+ * tego liczy się jako osierocony heks. Zdejmujemy go tylko na wodzie poza trasami; heksy lądowe
+ * i trasy zostają nietknięte (bez rand()).
+ */
+function clearStrayWaterRiverMarks(hexes: Record<string, Hex>, paths: RiverCoord[][]): void {
+  const onPath = new Set<string>();
+  for (const p of paths) {
+    for (const c of p ?? []) onPath.add(hexKey(c.q, c.r));
+  }
+  for (const [k, h] of Object.entries(hexes)) {
+    if (!h.rzeka?.obecna || onPath.has(k) || !isWaterTerrainLocal(h.terenBazowy)) continue;
+    h.rzeka = { obecna: false, krawedzie: [] };
+  }
+}
+
 /** Przebudowuje oznaczenia rzeki wyłącznie z zachowanych tras + sync bonusu na obu heksach krawędzi. */
 function scrubStrayRiverHexMarks(hexes: Record<string, Hex>, paths: RiverCoord[][]): void {
   clearRiverMarks(hexes);

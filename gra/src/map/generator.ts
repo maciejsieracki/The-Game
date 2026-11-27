@@ -95,7 +95,7 @@ import {
   type StartPosition,
   type TypSwiata,
 } from './gen-helpers';
-import { pruneOrphanRiverPaths, pruneRiversNotReachingRealSea, flattenFalseCoastalRiverNotches, ensureRiverOutlets, refillMainRiverCoastMouthGapsOnMap } from './gen-helpers';
+import { pruneOrphanRiverPaths, pruneRiversNotReachingRealSea, flattenFalseCoastalRiverNotches, ensureRiverOutlets, purgeOpenOceanLandSpecksAndReconcileRivers, refillMainRiverCoastMouthGapsOnMap } from './gen-helpers';
 import { placeVillages, targetVillageHutCount, expectedStartCityCount } from './villages';
 import {
   resolveWorldGenNumbers,
@@ -740,7 +740,10 @@ export function generateMap(
   if (typ === 'ziemia') {
     cutBackEarthLandOutsideMask(hexes, width, height);
   }
-  purgeOpenOceanLandSpecks(hexes);
+  // MAPFIX2: purge wysp i bramka ujść razem (purge przerywa łańcuchy rzek — bez ponownej bramki
+  // zostają osierocone heksy sieci rzecznej na wyspach z rzekami).
+  ({ paths: riverPaths, kinds: riverPathKinds } =
+    purgeOpenOceanLandSpecksAndReconcileRivers(hexes, riverPaths, riverPathKinds, width, height));
 
   // ── Przebieg 4-fairplay-final: ostatni pierścień wybrzeża / bramka ujść mogły rozdrobnić
   // masy lądu lub skasować las/złoża — fair-play-grid-test i relief-grid-coverage-test
