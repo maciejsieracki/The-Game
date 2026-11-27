@@ -10,7 +10,7 @@ import {
   CULTURA_RELIGIA_BOUNDS_DEFAULT,
   culturaReligiaBoundsForOwner,
   cultureReligionLineValue,
-  getCulturaReligiaLevel,
+  getCulturaReligiaLevelForOwner,
   type CulturaReligiaBounds,
   type CulturaReligiaLevel,
 } from './culture-religion-level';
@@ -747,7 +747,7 @@ function kultReligLinePoints(
   const eff = culturaReligiaBoundsForOwner(bounds[level], ownerIsHuman);
   if (level === 'latwy' && eff.D === -10 && eff.G === 10) return proporcjonalneSzczescie(x, share);
   const k = base > 0 ? x / base : 1;
-  return cultureReligionLineValue(level, k, share, bounds, ownerIsHuman);
+  return cultureReligionLineValue(level, k, share, bounds, ownerIsHuman, base > 0 ? base : undefined);
 }
 
 // ---------------------------------------------------------------------------
@@ -796,10 +796,11 @@ export function computeHappinessBreakdown(
   const kultShare = Number.isFinite(input.ownCultureShare)
     ? Math.min(1, Math.max(0, input.ownCultureShare as number))
     : 1;                                   // brak mixu kulturowego = 100% własnej
-  const cLevel = getCulturaReligiaLevel();
+  const ownerIsHuman = input.ownerIsHuman !== false;
+  // R-WEB-CULT-REL-AI-PLUS10-Q1: poziom wg typu właściciela (gracz / AI — osobne ustawienia).
+  const cLevel = getCulturaReligiaLevelForOwner(ownerIsHuman);
   const cBounds = culturaReligiaBoundsFor(society);
   const cBase = scale.kultReligByEra[0] ?? x;
-  const ownerIsHuman = input.ownerIsHuman !== false;
   const kultV = kultReligLinePoints(cLevel, x, kultShare, cBase, cBounds, ownerIsHuman);
   if (kultV) {
     lines.push({ id: 'kultura', label: udzialLineLabel('Kultura', kultShare), value: kultV });
@@ -977,7 +978,9 @@ export function computeLawBreakdown(
   // R-WEB-CULT-REL-IMPL-Q1 (CULTIMPL, decyzja właściciela 2026-11-26): Kultura i Religia liczą się
   // TAKŻE do Prawa, tymi samymi punktami co w Szczęściu. Tylko gdy ustawienie „Kultura i religia”
   // ma wartość (nowa gra); brak pola = tryb zgodności = dzisiejsze Prawo bit-w-bit.
-  const cLevel = getCulturaReligiaLevel();
+  // R-WEB-CULT-REL-AI-PLUS10-Q1: poziom wg typu właściciela (gracz / AI).
+  const ownerIsHuman = input.ownerIsHuman !== false;
+  const cLevel = getCulturaReligiaLevelForOwner(ownerIsHuman);
   if (cLevel !== null) {
     const x = kultReligScaleForEra(era, scale);
     const base = scale.kultReligByEra[0] ?? x;
@@ -988,7 +991,6 @@ export function computeLawBreakdown(
     const relShare = Number.isFinite(input.ownReligionShare)
       ? Math.min(1, Math.max(0, input.ownReligionShare as number))
       : ownShareFromSignal(input.haRel);
-    const ownerIsHuman = input.ownerIsHuman !== false;
     const kv = kultReligLinePoints(cLevel, x, kultShare, base, bounds, ownerIsHuman);
     if (kv) lines.push({ id: 'kultura_prawo', label: udzialLineLabel('Kultura', kultShare), value: kv });
     const rv = kultReligLinePoints(cLevel, x, relShare, base, bounds, ownerIsHuman);

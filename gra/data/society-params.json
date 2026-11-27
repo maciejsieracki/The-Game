@@ -914,7 +914,7 @@
     }
   },
   "kultura_religia_poziomy": {
-    "_opis": "R-WEB-CULT-REL-IMPL-Q1 (decyzja właściciela 2026-11-26): granice linii Kultury i linii Religii (każda liczona do Szczęścia i Prawa) na epokę 1. Wartość = (D + (G − D) · udział własnej) · skala epoki (x/10: 1,0 / 1,6 / 2,3 z szczescie_skala_kultura_religia). latwy = dziś (2·x·udział − x). R-WEB-CULT-REL-AI-PLUS10-Q1 (decyzja właściciela 2026-11-27): G_ai = plus dla CYWILIZACJI AI na każdym poziomie (+10 w epoce 1, rośnie z epoką); G gracza i D bez zmian.",
+    "_opis": "R-WEB-CULT-REL-IMPL-Q1 (decyzja właściciela 2026-11-26): granice linii Kultury i linii Religii (każda liczona do Szczęścia i Prawa) na epokę 1. Gracz: wartość = (D + (G − D) · udział własnej) · skala epoki (x/10: 1,0 / 1,6 / 2,3 z szczescie_skala_kultura_religia). latwy = dziś (2·x·udział − x). R-WEB-CULT-REL-AI-PLUS10-Q1 (decyzja właściciela 2026-11-27): G_ai = plus dla CYWILIZACJI AI na każdym poziomie (+10 w epoce 1); AI liczy się ADDYTYWNIE: D_AI(e) = D − Δ, G_AI(e) = G_ai + Δ, Δ = x_epoki − x_epoki1 (0 / +6 / +13); G gracza i jego mnożenie przez skalę bez zmian.",
     "latwy": { "D": -10, "G": 10, "G_ai": 10, "opis": "Mały wpływ (łatwy): −10 do +10 na linię (gracz); AI −10 do +10." },
     "normalny": { "D": -15, "G": 5, "G_ai": 10, "opis": "Neutralny (normalny): −15 do +5 na linię (gracz); AI −15 do +10." },
     "trudny": { "D": -20, "G": 0, "G_ai": 10, "opis": "Duży wpływ (trudny): −20 do 0 na linię (gracz, bez plusów); AI −20 do +10." }

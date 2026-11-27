@@ -616,6 +616,9 @@ export interface CityPanelConfig {
   getCivKey?: (ownerId: number) => string | undefined;
   /** Stan porządku/szczęścia per miasto (silnik po turze). Brak → szacunek z budynków. */
   getOrderState?: (cityId: string) => OrderState | null;
+  /** R-WEB-CULT-REL-AI-PLUS10-Q1: czy właściciel jest graczem (człowiekiem) — plus/minus Kultury i Religii
+   *  zależą od typu właściciela (AI ma własny poziom). Brak → traktowany jak gracz (dzisiejsze wartości). */
+  isHumanOwner?: (ownerId: number) => boolean;
   /** Aktualna tura gry (D18-4 bonus stolicy easy). */
   getTurn?: () => number;
   /** Rozklad zdrowia per miasto. Brak → obliczenie lokalne (turn-economy). */
@@ -3423,6 +3426,7 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
       haCuda,
       podzialHandlu: podzial,
       atWar,
+      ownerIsHuman: cfg.isHumanOwner ? cfg.isHumanOwner(city.ownerId) : true,
       stolicaEasyBonus: stolicaBonus,
       citizenResourceHappinessDelta: citizenUpkeep.happinessDelta,
     },
