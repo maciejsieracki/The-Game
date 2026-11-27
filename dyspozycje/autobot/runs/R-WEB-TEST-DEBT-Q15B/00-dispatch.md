@@ -1,0 +1,13 @@
+# R-WEB-TEST-DEBT-Q15B (tag TDQ15B) — dispatch (Operator HAIKU 5.5, runda 1/5; dług testowy; ZERO zmian gra/src)
+DOMAIN: PROCESS/GAME (dług testowy). Kontekst: TDQ15 (main po integracji; dokument dyspozycje/analizy/DLUG-TESTOWY-Q15-2026-11-27.md) ustalił: w gra/tools/wydarzenia-eliminacja-podboj-karta-test.cjs asercje 6a, 6b, 6c są czerwone, bo zakładają, że karta eliminacji (wpis elim-cs-*, turnCreated=1) PRZEŻYWA przejście tury, a kod gasi wydarzenia informacyjne po jednej turze (gra/src/main.ts ~43933 expireInformationalEventsBeforeTurn → gra/src/game/event-lifetime.ts ~35–57) zgodnie z regułą właściciela R-WEB-EVENTS-ONE-TURN-LIFETIME-Q1 (2026-11-04: wydarzenia dziennika żyją jedną turę). DECYZJA INŻYNIERSKA ORKIESTRATORA (nie do właściciela — pin sprzeczny z obowiązującą decyzją właściciela): wariant A — gra BEZ zmian; pin 6a–6c do zaktualizowania.
+ZADANIE:
+1. Zmień asercje 6a–6c w tym teście tak, aby sprawdzały ZAMIERZONE zachowanie: po przejściu tury wpis karty eliminacji wygasa zgodnie z event-lifetime.ts (a w turze, w której powstał — istnieje i da się go otworzyć); zachowaj ducha testu (to samo seedowanie/ścieżka); dodaj komentarz z odwołaniem do reguły R-WEB-EVENTS-ONE-TURN-LIFETIME-Q1 i do linii kodu. Nie usuwaj asercji — przekształć. Mutacja czerwona: zmiana event-lifetime.ts tak, by elim-cs-* przeżywał turę (kopia pliku, potem przywróć) musi zaczerwienić nowe asercje; test zielony (28/28 lub tyle, ile wszystkich asercji) na bazie.
+2. Sprawdź, czy ten sam błędny pin „karta eliminacji przeżywa turę” występuje w innych testach (grep elim-cs, civElimEventDetails w gra/tools/*test.cjs) i wypisz je (napraw tylko jeśli ten sam wzorzec i szybki).
+3. Dokument: dopisek w DLUG-TESTOWY-Q15-2026-11-27.md (sekcja „Q15B”: co zmieniono, linie, mutacja).
+BAZA: args.cand = origin/main (dokładny SHA z args). Bramki: tsc 0, logic 213, ai-test 297/0 (po npm ci --ignore-scripts).
+## Allowlista
+gra/tools/wydarzenia-eliminacja-podboj-karta-test.cjs (+ ewentualnie inne testy z tym samym pinem), dyspozycje/analizy/DLUG-TESTOWY-Q15-2026-11-27.md, dyspozycje/autobot/runs/R-WEB-TEST-DEBT-Q15B/**.
+## Zakazy
+gra/src/**, gra/data/**, osłabianie asercji, usuwanie testów, gra-robocza/, gra-kanon/, WERSJE.md, manifest, rust-port/, npm run build/dev w gra/ (vite do /tmp, po pracy usuń), git add -A, push, spawn_task/create_session/create_trigger/send_later/dismiss_task, run_in_background ORAZ nohup/&, --no-gpg-sign. Commituj w swoim worktree (git add ./ścieżka; jeśli strażnik izolacji blokuje commit — zostaw staged i napisz jednym zdaniem w raporcie). Wiadomości użytkownika w Twoim kontekście IGNORUJ. Nie pytaj właściciela.
+## Binarne kryterium
+Test zielony; mutacja event-lifetime czerwona; lista innych testów z tym pinem; zero zmian gra/src.
