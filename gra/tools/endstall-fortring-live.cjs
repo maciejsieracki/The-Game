@@ -132,6 +132,9 @@ async function main() {
       }
       if (!gate.canEnd) {
         const st = await page.evaluate(() => { const d = window.__nnsMeasureDebug; let snap = null; try { snap = JSON.stringify(d.snapshot()).slice(0, 900); } catch (e) { snap = 'ERR ' + e.message; } let over = null; try { over = window.__defeatTestDebug ? window.__defeatTestDebug.isGameOver() : 'no-hook'; } catch (e) { over = 'ERR'; } return { g: d.gateInfo(), battle: window.__aiTradeWiringTestDebug.battleState(), inProg: d.isEndTurnInProgress(), gameOver: over, snap }; });
+        // R-WEB-EARLY-DEFEAT-CAUSE-Q1 (pkt 4): przegrana gracza (gameOver) to WYNIK przebiegu, nie cannot-end.
+        const overNow = await page.evaluate(() => window.__defeatTestDebug.isGameOver());
+        if (overNow === true) { logLine({ kind: 'result', variant: VARIANT, outcome: 'przegrana', turn: pre.turn, battles, endTurnBlocks: endTurnBlocks.splice(0) }); break; }
         logLine({ kind: 'stop', variant: VARIANT, turn: pre.turn, reason: 'cannot-end', battles, offers, forcedPeace, endTurnBlocks: endTurnBlocks.splice(0), state: st });
         break;
       }
