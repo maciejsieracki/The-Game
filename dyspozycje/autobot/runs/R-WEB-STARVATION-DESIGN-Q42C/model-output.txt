@@ -46,4 +46,24 @@ G1 pop t16=3: utrata ludności do t30 = 2 (tury glodu 12)
 G1 pop t16=5: utrata ludności do t30 = 4 (tury glodu 12)
 G1 pop t16=8: utrata ludności do t30 = 7 (tury glodu 12)
 
+
+--- WRAŻLIWOŚĆ (założenia modelu; NIE jest pomiarem gry) ---
+Stałe założenia: S0 stały przez t16-t30 (bez wzrostu miasta, bez zmiany racji, bez zapasu Spichlerza), koszt 16/jednostkę, karencja 3.
+Rozbieżność HUD (-30) vs komunikat bramki (-18) NIE jest wyjaśniona; tabela S0 obejmuje oba rzędy wielkości.
+S0 | HP_FRAC | pierwszy zgon jednostki | zgony do t30 | tury głodu
+10 | 0.06 | t27 | 1 | 15
+12 | 0.06 | t27 | 1 | 15
+14 | 0.06 | t27 | 1 | 15
+16 | 0.06 | t27 | 1 | 12
+18 | 0.06 | t27 | 1 | 12
+10 | 0.08 | t27 | 1 | 15
+12 | 0.08 | t27 | 1 | 15
+14 | 0.08 | t27 | 1 | 15
+16 | 0.08 | t27 | 1 | 12
+18 | 0.08 | t27 | 1 | 12
+10 | 0.10 | t27 | 2 | 13
+12 | 0.10 | t27 | 2 | 13
+14 | 0.10 | t27 | 2 | 13
+16 | 0.10 | t27 | 1 | 12
+18 | 0.10 | t27 | 1 | 12
 G3 (kara produkcji/Szczęścia) — bez liczb: magnitude NIE ZMIERZONO, model nie zawiera; wymaga wyłączenia atrycji HP, inaczej zgony jednostek jak w baseline.

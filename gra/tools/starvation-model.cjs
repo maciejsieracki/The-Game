@@ -31,7 +31,7 @@ const FOOD_PER_UNIT = 16;
 const START_TURN = 16;
 const END_TURN = 30;
 
-function runBaseline(S0, popAtT16) {
+function runBaseline(S0, popAtT16, hpFrac = HP_FRAC) {
   const units = [
     { name: 'Lucznik', hp: healthOf('Łucznik'), max: healthOf('Łucznik'), alive: true },
     { name: 'Wojownik', hp: healthOf('Wojownik'), max: healthOf('Wojownik'), alive: true },
@@ -58,7 +58,7 @@ function runBaseline(S0, popAtT16) {
     if (attrActive) {
       attritionTicks += 1;
       for (const u of alive) {
-        const loss = Math.max(1, Math.floor(u.max * HP_FRAC));
+        const loss = Math.max(1, Math.floor(u.max * hpFrac));
         u.hp = Math.max(0, u.hp - loss);
         if (u.hp <= 0) { u.alive = false; died.push(u.name); }
       }
@@ -119,5 +119,17 @@ for (const S0 of [14, 16]) {
   }
 }
 out.push('');
+out.push('');
+out.push('--- WRAŻLIWOŚĆ (założenia modelu; NIE jest pomiarem gry) ---');
+out.push('Stałe założenia: S0 stały przez t16-t30 (bez wzrostu miasta, bez zmiany racji, bez zapasu Spichlerza), koszt 16/jednostkę, karencja 3.');
+out.push('Rozbieżność HUD (-30) vs komunikat bramki (-18) NIE jest wyjaśniona; tabela S0 obejmuje oba rzędy wielkości.');
+out.push('S0 | HP_FRAC | pierwszy zgon jednostki | zgony do t30 | tury głodu');
+for (const hf of [0.06, 0.08, 0.10]) {
+  for (const S0 of [10, 12, 14, 16, 18]) {
+    const b = runBaseline(S0, null, hf);
+    const fl = b.firstUnitLoss === null ? 'brak' : 't' + b.firstUnitLoss;
+    out.push(S0 + ' | ' + hf.toFixed(2) + ' | ' + fl + ' | ' + b.unitsLostByT30 + ' | ' + b.hungryTicks);
+  }
+}
 out.push('G3 (kara produkcji/Szczęścia) — bez liczb: magnitude NIE ZMIERZONO, model nie zawiera; wymaga wyłączenia atrycji HP, inaczej zgony jednostek jak w baseline.');
 process.stdout.write(out.join('\n') + '\n');
