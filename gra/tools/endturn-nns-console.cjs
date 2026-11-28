@@ -31,19 +31,22 @@ const UNIT_NAMES = UNITS.map(u => u.Jednostka).filter(Boolean).sort((a, b) => b.
 
 // Maksimum z kodu (newGameFlow / data/ui-params.json / map-gen defaults):
 //  Rozmiar mapy = „Super Huge” (ostatnia opcja, ~80000 hex); Prędkość gry = „Długa” (4× koszt badań, najdłuższa);
-//  Miasta-państwa = 9 (MAX_MIAST_PANSTWA); Liczba cywilizacji = 15 (MAX_TYPY_CYWILIZACJI_MENU; NIEJEDNOZNACZNE, patrz raport);
+//  Miasta-państwa = 6 (JEDYNA opcja menu „Miasta-państwa”, ui-params.json city_states_count); Liczba cywilizacji = 7
+//  (JEDYNA opcja menu „Liczba cywilizacji”, ui-params.json civ_types_count). Sufity kodu 9 (MAX_MIAST_PANSTWA) i 15
+//  (MAX_TYPY_CYWILIZACJI_MENU) NIE są opcjami menu, więc nie są maksimum osiągalnym w grze (decyzja R-WEB-ENDTURN-NNS-CONSOLE-Q1, obrona r2).
+//  Trudność miast-państw = Trudny (opcje menu: Łatwy/Normalny/Trudny/Wyłączone; „Wyłączone” to brak miast-państw, nie trudność).
 //  Limit miast (baza) = 20 (opcje 10/15/20); Poziom Trudny; barbarzyńcy Trudny; kultura trudny; dyplomacja trudna;
 //  Wzrost ludności / Koszty jednostek Wysoki; Koszty budynków Wysoki (x4); Zasięg ruchu Długi (x6).
 const MAX_PARAMS = {
   civId: 'rzymianie', civName: 'Rzymianie', epoch: 'Epoka Brązu', epochId: 'braz', difficulty: 'Trudny',
-  mapSize: process.env.MAP_SIZE || 'Super Huge', rivals: '9', speed: 'Długa', worldType: 'Kontynenty', typSwiata: 'kontynenty', seed: SEED,
+  mapSize: process.env.MAP_SIZE || 'Super Huge', rivals: '6', speed: 'Długa', worldType: 'Kontynenty', typSwiata: 'kontynenty', seed: SEED,
   mapQualityLabel: 'Wysoka', mapQuality: 'high', renderQualityLabel: 'Wysoka', mapDetailQualityLabel: 'Wysoka',
-  renderQuality: 'high', mapDetailQuality: 'high', civTypesCount: 15, cityStatesCount: 9,
+  renderQuality: 'high', mapDetailQuality: 'high', civTypesCount: 7, cityStatesCount: 6,
   worldDensityLabels: { resources: 'Normalnie', rivers: 'Normalnie', desert: 'Normalnie', forest: 'Normalnie', relief: 'Normalnie' },
   advanced: {
     barbariansLevel: 'trudny', battleAlwaysManual: false, victoryMode: 'moc_i_dominacja', buildingCostPace: 'wysoki',
     kosztJednostekPace: 'wysoki', wzrostLudnosciPace: 'wysoki', ruchSwiataPace: 'dlugi', landFractionPercent: 30,
-    landFractionCustom: false, cityStateDifficultyOverride: 'normal', cityLimitBase: 20,
+    landFractionCustom: false, cityStateDifficultyOverride: 'hard', cityLimitBase: 20,
     diplomacyWarLevel: 'trudna', kulturaReligiaLevel: 'trudny',
   },
   villageRewardsEnabled: true,
@@ -149,9 +152,13 @@ async function buyInStateC(page, cityId) {
     return { ok: true, before: inp.value, max: inp.max, x: r.right - 2, y: r.top + r.height / 2 };
   });
   if (sl.ok) {
-    await page.mouse.click(sl.x, sl.y);
+    // Obrona r2: klik myszą na prawy kraniec nie przesuwał suwaka (nns-PO-ogromny: before 30, after 30).
+    // Teraz: fokus na suwaku + klawisz End (prawdziwe zdarzenie klawiatury, zmienia wartość na max).
+    await page.evaluate(() => document.querySelector('.handel-w4-sliders input[type=range]').focus());
+    await page.keyboard.press('End');
     await page.waitForTimeout(300);
     sl.after = await page.evaluate(() => document.querySelector('.handel-w4-sliders input[type=range]').value);
+    sl.reachedMax = sl.after === sl.max;
   }
   out.slider = sl;
   await page.evaluate(() => { const b = document.querySelector('.civ-v-exit-map-btn') || [...document.querySelectorAll('button')].find(x => /Wróć na mapę/i.test(x.textContent || '')); if (b) b.click(); });
@@ -248,11 +255,12 @@ async function main() {
     phase('goto ok');
     await page.evaluate((p) => window.__settingsLive.startNewGame(p), MAX_PARAMS);
     phase('startNewGame ok');
+    // Obrona r2: gotowość = awaitingFirstCity ORAZ zniknięty overlay ładowania mapy (sam awaitingFirstCity
+    // było prawdziwe już na świecie podglądu). [ClusterStart] nie jest warunkiem (tylko informacyjnie w logu).
     const t0 = Date.now();
-    while (clusterStartSeen < 1 && Date.now() - t0 < CLUSTER_WAIT_MS) await new Promise(r => setTimeout(r, 250));
-    phase('ClusterStart seen=' + clusterStartSeen + ' after ' + (Date.now() - t0) + ' ms');
-    await page.waitForFunction(() => window.__nnsMeasureDebug.awaitingFirstCity() === true, null, { timeout: 600000, polling: 500 });
-    phase('awaitingFirstCity ok');
+    await page.waitForFunction(() => window.__nnsMeasureDebug.awaitingFirstCity() === true
+      && !document.querySelector('.civ-map-load-overlay'), null, { timeout: CLUSTER_WAIT_MS, polling: 500 });
+    phase('awaitingFirstCity + brak overlay ok po ' + (Date.now() - t0) + ' ms; ClusterStart seen=' + clusterStartSeen + ' (informacyjnie)');
     assert.ok(await page.evaluate(() => window.__nnsMeasureDebug.foundFirstCity()), 'foundFirstCity=true');
     await page.waitForTimeout(3000);
     await closeCivWelcome(page);
