@@ -106,3 +106,7 @@ BAZA: args.cand = 453fc49f58ab12fb90366280c823f7f130c7e1b7 (WIP Operatora: potom
 ---
 # DODATEK WZNOWIENIE nr 2 SERII 2, RUNDA 1/5 (restart kontenera + przerwa przez limit użycia; agenci znów działają ~17:45 UTC)
 BAZA: args.cand = 9c1a93ea4c5ab440edbc5d953ba0bc91ef7455fb (WIP Operatora Sonnet: potomek 453fc49f5; refs/keep/RIVERTREE2-r1-wip2): tryb drzewa rzek, test proporcji, pomiar luki ujść, optymalizacja wydajności generatora (parse raz na iterację). KONTYNUUJ od tego stanu: dokończ zestaw pomiarów map (84x60 s1/s7/s42, pangea s7, 168x120 s42, Ziemia), luki ujść i pokrycie siatki 5x5 vs baza, bramki, dokument RZEKI-DRZEWO-1-4-16 i raport. Reszta zadania i zakazy jak w DODATKU serii 2; zmiana cluster-plan-name-test w WIP do oceny (nie osłabiać).
+
+---
+# DODATEK WZNOWIENIE nr 3 SERII 2, RUNDA 1/5 (kolejny restart kontenera ok. 18:5x UTC)
+BAZA: args.cand = 11a6545fbaca6945f432458fd5be88ec59579d52 (WIP nr 3: potomek 9c1a93ea4; refs/keep/RIVERTREE2-r1-wip3; zmiany gen-helpers.ts, newGameMapDefaults.ts, river-tree-measure.cjs w toku). KONTYNUUJ od tego stanu. WAŻNE: COMMITUJ CZĘSTO (po każdym zamkniętym kroku: git add <ścieżki> && git commit), bo kontener restartuje się co ok. godzinę i niezatwierdzona praca ginie. Reszta bez zmian.
