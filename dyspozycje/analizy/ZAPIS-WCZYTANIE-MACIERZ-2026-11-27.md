@@ -1,4 +1,71 @@
-# ZAPIS-WCZYTANIE-MACIERZ — pomiar macierzy po FALI 932 (R-WEB-SAVE-LOAD-MATRIX-Q1, runda 1, Operator HAIKU)
+# ZAPIS-WCZYTANIE-MACIERZ — macierz zapis/wczytanie na MAKSIMUM (R-WEB-SAVE-LOAD-MATRIX-Q1, runda 2, Operator HAIKU)
+
+## 0. STAN WIĄŻĄCY (runda 2, 2026-11-28)
+
+**Baza kodu:** origin/main `ca61257d4` (FALA 932–935, merge do gałęzi tematu `dd5bd3cb5`); kod gry w tej rundzie NIE zmieniony (`gra/src` bez zmian). Build: `vite build` do katalogu w scratchpadzie, `npx tsc --noEmit` exit 0.
+**Ustawienia maksymalne (wg kreatora):** barbarzyńcy Trudny, poziom Trudny, Wysoki ×4, kultura trudny (gracz i AI), dyplomacja trudna. Rywale (`rivals`/miasta-państwa) MAKSIMUM = 9, `civTypesCount` MAKSIMUM = 15 (`dane/r2-MAX-USTAWIENIA-KREATOR.txt`).
+**Uwaga krytyczna:** wszystkie komórki macierzy poniżej (oprócz jednej kontrolnej) zmierzono z `rivals=2` (domyślne z runnera), NIE z maksimum 9. Pełna macierz na `rivals=9` NIE ZMIERZONA.
+
+### 0.1 Tabela komórek (rivals=2, barbarzyńcy Trudny; pliki `dane/r2-*`)
+
+| Konfiguracja | Ziarno | Zapis po | cfgUsed (rivals) | B==A tury po wczytaniu | Wynik | Pola różnic |
+|---|---|---|---|---|---|---|
+| max | 4242 | t3 | 2 | 6/6 | PASS | — |
+| max | 4242 | t10 | 2 | 6/6 | PASS | — |
+| max | 7 | t3 | 2 | 6/6 | PASS | — |
+| max | 7 | t10 | 2 | 6/6 | PASS | — |
+| max + bunt stolicy AI | 4242 | t3 | 2 | 6/6 | PASS | — |
+| max + bunt stolicy AI | 4242 | t10 | 2 | **0/6** | **FAIL (rozjazd)** | `cities[city3].podzialPracy` |
+| max + bunt stolicy AI | 7 | t3 | 2 | 6/6 | PASS | — |
+| max + bunt stolicy AI | 7 | t10 | 2 | **0/6** | **FAIL (rozjazd)** | `cities[city3].podzialPracy` |
+| aionly | 4242 | t3 | 2 | 6/6 | PASS | — |
+| aionly | 4242 | t10 | 2 | 6/6 | PASS | — |
+| aionly | 7 | t3 | 2 | 6/6 | PASS | — |
+| aionly | 7 | t10 | 2 | 6/6 | PASS | — |
+| max (kontrola) | 4242 | t3 | **9** | 6/6 | PASS | — |
+
+Wynik: 10 z 12 komórek macierzy PASS, 2 FAIL (bunt, t10). Komórki r1 (`max/4242/t10`, `aionly/7/t3`, `max/7/t3` z r1 pochodzące z barbarzyńców „normalny”) zostały przemierzone w r2 na tym samym kodzie (rivals=2); poprzednie wyniki z barbarzyńcami „normalny” NIE liczą się jako maksimum.
+
+### 0.2 Rozjazd bunt/t10 (diagnoza częściowa, NIE naprawione)
+
+- Odtworzone 2/2 ziarna (4242, 7) przy `cfg bunt` + zapis po t10; przy t3 i przy `max` bez buntu brak rozjazdu.
+- Jedyna różnica w 6 turach: `cities[city3].podzialPracy` — przebieg ciągły (A): pole nieobecne (miasto śledzi globalny podział imperium); przebieg po wczytaniu (B): `{procentBudynki: 50}`. Pozostałe pola (miasta, jednostki, skarbiec) zgodne.
+- Kandydaci przyczyny (hipotezy, nieprzetestowane minimalnie): `ensureCityPodzialDefaults` (`gra/src/game/cities.ts:754`) uzupełnia brakujące pole wartością domyślną przy wczytaniu; po zmianie właściciela pole jest kasowane (`gra/src/main.ts:6803`). Skutek w zmierzonych turach: brak różnic ekonomicznych (wybór sposobu zapisu stanu „śledzi globalny”).
+- Poprawka NIE wdrożona: wymagałaby zmiany `gra/src/game/cities.ts` (poza allowlistą dispatchu), a oparta na hipotezie. Decyzja orkiestratora wymagana.
+
+### 0.3 Ścieżka UI (klik „Zapisz grę” → „Wczytaj grę” w menu pauzy)
+
+- Harness: `gra/tools/save-load-continuity-ui-live.cjs` (nowy). Zapis i wczytanie KLIKIEM w jednej sesji (przycisk `button.b-menu` → `[data-act=save]`/`[data-act=load]` → dialog `.civ-sl-row` → `Wczytaj`). Tura przesuwana hakiem `__eraTestDebug.endTurn` (nie wczytanie).
+- `max/4242/t3`, wczytanie po 0 turach od zapisu: **PASS 6/6** (`r2-UI-max-4242-t3-dirty0.json`).
+- `max/4242/t3`, wczytanie po 3 turach dalej w tej samej grze: **FAIL** — tury 4–6 zgodne, rozjazd od tury 7 (różne identyfikatory jednostek wiosek i zasoby miasta city15). Hipoteza: stan poza zapisem w tej samej grze (zgodnie z klasą SAVEFIX). NIE ZDIAGNOZOWANE do końca; `max/7/t3` ścieżką UI NIE ZMIERZONO.
+- Próby: pierwsza wersja harnessu nie otworzyła menu klawiszem Escape (brak reakcji); przełączono na przycisk HUD `button.b-menu` (działa).
+
+### 0.4 A==A' (determinizm ciągły)
+
+- Dwa niezależne przebiegi A tego samego ziarna i ustawień (`max`, rivals=2): **identyczne bajt w bajt** zrzuty kanoniczne (`sha256` 16 znaków zgodne) dla wszystkich tur: t4–t9 i t11–t16 (12 tur) — ziarno 4242 i ziarno 7.
+
+### 0.5 Render po wczytaniu
+
+- NIE ZMIERZONO (hexCount, licznik błędów konsoli po wczytaniu na t10 nie wykonane). Zrzut ekranu z przebiegu UI (`r2-UI-max-4242-t3-po-wczytaniu.png`, stan po 3+6 turach w sesji z rozjazdem) istnieje, ale NIE oceniony merytorycznie.
+
+### 0.6 Bramki
+
+- `npx tsc --noEmit` w `gra/`: exit 0. Testy logiczne (logic 213, ai-test 297/0 itd.) nie uruchamiane: brak zmian w `gra/src`.
+
+### 0.7 Pozostałe ustalenia procesu
+
+- Runy A/B trwały 6–8 min na bieg; dwa razy narzędzie przeniosło bieg w tło po 590 s (automatycznie, nie przez `run_in_background`); wynik zebrany z pliku logu.
+- `rivals=9` tylko dla jednej komórki; reszta macierzy wymaga ponownego biegu na 9 (≈12 komórek, ok. 1,5 h).
+
+### 0.8 Pliki
+
+Wszystkie w `dyspozycje/autobot/runs/R-WEB-SAVE-LOAD-MATRIX-Q1/dane/` z prefiksem `r2-`: `r2-B-*.json`, `r2-A-*.json`, `r2-A2-*.json`, `r2-UI-*.json`, `r2-READBACK-*.txt` (cfgUsed per komórka), `r2-MAX-USTAWIENIA-KREATOR.txt`, stany `r2-STATE-A-*.json.gz`, logi `r2-log*.txt`.
+
+---
+
+## RUNDA 1 (archiwum, 2026-11-27 — NIE na maksimum dla części komórek)
+
+# ZAPIS-WCZYTANIE-MACIERZ — pomiar macierzy po FALI 932 (runda 1)
 
 **Baza:** origin/main `ebaa23b03` (kod 4bd55c32, FALA 932). Żadnych zmian w kodzie w tej rundzie: B==A we wszystkich zmierzonych komórkach, więc poprawki nie wdrażano (zgodnie z pkt 5 dispatchu).
 **Zakres:** WYŁĄCZNIE konfiguracje maksymalne (Trudny, dyplomacja trudna, Wysoki ×4, kultura trudny, kultura AI trudny, barbarzyńcy normalny/włączeni); `default` nie mierzony.

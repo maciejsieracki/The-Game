@@ -1,0 +1,2 @@
+23:37:11 bunt 4242 B zapis t10 rebuild=false tury: ROZJAZD ROZJAZD ROZJAZD ROZJAZD ROZJAZD ROZJAZD
+23:37:11 bunt 4242 VERDICT FAIL (expect=equal, anyDiff=true, pageErrors=0)

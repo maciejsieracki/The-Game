@@ -1,0 +1,2 @@
+22:54:38 max 4242 B zapis t10 rebuild=false tury: OK OK OK OK OK OK
+22:54:38 max 4242 VERDICT PASS (expect=equal, anyDiff=false, pageErrors=0)

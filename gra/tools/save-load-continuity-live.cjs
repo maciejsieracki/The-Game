@@ -55,9 +55,9 @@ const MAX_ADV = {
 };
 const MAX_PARAMS = {
   civId: 'rzymianie', civName: 'Rzymianie', epoch: 'Epoka Brazu', epochId: 'braz', difficulty: 'Trudny',
-  mapSize: 'Standardowy', rivals: '2', speed: 'Normalna', worldType: 'Kontynenty', typSwiata: 'kontynenty',
+  mapSize: 'Standardowy', rivals: String(arg('rivals', '2')), speed: 'Normalna', worldType: 'Kontynenty', typSwiata: 'kontynenty',
   mapQualityLabel: 'Wysoka', mapQuality: 'high', renderQualityLabel: 'Wysoka', mapDetailQualityLabel: 'Wysoka',
-  renderQuality: 'high', mapDetailQuality: 'high', civTypesCount: 15, cityStatesCount: 2,
+  renderQuality: 'high', mapDetailQuality: 'high', civTypesCount: 15, cityStatesCount: Number(arg('rivals', '2')),
   worldDensityLabels: { resources: 'Normalnie', rivers: 'Normalnie', desert: 'Normalnie', forest: 'Normalnie', relief: 'Normalnie' },
   advanced: MAX_ADV,
   villageRewardsEnabled: true,

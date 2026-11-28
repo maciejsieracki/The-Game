@@ -1,0 +1,8 @@
+READBACK USTAWIEN KOMORKI (R-WEB-SAVE-LOAD-MATRIX-Q1, runda 2)
+cfg: max   seed: 7   zapis po: t3
+cfgUsed (z JSON): {"barbariansLevel":"trudny","difficulty":"Trudny","rivals":"2","civTypesCount":15}
+maksimum wg dispatchu: barbarzyncy Trudny, Trudny, Wysoki x4, kultura trudny, dyplomacja trudna; rivals=MAX 9 (newGameMapDefaults.ts MAX_MIAST_PANSTWA), civTypesCount=15 (MAX_TYPY_CYWILIZACJI_MENU)
+rivals uzyte w tej komorce: 2 (NIE MAKSIMUM: 2 zamiast 9)
+plik wynikow: B-max-7-t3.json
+tury po wczytaniu: 6/6 equal; verdict: PASS; pageErrors: 0
+pola roznic: brak

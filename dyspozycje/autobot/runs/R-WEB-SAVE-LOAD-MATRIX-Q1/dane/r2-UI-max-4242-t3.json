@@ -1,0 +1,139 @@
+{
+ "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-r2",
+ "seed": 4242,
+ "save": 3,
+ "dirty": 3,
+ "k": 6,
+ "mode": "UI",
+ "pageErrors": [],
+ "consoleErrors": [],
+ "clicks": [
+  "hud:button.b-menu",
+  "pause[data-act=save]",
+  "saveDialog:#civ-sl-name=UI-SAVEMAT",
+  "saveDialog:Zapisz",
+  "saveDialog:still-open-after-wait",
+  "pause[data-act=resume]",
+  "hud:button.b-menu",
+  "pause[data-act=load]",
+  "loadDialog:row=UI-SAVEMAT",
+  "loadDialog:Wczytaj"
+ ],
+ "turns": [
+  {
+   "turn": 4,
+   "expectedTurn": 4,
+   "equal": true,
+   "diffs": []
+  },
+  {
+   "turn": 5,
+   "expectedTurn": 5,
+   "equal": true,
+   "diffs": []
+  },
+  {
+   "turn": 6,
+   "expectedTurn": 6,
+   "equal": true,
+   "diffs": []
+  },
+  {
+   "turn": 7,
+   "expectedTurn": 7,
+   "equal": false,
+   "diffs": [
+    {
+     "path": "cities[city15].manpower",
+     "A": "2000",
+     "B": "(brak)"
+    },
+    {
+     "path": "cities[city15].surowce.drewno",
+     "A": "24",
+     "B": "11"
+    }
+   ]
+  },
+  {
+   "turn": 8,
+   "expectedTurn": 8,
+   "equal": false,
+   "diffs": [
+    {
+     "path": "units[wioska_8_44_80_dwympq]",
+     "A": "{\"category\":\"wlocznik\",\"hpMax\":32,\"id\":\"wioska_8_44_80_dwympq\",\"ownerId\":13,\"q\":43,\"r\":80,\"ruch\":2,\"typeId\":\"Włócznik\"}",
+     "B": "(brak)"
+    },
+    {
+     "path": "units[wioska_8_44_80_t7j5kq]",
+     "A": "(brak)",
+     "B": "{\"category\":\"wlocznik\",\"hpMax\":32,\"id\":\"wioska_8_44_80_t7j5kq\",\"ownerId\":13,\"q\":43,\"r\":80,\"ruch\":2,\"typeId\":\"Włócznik\"}"
+    },
+    {
+     "path": "cities[city15].manpower",
+     "A": "(brak)",
+     "B": "40"
+    }
+   ]
+  },
+  {
+   "turn": 9,
+   "expectedTurn": 9,
+   "equal": false,
+   "diffs": [
+    {
+     "path": "units[wioska_8_44_80_dwympq]",
+     "A": "{\"category\":\"wlocznik\",\"hp\":32,\"hpMax\":32,\"id\":\"wioska_8_44_80_dwympq\",\"ownerId\":13,\"q\":42,\"r\":79,\"ruch\":2,\"typeId\":\"Włó",
+     "B": "(brak)"
+    },
+    {
+     "path": "units[rec_9_city3_7u4hba]",
+     "A": "{\"category\":\"miecznik\",\"hpMax\":22,\"id\":\"rec_9_city3_7u4hba\",\"isGeneral\":true,\"ownerId\":1,\"q\":95,\"r\":65,\"ruch\":2,\"ruchLef",
+     "B": "(brak)"
+    },
+    {
+     "path": "units[rec_9_city4_k8myg5]",
+     "A": "{\"category\":\"oszczepnik\",\"hpMax\":8,\"id\":\"rec_9_city4_k8myg5\",\"ownerId\":1,\"q\":91,\"r\":65,\"ruch\":2,\"ruchLeft\":2,\"stockPaid\"",
+     "B": "(brak)"
+    },
+    {
+     "path": "units[rec_9_city11_15uzpyz]",
+     "A": "{\"category\":\"oszczepnik\",\"hpMax\":8,\"id\":\"rec_9_city11_15uzpyz\",\"ownerId\":7,\"q\":88,\"r\":50,\"ruch\":2,\"ruchLeft\":2,\"stockPai",
+     "B": "(brak)"
+    },
+    {
+     "path": "units[rec_9_city13_1cm0q4v]",
+     "A": "{\"category\":\"miecznik\",\"hpMax\":22,\"id\":\"rec_9_city13_1cm0q4v\",\"isGeneral\":true,\"ownerId\":10,\"q\":132,\"r\":35,\"ruch\":2,\"ruc",
+     "B": "(brak)"
+    },
+    {
+     "path": "units[rec_9_city14_qaut83]",
+     "A": "{\"category\":\"oszczepnik\",\"hpMax\":8,\"id\":\"rec_9_city14_qaut83\",\"ownerId\":10,\"q\":128,\"r\":35,\"ruch\":2,\"ruchLeft\":2,\"stockPa",
+     "B": "(brak)"
+    }
+   ]
+  }
+ ],
+ "cfgUsed": {
+  "barbariansLevel": "trudny",
+  "difficulty": "Trudny",
+  "rivals": "2",
+  "civTypesCount": 15
+ },
+ "dirtyTurn": 6,
+ "loadEnabled": true,
+ "loadRows": [
+  "Autozapis · Rzym · rok 3750 p.n.e. · tura 6 · Standardowy · TrudnyTura 6 · 28.11",
+  "Autozapis · Rzym · rok 3800 p.n.e. · tura 5 · Standardowy · TrudnyTura 5 · 28.11",
+  "Autozapis · Rzym · rok 3850 p.n.e. · tura 4 · Standardowy · TrudnyTura 4 · 28.11",
+  "UI-SAVEMAT-t3Tura 3 · 28.11.2026, 00:59Standardowy · Kontynenty · rzymianie · 43",
+  "Autozapis · Rzym · rok 3900 p.n.e. · tura 3 · Standardowy · TrudnyTura 3 · 28.11",
+  "Autozapis · Rzym · rok 3950 p.n.e. · tura 2 · Standardowy · TrudnyTura 2 · 28.11"
+ ],
+ "loadedTurn": 3,
+ "shot": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/r2/UI-max-4242-t3-po-wczytaniu.png",
+ "anyDiff": true,
+ "verdict": "FAIL",
+ "done": true
+}
