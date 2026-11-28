@@ -52326,6 +52326,10 @@ async function boot(): Promise<void> {
 
         const loadParams = newGameParamsForLoad(saved);
         const loadSeed = saved.seed ?? loadParams?.seed ?? _gameSeed;
+        // R-WEB-LOAD-CAMERA-Q1: po przebudowie sceny (regenerateWorldForLoad) kamera
+        // startuje z buildScene + new CameraController (dystans = |pozycja kamery sceny - centrum|,
+        // ~316 na dużej mapie); flaga pozwala ustawić widok po wczytaniu, bez zmiany ścieżki bez przebudowy.
+        let regeneratedMapForLoad = false;
 
         const mustRebuildMap = loadNeedsMapRebuild(loadParams, loadSeed, fromInGamePause)
           || (fromInGamePause && !!loadParams && liveMapDiffersFromSave(saved));
@@ -52343,6 +52347,7 @@ async function boot(): Promise<void> {
           } finally {
             canvas.style.visibility = '';
           }
+          regeneratedMapForLoad = ok;
           if (!ok) {
             // P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA (Maciej, decyzja N1, 2026-08-11):
             // jedną z przyczyn tego `ok===false` jest TWARDY BŁĄD z
@@ -52404,6 +52409,17 @@ async function boot(): Promise<void> {
             `Uwaga — zapis może być niespójny: ${msg}. F10 = raport diagnostyczny.`,
             7000,
           );
+        }
+        if (regeneratedMapForLoad) {
+          // R-WEB-LOAD-CAMERA-Q1: widok jak po założeniu stolicy w nowej grze (focusAt(..., 22)),
+          // zamiast dystansu z nowo zbudowanej sceny. Zapis nie przechowuje kamery.
+          // Stolica = capitalCityIdForOwner (ta sama zasada co w nowej grze i w bramkach stolicy).
+          const capIdAfterLoad = capitalCityIdForOwner(ME());
+          const capCityAfterLoad = capIdAfterLoad ? cities.find(c => c.id === capIdAfterLoad) : undefined;
+          if (capCityAfterLoad) {
+            const capPos = axialToWorld(capCityAfterLoad.q, capCityAfterLoad.r, HEX_R);
+            camCtrl.focusAt(capPos.x, capPos.z, 22);
+          }
         }
         for (const c of cities) {
           if (!c.centerWorkedTile) {

@@ -1,0 +1,17 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-WEB-LOAD-CAMERA-Q1 (tag LOADCAM)
+GOAL: po wczytaniu zapisu wymagającego przebudowy mapy kamera ma wrócić do rozsądnego dystansu (jak po założeniu stolicy w nowej grze, ok. 22), a nie 316 (mapa jak mała wyspa w pustce).
+ZMIANY/COMMIT: BAZA 2b019d3e3 (origin/main). Zmienione pliki: gra/src/main.ts (+14 linii w loadGameFromSlot: flaga regeneratedMapForLoad, przypisanie z wyniku regenerateWorldForLoad, po restoreGameFromSave focusAt(stolica gracza, 22) tylko przy przebudowie mapy); gra/tools/load-camera-test.cjs (nowy); dyspozycje/analizy/KAMERA-PO-WCZYTANIU-2026-11-28.md (nowy); ten raport. Format zapisu bez zmian (brak nowych pól). Commit: patrz sekcja DEPLOY/PUSH i SHA w odpowiedzi.
+TESTY:
+- Przyczyna (kod): buildScene ustawia kamerę sceny na center + camDist (gra/src/render/scene.ts ok. l. 3107–3108); regenerateWorldForLoad tworzy new CameraController(camera, canvas, center, ...) (gra/src/main.ts ok. l. 51116); konstruktor liczy dist = |camera.position - target| (gra/src/render/camera.ts ok. l. 122) → ok. 316 na dużej mapie. Pomiar przed poprawką z danych SAVEMAT r4 (ad1c64734, r4-B-cam-probe.json): cameraBeforeLoad dist 22, cameraAfterLoad dist 316.06, cfg max, seed 4242.
+- gra/tools/load-camera-test.cjs: PASS — 6/6 sprawdzeń bazowych OK; 6 mutacji (bez focusAt, dystans 316, bez przypisania flagi, flaga zawsze true, blok przeniesiony przed restore, bez filtra właściciela) — wszystkie czerwone.
+- npx tsc --noEmit: exit 0 (po npm ci --ignore-scripts w worktree).
+- logic-test 213/213; tech-tree-test 20/0; research-test 33/0; unit-replace-test 21/21; combat-test 6/6; ai-test 297 passed/0 failed; save-load-ai-cs-absorption-state-test 27/0; save-load-ai-state-fields-test 29/0; save-load-ledger-history-test 4/0; save-load-player-owned-city-test PASS; save-load-sort-test 4/4; save-load-budowa-priorytet-on-load-test 6/0.
+- save-load-roundtrip-state-drift-test: warstwa statyczna OK (10/10). Warstwa dynamiczna (bundle z vite build do katalogu w scratchpadzie, bez npm run build): FAIL (2) — ai-economy-measure-run.cjs openGame zakończony SIGSEGV Chromium (stack trace w logu, ok. 10 min biegu). NIE ZMIERZONO: nie ponowiono do 3 prób (limit czasu rundy); nie wiadomo, czy błąd dotyczy tylko środowiska; baza nie była badana osobno.
+- Test live (Chromium, sonda kamery przed/po wczytaniu, zrzut ekranu): NIE ZMIERZONO. Harness save-load-continuity-live.cjs w bazie 2b019d3e3 nie ma --probe-camera (jest w ad1c64734); nie portowano go i nie wykonano segmentów.
+BLOKADY: (1) live nie wykonany (patrz wyżej); (2) warstwa dynamiczna roundtrip — SIGSEGV Chromium w sub-runie, bez wyniku; (3) poprawka ustawia widok na stolicę gracza, nie na widok sprzed zapisu (zapis nie przechowuje kamery); stary zapis działa tą samą ścieżką; brak stolicy gracza → kamera zostaje na domyślnym widoku sceny.
+RUNDY: 1/5 (Operator, Haiku 5.5). Ostatni werdykt: n/d.
+NASTĘPNY KROK: Evaluator: ocenić diff gra/src/main.ts (14 linii) i test statyczny; FC: uruchomić live probe (port --probe-camera z ad1c64734) i ponowić warstwę dynamiczną roundtrip (≤3× przy SIGSEGV) przed deployem.
+UWAGI-DLA-ORKIESTRATORA: (a) node_modules zainstalowane w worktree przez npm ci --ignore-scripts (ignorowane przez gra/.gitignore). (b) Bundle do testów dynamicznych w scratchpadzie (poza repo). (c) Poprawka celowo nie używa playerStartHexByOwner, bo ta mapa nie jest odtwarzana z zapisu.
+DEPLOY/PUSH: NIE WYKONANO

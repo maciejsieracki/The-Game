@@ -1,0 +1,77 @@
+{
+ "dist": "/tmp/civ-dist-loadcam-fc",
+ "cfg": "max",
+ "seed": 4242,
+ "saves": [
+  3
+ ],
+ "k": 2,
+ "restore": "pause",
+ "expect": "equal",
+ "mode": "B",
+ "pageErrors": [],
+ "segments": [
+  {
+   "save": 3,
+   "restore": "pause",
+   "rebuild": false,
+   "turns": [
+    {
+     "turn": 4,
+     "expectedTurn": 4,
+     "equal": true,
+     "diffs": [],
+     "rawDiffSummary": {
+      "count": 0,
+      "fields": {},
+      "effPPdiffs": 0
+     }
+    },
+    {
+     "turn": 5,
+     "expectedTurn": 5,
+     "equal": true,
+     "diffs": [],
+     "rawDiffSummary": {
+      "count": 0,
+      "fields": {},
+      "effPPdiffs": 0
+     }
+    }
+   ],
+   "legacy": false,
+   "cameraBeforeLoad": {
+    "x": 174.9371315644566,
+    "z": 96,
+    "dist": 22
+   },
+   "mapDiffers": true,
+   "cameraAfterLoad": {
+    "x": 174.9371315644566,
+    "z": 96,
+    "dist": 22
+   },
+   "aiCsAtSave": {
+    "fail": 0,
+    "trybut": 0,
+    "wasal": 0
+   },
+   "aiCsAfterLoad": {
+    "fail": 0,
+    "trybut": 0,
+    "wasal": 0
+   }
+  }
+ ],
+ "normPP": "inert",
+ "cfgUsed": {
+  "barbariansLevel": "trudny",
+  "difficulty": "Trudny",
+  "rivals": "9",
+  "civTypesCount": 14
+ },
+ "consoleErrors": [],
+ "anyDiff": false,
+ "verdict": "PASS",
+ "done": true
+}
