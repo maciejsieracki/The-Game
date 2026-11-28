@@ -102,3 +102,7 @@ BAZA: args.cand = 42992edde48ccf32da3065ebf4924cafa291371e (origin/main). `git m
 ---
 # DODATEK WZNOWIENIE SERII 2, RUNDA 1/5 (restart kontenera 28.11 ok. 16:00 UTC zatrzymał Operatora; praca ocalała w worktree)
 BAZA: args.cand = 453fc49f58ab12fb90366280c823f7f130c7e1b7 (WIP Operatora: potomek 42992edde; refs/keep/RIVERTREE2-r1-wip): generator rzek w trybie drzewa (gen-helpers.ts, generator.ts, riverGenSwitch.ts), test river-tree-proportion-test z mutacją czerwoną, narzędzie river-tree-measure.cjs. Zmiana cluster-plan-name-test.cjs w WIP była niezatwierdzona przez Operatora — OCEŃ ją: jeśli osłabia asercję, cofnij; jeśli jest uzasadnioną konsekwencją reguły 1:4:16, uzasadnij tabelą test|przed|po|powód. KONTYNUUJ od tego stanu (nie zaczynaj od zera): dokończ pomiary zestawu map, bramki, dokument RZEKI-DRZEWO-1-4-16 i raport. Reszta zadania i zakazy bez zmian.
+
+---
+# DODATEK WZNOWIENIE nr 2 SERII 2, RUNDA 1/5 (restart kontenera + przerwa przez limit użycia; agenci znów działają ~17:45 UTC)
+BAZA: args.cand = 9c1a93ea4c5ab440edbc5d953ba0bc91ef7455fb (WIP Operatora Sonnet: potomek 453fc49f5; refs/keep/RIVERTREE2-r1-wip2): tryb drzewa rzek, test proporcji, pomiar luki ujść, optymalizacja wydajności generatora (parse raz na iterację). KONTYNUUJ od tego stanu: dokończ zestaw pomiarów map (84x60 s1/s7/s42, pangea s7, 168x120 s42, Ziemia), luki ujść i pokrycie siatki 5x5 vs baza, bramki, dokument RZEKI-DRZEWO-1-4-16 i raport. Reszta zadania i zakazy jak w DODATKU serii 2; zmiana cluster-plan-name-test w WIP do oceny (nie osłabiać).
