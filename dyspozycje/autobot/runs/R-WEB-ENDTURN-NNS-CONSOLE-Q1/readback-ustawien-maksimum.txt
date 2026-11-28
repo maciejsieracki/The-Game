@@ -1,0 +1,9 @@
+MAKSIMUM (kod, newGameFlow.ts + data/ui-params.json + map defaults)
+Rozmiar mapy: Super Huge (ostatnia opcja, ~80000 hex, 336x238)
+Prędkość gry: Długa (4x koszt badań, najdłuższa gra; ostatnia opcja)
+Miasta-państwa (rywale, klaster): 9 (MAX_MIAST_PANSTWA, src/map/newGameMapDefaults.ts:528)
+Liczba cywilizacji (rywale, frakcje): 15 (MAX_TYPY_CYWILIZACJI_MENU, newGameMapDefaults.ts:547) — NIEJEDNOZNACZNE, który suwak to 'rywale'
+Limit miast zakładanych (baza): 20 (opcje 10/15/20, newGameFlow.ts:1877)
+Poziom gry: Trudny; barbarzyńcy: Trudny; kultura i religia: Duży wpływ (trudny); dyplomacja i wojna: trudna
+Koszty budynków: Wysoki (x4); Koszty jednostek: Wysoki; Wzrost ludności: Wysoki; Zasięg ruchu: Długi (x6)
+Ziarna: 4242 i 7

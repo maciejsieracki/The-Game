@@ -1,0 +1,5 @@
+2026-11-27T23:54:26.654Z goto ok
+2026-11-27T23:54:27.118Z startNewGame ok
+2026-11-27T23:55:27.174Z ClusterStart seen=0 after 60056 ms
+2026-11-27T23:55:27.211Z awaitingFirstCity ok
+2026-11-28T00:00:31.034Z state turn 1 turns=[{"turn":1,"ok":false,"why":"NIE_AKTYWNY_60S","lastSample":{"aria":"false","eot":false,"turn":1,"onButton":false,"lose":false},"hit":"DIV#.civ-map-load-overlay"}]
