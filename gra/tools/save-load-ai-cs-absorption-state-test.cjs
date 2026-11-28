@@ -39,12 +39,20 @@ const ok = (c, m) => { if (c) { pass++; console.log('PASS', m); } else { fail++;
 const base = check(SRC);
 for (const [k, v] of Object.entries(base)) ok(v, k);
 
-// MUTACJE
-const mutate = {
-  'T4a wyciety zapis aiCsWasalSince': (s) => s.replace('aiCsWasalSince: Array.from(aiCsWasalSince.entries()),', ''),
-  'T4b wyciete odtworzenie aiCsTrybutSince': (s) => s.replace('saved.meta?.aiCsTrybutSince', 'saved.meta?.NIEISTNIEJACE'),
-  'T4c wyciete czyszczenie aiCsFailCount (oba clear)': (s) => s.split('aiCsFailCount.clear();').join(''),
+// MUTACJE: 9 = (zapis | odtworzenie | czyszczenie) x (3 mapy). Czyszczenie ma 2 wystapienia na mape:
+// n=0 -> reset swiata (ponowna gra), n=1 -> poczatek restoreGameFromSave (wczytanie).
+const removeNth = (s, needle, n) => {
+  let idx = -1;
+  for (let i = 0; i <= n; i++) { idx = s.indexOf(needle, idx + 1); if (idx < 0) return s; }
+  return s.slice(0, idx) + s.slice(idx + needle.length);
 };
+const mutate = {};
+for (const f of FIELDS) {
+  mutate[`T4 wyciety zapis ${f}`] = (s) => s.replace(`${f}: Array.from(${f}.entries()),`, '');
+  mutate[`T4 wyciete odtworzenie ${f}`] = (s) => s.replace(`saved.meta?.${f} as`, `saved.meta?.NIEISTNIEJACE_${f} as`);
+  mutate[`T4 wyciete czyszczenie przy resecie ${f}`] = (s) => removeNth(s, `${f}.clear();`, 0);
+  mutate[`T4 wyciete czyszczenie przy wczytaniu ${f}`] = (s) => removeNth(s, `${f}.clear();`, 1);
+}
 for (const [name, fn] of Object.entries(mutate)) {
   const m = fn(SRC);
   if (m === SRC) { fail++; console.log('FAIL', name, '-- mutacja nic nie zmienila (nieaktualny wzorzec)'); continue; }

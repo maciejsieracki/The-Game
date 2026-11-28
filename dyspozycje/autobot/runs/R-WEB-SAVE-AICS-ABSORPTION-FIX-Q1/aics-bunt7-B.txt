@@ -1,0 +1,3 @@
+09:42:23 bunt 7 aiCs przy zapisie (A) {"fail":0,"trybut":106,"wasal":106} | po wczytaniu (B) {"fail":0,"trybut":106,"wasal":106}
+09:43:18 bunt 7 B zapis t7 rebuild=false tury: OK OK OK OK
+09:43:18 bunt 7 VERDICT PASS (expect=equal, anyDiff=false, pageErrors=0)
