@@ -1,0 +1,5 @@
+FAIL: [F3-A1] znaleziono function canPlayerInitiateEndTurn( w main.ts
+FAIL: [F3-A2] canPlayerInitiateEndTurn blokuje też na hasPendingAutoPreBattle() -- nie tylko goły isPreBattleOpen() -- bitwa barbarzyńska odroczona do kolejki (aiCmdResume===null) teraz też blokuje "Zakończ turę"
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+
+koniec-tury-f1-f4-runda3-test: 37 pass, 2 fail

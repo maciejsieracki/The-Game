@@ -1,0 +1,5 @@
+-- L1: kolejka niepusta + blokady -> prepareSessionForLoad
+  ok   L1 przed: kolejka odlozonych bitew niepusta
+FAIL wyjatek: TypeError: env.api.canPlayerInitiateEndTurn is not a function
+    at main (/home/user/The-Game/.claude/worktrees/wf_aa013687-e9a-1/gra/tools/load-game-blockers-exec-test.cjs:243:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)

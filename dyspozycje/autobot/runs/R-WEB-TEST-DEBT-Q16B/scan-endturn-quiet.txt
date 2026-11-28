@@ -1,0 +1,12 @@
+  PASS: funkcja canPlayerInitiateEndTurn znaleziona
+  PASS: sygnatura quiet = false
+  PASS: każdy console.warn w funkcji bramkowany przez !quiet (10/10)
+  PASS: HUD config.canEndTurn (cykl 500 ms + render) używa wersji cichej
+  PASS: klik (endActiveHumanTurn) zachowuje głośny log przy blokadzie
+  PASS: healStaleEndTurnBlockers() nadal wołane przed bramkami (semantyka bez zmian)
+  PASS: funkcja advanceSeat znaleziona
+  PASS: advanceSeat (klik) woła wersję głośną canPlayerInitiateEndTurn()
+  PASS: triggerPlayerEndTurn (klik) nie woła wersji cichej ani własnej bramki
+  PASS: dokładnie jedno wywołanie wersji cichej w kodzie (1)
+
+10 pass, 0 fail

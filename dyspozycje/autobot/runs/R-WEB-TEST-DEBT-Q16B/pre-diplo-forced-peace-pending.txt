@@ -1,0 +1,41 @@
+PASS a: gracz 100% -> action forced_peace
+PASS a: gracz 100% -> deferred=true
+PASS a: gracz 100% -> brak pay i finalize (odroczone)
+PASS a: gracz 100% -> karencja lockTurns przekazana
+PASS a: gracz 100% -> stan pary usuniety (brak ponownego wymuszenia)
+PASS b: AI<->AI 100% -> forced_peace natychmiast
+PASS b: AI<->AI 100% -> finalize wykonany
+PASS c: AI<->AI (bez gracza) nie jest odraczany
+PASS d: gracz 80% -> brak forced_peace
+PASS d: gracz 80% -> brak pay/finalize
+PASS e: battlePending -> brak forced_peace
+PASS f2: dwa pokoje z graczem naraz -> dwa forced_peace
+PASS f2: obie odroczone (deferred=true)
+PASS f2: kolejka: brak pay/finalize przed akceptacja
+PASS f2: obie pary usunięte ze stanu
+PASS f: tekst zawiera procent zmeczenia (100%)
+PASS f: tekst zawiera liczbe tur wojny (40)
+PASS f: tekst zawiera liczbe zmienionych miast (2)
+PASS f: przycisk = „Akceptuję warunki pokoju”
+PASS f: brak surowych ID w tekstach
+PASS f: miasta po nazwach (Ateny)
+PASS r2-7: tekst okna (why) zawiera formułę wyliczoną z parametrów: Zmęczenie rośnie o 2,5% za każdą turę wojny i o 10% za każde miasto, które zmieniło właściciela.
+PASS r2-7: tekst okna (why) nie zawiera literału 5%
+FAIL g: bramka „Zakończ turę” sprawdza oczekujący pokój wymuszony
+PASS g: zapis meta.pendingForcedPeaceTreaties
+PASS g: odczyt zapisu z pustą listą dla starych zapisów
+PASS g: reset przy nowej grze
+PASS g: akceptacja wykonuje zaplate i finalizacje
+PASS h: okno bez zamkniecia klikiem w tlo
+PASS h: Esc blokowany w oknie pokoju wymuszonego
+PASS h: jedyny przycisk wywołuje onAccept
+PASS r2-1: wpis „Nie można zakończyć tury” w Ważne dla pokoju wymuszonego
+PASS r2-2: okno wraca po wczytaniu zapisu z oczekującym traktatem
+PASS r2-3: okno wraca na początku tury po turn++
+PASS r2-4: nieaktualne oczekujące pokoje są usuwane (prune) przed bramką i oknem
+PASS r2-5: strażnik Esc zdejmowany przy ponownym otwarciu i akceptacji
+PASS r2-6: walidacja wpisu zapisu (loser/winner/pairKey)
+PASS r2-7: brak literału „o 5% za każdą turę” w oknie pokoju wymuszonego
+PASS r2-7: liczby okna z parametrów (perTurnPct / perCityPct), zapłata 0 PN i karencja
+PASS i: mutant (bez odroczenia) czerwieni (a): pokoj zapada od razu
+diplo-forced-peace-pending-test: PASS=39 FAIL=1

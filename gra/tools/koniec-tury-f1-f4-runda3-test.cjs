@@ -165,7 +165,7 @@ const preBattleSrc = fs.readFileSync(PREBATTLE_TS, 'utf8');
 
 // --- F3 -----------------------------------------------------------------
 {
-  const fnStart = mainSrc.indexOf('function canPlayerInitiateEndTurn(): boolean {');
+  const fnStart = mainSrc.indexOf('function canPlayerInitiateEndTurn(quiet = false): boolean {');
   ok(fnStart >= 0, '[F3-A1] znaleziono function canPlayerInitiateEndTurn( w main.ts');
   const fnEnd = fnStart >= 0 ? mainSrc.indexOf('\n    function hintEndTurnBlocked', fnStart) : -1;
   const fnBody = (fnStart >= 0 && fnEnd > fnStart) ? mainSrc.slice(fnStart, fnEnd) : '';
