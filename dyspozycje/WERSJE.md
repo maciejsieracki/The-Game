@@ -1,3 +1,9 @@
+## ROBOCZA 5488d5ea -- 2026-11-28 -- FALA 940: Kamera po wczytaniu zapisu wraca na stolicę (testowa)
+
+- po wczytaniu zapisu z przebudową mapy kamera wraca na stolicę gracza w normalnym dystansie (22), a nie oddalona do ok. 316 (mapa jak maleńka wyspa); format zapisu bez zmian, stary zapis OK
+- Weryfikacja: FC PASS-WITH-NOTES (7c736ee1c, kod 0cae4381a); tsc 0; logic 213/213; load-camera-test PASS (mutacje M1-M7 czerwone); ai-test 297/0; save-load 27/0 i 29/0; live Chromium maks. seed 4242 zapis t3: kamera przed {dist 22}, po wczytaniu {dist 22}, pageErrors 0, zrzut w normalnej skali
+- Limity: widok sprzed zapisu nie jest przywracany (zapis nie ma pola kamery; używany widok na stolicę); live tylko seed 4242, zapis w t3, wczytanie przez pauzę; klik w interfejsie i inne ziarna NIE ZMIERZONO
+
 ## ROBOCZA 020cac3d -- 2026-11-28 -- FALA 939: Blokada zapisu przed założeniem pierwszego miasta (testowa)
 
 - zapis gry (menu, Ctrl+S, autozapis, szybki zapis) jest niedostępny do założenia pierwszego miasta, komunikat: Zapis niedostępny przed założeniem pierwszego miasta; wczytywanie bez zmian; format zapisu bez zmian (decyzja właściciela Q43=B)
