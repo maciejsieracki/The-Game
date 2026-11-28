@@ -1,20 +1,19 @@
 STATUS: FAIL
 DOMAIN: GAME
 TEMAT: R-WEB-SAVE-LOAD-MATRIX-Q1
-GOAL: macierz zapisu/wczytania na maksimum (rivals=9, civTypesCount=14 dla Brazu, barbarzyncy Trudny), B==A >=6 tur, klik UI, A==A' >=10 tur x2 ziarna, render po wczytaniu.
-ZMIANY/COMMIT: kandydat 819d43beaf3a036ce866ee365b0fd6588f02deb2. Zweryfikowano: baza 193fadc8 jest przodkiem kandydata (merge-base --is-ancestor = tak). Wzgledem ca61257d (merge r2) zmiany poza dyspozycje/ to tylko gra/tools/save-load-continuity-live.cjs i save-load-continuity-ui-live.cjs; gra/src i gra/data bez zmian wzgledem ca61257d (diff --stat). Allowlista zachowana. Duzy diff wzgledem 193fadc8 pochodzi z merge'a ca61257d (dozwolony krokiem 0 dispatchu).
-TESTY: gra/src bez zmian wzgledem bazy merge, wiec tsc/logic/ai-test nie uruchamiane (powod pominiecia). Odczytano r3-READBACK-rivals9.txt: cfgUsed {barbariansLevel trudny, difficulty Trudny, rivals 9, civTypesCount 14}; max/4242/t3, max/4242/t10, max/7/t3, max/7/t10 PASS 6/6, pageErrors 0 (wg pliku; wlasnego pomiaru na zywo nie powtarzano).
-OCENA ZARZUTOW (bez etykiet rol):
- 1. Uzasadniony, czesciowo naprawiony: na rivals=9 zmierzono 4 z 13 komorek; 8 komorek (bunt, aionly) NIE ZMIERZONO na maksimum. Kryterium (>=10 komorek na maksimum) NIESPELNIONE. NAPRAW.
- 2. Uzasadniony, naprawiony (15 -> 14 dla Brazu, zgodnie z civs.json). ODDAL.
- 3. Uzasadniony, nienaprawiony: bunt/t10 B!=A bez minimalnego odtworzenia i testu czerwony->zielony; pkt 5 dispatchu niespelniony. Wymaga decyzji orkiestratora (cities.ts poza allowlista albo akceptacja reprezentacji). NAPRAW/DECYZJA.
- 4. Uzasadniony: dirty3 FAIL od t7 niezdiagnozowany; hipoteza artefaktu PRNG harnessu niesprawdzona. NAPRAW.
- 5. Uzasadniony: klik UI na rivals=9 NIE ZMIERZONO (harness UI ma rivals=2). Pkt 2 niespelniony. NAPRAW.
- 6. Uzasadniony: render po wczytaniu NIE ZMIERZONO. Pkt 4 niespelniony. NAPRAW.
- 7. Uzasadniony, naprawiony w dokumencie.
- 8. Uwaga: A==A' tylko na rivals=2; pkt 3 na maksimum NIE ZMIERZONO. NAPRAW.
-WNIOSEK: poprawne ustawienia maksimum i 4 komorki PASS to realny postep, lecz kryterium binarne (>=10 komorek, klik UI x2, A==A' x2 ziarna, render) jest niespelnione, a bunt/t10 B!=A pozostaje nierozstrzygniete. Brak zmian w kodzie gry, brak naruszen granic.
-BLOKADY: 8 komorek bunt/aionly na rivals=9; bunt/t10 B!=A (decyzja o cities.ts); klik UI na rivals=9; A==A' na rivals=9; render; dirty3.
-RUNDY: 3/5 (FC); pozostaja rundy 4-5.
-NASTEPNY KROK: orkiestrator rozstrzyga bunt/t10; runda 4 (Operator): 8 komorek na rivals=9, runner UI na rivals=9 (2 komorki), A==A' 10 tur na max/4242 i max/7, render + PNG, diagnoza dirty3 (zasiew PRNG po wczytaniu).
+GOAL: macierz zapis/wczytanie na MAKSIMUM (max, max+bunt, aionly x ziarna 4242/7 x t3/t10) B==A >=6 tur; klik UI >=6 tur x2; A==A' >=10 tur x2 ziarna; render po wczytaniu; diagnoza/poprawka przy B!=A.
+ZMIANY/COMMIT: kandydat df3c8dd4b295fb8ab338ade9d3d41b6fe413e564, baza 286d594d3 (is-ancestor: TAK). Diff: gra/src/main.ts +22 (aiCsFailCount/aiCsTrybutSince/aiCsWasalSince: zapis, reset, odczyt), 3 narzedzia w gra/tools (2 nowe testy tekstowe/funkcyjne, runner live), dokumenty i dane w runs/ oraz dyspozycje/analizy. W allowliscie (main.ts = serializacja stanu po wczytaniu, dopuszczone po odtworzeniu bledu: dowod 106 par trybut/wasal przy zapisie, 0 po wczytaniu). Brak zmian gra/data, balansu.
+TESTY (wlasne, surowe wyjscie na kandydacie): tsc --noEmit 0 bledow; logic 213/213; ai-test 297/0; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; society-breakdown 56/0; ai-city-order-need-wiring 267/0; early-grace-15 33/0; save-load-ai-cs-absorption-state-test 12/0; save-load-podzial-pracy-representation-test 5/0. Pomiarow na zywo (przegladarka, 9-12 min/bieg) nie powtarzalem: opieram sie na danych Operatora/Obrony w dane/r3d-*, ktore sami opisuja jako niepelne.
+OCENA ZARZUTOW (bez etykiet):
+1 A==A' <10 tur: NAPRAW. Kryterium binarne wprost (>=10 tur x 2 ziarna); jest 9 (4242) i 6 (7). Niespelnione.
+2 Klik UI <6 tur, dirty3 nierozstrzygniete: NAPRAW. Kryterium 2 niespelnione, hipoteza artefaktu Math.random bez rozstrzygniecia.
+3 Macierz niepelna / komorki sprzed poprawki main.ts: NAPRAW. Obrona potwierdza zmierzone tylko 3 z 12 komorek na d14; komorki zmierzone przed poprawka aiCs wymagaja powtorzenia na kodzie z poprawka (zmiana formatu zapisu).
+4 Test poprawki tylko tekstowy: ODDAL (uwaga). Zmiana mala i symetryczna, test ma mutacje; dowod behawioralny bunt/7/t7 0/6 -> 6/6 istnieje. Zalecana bramka behawioralna w repo, jesli wykonalna.
+5 Render niezmierzony, komorka render ma FAIL (artefakt effPP): NAPRAW. Kryterium 4 niespelnione.
+6 Dokument z nieaktualnymi tresciami: ODDAL (uwaga). Obrona poprawila (sekcja 0B, archiwum); sprawdzic spojnosc przy kolejnej rundzie.
+7 Normalizacja podzialPracy: ODDAL (uwaga). Obrona dostarczyla rawDiff bez normalizacji: 0 roznic na max t3/t10, bunt/4242/t10 tylko podzialPracy, effPP 0; reszta pol bitowo rowna. Rozjazdu r2 (rivals=2) nie odtworzono na maksimum. Akceptowalne jako reprezentacja, z zastrzezeniem, ze rownosc ekonomii miasta jest potwierdzona tylko dla zmierzonych komorek.
+BLOKADY: kryteria binarne z dispatchu niespelnione (zarzuty 1, 2, 3, 5): brak 9 z 12 komorek macierzy na kodzie z poprawka, A==A' <10 tur, brak klika UI, brak renderu po wczytaniu. Poprawka main.ts i bramki zielone, zmierzone komorki bez rozjazdu - brak wykrytej regresji, ale brak kompletu dowodu.
+RUNDY: 3/5 (oceniana r3). Pozostaly 2 rundy.
+NASTEPNY KROK: runda 4/5 Operatora: wznawialny bieg A / krotsze segmenty (limit narzedzia 590 s), pomiar brakujacych komorek (max/7, aionly 4242/7, bunt/7 t3/t10, bunt/4242 t3), A==A' do 10 tur na 4242 i 7, klik UI >=6 tur z ponownym zasiewem Math.random po wczytaniu, render 3D z liczba miast/jednostek. Alternatywnie decyzja wlasciciela o zawezeniu macierzy (pytanie ABC wg zasad, w jezyku gry) - decyzja orkiestratora.
+UWAGI-DLA-ORKIESTRATORA: biegi A do t16 trwaja 9-12 min i przekraczaja limit 590 s; rozwazyc zapis stanu biegu A co kilka tur. Poprawka main.ts nieintegrowana; nie deployowac przed zamknieciem tematu.
 DEPLOY/PUSH: NIE WYKONANO
