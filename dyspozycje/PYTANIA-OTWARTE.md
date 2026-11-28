@@ -32702,6 +32702,6 @@ Wcześniej wysłane pytanie asynchroniczne o sprzeczność opisu24jednostki vsNI
 
 Pytanie: czy na najwyższym poziomie trudności gracz ma mieć realną szansę obronić pierwsze miasto przed barbarzyńcami w pierwszych ~15 turach i jak (A: jeden Wojownik na starcie + 15 tur bez utrzymania (Rekomendowane); B: barbarzyńcy nie atakują albo słabsi przez ~15 tur; C: bez zmian). Pełny tekst: dyspozycje/autobot/runs/R-WEB-EARLY-DEFENSE-START-Q41/PYTANIE-ABC-Q41.md; turniej: TURNIEJ-C018.md; dane: dyspozycje/analizy/OBRONA-STARTU-*.md. Pokazane w czacie 21:02 UTC. Do odpowiedzi literą dla pełnego ID — zero zmian kodu w tej sprawie.
 
-## R-WEB-POST-GRACE-UPKEEP-Q42 (2026-11-28 01:55 UTC, pytanie 42, turniej C-018 zakończony) · STATUS: **OTWARTE — pokazane właścicielowi w czacie; w nocy bez blokowania pracy (CZEKA NA RANO)**
+## R-WEB-POST-GRACE-UPKEEP-Q42 (2026-11-28 01:49 UTC, pytanie 42, turniej C-018 zakończony) · STATUS: **OTWARTE — pokazane właścicielowi w czacie; w nocy bez blokowania pracy (CZEKA NA RANO)**
 
 Pytanie: co ma się stać w 16. turze, gdy wojsko gracza znowu kosztuje jedzenie, a przycisk „Zakończ turę” blokuje z powodu żywności (A: pieniądze za wojsko wracają od 16. tury, jedzenie za wojsko darmowe jeszcze kilka tur (Rekomendowane); B: jak dziś, gracz rozwiązuje wojsko, poprawiony komunikat; C: bez blokady, głód zamiast zatrzymania tury). Pełny tekst: dyspozycje/autobot/runs/R-WEB-POST-GRACE-UPKEEP-Q42/PYTANIE-ABC-Q42.md; turniej: TURNIEJ-C018.md (zwycięzca: SYNTEZA); fakty: FAKTY.md. Do odpowiedzi literą dla pełnego ID.
