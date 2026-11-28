@@ -264,13 +264,6 @@ async function main() {
       turns.push(rec);
       fs.appendFileSync(path.join(OUT, 'turns.jsonl'), JSON.stringify({ seed: SEED, run: RUN, policy: POLICY, turn: st.turn, t: Math.round((Date.now() - T0) / 1000), treasury: st.treasury, granary: st.granary, projSkarbDelta: rec.projSkarbDelta, projFoodDelta: rec.projFoodDelta, canEnd0: st.canEnd, gateBlock0: st.gateBlock, playerMil: rec.playerMil, foreignNear: rec.foreignNear, barbMinDist: rec.barbMinDist, purchaseTurn }) + '\n');
 
-      if (false && POLICY === 'p2' && i === 0) {
-        const before = await page.evaluate(() => window.__nnsMeasureDebug.getTaxSplit());
-        const applied = await page.evaluate(() => window.__nnsMeasureDebug.setTaxSplit(100, 0, 0));
-        const gi2 = await page.evaluate(() => window.__nnsMeasureDebug.gateInfo());
-        taxProbe = { before, applied, projSkarbDeltaBefore: rec.projSkarbDelta, projSkarbDeltaAfter: gi2.forecast ? gi2.forecast.skarbiecPo - gi2.treasury : null };
-        logLine({ kind: 'p2-tax', ...taxProbe });
-      }
       if (POLICY === 'dopen' || POLICY === 'dclose') {
         await page.evaluate((id) => window.__hotSeatTestDebug.openCityPanelForTest(id), cityId);
         await page.waitForTimeout(400);
@@ -344,7 +337,10 @@ async function main() {
         result = { outcome: 'zatrzymanie', turn: st.turn, gate: gp.gateBlock };
         break;
       }
-      await page.evaluate(() => window.__civTest.endTurn());
+      // Koniec tury WYŁĄCZNIE klikiem przycisku w UI (bez haka civTest.endTurn — zakaz z dispatchu).
+      // UWAGA: ścieżka klikana NIE ZWERYFIKOWANA na żywo w tej rundzie (patrz raport 10-operator, obrona r3).
+      const clicked = await page.evaluate(() => { const b = [...document.querySelectorAll('button')].find(x => /Zakończ turę/i.test(x.textContent || '') && !x.disabled); if (b) { b.click(); return true; } return false; });
+      if (!clicked) { result = { outcome: 'brak-przycisku-konca-tury', turn: st.turn }; break; }
       await page.waitForFunction((t) => window.__nnsMeasureDebug.gateInfo().turn > t && !window.__nnsMeasureDebug.isEndTurnInProgress(), st.turn, { timeout: 180000, polling: 200 });
       await closeModals(page);
       completed += 1;

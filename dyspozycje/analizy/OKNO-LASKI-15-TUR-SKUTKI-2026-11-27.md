@@ -1,19 +1,21 @@
 # Okno łaski 15 tur — skutki na AI, przeżycie gracza po oknie, rozbieżności tekstów
 
-## STAN WIĄŻĄCY (runda 2, 2026-11-27/28, baza f8a139668)
+## STAN WIĄŻĄCY (obrona po ocenie Evaluatora r2, 2026-11-27/28, baza f8a139668; zastępuje wcześniejsze stwierdzenia)
 
-- Bramki: tsc 0; logic 213/213; ai-test 297/0; early-grace-15-test 33/0. Zero zmian `gra/src` i `gra/data`.
-- AI t30/t60: w tej rundzie NIE ponawiano. Obowiązują liczby z r1 (sekcja poniżej), z zastrzeżeniem n=2 i dominacji poziomu barbarzyńców.
-- Aktywny gracz (klik zakupu obrońcy w UI, podatek na domyślnym podziale): seed 11 (Drewno jest) — zakup t7; pierwsza blokada t16 i jest ŻYWNOŚCIOWA (Spichlerz prognoza −30 po turze), skarbiec po turze też ujemny (−10). Seed 7: pierwsza blokada t16, żywnościowa (Spichlerz prognoza −16); ten bieg używał haka setTaxSplit i nie jest dowodem dla zwykłego gracza. Wniosek: dwie jednostki wracają z utrzymaniem po oknie (ok. 32 zł i 32 żywności na jednostkę wg komunikatu bramki, NIE ZMIERZONO w grze).
-- Pasywny gracz: blokada t16–18 przez żywność (r1, potwierdzone w r2 na logu bramki).
-- Dźwignie gracza po t16: suwak Wyżywienia (UI) NIE dostępny w widoku, który otwiera harness; rozwiązanie jednostki NIE zaimplementowane. Tabela t17–30: NIE ZMIERZONO.
-- Poziom barbarzyńców: NIE ZWERYFIKOWANO (odczyt getSettings nie zwraca barbariansLevel).
-- Barbarzyńcy po t16: NIE ZMIERZONO.
-- Teksty: lista rozbieżności z r1 bez zmian; tooltipy utrzymania NIE przeglądnięte.
-- Dane r2: `dyspozycje/autobot/runs/R-WEB-GRACE15-EFFECTS-Q1/dane/aktywny-r2/`. Raport: `runs/R-WEB-GRACE15-EFFECTS-Q1/10-operator-claude.md`.
+- Bramki: tsc 0; logic 213/213; ai-test 297/0; early-grace-15-test 33/0 (wynik r2, kod gry bez zmian). Zero zmian `gra/src` i `gra/data`.
+- AI t30/t60: w tej rundzie NIE ponawiano. Obowiązują liczby z r1, z zastrzeżeniem n=2 i dominacji poziomu barbarzyńców (kontrola `normalny`). Wniosek niejednoznaczny; nie jest wynikiem balansu.
+- Aktywny gracz, pomiar t1–16 (klik zakupu obrońcy w UI, podatek na domyślnym podziale): TYLKO seed 11 (Drewno jest) i TYLKO do t16. Dane s11 powstały z hakiem `civTest.endTurn` (zakaz z dispatchu: koniec tury tylko klikiem) — oznaczone jako NIEZGODNE i nie są dowodem. Seed 7 (z hakiem setTaxSplit) wyłączony z wniosków. Drugie ziarno z Drewnem bez haka: NIE ZMIERZONO.
+- Blokada t16 (dane s11, prognozy z `turns-s11.jsonl`): skarbiec 19, prognoza ZMIANY skarbca −29 → skarbiec po turze −10. Spichlerz 1, prognoza ZMIANY Spichlerza −31 → Spichlerz po turze −30 (zgodne z `forecastSpichlerzPo` = −30). Pierwszy wąski przekrój to ŻYWNOŚĆ (Spichlerz), nie skarbiec. Hipoteza (NIE ZMIERZONO): zmiana w t16 wynika z powrotu utrzymania dwóch jednostek po oknie; wielkość na jednostkę nie jest ustalona.
+- Pasywny gracz: blokada t16–18 przez żywność (r1, potwierdzone w r2 na logu bramki). Przeżycie pasywnego gracza po t16 wynika z dosypek harnessu i NIE jest wynikiem gry.
+- Dźwignie gracza po t16: suwak Wyżywienia NIE znaleziony w widoku, który otwiera harness (`rangeDump` = []); rozwiązanie jednostki NIE zaimplementowane w harnessie. Tabela t17–30: NIE ZMIERZONO. Pytanie „czy gracz ma wyjście z blokady” pozostaje bez odpowiedzi.
+- Poziom barbarzyńców: NIE ZWERYFIKOWANO. `readback-s11.txt` to zapis wartości przekazanej do `startNewGame` (advanced.barbariansLevel = trudny), NIE odczyt z gry; `getSettings` nie zwraca tego pola.
+- Barbarzyńcy po t16: NIE ZMIERZONO. W t1–16 w biegu s11 `foreignNear` puste (odczyt harnessu).
+- Teksty: lista rozbieżności z r1 bez zmian; tooltipy utrzymania NIE przejrzane w UI.
+- Narzędzie `gra/tools/grace15fx-active2-live.cjs`: usunięto martwy blok `if (false && …)` z setTaxSplit oraz wywołanie `civTest.endTurn()`; koniec tury jest teraz klikiem przycisku „Zakończ turę” w UI. Ścieżka klikana NIE ZWERYFIKOWANA na żywo.
+- Dane r2: `dyspozycje/autobot/runs/R-WEB-GRACE15-EFFECTS-Q1/dane/aktywny-r2/`. Raport obrony: `runs/R-WEB-GRACE15-EFFECTS-Q1/30-obrona-claude.md`.
 
 
-Temat: R-WEB-GRACE15-EFFECTS-Q1 (tag GRACE15FX). Data pomiaru: 2026-11-27. Wersja dokumentu: runda 2 (obrona Operatora, odpowiedź na zarzuty Evaluatora 1–7).
+Temat: R-WEB-GRACE15-EFFECTS-Q1 (tag GRACE15FX). Data pomiaru: 2026-11-27. Wersja dokumentu: obrona po ocenie Evaluatora r2 (zarzuty 1–9). Sekcje „0.” do „5.” zachowują treść pomiaru r1 i r2; przy sprzeczności obowiązuje STAN WIĄŻĄCY na górze.
 Baza kodu PO: `fc7d74290` (FALA 935, origin/main). Baza kodu PRZED: `3b23b2d4f` (FALA 934, ostatni commit przed oknem łaski).
 Zmiana między bazami w `gra/src` = 78 linii w 4 plikach (ta sama reguła okna łaski), zero innych zmian gry. Runda 2 nie zmienia `gra/src` (diff = 0).
 
@@ -23,6 +25,8 @@ Narzędzia (nowe, allowlista `gra/tools/grace15fx-*.cjs`):
 - `gra/tools/grace15fx-run.cjs` (kopia `aibal2-measure-run.cjs`, zmiana: poziom barbarzyńców z `--barb`) — pomiar AI, pasywny gracz z dosypkami (bypass).
 - `gra/tools/grace15fx-summary.cjs` — zestawienie AI t30/t60.
 - `gra/tools/grace15fx-active-live.cjs` (runda 2) — kopia `realdef-econ-live.cjs` na mapie Standardowej (1 rywal, 15 typów cywilizacji, 1 miasto-państwo, jak pomiar AI). Polityki: `p1` = zakup obrońcy klikiem w panelu miasta; `p2` = zakup + suwak podziału Handlu 100% Pieniądz (klik w UI, bez haków zmieniających stan). Bez dosypek: runner zatrzymuje się na bramce tury.
+
+> BANER NADPISAŃ (zarzuty 7, 8, 9): treść poniżej jest z pomiaru r1 i częściowo r2. Każde zdanie o „bramce skarbca” jako przyczynie blokady t16–18, o „przeżyciu 26–32 tur po oknie”, o „ok. 32 na jednostkę” (wielkość jako fakt) lub o „dwóch” rundach „2” jest NADPISANE przez STAN WIĄŻĄCY: blokada jest ŻYWNOŚCIOWA (Spichlerz), przeżycie pasywnego gracza wynika z dosypek, wielkość utrzymania na jednostkę NIE ZMIERZONO.
 
 ## 0. Warunki pomiaru (maksimum)
 
