@@ -1,0 +1,148 @@
+{
+  "label": "PO-ogromny",
+  "seed": 4242,
+  "bundle": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/po-build/Gra-LIVE.html",
+  "params": {
+    "civId": "rzymianie",
+    "civName": "Rzymianie",
+    "epoch": "Epoka Brązu",
+    "epochId": "braz",
+    "difficulty": "Trudny",
+    "mapSize": "Ogromny",
+    "rivals": "9",
+    "speed": "Długa",
+    "worldType": "Kontynenty",
+    "typSwiata": "kontynenty",
+    "seed": 4242,
+    "mapQualityLabel": "Wysoka",
+    "mapQuality": "high",
+    "renderQualityLabel": "Wysoka",
+    "mapDetailQualityLabel": "Wysoka",
+    "renderQuality": "high",
+    "mapDetailQuality": "high",
+    "civTypesCount": 15,
+    "cityStatesCount": 9,
+    "worldDensityLabels": {
+      "resources": "Normalnie",
+      "rivers": "Normalnie",
+      "desert": "Normalnie",
+      "forest": "Normalnie",
+      "relief": "Normalnie"
+    },
+    "advanced": {
+      "barbariansLevel": "trudny",
+      "battleAlwaysManual": false,
+      "victoryMode": "moc_i_dominacja",
+      "buildingCostPace": "wysoki",
+      "kosztJednostekPace": "wysoki",
+      "wzrostLudnosciPace": "wysoki",
+      "ruchSwiataPace": "dlugi",
+      "landFractionPercent": 30,
+      "landFractionCustom": false,
+      "cityStateDifficultyOverride": "normal",
+      "cityLimitBase": 20,
+      "diplomacyWarLevel": "trudna",
+      "kulturaReligiaLevel": "trudny"
+    },
+    "villageRewardsEnabled": true
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "ok": false,
+      "why": "NIE_AKTYWNY_60S",
+      "lastSample": {
+        "aria": "false",
+        "eot": false,
+        "turn": 1,
+        "onButton": false,
+        "lose": false
+      },
+      "hit": "DIV#.civ-map-load-overlay"
+    }
+  ],
+  "state": null,
+  "errors": [],
+  "cityCount": 1,
+  "settingsReadback": {
+    "diplomacyWarLevel": "trudna",
+    "kulturaReligiaLevel": "trudny",
+    "kulturaReligiaLevelAI": "trudny",
+    "wzrostSurowcowZEpoka": false,
+    "kosztJednostekPace": "wysoki",
+    "difficulty": "hard"
+  },
+  "stateTurn": 1,
+  "buyResult": {
+    "tabSkarb": true,
+    "slider": {
+      "ok": true,
+      "before": "30",
+      "max": "100",
+      "x": 1223.703125,
+      "y": 271.7421875,
+      "after": "30"
+    },
+    "tabRecruit": true,
+    "buy": {
+      "ok": false,
+      "why": "brak aktywnego przycisku",
+      "rows": [
+        {
+          "name": "Rydwan (woły)",
+          "disabled": true
+        },
+        {
+          "name": "Wojownik",
+          "disabled": true
+        },
+        {
+          "name": "Łucznik",
+          "disabled": true
+        },
+        {
+          "name": "Oszczepnik",
+          "disabled": true
+        },
+        {
+          "name": "Zwiadowca",
+          "disabled": true
+        }
+      ]
+    }
+  },
+  "afterBuySample": {
+    "aria": "false",
+    "eot": false,
+    "turn": 1,
+    "onButton": false,
+    "lose": false
+  },
+  "window": {
+    "ms": 30000,
+    "entries": 0,
+    "warn": 0,
+    "endTurnBlockedNNS": 0,
+    "endTurnBlockedOther": 0,
+    "endTurnStartDone": 0,
+    "kinds": {},
+    "buttonTrace": [
+      {
+        "atSec": 0,
+        "aria": "false",
+        "eot": false,
+        "turn": 1,
+        "onButton": false,
+        "lose": false
+      }
+    ]
+  },
+  "windowEnd": {
+    "aria": "false",
+    "eot": false,
+    "turn": 1,
+    "onButton": false,
+    "lose": false
+  },
+  "okno": "brak kliknięć w oknie; brak odczytu gateInfo"
+}
