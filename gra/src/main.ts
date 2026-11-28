@@ -29116,6 +29116,11 @@ async function boot(): Promise<void> {
         notifySaveBlockedByBattle();
         return;
       }
+      // R-WEB-SAVE-BLOCK-PRE-CAPITAL-Q43B: menu pauzy / przycisk zapisu przed stolicą.
+      if (isSaveBlockedByFirstCity()) {
+        notifySaveBlockedByFirstCity();
+        return;
+      }
       void showSaveGameDialog({
         defaultLabel: currentSaveLabel('manual'),
         turn,
@@ -29133,6 +29138,9 @@ async function boot(): Promise<void> {
             // kliknięty w trakcie bitwy -- komunikat o bitwie, nie „brak localStorage”.
             // / EN: dialog opened before the battle, save clicked during it -- battle message.
             notifySaveBlockedByBattle();
+          } else if (isSaveBlockedByFirstCity()) {
+            // R-WEB-SAVE-BLOCK-PRE-CAPITAL-Q43B: dialog otwarty, zapis przed stolicą -- komunikat o stolicy.
+            notifySaveBlockedByFirstCity();
           } else {
             // P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT: przy 'quota' pokaż
             // prawdziwą przyczynę (brak MIEJSCA, nie brak API) -- ten sam ton
@@ -43067,6 +43075,18 @@ async function boot(): Promise<void> {
     function notifySaveBlockedByBattle(): void {
       showHintMessage('Zapis niedostępny w trakcie bitwy', 3000, undefined, true);
     }
+    // R-WEB-SAVE-BLOCK-PRE-CAPITAL-Q43B (decyzja B): zapis niedostępny, dopóki KTÓRYKOLWIEK
+    // fotel ludzki nie założył pierwszego miasta (stolicy). Predykat = isAwaitingFirstPlayerCity
+    // per fotel: kolejki pendingForeignSpawnCities / pendingSameTypeRival* są drenowane przez
+    // założenie stolicy fotela, który je wyzwala, więc dopóki choć jeden fotel czeka, zapis
+    // byłby niekompletny. Wczytywanie nie jest blokowane. / EN: saving is unavailable until
+    // every human seat has founded its first city (queues are drained by the founding seat).
+    function isSaveBlockedByFirstCity(): boolean {
+      return humanSeats.humanOwnerIds.some(oid => isAwaitingFirstPlayerCity(oid));
+    }
+    function notifySaveBlockedByFirstCity(): void {
+      showHintMessage('Zapis niedostępny przed założeniem pierwszego miasta', 3000, undefined, true);
+    }
 
     // Zwraca pełny wynik zapisu (ok + reason), nie goły boolean -- wołający musi
     // znać powód niepowodzenia (np. 'quota'), żeby pokazać trafny komunikat
@@ -43080,6 +43100,12 @@ async function boot(): Promise<void> {
       // zapisu nie zapisze stanu bitwy (także test-hooki i dialog zapisu).
       if (isSaveBlockedByBattle()) {
         notifySaveBlockedByBattle();
+        return { ok: false, reason: 'other' };
+      }
+      // R-WEB-SAVE-BLOCK-PRE-CAPITAL-Q43B: twarda bramka -- przed założeniem pierwszego miasta
+      // (stolicy) żadna ścieżka zapisu nie zapisuje (menu, Ctrl+S, dialog, hooki testowe).
+      if (isSaveBlockedByFirstCity()) {
+        notifySaveBlockedByFirstCity();
         return { ok: false, reason: 'other' };
       }
       try {
@@ -43108,6 +43134,11 @@ async function boot(): Promise<void> {
       // R-WEB-BATTLE-SAVE-DISABLED-DURING-BATTLE-Q1: Ctrl+S w bitwie -- komunikat, bez zapisu.
       if (isSaveBlockedByBattle()) {
         notifySaveBlockedByBattle();
+        return false;
+      }
+      // R-WEB-SAVE-BLOCK-PRE-CAPITAL-Q43B: Ctrl+S przed stolicą -- komunikat, bez zapisu.
+      if (isSaveBlockedByFirstCity()) {
+        notifySaveBlockedByFirstCity();
         return false;
       }
       // LOSS-COUNTERS (obrona r2, zarzut 5): po porażce szybki zapis nie idzie do slotu autosave
@@ -43240,6 +43271,11 @@ async function boot(): Promise<void> {
       // ani pośredniego (tura kończy się poza bitwą, ta gałąź to siatka bezpieczeństwa).
       if (isSaveBlockedByBattle()) {
         console.warn('[Autosave] pomijam -- bitwa na ekranie, tura=' + turn);
+        return;
+      }
+      // R-WEB-SAVE-BLOCK-PRE-CAPITAL-Q43B: autozapis nie zapisuje przed założeniem stolicy.
+      if (isSaveBlockedByFirstCity()) {
+        console.warn('[Autosave] pomijam -- przed założeniem pierwszego miasta, tura=' + turn);
         return;
       }
       // N3: pomiń tę turę, jeśli poprzedni zapis (na dysk, potencjalnie wolny)
