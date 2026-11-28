@@ -440,6 +440,8 @@ export interface NnsEndTurnLevers {
   suwakZywnosc?: number;
   /** Ile punktów % udziału podatku (pieniądz) gracz może dodać (0 = brak danych; do propozycji podatku). */
   podatekPunkty?: number;
+  /** R-WEB-STARVATION-IMPL-Q44A: true = brak żywności (spichlerz < 0) nie blokuje tury (tylko skarbiec blokuje). */
+  ignorujZywnosc?: boolean;
   /** Prognoza PO reakcji automatu zarządzania (Dodatek 3: najpierw automat, potem gracz). undefined = brak. */
   automat?: { skarbiecPo?: number; spichlerzPo?: number };
   /**
@@ -477,7 +479,16 @@ export function decideEndTurnGate(
   const automatPoprawil =
     (extra.automat?.skarbiecPo !== undefined && extra.automat.skarbiecPo !== p.skarbiecPo) ||
     (extra.automat?.spichlerzPo !== undefined && extra.automat.spichlerzPo !== p.spichlerzPo);
-  const v = evaluateEndTurnStocks(pPoAutomacie);
+  let v = evaluateEndTurnStocks(pPoAutomacie);
+  // R-WEB-STARVATION-IMPL-Q44A (Q42=C): brak ŻYWNOŚCI nie blokuje tury gracza — tura przechodzi z
+  // ujemnym zapasem, a skutkiem jest głód wojska (istniejący mechanizm). Usuwamy tylko braki spichlerza;
+  // braki skarbca nadal blokują, a ścieżka AI nie korzysta z tej opcji.
+  if (extra.ignorujZywnosc) {
+    const bezZywnosci = v.brakuje.filter(b => b.stock !== 'spichlerz');
+    if (bezZywnosci.length !== v.brakuje.length) {
+      v = { ...v, brakuje: bezZywnosci, blokada: bezZywnosci.length > 0, komunikat: '' };
+    }
+  }
   if (!v.blokada) {
     return { blokada: false, komunikat: '', dzwignie: [], zasob: null, prognoza: null, propozycjaPodatku: null, automatPoprawil, niewystarczajace: false };
   }

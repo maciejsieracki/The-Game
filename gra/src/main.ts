@@ -43701,6 +43701,8 @@ async function boot(): Promise<void> {
         ...(_nnsAutoSpichlerzDelta !== undefined
           ? { automat: { spichlerzPo: live.spichlerzPo + _nnsAutoSpichlerzDelta } }
           : {}),
+        // R-WEB-STARVATION-IMPL-Q44A (Q42=C): żywność nie blokuje tury gracza (głód wojska zamiast blokady).
+        ignorujZywnosc: true,
       };
       return decideEndTurnGate(live, _nnsZyskSkarbiec, _nnsZyskSpichlerz, levers);
     }
@@ -50072,6 +50074,15 @@ async function boot(): Promise<void> {
       if (!canPlayerInitiateEndTurn()) {
         hintEndTurnBlocked();
         return;
+      }
+      // R-WEB-STARVATION-IMPL-Q44A: ujemna żywność nie blokuje tury — gracz dostaje ostrzeżenie o głodzie wojska.
+      {
+        const fz = _nnsHumanForecast;
+        const spLive = empireFoodStates.get(ME())?.zapasyPanstwa ?? 0;
+        const spPo = fz ? spLive + (fz.spichlerzPo - fz.spichlerzObecny) : spLive;
+        if (spPo < 0) {
+          showHintMessage('Brak żywności: wojsko słabnie w walce, od 3. tury z rzędu jednostki tracą zdrowie.', 6000);
+        }
       }
       const activeId = humanSeats.activeHumanOwnerId;
       seatsFinishedThisRound.add(activeId);
