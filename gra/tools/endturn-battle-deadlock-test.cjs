@@ -107,7 +107,7 @@ function bodyOf(src, header, indentNextFn) {
 
 {
   // Bramka NIE osłabiona: canPlayerInitiateEndTurn nadal blokuje przy hasPendingAutoPreBattle().
-  const gate = bodyOf(mainSrc, 'function canPlayerInitiateEndTurn(): boolean {', '    ');
+  const gate = bodyOf(mainSrc, 'function canPlayerInitiateEndTurn(quiet = false): boolean {', '    ');
   ok(/if \(isPreBattleOpen\(\) \|\| hasPendingAutoPreBattle\(\)\) \{/.test(gate),
     '[A4] bramka canPlayerInitiateEndTurn() NADAL blokuje przy isPreBattleOpen()||hasPendingAutoPreBattle() -- legalna blokada nie została osłabiona');
   const hint = bodyOf(mainSrc, 'function hintEndTurnBlocked(): void {', '    ');
