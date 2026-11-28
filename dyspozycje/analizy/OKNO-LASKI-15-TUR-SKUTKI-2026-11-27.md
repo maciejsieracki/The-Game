@@ -1,5 +1,18 @@
 # Okno łaski 15 tur — skutki na AI, przeżycie gracza po oknie, rozbieżności tekstów
 
+## STAN WIĄŻĄCY (runda 2, 2026-11-27/28, baza f8a139668)
+
+- Bramki: tsc 0; logic 213/213; ai-test 297/0; early-grace-15-test 33/0. Zero zmian `gra/src` i `gra/data`.
+- AI t30/t60: w tej rundzie NIE ponawiano. Obowiązują liczby z r1 (sekcja poniżej), z zastrzeżeniem n=2 i dominacji poziomu barbarzyńców.
+- Aktywny gracz (klik zakupu obrońcy w UI, podatek na domyślnym podziale): seed 11 (Drewno jest) — zakup t7; pierwsza blokada t16 i jest ŻYWNOŚCIOWA (Spichlerz prognoza −30 po turze), skarbiec po turze też ujemny (−10). Seed 7: pierwsza blokada t16, żywnościowa (Spichlerz prognoza −16); ten bieg używał haka setTaxSplit i nie jest dowodem dla zwykłego gracza. Wniosek: dwie jednostki wracają z utrzymaniem po oknie (ok. 32 zł i 32 żywności na jednostkę wg komunikatu bramki, NIE ZMIERZONO w grze).
+- Pasywny gracz: blokada t16–18 przez żywność (r1, potwierdzone w r2 na logu bramki).
+- Dźwignie gracza po t16: suwak Wyżywienia (UI) NIE dostępny w widoku, który otwiera harness; rozwiązanie jednostki NIE zaimplementowane. Tabela t17–30: NIE ZMIERZONO.
+- Poziom barbarzyńców: NIE ZWERYFIKOWANO (odczyt getSettings nie zwraca barbariansLevel).
+- Barbarzyńcy po t16: NIE ZMIERZONO.
+- Teksty: lista rozbieżności z r1 bez zmian; tooltipy utrzymania NIE przeglądnięte.
+- Dane r2: `dyspozycje/autobot/runs/R-WEB-GRACE15-EFFECTS-Q1/dane/aktywny-r2/`. Raport: `runs/R-WEB-GRACE15-EFFECTS-Q1/10-operator-claude.md`.
+
+
 Temat: R-WEB-GRACE15-EFFECTS-Q1 (tag GRACE15FX). Data pomiaru: 2026-11-27. Wersja dokumentu: runda 2 (obrona Operatora, odpowiedź na zarzuty Evaluatora 1–7).
 Baza kodu PO: `fc7d74290` (FALA 935, origin/main). Baza kodu PRZED: `3b23b2d4f` (FALA 934, ostatni commit przed oknem łaski).
 Zmiana między bazami w `gra/src` = 78 linii w 4 plikach (ta sama reguła okna łaski), zero innych zmian gry. Runda 2 nie zmienia `gra/src` (diff = 0).
