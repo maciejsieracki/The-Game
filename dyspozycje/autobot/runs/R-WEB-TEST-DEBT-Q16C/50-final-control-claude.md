@@ -1,25 +1,24 @@
 STATUS: FAIL
 DOMAIN: PROCESS/GAME-TEST
 TEMAT: R-WEB-TEST-DEBT-Q16C
-GOAL: sklasyfikować 3 czerwone testy (baza dbcc12f71), naprawić klasę A bez zmiany gry, B/C opisać z dowodem; każdy z trzech: zielony z mutacją (A) albo B/C z dowodem.
-ZMIANY/COMMIT: kandydat fbec7ee9d03082de18519b6c61251f0e2d189357; `git merge-base --is-ancestor dbcc12f71 fbec7ee9d` = tak. `git diff --stat dbcc12f71..fbec7ee9d` = 9 plików (2 testy w gra/tools, DLUG-TESTOWY-Q16C, 10-operator, 30-obrona, 4 logi txt), `git diff --stat -- gra/src gra/data` = 0, `git diff --check` czysty. Allowlista zachowana.
-
-OCENA ZARZUTÓW (1-4: brak commitu/dokumentu/klasyfikacji/raportu): odpowiedzi obrony przyjęte jako ZAŁATWIONE w zakresie istnienia artefaktów (commit, dokument, 10-operator, 30-obrona są). Zarzut 3 pozostaje CZĘŚCIOWO otwarty: patrz niżej.
-
-TESTY (własne, surowe wyjście):
-- tsc --noEmit w gra/ (po npm ci --ignore-scripts): RC 0.
-- ai-wojny-zwykle-cap-dwa-miasta-test.cjs na fbec7ee9d: "22 PASS, 0 FAIL", RC 0 (niezależnie potwierdza twierdzenie obrony; asercja F trafia w realny main.ts). Regex z `peaceLocked: false` sprawdzony przeze mnie na main.ts: brak trafienia (mutacja wyrażenia OK).
-- Bramki logic 213 i ai-test 297/0: NIE URUCHAMIANO (git diff gra/src = 0, więc wynik bazowy nie może się zmienić); NIE ZMIERZONO w tej rundzie.
-- hotseat-drugi-fotel-tura-test.cjs: NIE URUCHAMIANO przeze mnie (Chromium SIGSEGV w logach 33/34 obrony; pełny przebieg nie istnieje).
-- hotseat-etap4-noop-test.cjs: NIE URUCHOMIONY przez nikogo w tej rundzie.
-
-USTALENIA:
-1. ai-wojny: klasa A, naprawa poprawna, nie osłabia testu (asercja F wzmocniona do isWarTreatyBlocked; bramka NNS obsłużona realnym helperem). Brak jedynie mutacji czerwono->zielonej na poziomie harnessu (A1); mutacja regexu (A2) jest. Do przyjęcia z notą.
-2. hotseat-drugi-fotel: poprawka selektorów hurtowym sed w całym pliku; brak pełnego przebiegu, brak dowodu, że późniejsze scenariusze zgadzają się z kreatorem; klasa C jest tylko deklaracją z 3 prób, bez zamkniętego wyniku. Kryterium binarne NIESPEŁNIONE (ani zielony+mutacja, ani udokumentowane C z dowodem końcowym dla całego pliku).
-3. hotseat-etap4-noop: klasyfikacja "C" oparta wyłącznie na historii z Q16B, bez próby w tej rundzie. Kryterium NIESPEŁNIONE.
-
-BLOKADY: hotseat-drugi-fotel (nieukończony przebieg + niezweryfikowane selektory), hotseat-etap4-noop (nieuruchomiony), brak mutacji harnessu dla ai-wojny.
-RUNDY: FC po rundzie Operatora 2 (obrona 1/5); do wykorzystania zostają rundy do limitu 5.
-NASTĘPNY KROK: wrócić do Operatora z tym samym ID: (a) pełny przebieg hotseat-drugi-fotel w segmentach <=590 s z ponowieniem po SIGSEGV, przegląd selektorów wszystkich scenariuszy; (b) uruchomić hotseat-etap4-noop (<=3 próby) i udokumentować wynik albo C z logiem; (c) opcjonalnie mutacja A1 (usunięcie prepareEndTurnGate -> czerwone). Zmiana ai-wojny może być zachowana bez zmian.
-UWAGI-DLA-ORKIESTRATORA: brak zmian gry; zielony ai-wojny wolno przenieść do kolejnej rundy; worktree FC posprzątany (node_modules, dist usunięte).
+GOAL: trzy testy (ai-wojny, hotseat-drugi-fotel, hotseat-etap4-noop) zielone z mutacją albo sklasyfikowane B/C z dowodem; zero zmian gra/src.
+ZMIANY/COMMIT: kandydat f80bd56ce0c47f39a0ebe76cea9444b6758d8758, baza 8b98d9f41 (merge-base --is-ancestor: OK). git diff --stat: 25 plików; gra/src = 0 zmian; gra/tools tylko hotseat-drugi-fotel-tura-test.cjs (+4, closeCivWelcome) i hotseat-etap4-noop-test.cjs (+3, closeCivWelcome); reszta dyspozycje/** (analiza, runs). Allowlista zachowana.
+TESTY (moje biegi na f80bd56ce, npm ci --ignore-scripts):
+- tsc --noEmit: exit 0
+- logic-test: 213/213
+- ai-test: 297 passed, 0 failed
+- ai-wojny-zwykle-cap-dwa-miasta: "22 PASS, 0 FAIL" (rc 0)
+- Mutacje ai-wojny (A1 bez prepareEndTurnGate: czerwona; A2 peaceLocked:false w main.ts, cały test: 21/1): wg logów Operatora 56/57, nie powtarzałem. Asercja F pozostaje pinem tekstowym.
+- hotseat-drugi-fotel: zielony 5/5 wg logów Operatora 43/44, nie powtarzałem.
+- hotseat-etap4-noop: NIEZAMKNIĘTY. 0 z 6 prób zielona (zapis tury 23), przyczyna nieustalona, brak klasyfikacji A/B/C z dowodem; obrona sama to przyznaje.
+OCENA ZARZUTÓW:
+1. etap4 -- NAPRAW (FAIL): kryterium binarne wymaga zielone albo B/C z dowodem. Wymagany pomiar isBattleSceneOpen()/isPostBattleSummaryOpen() w t23 przez hak testowy.
+2. Pytanie B (skok −11 -> −108) -- NAPRAW (FAIL): dispatch r2 pkt 4 wymagał odtworzenia i liczb; jest tylko analiza kodu, defekt/zamierzone nierozstrzygnięte.
+3. Mutacja F -- ODDAL (uwaga): dowód mutantu w całym teście 21/1 uzupełnia lukę; F to pin tekstowy.
+4a. modalDiag -- ODDAL: usunięty w f80bd56ce.
+4b. maksimum ustawień -- ODDAL (uwaga): nie zmierzono; do wykonania w r4 dla etap4 i pytania B (zasada 2026-11-26).
+BLOKADY: etap4 (t23), pytanie B (zrzut units/kosztArmii t16-18), maksimum ustawień.
+RUNDY: 3/5 (r1 FC FAIL, r2 FC FAIL, r3 FC FAIL).
+NASTĘPNY KROK: runda 4 (Operator HAIKU): (a) etap4: w t23 zmierzyć nakładki bitwy/podsumowania, zapisać klasę A/B/C lub naprawić; (b) pytanie B: live zrzut t16-18 przy maksymalnych ustawieniach; (c) bramki bez zmian.
+UWAGI-DLA-ORKIESTRATORA: ai-wojny i hotseat-drugi-fotel są zielone na f80bd56ce i mogą być zintegrowane osobno (decyzja procesowa orkiestratora), jeśli nie chce czekać na etap4.
 DEPLOY/PUSH: NIE WYKONANO
