@@ -1,3 +1,9 @@
+## ROBOCZA 35ccadac -- 2026-11-28 -- FALA 937: AICSFIX: wczytanie zapisu nie gubi zegarow absorpcji miast-panstw przez AI (testowa)
+
+- R-WEB-SAVE-AICS-ABSORPTION-FIX-Q1: stan absorpcji miast-panstw przez AI (aiCsTrybutSince, aiCsWasalSince, aiCsFailCount) jest zapisywany w zapisie gry, czyszczony przy resecie swiata i wczytaniu oraz odtwarzany z zapisu (wczesniej po wczytaniu w trakcie trybutu/wasalizacji AI zapominalo zegary i wchlanianie miast-panstw spoznialo sie: na maksimum bunt/ziarno 7/zapis t7 106 par przy zapisie, 0 po wczytaniu, B!=A 6/6 tur; po poprawce 106/106 i 6/6 tur rowne); main.ts +22 linie; stary zapis bez pol = puste mapy
+- Weryfikacja: FC PASS-WITH-NOTES; dep3: tsc 0, logic 213/213, save-load-ai-cs-absorption-state 27/0 (mutacje czerwone), podzial-pracy 5/0, early-grace-15 33/0; FC: tech-tree 20, research 33, unit-replace 21, combat 6, ai-test 297/0, society-breakdown 56/0, ai-city-order-need-wiring 267/0; live (maksimum rivals 9, civTypes 14, Trudny): bunt/7/t7 106/106 par, B==A 6/6 tur (Evaluator niezaleznie), kontrole t3 max/4242, bunt/7, aionly/4242 6/6
+- Limity: NIE ZMIERZONO: reszta macierzy zapis/wczytanie (A==A' >=10 tur x2 ziarna, klik UI >=6 tur, aionly/bunt t10 po poprawce, render sceny 3D); test statyczny tekstowy; audyt: 11 innych map AI nie zapisywanych (kandydaci, niezweryfikowani)
+
 ## ROBOCZA 4c0d45e4 -- 2026-11-28 -- FALA 936: ENDGATELEVER: komunikat blokady zywnosci nie obiecuje niewykonalnej obnizki racji (testowa)
 
 - R-WEB-ENDGATE-RATION-LEVER-Q1: dzwignia 'obnizka racji zywnosci' w komunikacie bramki Zakoncz ture liczona od prognozy PO reakcji automatu (wczesniej liczona dwa razy, gdy suwak Wyzywienia stal zablokowany na minimum, komunikat obiecywal +12, ktorego gracz nie mogl wykonac); jedna linia w main.ts
