@@ -1,0 +1,2 @@
+08:44:23 bunt 4242 aiCs przy zapisie (A) {"fail":0,"trybut":0,"wasal":0} | po wczytaniu (B) {"fail":0,"trybut":0,"wasal":0}
+FATAL Error: page.evaluate: Target page, context or browser has been closed

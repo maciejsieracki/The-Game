@@ -85,13 +85,46 @@ Strona: 0 błędów (`pageErrors`=0). **Kryterium „≥6 tur klikiem na 2 komó
 
 ---
 
+## 0B. OBRONA RUNDY 3 — rewalidacja na kandydacie d14cfce23 (2026-11-28)
+
+**Build:** kod gry = `dfae6298c` (poprawka aiCs*, jedyna zmiana w `gra/src/main.ts`); build `vite build` do katalogu w scratchpadzie (bez `npm run build`). Ustawienia maksymalne: rivals=9, civTypesCount=14, barbarzyńcy Trudny, Wysoki ×4, kultura trudny, dyplomacja trudna; `cfgUsed` zapisane w każdym JSON (`dane/r3d-READBACK-d14.txt`). Porównanie: `normPP=inert` (domyślne), a obok każdej tury zapisany `rawDiffSummary` (BEZ normalizacji).
+
+**Komórki zmierzone na d14 (runner `gra/tools/save-load-continuity-live.cjs`):**
+
+| Konfiguracja | Zapis | Tury B==A | pageErrors | Surowe różnice (rawDiff, bez normalizacji) | Wynik |
+|---|---|---|---|---|---|
+| max / 4242 | t3 | 6/6 | 0 | 0 w każdej z 6 tur | PASS |
+| max / 4242 | t10 | 6/6 | 0 | 0 w każdej z 6 tur | PASS |
+| bunt / 4242 | t10 | 6/6 | 0 | 1 w każdej turze: wyłącznie pole `podzialPracy` (jedno miasto); `effPP` = 0 różnic | PASS (reprezentacja) |
+| bunt / 4242 | t3 | nie uzyskano | — | 4 próby: Chromium „Target page … has been closed” (limit ponowień z dispatchu wyczerpany) | NIE ZMIERZONO |
+
+Pliki: `dane/r3d-B-max-4242-t3.json`, `dane/r3d-B-max-4242-t10.json`, `dane/r3d-B-bunt-4242-t10.json`, logi `dane/r3d-LOG-B-bunt-4242-t3-CRASH.txt`.
+
+**NIE ZMIERZONO na d14 (powód):** max/7 t3 i t10, aionly 4242 i 7 (t3 i t10), bunt/7 (t3 i t10). Bieg A do tury 16 trwa 9–12 min (20–50 s na turę przy obciążonej maszynie). Dwa biegi A dla max/7 (`dane/r3d-LOG-A-max-7-t13-timeout.txt`) i jeden dla max/4242 (`dane/r3d-LOG-AP-max-4242-t13-timeout.txt`) przekroczyły limit 590 s narzędzia w turze 13, bez zapisu snapshotu t10 dla max/7 w kompletnej formie. Runner nie wznawia biegu A.
+
+**A==A' na d14 (max/4242):** dwa niezależne biegi A, zapis po t3 i t10; porównano **9 tur** (t4–t9, t11–t13), bajt w bajt identyczne (`dane/r3d-AA-max4242-d14.txt`). Kryterium ≥10 tur NIE spełnione (9). max/7 na d14: NIE ZMIERZONO.
+
+**Klik UI i render po wczytaniu na d14:** NIE ZMIERZONO w tej rundzie. Wyniki r3b (`dane/ui-*`, `dane/render-*`) pochodzą z buildu sprzed tej rundy; komórka `render-max-4242-t10-B` ma verdict FAIL i nie jest ważnym dowodem renderu.
+
+**Odpowiedzi na zarzuty Evaluatora (d24774dc8):**
+
+1. A==A' ≥10 tur × 2 ziarna — PRZYJMUJĘ. max/4242: 9 tur (identyczne), max/7: brak na d14. Otwarte.
+2. Klik UI ≥6 tur; hipoteza artefaktu `Math.random` dla „dirty3” — PRZYJMUJĘ. Nie zmierzono w tej rundzie; hipoteza nierozstrzygnięta. Otwarte.
+3. Macierz niepełna; komórki sprzed poprawki bez powtórzenia — PRZYJMUJĘ. Na d14 zmierzono 3 z 12 komórek (max/4242 t3, t10; bunt/4242 t10). Dla bunt/4242/t10 na d14 brak regresji po zmianie formatu zapisu (B==A 6/6). Pozostałe komórki, w tym bunt/4242 t3 i bunt/7 t3 (zmierzone wcześniej tylko przed poprawką), otwarte.
+4. Test czerwony→zielony tylko tekstowy — PRZYJMUJĘ CZĘŚCIOWO. Dowód behawioralny (ten sam runner, ta sama komórka): bunt/7/t7 PRZED poprawką 0/6 tur równych (FAIL; `dane/bunt-7-t7-B-PRZED-poprawka.json`), PO poprawce 6/6 (PASS; `dane/bunt-7-t7-B-PO-poprawce.json`). Test `save-load-ai-cs-absorption-state-test.cjs` ma mutację na linii przywracania (Evaluator: 11/1 FAIL). Brak powtarzalnej bramki behawioralnej w repo (wymaga przeglądarki) — otwarte jako dług.
+5. Render: liczba miast/jednostek niezmierzona; verdict FAIL komórki — PRZYJMUJĘ. Wpis w dokumencie 0A.5 nie jest dowodem renderu; nowy render na d14 NIE ZMIERZONO.
+6. Dokument: nieaktualne treści historyczne — PRZYJMUJĘ, poprawione: sekcja 0 (r2) oznaczona jako ARCHIWUM, stary „stan wiążący” zastąpiony odsyłaczem do 0A/0B.
+7. Normalizacja `podzialPracy` (inert) ukrywa różnice ekonomii — ODRZUCAM w zakresie zmierzonych komórek, z dowodem: rawDiff bez normalizacji dla max/4242 t3 i t10 to 0 różnic w każdej turze; dla bunt/4242/t10 jedyna surowa różnica to `podzialPracy` (martwe pole, `override=false`), `effPP` 0 różnic, wszystkie pozostałe pola miast i jednostek (produkcja, zapasy, populacja, praca) bitowo równe przez 6 tur (`dane/r3d-READBACK-d14.txt`). Rozjazd r2 bunt/t10 (rivals=2) NIE został odtworzony na maksimum, więc nie ma jego zachowania do porównania. Ograniczenie: normalizacja domyślna w runnerze nadal pomija pole; porównanie surowe należy włączać dla każdej nowej komórki (`--norm-pp raw`).
+
+**Wnioski obrony:** zmiana w `gra/src/main.ts` (aiCs*) nie została zmieniona w tej rundzie. Dowód red→green na buildzie: bunt/7/t7 0/6 → 6/6. Kryteria binarne z dispatchu NIE są spełnione (A==A' 9/10, klik UI, render, 9 z 12 komórek bez pomiaru na d14). Status: BLOCK — brak czasu/infrastruktury do domknięcia; kolejna runda wymaga dłuższego okna biegów A lub runnera z wznawianiem.
+
 ## R2 (historyczne, rivals=2 — NIE jest dowodem maksimum)
 
-## 0. STAN WIĄŻĄCY (runda 2, 2026-11-28)
+## 0. ARCHIWUM RUNDY 2 (NIEAKTUALNE — stan wiążący jest w sekcjach 0A i 0B)
 
 **Baza kodu:** origin/main `ca61257d4` (FALA 932–935, merge do gałęzi tematu `dd5bd3cb5`); kod gry w tej rundzie NIE zmieniony (`gra/src` bez zmian). Build: `vite build` do katalogu w scratchpadzie, `npx tsc --noEmit` exit 0.
 **Ustawienia maksymalne (wg kreatora):** barbarzyńcy Trudny, poziom Trudny, Wysoki ×4, kultura trudny (gracz i AI), dyplomacja trudna. Rywale (`rivals`/miasta-państwa) MAKSIMUM = 9 (`MAX_MIAST_PANSTWA`). `civTypesCount` MAKSIMUM dla epoki startu Brąz = **14** (nie 15: 15 dotyczy dopiero Żelaza; `civs.json` ma 14 cywilizacji z wejściem ≤ Brąz, `newGameFlow.ts:2236` clampuje do `epochCivMax`).
-**Stan wiążący (poprawka obrony r3):** w r2 komórki macierzy zmierzono z `rivals=2` i `civTypesCount=15` — NIE na maksimum. Na maksimum (rivals=9, civTypesCount=14, barbarzyńcy Trudny) zmierzone są TYLKO 4 komórki: max/4242/t3, max/4242/t10, max/7/t3, max/7/t10 — każda B==A 6/6, pageErrors 0 (`dane/r3-*.json`, `dane/r3-READBACK-rivals9.txt`). Pozostałe komórki (bunt, aionly) NIE ZMIERZONO na maksimum. Klik UI na maksimum, A==A', render po wczytaniu: NIE ZMIERZONO. Stare wyniki r2 (`dane/r2-*`) NIE liczą się jako maksimum. Komórka bunt/4242/t10 i bunt/7/t10 (B≠A, pole `cities.podzialPracy`) nierozstrzygnięta — diagnoza nie potwierdzona.
+**Uwaga (obrona r3):** poniższy opis był stanem wiążącym rundy 2 i jest NIEAKTUALNY (r2 = rivals=2, nie maksimum). Stan bieżący: sekcja 0A (runda 3, build przed obroną) oraz 0B (obrona, kandydat d14cfce23). Rozjazd bunt/t10 z r2 rozstrzygnięty w 0A.2.
 
 ### 0.1 Tabela komórek (rivals=2, barbarzyńcy Trudny; pliki `dane/r2-*`)
 

@@ -1,0 +1,8 @@
+READBACK r3d (obrona r3, build d14cfce23, wszystkie JSON z cfgUsed):
+B-max-4242-t3-d14.json cfg=max seed=4242 save=3 cfgUsed={"barbariansLevel":"trudny","difficulty":"Trudny","rivals":"9","civTypesCount":14} tury=OK,OK,OK,OK,OK,OK pageErrors= verdict=PASS normPP=inert
+  rawDiff: 4:0{} effPP=0 | 5:0{} effPP=0 | 6:0{} effPP=0 | 7:0{} effPP=0 | 8:0{} effPP=0 | 9:0{} effPP=0
+B-max-4242-t10-d14.json cfg=max seed=4242 save=10 cfgUsed={"barbariansLevel":"trudny","difficulty":"Trudny","rivals":"9","civTypesCount":14} tury=OK,OK,OK,OK,OK,OK pageErrors= verdict=PASS normPP=inert
+  rawDiff: 11:0{} effPP=0 | 12:0{} effPP=0 | 13:0{} effPP=0 | 14:0{} effPP=0 | 15:0{} effPP=0 | 16:0{} effPP=0
+B-bunt-4242-t10-d14.json cfg=bunt seed=4242 save=10 cfgUsed={"barbariansLevel":"trudny","difficulty":"Trudny","rivals":"9","civTypesCount":14} tury=OK,OK,OK,OK,OK,OK pageErrors= verdict=PASS normPP=inert
+  rawDiff: 11:1{"podzialPracy":1} effPP=0 | 12:1{"podzialPracy":1} effPP=0 | 13:1{"podzialPracy":1} effPP=0 | 14:1{"podzialPracy":1} effPP=0 | 15:1{"podzialPracy":1} effPP=0 | 16:1{"podzialPracy":1} effPP=0
+max/4242 t3 i t10 na d14 ponadto: NIE ZMIERZONO w tej rundzie: max/7 t3/t10, aionly 4242/7 t3/t10, bunt/7 t3/t10, bunt/4242 t3 (Chromium 4 proby).
