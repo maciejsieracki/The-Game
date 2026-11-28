@@ -24068,7 +24068,11 @@ async function boot(): Promise<void> {
                 builtByCity: cityBuilt,
                 resolveOwnerEra: empireEpochForOwner,
               });
-              _nnsRacjeZysk = Math.max(0, fZero.spichlerzPo - _nnsHumanForecast.spichlerzPo);
+              // ENDGATELEVER (Q1): dźwignia racji mierzy zysk OD PROGNOZY PO REAKCJI AUTOMATU (Dodatek 3: najpierw
+              // automat, potem gracz). Automat już obniżył racje do limitu Spichlerza (_nnsAutoSpichlerzDelta zawiera
+              // ten sam zysk), więc baza bez tej korekty liczyła go drugi raz — komunikat obiecywał obniżkę, której
+              // suwak (zablokowany na limicie) nie może wykonać.
+              _nnsRacjeZysk = Math.max(0, fZero.spichlerzPo - (_nnsHumanForecast.spichlerzPo + (_nnsAutoSpichlerzDelta ?? 0)));
             } finally {
               for (const sv of savedRacje) { sv.c.poziomRacji = sv.poziom; sv.c.procentRozwoj = sv.procent; }
             }
