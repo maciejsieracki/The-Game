@@ -33,6 +33,7 @@
  */
 
 const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
+const { closeCivWelcome } = require('./_live-ready.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -138,10 +139,10 @@ async function openWizardToSettingsStep(page) {
   await introCta.click();
   await wait(150);
 
-  const next1 = page.locator('.civ-newgame .nb.next');
+  const next1 = page.locator('.civ-newgame .nav .next');
   await next1.click();
   await wait(150);
-  const next2 = page.locator('.civ-newgame .nb.next');
+  const next2 = page.locator('.civ-newgame .nav .next');
   await next2.click();
   await wait(150);
 
@@ -175,7 +176,7 @@ async function runScenarioMain(chromium) {
     // (a) Włącz hot-seat REALNYM klikiem na przełącznik — NIE ustawiamy humanSeats ręcznie.
     await page.locator('.civ-newgame .seat2-toggle-btn').click();
     await wait(120);
-    await page.locator('.civ-newgame .start').click();
+    await page.locator('.civ-newgame .nav .next').click();
     await page.waitForSelector('.civ-newgame .seat2-dist-row', { timeout: 15000 });
     await wait(150);
 
@@ -188,7 +189,7 @@ async function runScenarioMain(chromium) {
     await wait(120);
     await page.locator('.civ-newgame .seat2-dist-opt', { hasText: 'Blisko' }).click();
     await wait(120);
-    await page.locator('.civ-newgame .start').click();
+    await page.locator('.civ-newgame .nav .next').click();
 
     await waitForWorldGenerated(page);
 
@@ -311,7 +312,7 @@ async function runScenarioSinglePlayerRegression(chromium) {
     await gotoMainMenu(page);
     await openWizardToSettingsStep(page);
     // BEZ dotknięcia przełącznika hot-seat — klik "ROZPOCZNIJ GRE" od razu (domyślnie 1 fotel).
-    await page.locator('.civ-newgame .start').click();
+    await page.locator('.civ-newgame .nav .next').click();
     await waitForWorldGenerated(page);
 
     const snap0 = await page.evaluate(snapshotHumanSeats);
@@ -372,7 +373,7 @@ async function runScenarioAiTurnAwaitingBattleBlocksAdvance(chromium) {
 
     await page.locator('.civ-newgame .seat2-toggle-btn').click();
     await wait(120);
-    await page.locator('.civ-newgame .start').click();
+    await page.locator('.civ-newgame .nav .next').click();
     await page.waitForSelector('.civ-newgame .seat2-dist-row', { timeout: 15000 });
     await wait(150);
     await page.evaluate(() => {
@@ -383,7 +384,7 @@ async function runScenarioAiTurnAwaitingBattleBlocksAdvance(chromium) {
     await wait(120);
     await page.locator('.civ-newgame .seat2-dist-opt', { hasText: 'Blisko' }).click();
     await wait(120);
-    await page.locator('.civ-newgame .start').click();
+    await page.locator('.civ-newgame .nav .next').click();
     await waitForWorldGenerated(page);
 
     const snap0 = await page.evaluate(snapshotHumanSeats);
@@ -473,7 +474,7 @@ async function runScenarioSeatsFinishedResetOnLoad(chromium) {
     await openWizardToSettingsStep(page);
     await page.locator('.civ-newgame .seat2-toggle-btn').click();
     await wait(120);
-    await page.locator('.civ-newgame .start').click();
+    await page.locator('.civ-newgame .nav .next').click();
     await page.waitForSelector('.civ-newgame .seat2-dist-row', { timeout: 15000 });
     await wait(150);
     await page.evaluate(() => {
@@ -484,7 +485,7 @@ async function runScenarioSeatsFinishedResetOnLoad(chromium) {
     await wait(120);
     await page.locator('.civ-newgame .seat2-dist-opt', { hasText: 'Blisko' }).click();
     await wait(120);
-    await page.locator('.civ-newgame .start').click();
+    await page.locator('.civ-newgame .nav .next').click();
     await waitForWorldGenerated(page);
 
     // Fotel 1 zakłada miasto i kończy turę -- REALNIE naraża `seatsFinishedThisRound`
@@ -585,7 +586,7 @@ async function runScenarioSeat2ManualMoveViaRealClicks(chromium) {
     await openWizardToSettingsStep(page);
     await page.locator('.civ-newgame .seat2-toggle-btn').click();
     await wait(120);
-    await page.locator('.civ-newgame .start').click();
+    await page.locator('.civ-newgame .nav .next').click();
     await page.waitForSelector('.civ-newgame .seat2-dist-row', { timeout: 15000 });
     await wait(150);
     await page.evaluate(() => {
@@ -596,7 +597,7 @@ async function runScenarioSeat2ManualMoveViaRealClicks(chromium) {
     await wait(120);
     await page.locator('.civ-newgame .seat2-dist-opt', { hasText: 'Blisko' }).click();
     await wait(120);
-    await page.locator('.civ-newgame .start').click();
+    await page.locator('.civ-newgame .nav .next').click();
     await waitForWorldGenerated(page);
 
     const snap0 = await page.evaluate(snapshotHumanSeats);
@@ -643,6 +644,9 @@ async function runScenarioSeat2ManualMoveViaRealClicks(chromium) {
     // Przy prawidłowym owner-gate jednostka może od razu wykonać pierwszy segment,
     // więc plan może zniknąć po dotarciu; w takim przypadku sam ruch jest dowodem,
     // że plan został przyjęty i wykonany.
+    // TDQ16C r2: ekran 'Odkryłeś nową cywilizację' (civ-welcome-screen-root, z-index 9650) zasłania mapę;
+    // bez jego zamknięcia klik trafia w DOM ekranu, a nie w heks (diagnoza: tdq16c-diag-seat2-click.cjs).
+    await closeCivWelcome(page);
     const beforeClick = await page.evaluate(
       (uid) => (window).__cityStateStartUnitsTestDebug.dumpState().units.find((u) => u.id === uid),
       u0Id,

@@ -67,7 +67,9 @@ const { execSync } = require('child_process');
 const GRA_DIR = path.resolve(__dirname, '..');
 const MAIN_TS = path.join(GRA_DIR, 'src', 'main.ts');
 const OUT_DIR = path.join(GRA_DIR, 'dist-ai-wojny-zwykle-cap-dwa-miasta-test');
-const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html') + '?playtest=mapa';
+// TDQ16C: ?civTest=1 udostępnia hak __nnsMeasureDebug (używany przez prepareEndTurnGate).
+const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html') + '?playtest=mapa&civTest=1';
+const { prepareEndTurnGate } = require('./_live-ready.cjs');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium';
 
 let pass = 0;
@@ -138,6 +140,12 @@ async function gotoPlaytestMapa(page) {
 // realne natywne kliknięcie przycisku "Auto" modalu preBattle w każdej iteracji pollingu.
 async function runEndTurnAndSettle(page, timeoutMs = 90000) {
   const turnBefore = await page.evaluate(() => window.__eraTestDebug.getWorldState().turn);
+  // TDQ16C: bramka „Zakończ turę” (spichlerz/skarbiec, NNS) po oknie łaski 15 tur blokuje
+  // pasywnego gracza od t17 (FALA 935/936). Harness podnosi skarbiec/spichlerz do progów
+  // pomiarowych PRZED endTurn (ta sama procedura co pozostałe testy live); gra sama liczy
+  // canEnd i prognozę. Test bez tej procedury nie jest błędem gry (A-klasa).
+  const gate = await prepareEndTurnGate(page);
+  if (!gate.canEnd) throw new Error('bramka Zakończ turę zamknięta po prepareEndTurnGate: ' + JSON.stringify(gate));
   await page.evaluate(() => window.__eraTestDebug.endTurn());
   const t0 = Date.now();
   let settled = false;
@@ -289,8 +297,12 @@ async function main() {
 
     console.log('\n-- F. Bramka tekstowa: isPeaceLockedBetween bezwarunkowo gate\'uje KAŻDE wypowiedz_wojne --');
     const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
-    const guardMatch = /if\s*\(cmd\.type === 'wypowiedz_wojne'\)\s*\{[\s\S]{0,400}?if \(isPeaceLockedBetween\(ownerId, targetId\)\) continue;/.test(mainSrc);
-    assert('main.ts: isPeaceLockedBetween(ownerId,targetId) guard bez warunku epoki wymuszonej, tuż po wejściu w wypowiedz_wojne', guardMatch, null);
+    // TDQ16C: stary pin (`if (isPeaceLockedBetween(...)) continue;`) przestał istnieć po refaktorze na
+    // `isWarTreatyBlocked({eraWar, hasNap, peaceLocked, hasAlliance})` (war-rules-multiwar.ts:455).
+    // Bramka: peaceLocked idzie do isWarTreatyBlocked, które zwraca blokadę dla eraWar=false
+    // (zwykła wojna AI↔AI) bez względu na wartość pozostałych warunków.
+    const guardMatch = /if \(isWarTreatyBlocked\(\{\s*eraWar: gateForcedTagAny !== null,[\s\S]{0,300}?peaceLocked: isPeaceLockedBetween\(ownerId, targetId\),[\s\S]{0,400}?\}\)\) \{ emRej\(/.test(mainSrc);
+    assert('main.ts: isWarTreatyBlocked(peaceLocked=isPeaceLockedBetween) gate na wypowiedz_wojne (bez warunku epoki wymuszonej dla zwykłej wojny)', guardMatch, null);
     assert('main.ts: maybeResolveRegularWarOnCityCapture zdefiniowana', /function maybeResolveRegularWarOnCityCapture\(oldOwner: number, newOwner: number\): void \{/.test(mainSrc), null);
     const callSites = (mainSrc.match(/maybeResolveRegularWarOnCityCapture\((?:oldOwner, newOwner|oldOwner, atkOwner)\);/g) || []).length;
     assert('main.ts: maybeResolveRegularWarOnCityCapture wołana z DOKŁADNIE 2 lejków (resolveSiegeSurrender + applyCityCaptureToMap)', callSites === 2, callSites);
