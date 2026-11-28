@@ -11690,6 +11690,6 @@ R-WEB-MAP-ISLANDS-ORPHAN-FIX-Q1 (wf_d7ad9b86-4bd; Operator Haiku → Evaluator S
 - Opcjonalna r2 (NIE startowana, niski priorytet wg zasady „zmiany gry przed testami”): mniejsza mapa, na której ENDCLICK działał; gotowość świata przez awaitingFirstCity; blokada t16–19; build PRZED 6afdec814 vs PO.
 - refs/keep/ENDNNS-r1-{op,eval,obrona,fc}; worktree usunięte.
 
-### R-WEB-GRACE15-EFFECTS-Q1 (GRACE15FX) — r2 FC FAIL; start r3 (Operator SONNET po 2 nieudanych rundach Haiku) · 2026-11-28 00:20 UTC
+### R-WEB-GRACE15-EFFECTS-Q1 (GRACE15FX) — r2 FC FAIL; start r3 (Operator SONNET po 2 nieudanych rundach Haiku) · 2026-11-28 00:15 UTC
 - r2 (HAIKU): Operator BLOCK (ad2629a08), Evaluator FAIL 9 zarzutów, Obrona BLOCK (055ad0b8e), FC FAIL (raport e2e50a396). Zmierzone: aktywny gracz ziarno 11 (Drewno), obrońca klikiem t7, pierwsza blokada „Zakończ turę” t16 jest ŻYWNOŚCIOWA (Spichlerz); dane z hakiem endTurn wycofane jako dowód. NIE ZMIERZONO: t17–30, drugie ziarno z Drewnem bez haka, dźwignie po t16, readback i barbarzyńcy po t16.
 - r3 (SONNET, uzasadnienie: 2 nieudane rundy Haiku tego ID; args.haikuFailures=2): wznawialny runner t1–30 klikiem (koniec tury, zakup, suwak Wyżywienia, rozwiązanie jednostki, podatek), ≥2 ziarna z Drewnem, tabela dźwigni, barbarzyńcy po t16. Baza 055ad0b8e. refs/keep/GRACE15FX-r2-{op,eval,obrona,fc}.

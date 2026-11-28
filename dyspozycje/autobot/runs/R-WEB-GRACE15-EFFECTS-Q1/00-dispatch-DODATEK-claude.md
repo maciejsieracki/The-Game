@@ -26,7 +26,7 @@ BRAKI DO NAPRAWY (tylko to):
 Zakazy bez zmian (bez nohup/&, Bash w pierwszym planie ≤ 590000 ms, segmenty ≤25 tur, zabij własne chromium, readback do .txt nie .log).
 
 ---
-# DODATEK — RUNDA 3/5 (data `date -u` 00:20 UTC 2026-11-28; BAZA = 055ad0b8e6a087d0c9773ca2989df007801f509b = czubek obrony r2, potomek f8a139668; Operator SONNET 5.5)
+# DODATEK — RUNDA 3/5 (data `date -u` 00:15 UTC 2026-11-28; BAZA = 055ad0b8e6a087d0c9773ca2989df007801f509b = czubek obrony r2, potomek f8a139668; Operator SONNET 5.5)
 UZASADNIENIE SONNET (CLAUDE.md, ZASADA MODELI): dwie kolejne rundy HAIKU tego samego ID zakończone FAIL (r1 FC FAIL, r2 BLOCK→FC FAIL: brak tabeli aktywnego gracza t17–30 — harness nie przeszedł bramki, suwak Wyżywienia i rozwiązanie jednostki nie obsłużone w UI). Args: haikuFailures 2.
 Wynik r2 (FC FAIL), ZOSTAJE (nie powtarzać): zero zmian gra/src; blokada „Zakończ turę” aktywnego gracza (ziarno 11, obrońca kupiony klikiem t7, skarbiec 0→19 do t16) pojawia się w t16 i jest ŻYWNOŚCIOWA (Spichlerz prognoza −30, skarbiec po turze −10), nie skarbcowa; teksty gry — lista rozbieżności w dokumencie; AI t30/t60 z r1.
 Dane s11 z r2 (aktywny-r2/turns-s11.jsonl, econ-s11.jsonl) powstały z hakiem endTurn — NIE SĄ DOWODEM, nie cytuj ich we wnioskach.
