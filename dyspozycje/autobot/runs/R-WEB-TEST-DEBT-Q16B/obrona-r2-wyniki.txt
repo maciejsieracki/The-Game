@@ -1,0 +1,284 @@
+==> /tmp/claude-0/q16b-diplo-forced-peace-pending.log <==
+PASS a: gracz 100% -> deferred=true
+PASS a: gracz 100% -> brak pay i finalize (odroczone)
+PASS a: gracz 100% -> karencja lockTurns przekazana
+PASS a: gracz 100% -> stan pary usuniety (brak ponownego wymuszenia)
+PASS b: AI<->AI 100% -> forced_peace natychmiast
+PASS b: AI<->AI 100% -> finalize wykonany
+PASS c: AI<->AI (bez gracza) nie jest odraczany
+PASS d: gracz 80% -> brak forced_peace
+PASS d: gracz 80% -> brak pay/finalize
+PASS e: battlePending -> brak forced_peace
+PASS f2: dwa pokoje z graczem naraz -> dwa forced_peace
+PASS f2: obie odroczone (deferred=true)
+PASS f2: kolejka: brak pay/finalize przed akceptacja
+PASS f2: obie pary usunięte ze stanu
+PASS f: tekst zawiera procent zmeczenia (100%)
+PASS f: tekst zawiera liczbe tur wojny (40)
+PASS f: tekst zawiera liczbe zmienionych miast (2)
+PASS f: przycisk = „Akceptuję warunki pokoju”
+PASS f: brak surowych ID w tekstach
+PASS f: miasta po nazwach (Ateny)
+PASS r2-7: tekst okna (why) zawiera formułę wyliczoną z parametrów: Zmęczenie rośnie o 2,5% za każdą turę wojny i o 10% za każde miasto, które zmieniło właściciela.
+PASS r2-7: tekst okna (why) nie zawiera literału 5%
+PASS g: bramka „Zakończ turę” sprawdza oczekujący pokój wymuszony
+PASS g: zapis meta.pendingForcedPeaceTreaties
+PASS g: odczyt zapisu z pustą listą dla starych zapisów
+PASS g: reset przy nowej grze
+PASS g: akceptacja wykonuje zaplate i finalizacje
+PASS h: okno bez zamkniecia klikiem w tlo
+PASS h: Esc blokowany w oknie pokoju wymuszonego
+PASS h: jedyny przycisk wywołuje onAccept
+PASS r2-1: wpis „Nie można zakończyć tury” w Ważne dla pokoju wymuszonego
+PASS r2-2: okno wraca po wczytaniu zapisu z oczekującym traktatem
+PASS r2-3: okno wraca na początku tury po turn++
+PASS r2-4: nieaktualne oczekujące pokoje są usuwane (prune) przed bramką i oknem
+PASS r2-5: strażnik Esc zdejmowany przy ponownym otwarciu i akceptacji
+PASS r2-6: walidacja wpisu zapisu (loser/winner/pairKey)
+PASS r2-7: brak literału „o 5% za każdą turę” w oknie pokoju wymuszonego
+PASS r2-7: liczby okna z parametrów (perTurnPct / perCityPct), zapłata 0 PN i karencja
+PASS i: mutant (bez odroczenia) czerwieni (a): pokoj zapada od razu
+diplo-forced-peace-pending-test: PASS=40 FAIL=0
+
+==> /tmp/claude-0/q16b-diplomacy-sensible-deals-main-guard.log <==
+R-WEB-DIPLO-DEALS-SENSIBLE-Q1 — main.ts wiring guard (R2)
+
+PASS: realne main.ts: import: flaga, bramki i reason z diplomacy-sensible-deals
+PASS: realne main.ts: filtr bilansu PW wywołany w enqueueNegotiationFromAiCmd (sensibleBalanceFilterApplies + isPlayerBalanceAcceptable)
+PASS: realne main.ts: bramka zakupu isBuyerDeficitJustified w pickResourceTradeRelOffer
+PASS: realne main.ts: bramka sprzedaży isSellerSurplusJustified (z warunkiem niedoboru partnera) w pickResourceTradeRelOffer
+PASS: realne main.ts: reason: sensibleReason zwracany z pickResourceTradeRelOffer
+PASS: realne main.ts: reason przenoszony do komendy (reasonHandlu: offer.reason) i na stół (entry.reason)
+PASS: realne main.ts: blokada końca tury: canPlayerInitiateEndTurn zwraca false przy hasBlockingAiTradeOfferForPlayer()
+PASS: realne main.ts: siatka: healStaleEndTurnBlockers woła pruneStaleAiTradeOffersAwaitingPlayer()
+PASS: realne main.ts: kontroferta AI (resolveNegotiationEntryAt) podlega filtrowi bilansu PW gracza (B9)
+PASS: realne main.ts: hak __dealsLiveDebug (injectAiTradeOffer zmienia stan gry) wystawiany warunkowo: DEV albo ?playtest
+PASS: realne main.ts: opcja nowej gry: doStartGame ustawia dealsEndTurnGateEnabled z params (domyślnie ON)
+PASS: realne main.ts: zapis: meta.dealsEndTurnGate; odczyt: stary zapis = OFF
+PASS: realne main.ts: pkt 4: zerowy undershoot w zakresie flagi ON (pickResourceTradeRelOffer + koszyk umowy)
+PASS: realne main.ts: pkt 6: filtr potrzeby koszyka umowy (sensibleUmowaBasketCheck) przed ofertą + reason
+PASS: realne main.ts: pkt 7: mergedResourceRatesForOwner w pickResourceTradeRelOffer czytany tylko przy fladze ON
+PASS: mutacja "usunięcie wywołania filtru bilansu" -> czerwień (FAIL bramek: 1)
+PASS: mutacja "usunięcie bramki zakupu isBuyerDeficitJustified" -> czerwień (FAIL bramek: 1)
+PASS: mutacja "usunięcie bramki sprzedaży isSellerSurplusJustified" -> czerwień (FAIL bramek: 1)
+PASS: mutacja "usunięcie reason z pickResourceTradeRelOffer" -> czerwień (FAIL bramek: 1)
+PASS: mutacja "usunięcie blokady końca tury" -> czerwień (FAIL bramek: 1)
+PASS: mutacja "usunięcie filtru bilansu z kontrofert AI" -> czerwień (FAIL bramek: 1)
+PASS: mutacja "usunięcie siatki bezpieczeństwa w healStaleEndTurnBlockers" -> czerwień (FAIL bramek: 1)
+
+diplomacy-sensible-deals-main-guard-test: 22 passed, 0 failed
+
+==> /tmp/claude-0/q16b-koniec-tury-f1-f4-runda3.log <==
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+
+koniec-tury-f1-f4-runda3-test: 39 pass, 0 fail
+
+==> /tmp/claude-0/q16b-koniec-tury-g1-g2-runda4.log <==
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+
+koniec-tury-g1-g2-runda4-test: 41 pass, 0 fail
+
+==> /tmp/claude-0/q16b-load-v2.log <==
+-- L1: kolejka niepusta + blokady -> prepareSessionForLoad
+  ok   L1 przed: kolejka odlozonych bitew niepusta
+  ok   L1 przed: koniec tury zablokowany (stan wyjsciowy)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   L1 po load: kolejka wyczyszczona
+  ok   L1 po load: endTurnInProgress/aiCmdResume/aiTurnAwaitingBattle zresetowane
+  ok   L1 po load: canPlayerInitiateEndTurn() === true
+-- L2: otwarty ekran bitwy + kolejka -> prepareSessionForLoad
+  ok   L2 przed: ekran bitwy otwarty
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   L2 po load: ekran bitwy zamkniety
+  ok   L2 po load: kolejka pusta
+  ok   L2 po load: canPlayerInitiateEndTurn() === true
+-- L3: aiTurnAwaitingBattle + aiCmdResume (bez kolejki) -> prepareSessionForLoad
+  info L3 przed (healStale sprząta osierocone flagi): canPlayer=true
+  ok   L3 po load: canPlayerInitiateEndTurn() === true
+-- K1: kontrola bez wczytania -- blokada musi zostac
+  ok   K1 bez load: koniec tury nadal zablokowany (kolejka+blokady)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   K1b bez load: otwarty ekran bitwy blokuje (legalna blokada)
+-- NNS: bramka skarbca/spichlerza (nnsGateForPlayer) w canPlayerInitiateEndTurn
+  ok   NNS1 bez blokady NNS: koniec tury dozwolony (stan czysty)
+  ok   NNS2 z blokadą NNS: canPlayerInitiateEndTurn() === false (bramka NNS wiąże)
+  ok   NNS3 po zdjęciu blokady NNS: koniec tury znów dozwolony
+-- mutacje (kazda musi czerwienic swoj scenariusz)
+  ok   mutacja M4 bez bramki NNS czerwieni scenariusz NNS (koniec tury odblokowany)
+  ok   M3 (bez aiCmdResume=null) RÓWNOWAZNA: po load nadal odblokowane (healStale)
+  ok   mutacja M1 bez clearDeferredAutoPreBattleQueue czerwieni L1
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   mutacja M2 bez hidePreBattle czerwieni L2
+load-blockers-exec: 19 PASS / 0 FAIL
+
+==> /tmp/claude-0/q16b-scan-heal-stale-blockers-pending-battle.log <==
+
+heal-stale-blockers-pending-battle-test: 23 pass, 0 fail
+
+==> /tmp/claude-0/q16b-scan-endturn-battle-deadlock-exec.log <==
+  ok   [E1] po healStale z kolejką bez ekranu zaplanowany DOKŁADNIE jeden timer 50 ms; got [50]
+  ok   [E2] przed 50 ms nic się nie dzieje (kolejka czeka)
+  ok   [E3] timer 50 ms ODPALONY bez kliknięcia: otwiera odłożoną bitwę, kolejka pusta
+  ok   [E4] odpalenie zalogowane (console.warn watchdog), koniec tury NIE nastąpił bez kliknięcia
+  ok   [E5] audiencja otwarta w chwili odpalenia -> watchdog NIE otwiera ekranu, kolejka zachowana
+
+[G] scena bitwy otwarta: kolejka nietknięta, brak flusha na żywej scenie
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [G0] bitwa odłożona przy otwartej scenie
+  ok   [G1] watchdog (50 ms) NIE pokazuje pre-bitwy na żywej scenie; kolejka zachowana
+  ok   [G2] przy otwartej scenie klik NIE kończy tury (legalna blokada)
+  ok   [G3] flush-first i 8 s czyszczenie NIE ruszają kolejki przy otwartej scenie (po 9 s nadal czeka)
+  ok   [G4] po zamknięciu sceny kolejka wznawia się: pokazana WOJNA1
+  ok   [G5] po rozstrzygnięciu bitwy koniec tury (endTurn=1)
+
+[H] gameOver: klik nie wywołuje flush-first
+  ok   [H1] przy gameOver klik NIE otwiera ani nie czyści kolejki (kolejność bramek zachowana)
+
+[I] aktywny EOT >8 s przeżywa pasywne pollingi; nieaktywne sieroty nadal sprzątane
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [I1] aktywny world-EOT >8 s zachowuje endTurnInProgress/timestamp/overlay i flagi bitew po powtarzanym healStale (HUD)
+  ok   [I2] po ustaniu aktywnego EOT osierocone flagi >8 s nadal czyszczone
+  ok   [I3] nieaktywna osierocona nakładka przejścia nadal zdejmowana
+
+[F] mutacje siatki (każda musi czerwienić swój scenariusz)
+  ok   [F-M1] usunięcie flush-first w healStuck CZERWIENI scenariusz B (klik 1 nie otwiera bitwy)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [F-M1d] usunięcie flush-first CZERWIENI też scenariusz D (bez watchdoga kolejka nie drenuje)
+[PreBattle] Clearing deferred auto preBattle queue (4 zaległych żądań)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [F-M2] usunięcie watchdoga CZERWIENI scenariusz E (brak timera / brak otwarcia bez kliknięcia)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [F-M3] usunięcie try/catch CZERWIENI scenariusz D (wyjątek wychodzi z kliknięcia)
+  ok   [F-M4] osłabiona bramka (tylko isPreBattleOpen) CZERWIENI scenariusz C2 (koniec tury przy czekającej kolejce)
+[PreBattle] Clearing deferred auto preBattle queue (1 zaległych żądań)
+  ok   [F-M5] usunięcie bramki sceny w healStuck CZERWIENI scenariusz G (flush/clear na żywej scenie)
+  ok   [F-M6] usunięcie bramki sceny w watchdogu CZERWIENI scenariusz G (pre-bitwa na żywej scenie)
+  ok   [F-M7] heal bez bramek niezwiązanych z kolejką CZERWIENI scenariusz H (flush przy gameOver)
+
+endturn-battle-deadlock-exec-test: 49 pass, 0 fail
+
+==> /tmp/claude-0/q16b-scan-endturn-battle-deadlock.log <==
+[PreBattle] flush rzucił wyjątek -- element odrzucony z kolejki, sprzątam ekran {
+  where: 'C-real',
+  error: Error: boom-C
+      at Object.get [as atakujacy] (/home/user/The-Game/.claude/worktrees/wf_d884a03f-371-3/gra/tools/endturn-battle-deadlock-test.cjs:409:51)
+      at buildOverlay (/home/user/The-Game/.claude/worktrees/wf_d884a03f-371-3/gra/tools/.endturn-deadlock-bundle.cjs:4475:38)
+      at showPreBattle (/home/user/The-Game/.claude/worktrees/wf_d884a03f-371-3/gra/tools/.endturn-deadlock-bundle.cjs:4079:15)
+      at flushDeferredAutoPreBattle (/home/user/The-Game/.claude/worktrees/wf_d884a03f-371-3/gra/tools/.endturn-deadlock-bundle.cjs:4136:3)
+      at flushDeferredPreBattleSafely (eval at makeWrapper (/home/user/The-Game/.claude/worktrees/wf_d884a03f-371-3/gra/tools/endturn-battle-deadlock-test.cjs:387:32), <anonymous>:5:5)
+      at runScenario (/home/user/The-Game/.claude/worktrees/wf_d884a03f-371-3/gra/tools/endturn-battle-deadlock-test.cjs:417:11)
+      at runUiPart (/home/user/The-Game/.claude/worktrees/wf_d884a03f-371-3/gra/tools/endturn-battle-deadlock-test.cjs:437:17)
+      at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+      at async main (/home/user/The-Game/.claude/worktrees/wf_d884a03f-371-3/gra/tools/endturn-battle-deadlock-test.cjs:459:3)
+}
+
+endturn-battle-deadlock-test: 38 pass, 0 fail
+
+==> /tmp/claude-0/q16b-scan-endturn-quiet.log <==
+  PASS: funkcja canPlayerInitiateEndTurn znaleziona
+  PASS: sygnatura quiet = false
+  PASS: każdy console.warn w funkcji bramkowany przez !quiet (10/10)
+  PASS: HUD config.canEndTurn (cykl 500 ms + render) używa wersji cichej
+  PASS: klik (endActiveHumanTurn) zachowuje głośny log przy blokadzie
+  PASS: healStaleEndTurnBlockers() nadal wołane przed bramkami (semantyka bez zmian)
+  PASS: funkcja advanceSeat znaleziona
+  PASS: advanceSeat (klik) woła wersję głośną canPlayerInitiateEndTurn()
+  PASS: triggerPlayerEndTurn (klik) nie woła wersji cichej ani własnej bramki
+  PASS: dokładnie jedno wywołanie wersji cichej w kodzie (1)
+
+10 pass, 0 fail
+
+==> /tmp/claude-0/q16b-scan-no-negative-stocks-end-turn-gate-levers.log <==
+no-negative-stocks-end-turn-gate-levers-test: 34 passed, 0 failed
+
+==> /tmp/claude-0/q16b-scan-no-negative-stocks-endturn.log <==
+no-negative-stocks-endturn-test: 19 passed, 0 failed
+
+==> /tmp/claude-0/q16b-tsc.log <==
+
+==> /tmp/claude-0/q16b-logic.log <==
+PASS  [178] culture: convertCulture raises own-culture share toward 1.0
+PASS  [179] culture: a Biblioteka converts culture strictly faster than without
+PASS  [180] culture: Swiatynia (religious-only building, B-KULT-REL split) has NO effect on culture conversion
+PASS  [181] culture: convertCulture caps the per-turn rate (cap from params)
+PASS  [182] religion: loadReligionParams reads the 50% dominance threshold from society-params.json
+PASS  [183] religion: loadReligionParams falls back (dominance 50%) when block absent
+PASS  [184] religion: civReligion maps a civ from society-params.json (Grecy -> Politeizm olimpijski)
+PASS  [185] religion: civReligion returns null for an unknown civ
+PASS  [186] religion: isKnownCiv validates civ names against civs.json
+PASS  [187] religion: dominantReligion returns the >50% faith
+PASS  [188] religion: dominantReligion returns none when no faith exceeds 50% (split)
+PASS  [189] religion: dominantReligion returns none for an empty city
+PASS  [190] religion: dominance is exclusive at exactly 50% (must EXCEED the threshold)
+PASS  [191] religion: religionHappiness rewards our dominant religion and penalises a foreign one
+PASS  [192] religion: convertViaTemple shifts share toward the owner religion
+PASS  [193] religion: a temple converts faith strictly faster than without
+PASS  [194] religion: convertViaTemple is deterministic and conserves total adherents
+PASS  [195] religion: repeated convertViaTemple eventually fully converts the city
+PASS  [196] religion: convertViaTemple does nothing without a target or in an empty city
+PASS  [197] religion: spreadReligion reaches in-range neighbours and adds the source faith
+PASS  [198] religion: spreadReligion never reaches an out-of-range neighbour (n3 at dist 5 > max 3)
+PASS  [199] religion: spreadReligion is deterministic for the same seed
+PASS  [200] religion: a Swiatynia lets religion reach at least as many neighbours as without
+PASS  [201] religion: a city with no dominant religion does not spread
+PASS  [202] religion: makeRng (culture-religion) is a deterministic [0,1) generator for a fixed seed
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=2 landSea=37 relief=36 coast=7 riversMain=176 riversFill=156 forest=2 deposits=4 starts=35 total=456
+PASS  [203] cityfix: found a valid founding hex in test map
+PASS  [204] cityfix: canFoundCity passes for first city (no territory restriction)
+PASS  [205] cityfix: foundCityAt returns non-null city
+PASS  [206] cityfix: city has correct q,r
+PASS  [207] cityfix: city has id=city0
+PASS  [208] cityfix: city ownerId=0
+PASS  [209] cityfix: city population=1
+PASS  [210] cityfix: cities array has 1 city after push
+PASS  [211] cityfix: city coords in map.hexes
+PASS  [212] cityfix: after 1st city, playerCityNodes has 1 node
+PASS  [213] cityfix: pop1 territory radius is 5 (B min start)
+
+LOGIC OK (213/213)
+
+==> /tmp/claude-0/q16b-ai.log <==
+
+--- T11-scout-b: defensiveCopy (państwo-miasto) -> brak Zwiadowca ---
+
+--- T7D-h: defensiveCopy z garnizonem (na progu) -> infrastruktura, nie kolejny Wojownik ---
+
+--- T7D-i: defensiveCopy bez garnizonu -> nadal Wojownik pierwszy ---
+
+--- T7D-j: defensiveCopy + garnizon + isProductionAllowed odrzuca budynki -> Wojownik ---
+
+--- T7D-k: defensiveCopy + garnizon (na progu) + isProductionAllowed tylko studnia -> studnia ---
+
+--- T11-scout-c: zwiadowca rusza w stronę neutralnej wioski ---
+
+--- T11-scout-d: po 2 zwiadowcach nie wymusza trzeciego w early phase ---
+
+--- T12-dip-a: pokojowa cywilizacja -> pakt/handlu, bez haraczu ---
+
+--- T12-dip-b: agresywna cywilizacja -> szybciej wojna niz pokojowa ---
+
+--- T12-dip-c: agresywna zada haracz, pokojowa nie ---
+
+--- T12-dip-d: resolveDiplomacyCivBias klasyfikuje profile ---
+
+--- T12-dip-e: brak kontaktu + oferta handlu -> zaproponuj_audiencje ---
+
+--- T13: AI-MANAGE-Q1=A isMajorAiOwner ---
+
+--- T14-p1-1a: majorEarly econ building mult = 0.70 ---
+
+--- T14-p1-1b: L1 majorEarly konczy sie tura 25, L2 tura 40 ---
+
+--- T14-p2: L3 majorEarly max turn 25 gdy startowe_miasta≥1 (P2-Q2=A) ---
+
+--- T14-p1-1c: majorEarly stolarnia score ×0.70 (ranking vs biblioteka) ---
+
+--- T14-p1-2a: scout repeat penalty constant = 80 ---
+
+--- T14-p1-2b: drugi scout score −80 vs pierwszy (ta sama economyScore) ---
+
+ai-test: 297 passed, 0 failed

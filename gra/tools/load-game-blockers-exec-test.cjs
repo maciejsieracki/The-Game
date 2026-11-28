@@ -85,6 +85,8 @@ const STATE = [
   ['bitwaDuzaActive', 'false'], ['playtestMiastoActive', 'false'], ['foundCityMode', 'false'],
   ['buildModeOpen', 'false'], ['activeImprovementKey', 'null'], ['revealAllLand', 'false'],
   ['pendingEraChangeToastForNextTurn', 'null'],
+  // Przełącznik bramki NNS (sterowany z testu): true = prognoza skarbca/spichlerza < 0 blokuje turę.
+  ['nnsGateBlockStub', 'false'],
 ];
 // Zaslepki UI wolane przez prepareSessionForLoad (no-op: nie dotycza blokad).
 const STUBS = [
@@ -98,7 +100,8 @@ const STUBS = [
   // Kolejka powiadomień odroczonych (R-WEB-EVENTS-DEFER-TO-TURN-START-Q1): resetEndTurnBlockers czyści ją; poza pinem blokad.
   + '\n  const eventDeferQueue: any = { clear(): void {}, size(): number { return 0; } };'
   // Bramki dodane po bazie pinu (NNS-B: skarbiec/spichlerz; PENDING-FORCED-PEACE-Q1): w scenariuszach tego testu nieaktywne.
-  + '\n  const nnsGateForPlayer = (..._a: any[]): any => ({ blokada: false });'
+  // Bramka NNS: wartość steruje przełącznik nnsGateBlockStub (ze STATE), żeby scenariusz NNS mógł ją włączyć.
+  + '\n  const nnsGateForPlayer = (..._a: any[]): any => ({ blokada: nnsGateBlockStub, komunikat: nnsGateBlockStub ? "NNS-STUB" : "" });'
   + '\n  const prunePendingForcedPeace = (..._a: any[]): void => {};'
   + '\n  let pendingForcedPeaceTreaties: any[] = [];';
 
@@ -239,6 +242,7 @@ function runScenario(PB, factory, scen) {
   if (scen === 'L1') setupStuckQueue(PB, env);
   if (scen === 'L2') { PB.showPreBattle(battleInfo('LEGALSHOWN'), cb(), { auto: false }); PB.showPreBattle(battleInfo('LEGALQUEUED'), cb(), { auto: true }); }
   if (scen === 'L3') { env.S.aiTurnAwaitingBattle = true; env.S.aiCmdResume = { stub: true }; env.S.endTurnInProgress = true; }
+  if (scen === 'NNS') env.S.nnsGateBlockStub = true;
   return env;
 }
 
@@ -280,11 +284,28 @@ async function main() {
   env = makeEnv(PB, factory);
   ok(env.api.canPlayerInitiateEndTurn() === false, 'K1b bez load: otwarty ekran bitwy blokuje (legalna blokada)');
 
+  console.log('-- NNS: bramka skarbca/spichlerza (nnsGateForPlayer) w canPlayerInitiateEndTurn');
+  resetPre(PB);
+  env = makeEnv(PB, factory);
+  ok(env.api.canPlayerInitiateEndTurn() === true, 'NNS1 bez blokady NNS: koniec tury dozwolony (stan czysty)');
+  env.S.nnsGateBlockStub = true;
+  ok(env.api.canPlayerInitiateEndTurn() === false, 'NNS2 z blokadą NNS: canPlayerInitiateEndTurn() === false (bramka NNS wiąże)');
+  env.S.nnsGateBlockStub = false;
+  ok(env.api.canPlayerInitiateEndTurn() === true, 'NNS3 po zdjęciu blokady NNS: koniec tury znów dozwolony');
+
   console.log('-- mutacje (kazda musi czerwienic swoj scenariusz)');
   const mutants = [
     ['M1 bez clearDeferredAutoPreBattleQueue', 'L1', (src) => replaceFn(src, 'function resetEndTurnBlockers(reason: string): void {', (f) => dropOnce(f, 'clearDeferredAutoPreBattleQueue();'))],
     ['M2 bez hidePreBattle', 'L2', (src) => replaceFn(src, 'function resetEndTurnBlockers(reason: string): void {', (f) => dropOnce(f, 'if (isPreBattleOpen()) hidePreBattle();'))],
   ];
+  // M4: bramka NNS wycięta z canPlayerInitiateEndTurn -> przy aktywnej blokadzie NNS koniec tury
+  // MUSI się odblokować (dowód, że scenariusz NNS wykrywa usunięcie bramki).
+  const m4Src = replaceFn(MAIN_SRC, 'function canPlayerInitiateEndTurn(quiet = false): boolean {',
+    (f) => { const needle = 'if (nnsGateForPlayer().blokada) {'; if (f.split(needle).length !== 2) throw new Error('[mutant] M4: needle'); return f.replace(needle, 'if (false) {'); });
+  {
+    const e4 = runScenario(PB, buildFactory(m4Src), 'NNS');
+    ok(e4.api.canPlayerInitiateEndTurn() === true, 'mutacja M4 bez bramki NNS czerwieni scenariusz NNS (koniec tury odblokowany)');
+  }
   // M3 (bez aiCmdResume=null w resetEndTurnBlockers) jest mutantem RÓWNOWAŻNYM w bazie:
   // healStaleEndTurnBlockers() zdejmuje osierocony aiCmdResume bez kolejki i ekranu, więc
   // koniec tury po wczytaniu zostaje odblokowany. Test to dokumentuje (nie udaje czerwieni).
