@@ -32709,3 +32709,7 @@ Pytanie: co ma się stać w 16. turze, gdy wojsko gracza znowu kosztuje jedzenie
 ## R-WEB-SAVE-PRE-CAPITAL-Q43 (2026-11-28 11:41 UTC, pytanie 43, turniej C-018 zakończony) · STATUS: **ZAMKNIĘTE — odpowiedź właściciela B (ECHO 14:17 UTC, rejestr): zapis zablokowany przed założeniem pierwszego miasta → R-WEB-SAVE-BLOCK-PRE-CAPITAL-Q43B**
 
 Pytanie: co ma się stać, gdy gracz zapisze grę przed założeniem pierwszego miasta, a potem ją wczyta (zaplanowane miasta-państwa, grupy AI, dodatkowi rywale i punkt startu nie są w zapisie; gra nie blokuje takiego zapisu) — A: zapisywać zaplanowane elementy razem z grą (Rekomendowane); B: zablokować zapis do założenia pierwszego miasta; C: nic nie zmieniać. Pełny tekst: dyspozycje/autobot/runs/R-WEB-SAVE-PRE-CAPITAL-Q43/PYTANIE-ABC-Q43.md; turniej: TURNIEJ-C018.md (zwycięzca: SYNTEZA); fakty: FAKTY.md (z czytania kodu, NIE zmierzone na żywo).
+
+## R-WEB-STARVATION-SHAPE-Q44 (2026-11-28 14:31 UTC, pytanie 44, turniej C-018 zakończony) · STATUS: **OTWARTE — pokazane właścicielowi w czacie; do odpowiedzi literą dla pełnego ID**
+
+Pytanie: co ma tracić gracz, gdy w państwie zabraknie żywności po zdjęciu blokady końca tury (Q42=C): A zostawić głód wojska, który już jest (Rekomendowane); B dodatkowo utrata mieszkańców miast; C najsłabsza jednostka znika automatycznie. Pełny tekst: dyspozycje/autobot/runs/R-WEB-STARVATION-SHAPE-Q44/PYTANIE-ABC-Q44.md; turniej: TURNIEJ-C018.md (zwycięzca: SYNTEZA); fakty: FAKTY.md.
