@@ -53,11 +53,16 @@ const MAX_ADV = {
   cityStateDifficultyOverride: 'normal', cityLimitBase: 10, diplomacyWarLevel: 'trudna', kulturaReligiaLevel: 'trudny',
   kulturaReligiaLevelAI: 'trudny',
 };
+// MAKSIMUM kreatora (r3): rivals = MAX_MIAST_PANSTWA = 9 (newGameMapDefaults.ts:528);
+// civTypesCount = maksimum dla epoki startu Brąz = 14 (civs.json: 14 cywilizacji z epokaWejscia <= braz;
+// newGameFlow.ts:2236 clampuje do epochCivMax). Wartość 15 była zawyżona (dotyczy dopiero Żelaza).
+const MAX_RIVALS = 9;
+const MAX_CIV_TYPES_BRAZ = 14;
 const MAX_PARAMS = {
   civId: 'rzymianie', civName: 'Rzymianie', epoch: 'Epoka Brazu', epochId: 'braz', difficulty: 'Trudny',
-  mapSize: 'Standardowy', rivals: String(arg('rivals', '2')), speed: 'Normalna', worldType: 'Kontynenty', typSwiata: 'kontynenty',
+  mapSize: 'Standardowy', rivals: String(arg('rivals', String(MAX_RIVALS))), speed: 'Normalna', worldType: 'Kontynenty', typSwiata: 'kontynenty',
   mapQualityLabel: 'Wysoka', mapQuality: 'high', renderQualityLabel: 'Wysoka', mapDetailQualityLabel: 'Wysoka',
-  renderQuality: 'high', mapDetailQuality: 'high', civTypesCount: 15, cityStatesCount: Number(arg('rivals', '2')),
+  renderQuality: 'high', mapDetailQuality: 'high', civTypesCount: MAX_CIV_TYPES_BRAZ, cityStatesCount: Number(arg('rivals', String(MAX_RIVALS))),
   worldDensityLabels: { resources: 'Normalnie', rivers: 'Normalnie', desert: 'Normalnie', forest: 'Normalnie', relief: 'Normalnie' },
   advanced: MAX_ADV,
   villageRewardsEnabled: true,

@@ -3,8 +3,8 @@
 ## 0. STAN WIĄŻĄCY (runda 2, 2026-11-28)
 
 **Baza kodu:** origin/main `ca61257d4` (FALA 932–935, merge do gałęzi tematu `dd5bd3cb5`); kod gry w tej rundzie NIE zmieniony (`gra/src` bez zmian). Build: `vite build` do katalogu w scratchpadzie, `npx tsc --noEmit` exit 0.
-**Ustawienia maksymalne (wg kreatora):** barbarzyńcy Trudny, poziom Trudny, Wysoki ×4, kultura trudny (gracz i AI), dyplomacja trudna. Rywale (`rivals`/miasta-państwa) MAKSIMUM = 9, `civTypesCount` MAKSIMUM = 15 (`dane/r2-MAX-USTAWIENIA-KREATOR.txt`).
-**Uwaga krytyczna:** wszystkie komórki macierzy poniżej (oprócz jednej kontrolnej) zmierzono z `rivals=2` (domyślne z runnera), NIE z maksimum 9. Pełna macierz na `rivals=9` NIE ZMIERZONA.
+**Ustawienia maksymalne (wg kreatora):** barbarzyńcy Trudny, poziom Trudny, Wysoki ×4, kultura trudny (gracz i AI), dyplomacja trudna. Rywale (`rivals`/miasta-państwa) MAKSIMUM = 9 (`MAX_MIAST_PANSTWA`). `civTypesCount` MAKSIMUM dla epoki startu Brąz = **14** (nie 15: 15 dotyczy dopiero Żelaza; `civs.json` ma 14 cywilizacji z wejściem ≤ Brąz, `newGameFlow.ts:2236` clampuje do `epochCivMax`).
+**Stan wiążący (poprawka obrony r3):** w r2 komórki macierzy zmierzono z `rivals=2` i `civTypesCount=15` — NIE na maksimum. Na maksimum (rivals=9, civTypesCount=14, barbarzyńcy Trudny) zmierzone są TYLKO 4 komórki: max/4242/t3, max/4242/t10, max/7/t3, max/7/t10 — każda B==A 6/6, pageErrors 0 (`dane/r3-*.json`, `dane/r3-READBACK-rivals9.txt`). Pozostałe komórki (bunt, aionly) NIE ZMIERZONO na maksimum. Klik UI na maksimum, A==A', render po wczytaniu: NIE ZMIERZONO. Stare wyniki r2 (`dane/r2-*`) NIE liczą się jako maksimum. Komórka bunt/4242/t10 i bunt/7/t10 (B≠A, pole `cities.podzialPracy`) nierozstrzygnięta — diagnoza nie potwierdzona.
 
 ### 0.1 Tabela komórek (rivals=2, barbarzyńcy Trudny; pliki `dane/r2-*`)
 

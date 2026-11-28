@@ -1,31 +1,37 @@
 STATUS: BLOCK
 DOMAIN: GAME
-TEMAT: R-WEB-SAVE-LOAD-MATRIX-Q1
-GOAL: Dopełnić macierz zapis/wczytanie na MAKSIMUM (B==A ≥6 tur), ścieżka UI z menu pauzy, A==A' (≥10 tur ×2 ziarna), spójność renderu po wczytaniu.
-ZMIANY/COMMIT: baza kodu gry bez zmian (gra/src nietknięte). Zmieniono gra/tools/save-load-continuity-live.cjs: barbarzyńcy w cfg max z 'normalny' na 'trudny' (maksimum suwaka „Barbarzyńcy”: opts Łatwy/Normalny/Trudny/Brak, gdzie Brak = wyłączone), pole cfgUsed w wyniku JSON. Nowe dane: dane/B-max-4242-t3-trudny.json, dane/STATE-A-max-4242-t3-trudny.json. SHA: czubek tej gałęzi (patrz commit).
-BAZA: 7788ba013 (kandydat) na origin/main ebaa23b03.
+TEMAT: R-WEB-SAVE-LOAD-MATRIX-Q1 (obrona, runda 3 tego ID; Operator HAIKU)
+GOAL: macierz zapis/wczytanie na MAKSIMUM (rivals=9, civTypesCount=14 dla Brazu, barbarzyncy Trudny), B==A >=6 tur, klik UI, A==A' >=10 tur x 2 ziarna, render po wczytaniu.
+ZMIANY/COMMIT: gra/src bez zmian. gra/tools/save-load-continuity-live.cjs: domyslne rivals=9 (MAX_MIAST_PANSTWA), civTypesCount=14 (maksimum Brazu, wczesniej 15), stale MAX_RIVALS / MAX_CIV_TYPES_BRAZ z komentarzem. dyspozycje/analizy/ZAPIS-WCZYTANIE-MACIERZ-2026-11-27.md: sekcja 0 przepisana (stan wiazacy). dyspozycje/autobot/runs/R-WEB-SAVE-LOAD-MATRIX-Q1/dane/r3-*: wyniki A/B (4 pary), r3-READBACK-rivals9.txt, stany r3-STATE-*.json.gz. SHA: patrz git log (commit tej rundy).
+BAZA: c79d0b0b5 (kandydat); gra/ zbudowana do katalogu w scratchpadzie (vite build exit 0), npm ci --ignore-scripts w gra/ wykonane.
 
 ODPOWIEDZI NA ZARZUTY:
-1. PRZYJMUJĘ. Wiersze „max” z poprzedniej rundy liczone były przy barbarzyńcach „normalny”, czyli NIE na maksimum (patrz 6). Na właściwym maksimum zmierzona jest 1 z 12 komórek: max/4242/t3 = B==A 6/6 (tury 4–9, pageErrors 0, mapDiffers true). Pozostałe 11 komórek: NIE ZMIERZONO.
-2. PRZYJMUJĘ. Harnessu klikającego menu pauzy nie napisano. NIE ZMIERZONO (zostaje hak loadJsonAsPauseLoad → loadGameFromSlot).
-3. PRZYJMUJĘ. A==A' nie uruchomiono. NIE ZMIERZONO.
-4. PRZYJMUJĘ. Render po wczytaniu i zrzut PNG w dane/ nie wykonano. NIE ZMIERZONO.
-5. PRZYJMUJĘ. Pliki wynikowe dla max/4242/t10 i aionly/7/t3 nie są w tym commicie (dane/ zawiera tylko pliki z tej rundy i nie ma ich w historii tej gałęzi). Te dwie komórki nie są liczone jako zmierzone w tej rundzie.
-6. PRZYJMUJĘ. Zmierzone: cfg max miał barbariansLevel 'normalny' (poziom Trudny wg suwaka to 'trudny'; dispatch wymaga Trudny). Poprawka: MAX_ADV.barbariansLevel = 'trudny' w harnessie. Maksimum poziomów rozstrzygnięte tak: difficulty 'Trudny', barbariansLevel 'trudny' (najwyższa gęstość na suwaku; 'brak' to wyłączenie), kulturaReligiaLevel/AI 'trudny', diplomacyWarLevel 'trudna', cityLimitBase 10, civTypesCount 15 (cfgUsed w JSON). Liczba rywali rivals '2' i pozostałe parametry NIE ZWERYFIKOWANE jako maksymalne (nie sprawdzono zakresu suwaków) — do potwierdzenia w następnej rundzie.
-7. PRZYJMUJĘ. Wywołanie Bash z A (5 min) przekroczyło domyślny limit 120 s, bo nie podano parametru timeout, i narzędzie przeniosło je w tło bez mojej decyzji. Nie uruchomiono drugiej kopii. Od tej chwili każde wywołanie z timeout ≤ 590000 w pierwszym planie. Wynik A został zebrany z pliku wyjściowego (exit 0).
+1. PRZYJMUJE i CZESCIOWO NAPRAWIAM. Wykonano pomiar na rivals=9 dla 4 komorek max: max/4242/t3 PASS 6/6, max/4242/t10 PASS 6/6, max/7/t3 PASS 6/6, max/7/t10 PASS 6/6 (pageErrors 0 we wszystkich, cfgUsed rivals "9"). NIE ZMIERZONO na maksimum: bunt/4242/t3, bunt/4242/t10, bunt/7/t3, bunt/7/t10, aionly/4242/t3, aionly/4242/t10, aionly/7/t3, aionly/7/t10 (8 komorek). Liczba komorek na maksimum: 4 z 12, nie 1 z 12 jak w poprzedniej obronie (bo max/7/t10 i max/4242/t10 dochodza na 9).
+2. PRZYJMUJE i NAPRAWIAM. civTypesCount 15 bylo zawyzone dla epoki Braz. Dane: civs.json, 14 cywilizacji z epokaWejscia <= braz; newGameFlow.ts:2236 clampuje do epochCivMax. Maksimum dla Brazu = 14 (zapis: dane/r3-READBACK-rivals9.txt). Stan aiOwnerCivMap w zapisie t3 (seed 4242 i 7) ma 14 roznych cywilizacji, zgodnie z tym. Maksimum dla Zelaza (15) nie bylo tu mierzone i nie jest uzywane.
+3. PRZYJMUJE, NIE NAPRAWIAM W TEJ RUNDZIE. Komorki bunt/4242/t10 i bunt/7/t10 (B!=A) nadal nierozstrzygniete; brak minimalnego odtworzenia i testu czerwony->zielony. Powod: poprawka wskazywana w hipotezie to gra/src/game/cities.ts, poza allowlista dispatchu (dopuszczone wylacznie gra/src/main.ts po odtworzeniu bledu). Decyzja dla orkiestratora: zmiana cities.ts albo akceptacja reprezentacji.
+4. PRZYJMUJE, NIE ZBADANO. Hipoteza harnessu (Math.random seedowany raz w addInitScript, nie przywracany po wczytaniu) NIE sprawdzona eksperymentem; nie wiem, czy rozjazd dirty3 jest artefaktem. Nie zrobiono wariantu dirty0 z przebudowa mapy ani testu z ponownym zasiewem.
+5. PRZYJMUJE, NIE ZMIERZONO. Klik UI na max/7/t3 nie wykonany. gra/tools/save-load-continuity-ui-live.cjs nadal ma rivals i cityStatesCount '2' (nie zmieniano w tej rundzie; to kolejna do zrobienia).
+6. PRZYJMUJE, NIE ZMIERZONO. Render po wczytaniu (hexCount, konsola, liczba miast i jednostek) nie wykonany w tej rundzie. Stary PNG z r2 (dane/r2-UI-max-4242-t3-po-wczytaniu.png) pochodzi ze stanu po rozjezdzie i nie jest oceniony.
+7. PRZYJMUJE i NAPRAWIAM. Sekcja 0 dokumentu ZAPIS-WCZYTANIE-MACIERZ-2026-11-27.md przepisana: wprost podano, ze tylko 4 komorki sa na maksimum, a stare wyniki r2 nie liczą sie jako maksimum.
+8. PRZYJMUJE. A==A' i pozostale A==A' z r2 zmierzono na rivals=2; nie powtorzono na rivals=9. Nie liczy sie jako dowod dla maksimum. NIE ZMIERZONO na maksimum.
 
-TESTY:
-- A (max, ziarno 4242, zapis po t3, K=6, nowy cfg trudny): exit 0, zrzuty t4–t9, czas 21:43:06–21:48:29 UTC.
-- B (max, ziarno 4242, zapis t3, wczytanie hakiem loadJsonAsPauseLoad): VERDICT PASS (expect=equal, anyDiff=false, pageErrors=0), tury 4–9 OK ×6, rebuild=false, mapDiffers=true, czas 21:48:40–21:53:47 UTC.
-- Bramki kodu: nie uruchamiane w tej rundzie (brak zmian w gra/src). W poprzedniej rundzie: npx tsc --noEmit exit 0.
-- Build: vite build do katalogu w scratchpadzie (npm run build nie uruchamiano).
+TESTY (surowe wyniki z plikow dane/r3-*.json; verdict z wyjscia harnessu):
+- A max/4242 save t3 (rivals 9): zrzuty t4..t9, exit 0. B max/4242 t3: VERDICT PASS (expect=equal, anyDiff=false, pageErrors=0), rebuild=false, tury OK x6.
+- A max/4242 save t10: zrzuty t11..t16, exit 0. B max/4242 t10: VERDICT PASS (anyDiff=false, pageErrors=0), tury OK x6.
+- A max/7 save t3: zrzuty t4..t9, exit 0. B max/7 t3: VERDICT PASS (anyDiff=false, pageErrors=0), 02:08:55.
+- A max/7 save t10: zrzuty t11..t16, exit 0 (02:20:09). B max/7 t10: VERDICT PASS (anyDiff=false, pageErrors=0), 02:25:46.
+- Bramki kodu: gra/src bez zmian, tsc/logic/ai-test nie uruchamiane (brak wplywu na kod). npx tsc --noEmit w tej rundzie nie wykonano.
+- Procesowo: dwa biegi (A max/7 t10 oraz B max/7 t3) przekroczyly 600 s i narzedzie przeniosло je w tlo bez mojej decyzji; nie uruchomiono drugiej kopii; wyniki odczytane z plikow wyjsciowych (exit 0). Biegi bez run_in_background; oczekiwanie przez petle z sleep w pierwszym planie.
 
 BLOKADY:
-- Pozostałe 11 komórek macierzy na maksimum (~5–6 min na bieg A i ~5 min na bieg B; czas wystarcza, ale wymaga wielu wywołań).
-- Klik UI, A==A', render: nie zrobione w tej rundzie (zakres większy niż pozostały czas tej rundy).
-- Chromium: w tej rundzie bez SIGSEGV.
-- Procesowa: patrz 7.
+- 8 komorek bunt/aionly na maksimum nie zmierzono.
+- bunt/t10 B!=A nierozstrzygniete (decyzja orkiestratora, cities.ts poza allowlista).
+- Klik UI na maksimum (max/4242/t3 i max/7/t3): nie zrobione, harness UI ma rivals=2.
+- A==A' na maksimum (max/4242 i max/7, >=10 tur): nie zrobione.
+- Render po wczytaniu: nie zrobione.
+- Diagnoza dirty3 UI: nie zrobiona.
 
-RUNDY: 2/5 (runda 1 = poprzednia; runda 2 = ta obrona). Decyzja wymagana: nie.
-NASTĘPNY KROK: Runda 3 (ten sam ID): (a) 11 pozostałych komórek macierzy na barbarzyńcach trudny (aionly 4242/7, bunt 4242/7, max 7, t3/t10) — każdy zapis jako osobny A z --saves; (b) klik UI w menu pauzy (2 komórki); (c) A==A' 10 tur na max/4242 i max/7; (d) render po wczytaniu na max/4242/t10 z zrzutem do dane/. Zanim wpisać „maksimum”, potwierdzić zakresy rivals i civTypesCount.
+RUNDY: 3/5 (runda 1 FAIL, runda 2 BLOK, obrona runda 3 = ta). Decyzja wymagana: TAK w jednej sprawie: bunt/t10 B!=A (zmiana cities.ts albo akceptacja reprezentacji).
+NASTEPNY KROK: (a) orkiestrator decyduje o bunt/t10 (cities.ts poza allowlista); (b) pozostale 8 komorek na maksimum (bunt, aionly) jako osobne A (--saves 3 i --saves 10) + B; (c) klik UI na rivals=9 (zmiana rivals w gra/tools/save-load-continuity-ui-live.cjs); (d) A==A' 10 tur na max/4242 i max/7 na rivals=9; (e) render po wczytaniu z PNG.
+UWAGI-DLA-ORKIESTRATORA: pozycja 'rivals=9' jest teraz domyslna w runnerze live; runner UI nadal na 2. Wyniki r2 na rivals=2 (dane/r2-*) nie sa dowodem dla maksimum.
 DEPLOY/PUSH: NIE WYKONANO

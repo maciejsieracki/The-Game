@@ -1,0 +1,10 @@
+READBACK r3 (R-WEB-SAVE-LOAD-MATRIX-Q1, obrona r3): ustawienia komorek MAKSIMUM, rivals=9
+cfgUsed (z kazdego r3-B-*.json): {"barbariansLevel":"trudny","difficulty":"Trudny","rivals":"9","civTypesCount":14}
+civTypesCount=14 = maksimum dla epoki startu Brąz (civs.json: 14 cywilizacji z epokaWejscia <= braz; newGameFlow.ts:2236 epochCivMax). W r2 wpisywano 15 (zawyzone; 15 dotyczy dopiero Zelaza).
+Stan aiOwnerCivMap (zapis t3, seed 4242 i 7): 14 roznych cywilizacji lacznie z rzymianie.
+
+Wyniki (B==A, 6 tur po wczytaniu z pauzy hakiem loadJsonAsPauseLoad):
+  max/4242/t3   rivals=9  PASS 6/6, pageErrors 0   (r3-B-4242-t3.json)
+  max/4242/t10  rivals=9  PASS 6/6, pageErrors 0   (r3-B-4242-t10.json)
+  max/7/t3      rivals=9  PASS 6/6, pageErrors 0   (r3-B-7-t3.json)
+  max/7/t10     rivals=9  PASS 6/6, pageErrors 0   (r3-B-7-t10.json)
