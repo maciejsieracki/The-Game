@@ -42818,6 +42818,14 @@ async function boot(): Promise<void> {
           aiResourceTradeLastProposalTurn: Array.from(aiResourceTradeLastProposalTurn.entries()),
           aiResourceBarterLastProposalTurn: Array.from(aiResourceBarterLastProposalTurn.entries()),
           aiAudienceLastRequestTurn: Array.from(aiAudienceLastRequestTurn.entries()),
+          // R-WEB-SAVE-LOAD-MATRIX-Q1 (SAVEMAT r3): stan absorpcji miast-panstw przez AI (trybut -> wasal -> wchloniecie). Zegary
+          // (`aiCsTrybutSince`/`aiCsWasalSince`) i licznik odmow (`aiCsFailCount`) decyduja o `decideAiCsClusterAction` (wasal_timer ->
+          // annex, vassalFailBeforeWar); wczesniej NIE byly zapisywane -> po wczytaniu w trakcie absorpcji AI "zapominalo" o trwajacym
+          // trybucie/wasalu (traktat wracal z activeDeals, zegar nie), wchloniecie spoznialo sie i przebieg rozjezdzal sie z ciaglym
+          // (dowod: tools/save-load-continuity-live.cjs --cfg bunt --seed 7 --saves 7: 106 par trybut/wasal przy zapisie, 0 po wczytaniu).
+          aiCsFailCount: Array.from(aiCsFailCount.entries()),
+          aiCsTrybutSince: Array.from(aiCsTrybutSince.entries()),
+          aiCsWasalSince: Array.from(aiCsWasalSince.entries()),
           // R-HOTSEAT-DYPLO-KONTAKT-PER-FOTEL-Q1: `Array<[humanOwnerId, ownerId[]]>` --
           // ten sam idiom co `exploredByHumanSave` (main.ts ok. 28903) dla Map<number, Set<number>>.
           diplomaticContactEstablished: Array.from(
@@ -51254,6 +51262,9 @@ async function boot(): Promise<void> {
       aiResourceTradeLastProposalTurn.clear();
       aiResourceBarterLastProposalTurn.clear();
       aiAudienceLastRequestTurn.clear();
+      aiCsFailCount.clear(); // SAVEMAT r3: stan absorpcji miast-panstw AI nie moze przezyc resetu swiata
+      aiCsTrybutSince.clear();
+      aiCsWasalSince.clear();
       units.length = 0;
       plannedMarches.clear();
       marchStopNotified.clear();
@@ -53470,6 +53481,17 @@ async function boot(): Promise<void> {
       if (savedAudienceCooldown?.length) {
         for (const [oid, t] of savedAudienceCooldown) aiAudienceLastRequestTurn.set(oid, t);
       }
+      // SAVEMAT r3: zegary absorpcji miast-panstw przez AI (zob. komentarz przy zapisie). Zapis bez pol (stary) = puste mapy jak dotad;
+      // wczytanie NIE moze dziedziczyc zegarow z biezacej sesji (pary klucza `ai:cs`).
+      aiCsFailCount.clear();
+      aiCsTrybutSince.clear();
+      aiCsWasalSince.clear();
+      const savedAiCsFail = saved.meta?.aiCsFailCount as Array<[string, number]> | undefined;
+      if (savedAiCsFail?.length) for (const [k, n] of savedAiCsFail) aiCsFailCount.set(k, n);
+      const savedAiCsTrybut = saved.meta?.aiCsTrybutSince as Array<[string, number]> | undefined;
+      if (savedAiCsTrybut?.length) for (const [k, t] of savedAiCsTrybut) aiCsTrybutSince.set(k, t);
+      const savedAiCsWasal = saved.meta?.aiCsWasalSince as Array<[string, number]> | undefined;
+      if (savedAiCsWasal?.length) for (const [k, t] of savedAiCsWasal) aiCsWasalSince.set(k, t);
       activeDeals = [];
       // Audyt #44: aiSkarbiecByOwner bylo czyszczone bez petli odtwarzajacej
       // (w przeciwienstwie do symetrycznej aiPracaPoolByOwner) -- skarbiec AI

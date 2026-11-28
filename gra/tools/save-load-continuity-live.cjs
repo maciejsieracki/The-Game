@@ -145,9 +145,9 @@ function rawDiffSummary(a, b) {
 async function openSession(chromium, res) {
   const browser = await chromium.launch({
     headless: true, executablePath: CHROME,
-    args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'],
+    args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'].concat(process.env.SM_ARGS ? process.env.SM_ARGS.split(' ') : []),
   });
-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  const page = await browser.newPage({ viewport: { width: Number(arg('vw', '1280')), height: Number(arg('vh', '800')) } });
   page.on('pageerror', (e) => res.pageErrors.push(String(e).slice(0, 300)));
   page.on('dialog', (d) => d.dismiss().catch(() => {}));
   await page.addInitScript((s0) => {
@@ -172,9 +172,12 @@ async function openSession(chromium, res) {
   await wait(300);
   const turnNow = () => page.evaluate(() => window.__eraTestDebug.getWorldState().turn);
   const endTurn = async () => {
+    const e0 = Date.now();
     await closeCivWelcome(page);
+    const e1 = Date.now();
     await prepareEndTurnGate(page).catch(() => null);
     const before = await turnNow();
+    if (process.env.SM_PHASES) console.log('phase welcome', e1 - e0, 'gate', Date.now() - e1);
     await page.evaluate(() => window.__eraTestDebug.endTurn());
     const t1 = Date.now();
     for (;;) {
@@ -220,13 +223,14 @@ async function main() {
     const A = await openSession(chromium, res);
     try {
       for (const sv of SAVES) {
-        while ((await A.turnNow()) < sv) await A.endTurn();
+        while ((await A.turnNow()) < sv) { const q0 = Date.now(); const q = await A.endTurn(); log('A (dojscie) tura ' + q + ' ' + (Date.now() - q0) + 'ms'); }
         const snap = await A.page.evaluate(() => window.__detHarness.snapshotJson());
-        const ref = { save: sv, snap, dumps: [], turns: [], bunt: null, snapBytes: snap.length };
+        const ref = { save: sv, snap, dumps: [], turns: [], bunt: null, snapBytes: snap.length, aiCsAtSave: await A.page.evaluate(() => { const c = window.__turnSlowdownTestDebug.collections(); return { fail: c.aiCsFailCount, trybut: c.aiCsTrybutSince, wasal: c.aiCsWasalSince }; }) };
         for (let i = 0; i < K; i++) {
           if (BUNT && i === 0) ref.bunt = await A.forceBunt();
-          const t = await A.endTurn();
+          const tt0 = Date.now(); const t = await A.endTurn(); const tt1 = Date.now();
           ref.turns.push(t); ref.dumps.push(await A.dump());
+          log('A tura ' + t + ' endTurn ' + (tt1 - tt0) + 'ms dump ' + (Date.now() - tt1) + 'ms');
           fs.writeFileSync(STATE, JSON.stringify({ cfg: CFG, seed: SEED, k: K, refs: refs.concat([ref]) }));
         }
         refs.push(ref);
@@ -270,10 +274,14 @@ async function main() {
       seg.rebuild = rp.rebuildByMode; seg.mapDiffers = rp.mapDiffers;
     }
     await wait(300);
+    seg.aiCsAtSave = ref.aiCsAtSave || null;
+    seg.aiCsAfterLoad = await B.page.evaluate(() => { const c = window.__turnSlowdownTestDebug.collections(); return { fail: c.aiCsFailCount, trybut: c.aiCsTrybutSince, wasal: c.aiCsWasalSince }; });
+    log('aiCs przy zapisie (A) ' + JSON.stringify(seg.aiCsAtSave) + ' | po wczytaniu (B) ' + JSON.stringify(seg.aiCsAfterLoad));
     for (let i = 0; i < kUse; i++) {
       if (BUNT && i === 0) await B.forceBunt();
       const t = await B.endTurn();
       const cb = await B.dump();
+      if (arg('dumpb', '')) fs.writeFileSync(arg('dumpb', '') + '.t' + t + '.json', JSON.stringify(cb));
       const rawSum = rawDiffSummary(ref.dumps[i], cb);
       const diffs = NORM_PP === 'inert' ? firstDiffs(normPP(ref.dumps[i]), normPP(cb), 6) : firstDiffs(ref.dumps[i], cb, 6);
       const equal = diffs.length === 0 && t === ref.turns[i];

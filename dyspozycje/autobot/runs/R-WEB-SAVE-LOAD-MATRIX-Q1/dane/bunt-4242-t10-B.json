@@ -1,0 +1,100 @@
+{
+ "dist": "/tmp/savemat-dist",
+ "cfg": "bunt",
+ "seed": 4242,
+ "saves": [
+  10
+ ],
+ "k": 6,
+ "restore": "pause",
+ "expect": "equal",
+ "mode": "B",
+ "pageErrors": [],
+ "segments": [
+  {
+   "save": 10,
+   "restore": "pause",
+   "rebuild": false,
+   "turns": [
+    {
+     "turn": 11,
+     "expectedTurn": 11,
+     "equal": true,
+     "diffs": [],
+     "rawDiffSummary": {
+      "count": 0,
+      "fields": {},
+      "effPPdiffs": 0
+     }
+    },
+    {
+     "turn": 12,
+     "expectedTurn": 12,
+     "equal": true,
+     "diffs": [],
+     "rawDiffSummary": {
+      "count": 0,
+      "fields": {},
+      "effPPdiffs": 0
+     }
+    },
+    {
+     "turn": 13,
+     "expectedTurn": 13,
+     "equal": true,
+     "diffs": [],
+     "rawDiffSummary": {
+      "count": 0,
+      "fields": {},
+      "effPPdiffs": 0
+     }
+    },
+    {
+     "turn": 14,
+     "expectedTurn": 14,
+     "equal": true,
+     "diffs": [],
+     "rawDiffSummary": {
+      "count": 0,
+      "fields": {},
+      "effPPdiffs": 0
+     }
+    },
+    {
+     "turn": 15,
+     "expectedTurn": 15,
+     "equal": true,
+     "diffs": [],
+     "rawDiffSummary": {
+      "count": 0,
+      "fields": {},
+      "effPPdiffs": 0
+     }
+    },
+    {
+     "turn": 16,
+     "expectedTurn": 16,
+     "equal": true,
+     "diffs": [],
+     "rawDiffSummary": {
+      "count": 0,
+      "fields": {},
+      "effPPdiffs": 0
+     }
+    }
+   ],
+   "legacy": false,
+   "mapDiffers": true
+  }
+ ],
+ "normPP": "inert",
+ "cfgUsed": {
+  "barbariansLevel": "trudny",
+  "difficulty": "Trudny",
+  "rivals": "9",
+  "civTypesCount": 14
+ },
+ "anyDiff": false,
+ "verdict": "PASS",
+ "done": true
+}
