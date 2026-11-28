@@ -124,7 +124,9 @@ function bodyOf(src, header) {
 // muszą czerwienić ten test (patrz raport obrony, sekcja TESTY).
 {
   const src = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'main.ts'), 'utf8');
-  const canBody = bodyOf(src, 'function canPlayerInitiateEndTurn(): boolean {');
+  // Pin zaktualizowany (Q16): commit 7fd21ed0c (ENDQUIET) zmienił sygnaturę na (quiet = false);
+  // stara sygnatura `(): boolean {` powodowała pusty wycinek i fałszywy FAIL (f).
+  const canBody = bodyOf(src, 'function canPlayerInitiateEndTurn(quiet = false): boolean {');
   ok(/if\s*\(\s*nnsGateForPlayer\(\)\.blokada\s*\)\s*\{[^{}]*return\s+false\s*;[^{}]*\}/.test(canBody),
     '(f) canPlayerInitiateEndTurn: `if (nnsGateForPlayer().blokada) { ...; return false; }` (nie wyłączone)');
   const hintBody = bodyOf(src, 'function hintEndTurnBlocked(): void {');

@@ -1,0 +1,26 @@
+R-WEB-TEST-DEBT-Q16 — skan rodziny (baza 481e0ebf9; gra/src bez zmian)
+PRZED = stan bazy przed poprawkami pinów; PO = po poprawkach (commit tematu).
+
+plik                                              PRZED                                        PO
+end-turn-gate-live-test.cjs                       POMINIĘTY (wymaga --dist --out)              POMINIĘTY
+end-turn-gate-projection-only-test.cjs            49/0                                         49/0
+endturn-aria-sync-test.cjs                        5 PASS/0 FAIL                                5 PASS/0 FAIL
+endturn-battle-deadlock-exec-test.cjs             ABORT (needle M4 nie pasuje po ENDQUIET,     49/0
+                                                  throw) + pin A2 (header bazy)
+endturn-battle-deadlock-test.cjs                  37 pass/1 fail ([A4] stary header bramki)    38/0
+endturn-quiet-test.cjs                            PASS                                         PASS
+no-negative-stocks-ai-from-turn1-test.cjs         27/0                                         27/0
+no-negative-stocks-ai-t2-behavior-test.cjs        POMINIĘTY (wymaga --dist <bundle>)           POMINIĘTY
+no-negative-stocks-ai-t2-test.cjs                 11/0                                         11/0
+no-negative-stocks-ai-test.cjs                    8/0                                          8/0
+no-negative-stocks-c2-test.cjs                    44/0                                         44/0
+no-negative-stocks-c3-turn-test.cjs               POMINIĘTY (wymaga --dist <bundle>)          POMINIĘTY
+no-negative-stocks-end-turn-gate-levers-test.cjs  34/0                                         34/0
+no-negative-stocks-endturn-test.cjs               18 pass/1 fail (asercja f)                   19/0
+no-negative-stocks-projection-test.cjs            49/0                                         49/0
+no-negative-stocks-test.cjs                       25/0                                         25/0
+
+Bramki (gra/src bez zmian, więc PRZED = PO):
+- tsc --noEmit: RC 0
+- ai-test: 297 passed, 0 failed
+- logic-test: LOGIC OK (213/213)

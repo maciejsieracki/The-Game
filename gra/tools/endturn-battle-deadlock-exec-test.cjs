@@ -82,7 +82,8 @@ const FN_HEADERS = [
   'function scheduleDeferredPreBattleQueueWatchdog(): void {',
   'function maybeScheduleDeferredPreBattleQueueWatchdog(): void {',
   'function healStaleEndTurnBlockers(): void {',
-  'function canPlayerInitiateEndTurn(): boolean {',
+  'function canPlayerInitiateEndTurn(quiet = false): boolean {',
+  'function canPlayerInitiateEndTurn(): boolean {', // baza historyczna (fcd86933) przed ENDQUIET 7fd21ed0c
   'function hintEndTurnBlocked(): void {',
   'function healStuckDeferredPreBattleQueueOnEndTurnAttempt(): void {',
   'function advanceSeat(): void {',
@@ -666,8 +667,8 @@ async function main() {
   ok(m3d.threwOut === true, '[F-M3] usunięcie try/catch CZERWIENI scenariusz D (wyjątek wychodzi z kliknięcia)');
 
   const M4 = replaceOnce(MAIN_FIXED,
-    "      if (isPreBattleOpen() || hasPendingAutoPreBattle()) {\n        console.warn('[EndTurn] blocked: preBattleOpen'",
-    "      if (isPreBattleOpen()) {\n        console.warn('[EndTurn] blocked: preBattleOpen'");
+    "      if (isPreBattleOpen() || hasPendingAutoPreBattle()) {\n        if (!quiet) console.warn('[EndTurn] blocked: preBattleOpen'",
+    "      if (isPreBattleOpen()) {\n        if (!quiet) console.warn('[EndTurn] blocked: preBattleOpen'");
   const m4c2 = scenarioC2(PB, M4);
   ok(!(m4c2.endTurn === 0 && m4c2.c1.ended === 0 && m4c2.c2.ended === 0),
     '[F-M4] osłabiona bramka (tylko isPreBattleOpen) CZERWIENI scenariusz C2 (koniec tury przy czekającej kolejce)');
