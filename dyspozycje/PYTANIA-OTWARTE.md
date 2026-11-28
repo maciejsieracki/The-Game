@@ -32713,3 +32713,7 @@ Pytanie: co ma się stać, gdy gracz zapisze grę przed założeniem pierwszego 
 ## R-WEB-STARVATION-SHAPE-Q44 (2026-11-28 14:31 UTC, pytanie 44, turniej C-018 zakończony) · STATUS: **OTWARTE — pokazane właścicielowi w czacie; do odpowiedzi literą dla pełnego ID**
 
 Pytanie: co ma tracić gracz, gdy w państwie zabraknie żywności po zdjęciu blokady końca tury (Q42=C): A zostawić głód wojska, który już jest (Rekomendowane); B dodatkowo utrata mieszkańców miast; C najsłabsza jednostka znika automatycznie. Pełny tekst: dyspozycje/autobot/runs/R-WEB-STARVATION-SHAPE-Q44/PYTANIE-ABC-Q44.md; turniej: TURNIEJ-C018.md (zwycięzca: SYNTEZA); fakty: FAKTY.md.
+
+## R-WEB-STARVATION-CITIES-Q45 (2026-11-28 17:57 UTC, pytanie 45, turniej C-018 zakończony) · STATUS: **OTWARTE — pokazane właścicielowi w czacie; do odpowiedzi literą dla pełnego ID**
+
+Pytanie: czy miasto z własnym niedoborem żywności ma tracić mieszkańca (−1 na turę), gdy zapas państwa jest wyczerpany (po zdjęciu blokady końca tury): A mieszkańcy chronieni, tylko wzrost stoi (Rekomendowane); B zostaje jak jest; C utrata lżejsza i rzadsza (odstęp do ustalenia po pomiarze). Pełny tekst: dyspozycje/autobot/runs/R-WEB-STARVATION-CITIES-Q45/PYTANIE-ABC-Q45.md; turniej: TURNIEJ-C018.md; fakty: FAKTY.md.
