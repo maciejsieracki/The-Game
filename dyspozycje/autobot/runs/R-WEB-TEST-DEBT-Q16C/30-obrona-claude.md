@@ -1,35 +1,54 @@
-STATUS: PASS-WITH-NOTES
+STATUS: BLOCK
 DOMAIN: PROCESS/GAME-TEST
-TEMAT: R-WEB-TEST-DEBT-Q16C
-GOAL: Ustalić klasę trzech czerwonych testów (ai-wojny-zwykle-cap-dwa-miasta, hotseat-drugi-fotel-tura, hotseat-etap4-noop) i naprawić A bez zmiany gry; B/C opisać z dowodem; dokument DLUG-TESTOWY-Q16C.
-ZMIANY-COMMIT: patrz sekcja SHA poniżej. Pliki: gra/tools/ai-wojny-zwykle-cap-dwa-miasta-test.cjs, gra/tools/hotseat-drugi-fotel-tura-test.cjs, dyspozycje/analizy/DLUG-TESTOWY-Q16C-2026-11-28.md, dyspozycje/autobot/runs/R-WEB-TEST-DEBT-Q16C/* (*.txt). gra/src bez zmian (git diff gra/src = 0).
+TEMAT: R-WEB-TEST-DEBT-Q16C (obrona, runda 3; Operator HAIKU 5.5)
+GOAL: odpowiedzieć na zarzuty Evaluatora (4 pozycje) i domknąć trzy testy: ai-wojny (zielony z mutacją), hotseat-drugi-fotel (zielony), hotseat-etap4-noop (zielony albo sklasyfikowany B/C z dowodem); zero zmian gra/src.
+BAZA: f3bf0cee12b7bbfdf2a3f38f89cfaed2705ac835 (checkout --detach; zmiany w tej rundzie tylko w gra/tools/hotseat-etap4-noop-test.cjs, dyspozycje/analizy/DLUG-TESTOWY-Q16C-2026-11-28.md, runs/R-WEB-TEST-DEBT-Q16C/30-obrona-claude.md, runs/…/55–59)
+SHA (czubek pracy): patrz pole sha w StructuredOutput (commit obrony)
 
-## Odpowiedź na zarzuty Evaluatora (325c96408)
+## Odpowiedzi na zarzuty
 
-1. Brak commitu Operatora — PRZYJMUJĘ. Praca wykonana i zacommitowana w tej rundzie (patrz SHA).
-2. Brak dyspozycje/analizy/DLUG-TESTOWY-Q16C-2026-11-28.md — PRZYJMUJĘ. Dokument zapisany (stan wiążący na górze, NIE ZMIERZONO jawnie).
-3. Brak klasyfikacji A/B/C i dowodów dla trzech testów; brak naprawy i mutacji — PRZYJMUJĘ częściowo i wykonuję:
-   - ai-wojny-zwykle-cap-dwa-miasta: klasa A (dwa stare piny: bramka NNS po t16 bez prepareEndTurnGate; nieaktualny regex asercji F po refaktorze isWarTreatyBlocked). Naprawiono. Wynik: 22 PASS / 0 FAIL (plik 31-ai-wojny-zielony-po-poprawce.txt). Dowód czerwieni bazy: 32-ai-wojny-czerwony-baza.txt (2 PASS / 2 FAIL). Mutacja: regex na peaceLocked:false nie trafia (dowód w dokumencie); mutacja w harnessie NIE ZMIERZONO.
-   - hotseat-drugi-fotel-tura: klasa A (stale selektory kreatora: `.nb.next` i `.start` nie istnieją; nawigacja to `.nav .next`). Selektory poprawione. Status NIE ZAMKNIĘTY: po poprawce Chromium zamyka stronę w podscenariuszu (klasa C). Pełny przebieg NIE ZMIERZONO. Plik 33 (przerwany) i 34 (baza BLOCK).
-   - hotseat-etap4-noop: klasa C, NIE uruchomiono w tej rundzie (NIE ZMIERZONO). Brak dowodu na błąd gry.
-4. Brak raportu Operatora 10-operator-*.md — PRZYJMUJĘ. Dodano 10-operator-claude.md (runda 1) i ten raport (obrona).
+1. hotseat-etap4-noop: PRZYJMUJĘ (zarzut zasadny). Test NIE jest zielony i NIE jest sklasyfikowany jako B lub C z dowodem. Dodatkowe 6 prób (r2 + r3) kończy się na tej samej turze 23. Dowody: runs/…/45–49 (r2), runs/…/58 (sonda DOM r3, dwa przebiegi). Hipoteza „nakładki bitwy” NIE została potwierdzona: sonda DOM nie wykazała ani welcome, ani widocznego dialogu, ani widocznej nakładki bitwy (`civ-wiki-hub` jest ukryty, bez klasy `open`). Sonda tekstu „Zapis niedostępny w trakcie bitwy” nie rozstrzyga (komunikat nie widać w innerText także przy udanych zapisach). Status: NIE ZAMKNIĘTE, klasa nieustalona (nie A, nie C, nie B). Pozostaje otwarte.
 
-## Zarzut „brak commit’u”: dowód
-Przed tą rundą `git diff --name-only dbcc12f71..origin/main` było puste i brak było plików gra/tools/tdq16c-*. Po tej rundzie zmiany są w pliku gra/tools/ai-wojny-zwykle-cap-dwa-miasta-test.cjs i gra/tools/hotseat-drugi-fotel-tura-test.cjs (oba na allowliście).
+2. Pytanie B (Spichlerz −11 → −108): PRZYJMUJĘ (zarzut zasadny). Nie odtworzono live (NIE ZMIERZONO). Wynik analizy z kodu (bez zmian w grze): racja 0 nie może obniżyć `spichlerzStolicy` (`empire-food.ts`, bilans ≥ 0 dla każdego miasta, brak deficytów); `spichlerzPo = spichlerzStolicy − kosztArmii` (`no-negative-stocks.ts`, `projectEmpireFoodAfterTick`). Spadek o 97 wymaga więc skoku `kosztArmii` (zmiana zestawu jednostek lub ich tempa) między t17 a t18, nie samej racji. Łaska 15 tur (`paceUtrzymaniaWlasciciela`) nie obejmuje t17–18. Hipoteza (a) z r2 (produkcja → 0 przy racji 0) jest sprzeczna z kodem. Czy to defekt: NIE ROZSTRZYGNIĘTE. Do wyjaśnienia: zrzut `units` i `kosztArmii` w t16–18. Szczegóły w DLUG-TESTOWY-Q16C, sekcja „Pytanie B”.
 
-## Bramki
-- gra/src: git diff dbcc12f71 -- gra/src = pusty (zero zmian w grze).
-- tsc / logic 213 / ai-test 297 NIE URUCHAMIANO w tej rundzie: zmiany dotyczą wyłącznie plików tools/*.cjs, które nie są w bramkach tsc/logic/ai-test. Zero wpływu na te bramki wykazany przez brak zmian w gra/src i gra/data.
+3. Mutacja regexu F: PRZYJMUJĘ, uzupełnione dowodem na poziomie testu. Mutant (kopia main.ts, linia 47967 `peaceLocked: isPeaceLockedBetween(...)` → `peaceLocked: false`) uruchomiony w CAŁYM teście: `21 PASS, 1 FAIL`, jedyny FAIL to asercja F (runs/…/57, RC 1, 205 s). Zastrzeżenie: F pozostaje pinem tekstowym źródła; mutacja czerwona dowodzi reakcji pinu na zmianę warunku, nie zachowania gry. Tę bramkę zachowania nie testuje F.
 
-## Binarne kryterium
-- ai-wojny: ZIELONY po naprawie A (22/0). SPEŁNIONE z zastrzeżeniem: jedna pełna zielona runda po ostatniej zmianie + czerwień bazy.
-- hotseat-drugi-fotel: NIE SPEŁNIONE (poprawka selektorów, brak zielonego przebiegu; Chromium C).
-- hotseat-etap4-noop: NIE SPEŁNIONE (NIE ZMIERZONO w tej rundzie).
-- Dokument zapisany: SPEŁNIONE.
+4a. Wstawka modalDiag: PRZYJMUJĘ. Usunięta z hotseat-etap4-noop-test.cjs wraz z przywróceniem oryginalnego komunikatu błędu. Zostaje tylko import i wywołanie `closeCivWelcome` (zamknięcie ekranu powitalnego przed zapisem; legalna procedura z _live-ready.cjs).
 
-BLOKADY: hotseat-drugi-fotel (klasa C podczas przebiegu, pełny zielony przebieg niedostępny w tej rundzie); hotseat-etap4-noop (nieuruchomiony, klasa C).
-RUNDY: 1/5 w tej rundzie obrony (runda Operatora nr 2 z kolejności procesu).
-NASTĘPNY KROK: (1) rerun hotseat-drugi-fotel do końca w osobnych segmentach (<=590 s) i przegląd selektorów późniejszych scenariuszy; (2) hotseat-etap4-noop jako osobny segment po stabilizacji Chromium (klasa C, INFRA); (3) mutacja czerwona-zielona w harnessie dla ai-wojny.
-UWAGI-DLA-ORKIESTRATORA: harness Chromium (SIGSEGV/Target closed) nadal blokuje pełne przebiegi live; `sed` w hotseat-drugi-fotel zmienił selektory także w scenariuszach późniejszych (nie zweryfikowane); pierwszy przebieg ai-wojny zawiesił się na 120 s w bashu i przeszedł w tło — wykonano tylko przez kontrolę postępu (bez run_in_background z mojej strony).
+4b. Ustawienia na poziomie maksymalnym: PRZYJMUJĘ (brak dowodu). Test etap4 startuje z `kosztJednostekPace = niski`, `buildingCostPace = niski`, `wzrostLudnosciPace = wysoki` (runs/…/49). Nie zmieniano ich: zmiana zmienia hashe snapshotów, a test nie został jeszcze rozstrzygnięty. Uznany poziom maksymalny dla kosztów jednostek: „Wysoki ×4” (wg wpisu o UPKEEPPACE w rejestrze). NIE ZMIERZONO na maksimum.
+
+## Mutacja czerwona→zielona dla ai-wojny (dispatch pkt 3)
+- Baza (bez zmian): 22 PASS / 0 FAIL, 203 s (runs/…/55).
+- A1 (usunięte wywołanie prepareEndTurnGate w kopii testu, reszta bez zmian): RC 1, 148 s, `bramka Zakończ turę zamknięta po prepareEndTurnGate: {"canEnd":false}` (runs/…/56). Czerwony. Kopia usunięta z repo.
+- Przywrócenie: 22/0 (runs/…/55).
+- A2 (regex F, mutacja warunku w kopii main.ts): 21 PASS / 1 FAIL (runs/…/57).
+
+## Hotseat-drugi-fotel (bez zmian w tej rundzie)
+- Zielony w r2 (runs/…/43, 44; 5/5). Nie uruchomiony ponownie w r3 (poza zakresem zarzutów; wynik r2 stoi).
+
+## Bramki (r3, zmierzone)
+- `npx tsc --noEmit`: exit 0.
+- `node tools/logic-test.cjs`: LOGIC OK (213/213).
+- `node tools/ai-test.cjs`: 297 passed, 0 failed.
+(runs/…/59)
+
+## Zakazy
+- zero zmian gra/src i gra/data: potwierdzone (git diff tylko w gra/tools/hotseat-etap4-noop-test.cjs i plikach dokumentacji/runs).
+- brak spawn_task/create_session/create_trigger/send_later, brak run_in_background, brak nohup/&, brak --no-gpg-sign, bez zmian konfiguracji podpisu.
+- Tymczasowe kopie testów (tdq16c-mutA/mutF/etap4-diag) usunięte z gra/tools przed commitem.
+
+## Pliki zacommitowane
+- gra/tools/hotseat-etap4-noop-test.cjs (usunięty modalDiag i komunikat; zostaje closeCivWelcome)
+- dyspozycje/analizy/DLUG-TESTOWY-Q16C-2026-11-28.md (aktualizacja r3)
+- dyspozycje/autobot/runs/R-WEB-TEST-DEBT-Q16C/30-obrona-claude.md (ten raport)
+- dyspozycje/autobot/runs/R-WEB-TEST-DEBT-Q16C/55–59 (logi: baza 22/0, mutA, mutF, sonda etap4 r3, bramki)
+
+TESTY: ai-wojny 22/0 (baza), A1 RC 1, A2 21/1; etap4 0/6 prób zielone (zawsze t23); tsc 0; logic 213/213; ai-test 297/0.
+
+BLOKADY: (1) hotseat-etap4-noop: zapis tury 23 nie działa; przyczyna nieustalona (nie A, nie C, nie B). Potrzebny pomiar isBattleSceneOpen()/isPostBattleSummaryOpen() w t23 przez hak testowy. (2) Pytanie B: wymaga live zrzutu units i kosztArmii w t16–18. (3) Maksimum ustawień dla etap4 i pytania B: nie zmierzono.
+
+RUNDY: 3/5 (runda 3 = obrona; r1 FC FAIL, r2 FC FAIL → r3 obrona na zarzuty Evaluatora)
+
+NASTĘPNY KROK: (a) w hotseat-etap4 zmierzyć w t23 przez hak testowy, czy `isBattleSceneOpen()` lub `isPostBattleSummaryOpen()` jest prawdą, i decyzja A/B; (b) zrzut `units` i `kosztArmii` w t16–18 dla pytania B. Oba wymagają osobnej rundy z live Chromium.
+
 DEPLOY/PUSH: NIE WYKONANO
-SHA: (patrz wpis w odpowiedzi strukturalnej)

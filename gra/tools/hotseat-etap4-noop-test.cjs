@@ -273,9 +273,8 @@ async function saveAndReadSnapshot(page, expectedTurn) {
     }
     await wait(150);
   }
-  const modalDiag = await page.evaluate(() => ({ welcome: !!document.querySelector("#civ-welcome-screen-root"), dialogs: document.querySelectorAll("[role=dialog]").length, txt: Array.from(document.querySelectorAll("[role=dialog]")).map((d) => (d.className + " :: " + (d.textContent || "")).replace(/\s+/g, " ").slice(0, 160)) })).catch(() => null);
   throw new Error(
-    `saveAndReadSnapshot: timeout czekania na zapis tury ${expectedTurn} w IndexedDB (modal=${JSON.stringify(modalDiag)})` +
+    `saveAndReadSnapshot: timeout czekania na zapis tury ${expectedTurn} w IndexedDB` +
     (lastRaw === null ? ' (klucz wciąż pusty)' : ' (ostatni odczyt: ' + lastRaw.slice(0, 200) + '...)'),
   );
 }
