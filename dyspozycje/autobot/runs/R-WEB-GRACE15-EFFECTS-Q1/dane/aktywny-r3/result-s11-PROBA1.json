@@ -1,0 +1,53 @@
+{
+ "outcome": "blokada-bez-wyjscia",
+ "turn": 16,
+ "gate": {
+  "blokada": true,
+  "komunikat": "Nie można zakończyć tury. Spichlerz państwa (żywność): po zakończeniu tury zabraknie 18. Pomogą: rozwiązanie jednostek (złoto): +32 złota/turę; rozwiązanie jednostek (żywność): +32 żywności/turę.",
+  "dzwignie": [
+   {
+    "id": "rozwiaz-skarbiec",
+    "stock": "skarbiec",
+    "zysk": 32,
+    "opis": "rozwiązanie jednostek (złoto): +32 złota/turę"
+   },
+   {
+    "id": "rozwiaz-spichlerz",
+    "stock": "spichlerz",
+    "zysk": 32,
+    "opis": "rozwiązanie jednostek (żywność): +32 żywności/turę"
+   }
+  ],
+  "zasob": "spichlerz",
+  "prognoza": -18,
+  "propozycjaPodatku": null,
+  "niewystarczajace": false
+ },
+ "forecast": {
+  "skarbPo": 76,
+  "spichlerzPo": -18
+ },
+ "treasury": 97,
+ "granary": 1,
+ "seed": 11,
+ "mode": "tax100",
+ "completedThisSegment": [
+  13,
+  14,
+  15
+ ],
+ "leversOutcome": {
+  "t16": "BRAK-WYJSCIA"
+ },
+ "purchaseTurn": 5,
+ "last": {
+  "turn": 16,
+  "owner": 0,
+  "treasury": 97,
+  "granary": 1,
+  "mil": 2
+ },
+ "dialogs": [],
+ "errors": 0,
+ "elapsedSegmentS": 475
+}
