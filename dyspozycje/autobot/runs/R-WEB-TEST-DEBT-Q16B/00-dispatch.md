@@ -19,3 +19,7 @@ gra/src/**, gra/data/**, gra-robocza/, gra-kanon/, WERSJE.md, manifest, rust-por
 tsc 0, logic 213, ai-test 297/0 (kod gry bez zmian; git diff gra/src = 0); pięć testów zielone albo jawnie sklasyfikowane (B).
 ## Binarne kryterium
 Każdy z pięciu testów: zielony z mutacją czerwoną albo opisany jako B z dowodem; tabela skanu PRZED/PO; zero zmian gra/src.
+
+---
+# DODATEK — RUNDA 1/5, WZNOWIENIE PO RESTARCIE KONTENERA (INFRA; data `date -u` 03:11 UTC 2026-11-28; Operator HAIKU; BAZA = a87d15ddd2e0efe2e3da1d817bec1ab0d954f80f)
+Poprzedni Workflow zatrzymany restartem kontenera (INFRA, nie liczy się jako runda). BAZA = origin/main b07513734 + WIP poprzedniego Operatora (commit a87d15ddd: zmienione piny 5 testów w gra/tools i logi pre-/post-/scan-*.txt w runs/R-WEB-TEST-DEBT-Q16B/) — NIEZWERYFIKOWANY: uruchom ponownie każdy z pięciu testów, sprawdź diff względem b07513734, zrób brakujące mutacje, tabelę skanu i dokument DLUG-TESTOWY-Q16B-2026-11-28.md; nie zakładaj, że logi WIP są prawdziwe — odtwórz wyniki sam.
