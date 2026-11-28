@@ -52413,9 +52413,11 @@ async function boot(): Promise<void> {
         if (regeneratedMapForLoad) {
           // R-WEB-LOAD-CAMERA-Q1: widok jak po założeniu stolicy w nowej grze (focusAt(..., 22)),
           // zamiast dystansu z nowo zbudowanej sceny. Zapis nie przechowuje kamery.
-          const playerCityAfterLoad = cities.find(c => c.ownerId === ME());
-          if (playerCityAfterLoad) {
-            const capPos = axialToWorld(playerCityAfterLoad.q, playerCityAfterLoad.r, HEX_R);
+          // Stolica = capitalCityIdForOwner (ta sama zasada co w nowej grze i w bramkach stolicy).
+          const capIdAfterLoad = capitalCityIdForOwner(ME());
+          const capCityAfterLoad = capIdAfterLoad ? cities.find(c => c.id === capIdAfterLoad) : undefined;
+          if (capCityAfterLoad) {
+            const capPos = axialToWorld(capCityAfterLoad.q, capCityAfterLoad.r, HEX_R);
             camCtrl.focusAt(capPos.x, capPos.z, 22);
           }
         }

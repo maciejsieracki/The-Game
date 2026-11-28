@@ -7,7 +7,7 @@
  * kamere na center + camDist; regenerateWorldForLoad (main.ts) tworzy new CameraController(camera, canvas, center, ...),
  * a jego konstruktor (render/camera.ts ok. 122) liczy dist = |camera.position - target|, czyli ~camDist*1.14 na duzej mapie.
  * POPRAWKA: loadGameFromSlot po restoreGameFromSave, tylko gdy mapa byla przebudowana, ustawia widok na stolice gracza
- * (camCtrl.focusAt(..., 22)) -- tak jak po zalozeniu stolicy w nowej grze.
+ * (capitalCityIdForOwner(ME()), camCtrl.focusAt(..., 22)) -- tak jak po zalozeniu stolicy w nowej grze.
  *
  * Test tekstowy (bez przegladarki): sprawdza kolejnosc i obecnosc kodu w src/main.ts; mutacje semantyczne MUSZA byc czerwone.
  * Uruchom z gra/:  node tools/load-camera-test.cjs
@@ -46,12 +46,13 @@ function check(src) {
   const guardIdx = fn.indexOf('if (regeneratedMapForLoad) {');
   const focusRe = /camCtrl\.focusAt\(\s*capPos\.x\s*,\s*capPos\.z\s*,\s*22\s*\)\s*;/;
   const focusIdx = fn.search(focusRe);
-  const cityRe = /cities\.find\(c\s*=>\s*c\.ownerId\s*===\s*ME\(\)\)/;
+  const cityRe = /capitalCityIdForOwner\(\s*ME\(\)\s*\)/;
   r['T1 flaga zadeklarowana przed przebudowa'] = flagDecl >= 0 && flagDecl < regenIdx;
   r['T2 flaga ustawiona z wyniku regenerateWorldForLoad'] = flagSet;
   r['T3 blok strzezony flaga istnieje'] = guardIdx >= 0;
-  r['T4 focusAt na stolicy gracza dystans 22'] = focusIdx >= 0 && cityRe.test(fn);
+  r['T4 focusAt na stolicy gracza (capitalCityIdForOwner) dystans 22'] = focusIdx >= 0 && cityRe.test(fn);
   r['T5 widok ustawiany po restoreGameFromSave'] = restoreIdx >= 0 && guardIdx > restoreIdx && focusIdx > guardIdx;
+  r['T6 focusAt tylko gdy stolica istnieje (strazak)'] = /if\s*\(\s*capCityAfterLoad\s*\)\s*\{/.test(fn);
   return r;
 }
 
@@ -66,7 +67,8 @@ function mutants(src) {
   mut('M2 zly dystans 316', 'camCtrl.focusAt(capPos.x, capPos.z, 22);', 'camCtrl.focusAt(capPos.x, capPos.z, 316);');
   mut('M3 bez przypisania flagi', 'regeneratedMapForLoad = ok;', '');
   mut('M4 flaga zawsze true', 'regeneratedMapForLoad = ok;', 'regeneratedMapForLoad = true;');
-  mut('M6 bez filtra wlasciciela', 'cities.find(c => c.ownerId === ME())', 'cities[0]');
+  mut('M6 stolica zastapiona pierwszym miastem', 'capitalCityIdForOwner(ME())', 'cities[0]?.id ?? null');
+  mut('M7 bez sprawdzenia istnienia stolicy', 'if (capCityAfterLoad) {', 'if (true) {');
   return out;
 }
 
