@@ -1,38 +1,38 @@
-STATUS: BLOCK
+STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
-TEMAT: R-WEB-GRACE15-EFFECTS-Q1 (GRACE15FX), obrona po ocenie Evaluatora r2 (FAIL, commit 9a8aeeb81), rola Operator HAIKU 5.5
-GOAL: odpowiedź na zarzuty 1–9 Evaluatora; kryterium binarne z dispatchu (tabela aktywnego gracza t1–30 z min. 2 ziarnami z Drewnem, readback barbarzyńców, barbarzyńcy po t16) NIE zostało zamknięte w tej rundzie. Zero zmian gra/src i gra/data.
-BAZA: ad2629a08 (kandydat r2); commit obrony poniżej.
+TEMAT: R-WEB-GRACE15-EFFECTS-Q1 (GRACE15FX), obrona Operatora po ocenie Evaluatora r3 (raport 20-evaluator-claude.md, commit 747110ae3), runda 3/5, Operator w fazie obrony: HAIKU 5.5
+GOAL: usunąć sprzeczności i nieprawdziwe twierdzenia z dokumentu STAN WIĄŻĄCY oraz z komentarza runnera; odpowiedzieć na 9 zarzutów (PRZYJMUJĘ / ODRZUCAM z dowodem). Zero zmian `gra/src` i `gra/data`. Bez nowych biegów gry.
 
-ZMIANY/COMMIT: 
-- gra/tools/grace15fx-active2-live.cjs: usunięto martwy blok `if (false && …)` z setTaxSplit; usunięto `window.__civTest.endTurn()`; koniec tury = klik przycisku „Zakończ turę” w UI (ścieżka NIE ZWERYFIKOWANA na żywo).
-- dyspozycje/analizy/OKNO-LASKI-15-TUR-SKUTKI-2026-11-27.md: baner nadpisań nad sekcjami r1; STAN WIĄŻĄCY przepisany (usunięto „ok. 32 na jednostkę” jako fakt; liczby t16 z definicjami; readback = NIE ZWERYFIKOWANO; dane s11 oznaczone jako z hakiem endTurn); nagłówek wersji bez zdwojenia „runda 2”.
-- dyspozycje/autobot/runs/R-WEB-GRACE15-EFFECTS-Q1/30-obrona-claude.md (ten raport).
-- Brak nowych biegów na żywo w tej rundzie. Dane r2 bez zmian.
+ZMIANY/COMMIT: kandydat f06df1bbd (checkout --detach). Zmienione ścieżki (allowlista obrony):
+- dyspozycje/analizy/OKNO-LASKI-15-TUR-SKUTKI-2026-11-27.md (poprawki STANU WIĄŻĄCEGO, §2.3, §4, §5)
+- gra/tools/grace15fx-active3-live.cjs (WYŁĄCZNIE komentarz nagłówkowy: lista haków; kod bez zmian)
+- dyspozycje/autobot/runs/R-WEB-GRACE15-EFFECTS-Q1/30-obrona-claude.md (ten raport)
+Commit: patrz pole sha w zwrocie. `git diff --name-only f06df1bbd..HEAD` = powyższe trzy ścieżki. Dane `dane/aktywny-r3/` nie zmienione.
 
 ODPOWIEDZI NA ZARZUTY:
-1. PRZYJĘTE (NIE ZAMKNIĘTE). Tabela t17–30 aktywnego gracza NIE ZMIERZONA. Powód: bieg wymaga wznawialnego zapisu między wywołaniami (ok. 170 s startu + ok. 24 s/turę, limit 590 s na wywołanie) oraz działającego klikania suwaka Wyżywienia lub rozwiązania jednostki; żadnego z tych elementów nie zbudowano i nie sprawdzono. Nie wpisuję wartości, których nie zmierzono.
-2. PRZYJĘTE. Z Drewnem bez haka jest tylko seed 11 (1 ziarno). Seed 7 wyłączony z wniosków. Drugie ziarno NIE ZMIERZONO.
-3. PRZYJĘTE. Żadna dźwignia po t16 nie została przetestowana: suwak Wyżywienia nie znaleziony w widoku harnessu (rangeDump = []), rozwiązanie jednostki nie zaimplementowane. Odpowiedź „czy gracz ma wyjście z blokady” = NIE ZBADANO.
-4. PRZYJĘTE. Hak `civTest.endTurn()` (l.347) i martwy blok z setTaxSplit (l.267–273) usunięte z narzędzia. Dane s11 z tego narzędzia powstały z hakiem endTurn i są NIEZGODNE z zakazem dispatchu; traktuję je jako nieważne dla wniosków, dopóki nie zostaną powtórzone klikiem. Przypis: dane s7-z-hakiem-podatku były już wyłączone.
-5. PRZYJĘTE. `readback-s11.txt` to zapis wartości przekazanej do startNewGame, nie odczyt. Poziom barbarzyńców: NIE ZWERYFIKOWANO w grze. Dokument mówi to wprost w STANIE WIĄŻĄCYM.
-6. PRZYJĘTE. Barbarzyńcy po t16: NIE ZMIERZONO (bieg nie wszedł po t16).
-7. PRZYJĘTE. Dodano baner nadpisań nad sekcjami r1; nagłówki „runda 2” zmieniono na jednoznaczne; STAN WIĄŻĄCY opisuje, które stwierdzenia r1 są nieaktualne.
-8. PRZYJĘTE i wyjaśnione definicją. Liczby z `turns-s11.jsonl` (t16): skarbiec 19; `projSkarbDelta` = −29 to ZMIANA skarbca w turze, czyli skarbiec po turze = 19 − 29 = −10. `projFoodDelta` = −31 to ZMIANA Spichlerza, czyli Spichlerz po turze = 1 − 31 = −30 (zgodne z `forecastSpichlerzPo` = −30 w `turns-s11.jsonl`). „ok. 32 na jednostkę” usunięto ze STANU WIĄŻĄCEGO; zostaje jako hipoteza oznaczona NIE ZMIERZONO.
-9. PRZYJĘTE. Sekcje r1 z „bramką skarbca” mają baner nadpisania; STAN WIĄŻĄCY stwierdza, że pierwszy wąski przekrój po t16 to żywność (Spichlerz). Zmiana wiki/komunikatu (decyzja, czy opisać to w grze) należy do właściciela; nic nie poprawiono w tekstach gry.
+1. PRZYJMUJĘ. Linia 21 STANU WIĄŻĄCEGO: wartości „t31” były t30. Poprawiono na: ziarno 11 t31 skarbiec 220, Spichlerz 16 (`result-s11.json`; t30 = 212/15); ziarno 7 t31 skarbiec 174, Spichlerz 28 (`result-s7.json`; t30 = 166/26). Tabela §2.3 bez zmian (była poprawna). Raport Operatora r3 twierdził „bez sprzeczności” — błędne, skorygowane tutaj.
+2. PRZYJMUJĘ. §4: usunięto „Pomiar t17–30 NIE ZMIERZONO” i „dźwignie NIE ZMIERZONO” (obalone r3: pomiar t1–30 na ziarnach 11 i 7 wykonany; dźwignie zmierzone z zastrzeżeniem nieizolacji). „Brak logu zdarzeń barbarzyńców” zastąpiono faktem: `barblog-s11.txt`, `barblog-s7.txt` istnieją, 0 trafień „atak/zdob”. §5: dodano fakty r3 (suwak nie wystarczył; wyjściem jest rozwiązanie jednostek; po nim brak obrony wojskowej; obozy od t17); pytanie zaktualizowano (obniżka racji nie wystarcza, mimo że komunikat bramki ją wymienia).
+3. PRZYJMUJĘ (twierdzenie „bez haków zmieniających stan” było nieprawdziwe). Dopisano pełną listę haków w STANIE WIĄŻĄCYM (grupy a–d: odczyt; ZMIENIAJĄCE stan: `startNewGame`, `foundFirstCity`, `rejectAwaitingAiOffers`, `acceptForcedPeace`, `flushBattles`/`closeBattleSummary`; wznowienie `loadJsonAsPauseLoad`; widok `focusCameraOnOwnerCapitalForTest` i fallback `openCityPanelForTest`). Usunięto frazę z nagłówka §2.3 i z komentarza runnera (komentarz nagłówkowy `gra/tools/grace15fx-active3-live.cjs` przepisany na listę). Wpływ hooków (b) i (c) na wynik NIE wykazany i NIE zmierzony (brak biegu bez nich) — jawnie w dokumencie. Nie zmieniano kodu runnera.
+4. PRZYJMUJĘ (przyczynowość NIE wyizolowana). Dane `levers-s11-bA.jsonl`: krok `a-wyzywienie-min` ma wartość suwaka 0 przed i po (min = max = 0); w tym samym kroku poziom racji (auto) 1,5 -> 0 po otwarciu panelu; prognoza Spichlerza −30 -> −18. Dokument opisuje to jako nieizolowane. Rozbieżność HUD (−30) vs komunikat bramki („zabraknie 18”) o 12, także na ziarnie 7 (HUD −28 vs 16), dopisano jako niewyjaśnioną; kryterium blokady = komunikat bramki. Nie ponawiano biegu (zakres obrony).
+5. PRZYJMUJĘ jako NIE ZMIERZONO. Suwak puli Pracy na ulepszenia NIE został ustawiony na 100% w tej rundzie. Pomiar NIE spełnia zasady testowania (maksimum) w tym punkcie; zapisano to w STANIE WIĄŻĄCYM i w §4. Decyzja, czy powtórzyć bieg z pulą 100% czy przyjąć lukę, należy do orkiestratora (zob. NASTĘPNY KROK).
+6. PRZYJMUJĘ (luki jawne). Dopisano do listy NIE ZMIERZONO: przegląd tooltipów utrzymania i komunikatów bramki w UI (NIE wykonany), budowa zwiększająca żywność (brak aktywnego przycisku), pierwszy atak na AI, atak barbarzyńców na gracza po t30. PROBA1 opisana jako nieudana i niewiążąca.
+7. PRZYJMUJĘ. Readback poziomu barbarzyńców to ECHO parametru z `startNewGame` (`meta.newGameParams.advanced.barbariansLevel`), nie dowód działania w silniku: w dokumencie oznaczono NIE ZWERYFIKOWANO w silniku. Raport Operatora r3 (`10-operator-claude.md`) zostaje jako historia i jest tu skorygowany: pozycja „readback ... zrobione” oznacza wyłącznie echo parametru.
+8. PRZYJMUJĘ (jako zastrzeżenie). Zdublowane wiersze tury po wznowieniach wypisano w dokumencie: `turns-s11.jsonl` t13, t16, t25; `turns-s7.jsonl` t13, t25 (wartości identyczne; obowiązuje wiersz późniejszy). Ciągłość wznowionego przebiegu względem ciągłego NIE porównana na tych ziarnach (jawnie).
+9. PRZYJMUJĘ. Dopisano: 2 ziarna (11, 7), jeden wariant podatku (Skarb 100%); liczba jednostek do rozwiązania zależy od ziarna (11: 2 w t16; 7: 1 w t16 i 1 w t17). NIE uogólniać.
 
-ODPOWIEDZI TESTOWE:
-- Bramki po obronie NIE ponawiano (kod gry nietknięty, zmiana tylko w narzędziu i dokumencie). Ostatnie wyniki z r2 (ad2629a08, po npm ci --ignore-scripts): tsc exit 0; LOGIC OK (213/213); ai-test 297 passed, 0 failed; early-grace-15-test 33 passed, 0 failed (wg raportu Evaluatora r2; powtórzono tylko `node --check` zmienionego narzędzia: SYNTAX_OK).
+TESTY (surowe wyniki z kandydata f06df1bbd, przed zmianą komentarza; zmiana dotyczy wyłącznie dokumentu i komentarza):
+- `node --check gra/tools/grace15fx-active3-live.cjs`: patrz wynik w sekcji poniżej (uruchomiono po edycji).
+- Bramki gry (tsc, logic, ai-test, early-grace-15) nie były ponawiane: diff `gra/src` i `gra/data` = 0 (zmiany tylko w dokumencie i komentarzu narzędzia).
 
-TESTY/POMIARY W TEJ RUNDZIE:
-- Pomiary na żywo: 0 (NIE ZMIERZONO).
-- node --check gra/tools/grace15fx-active2-live.cjs: SYNTAX_OK.
+BLOKADY: brak techniczny. Otwarte decyzje dla orkiestratora: zarzut 5 (pula Pracy 100%) — powtórka pomiaru albo przyjęcie luki; zarzut 4 (izolacja suwaka Wyżywienia) — osobny bieg, jeśli wynik ma służyć pytaniu do właściciela.
 
-BLOKADY:
-- Brak czasu/infrastruktury na wznawialny bieg 30 tur z klikiem suwaka i dźwigni (zarzuty 1, 2, 3, 6). Wymaga osobnej rundy (r3) i rozważenia eskalacji modelu zgodnie z zasadą „2 nieudane rundy Haiku”.
-- Ścieżka klikana „Zakończ turę” nie została zweryfikowana na żywo.
+RUNDY: 3/5 (obrona po ocenie Evaluatora r3).
 
-RUNDY: 3/5 (obrona po r2; zużyto 2 rundy Operatora Haiku; wg zasady modeli rozważyć Sonnet na Operatorze dla r3 z pisemnym uzasadnieniem: 2 nieudane rundy Haiku bez tabeli t17–30).
-NASTĘPNY KROK: Final Control dla kandydata obrony (po commicie). Kandydat NIE spełnia kryterium binarnego dispatchu (zarzuty 1–3, 6 otwarte). Potrzebna runda r3: wznawialny runner pomiaru aktywnego gracza t1–30 na ziarnach 11 i drugim z Drewnem, klik suwaka Wyżywienia lub rozwiązania jednostki, readback barbarzyńców z odczytu UI.
-UWAGI-DLA-ORKIESTRATORA: (a) zarzut 8 i 9 zamknięte w dokumencie; (b) dane s11 z hakiem endTurn są nieważne dla wniosków, nie ma ich w STANIE WIĄŻĄCYM jako dowodu dla t1–16; (c) Operator r3 powinien mieć wskazanie, jak otworzyć suwak Wyżywienia (widok .civ-cs .wyzwienie-w4-sliders, wg 10-operator).
+NASTĘPNY KROK: Final Control (Sonnet) na commicie tego raportu. Jeśli FC PASS: orkiestrator decyduje o zarzucie 5 (pomiar z pulą Pracy 100%) i o zarzucie 4 (izolacja suwaka) przed pytaniem ABC do właściciela.
+
+UWAGI-DLA-ORKIESTRATORA:
+- Komunikat bramki po t16 wymienia „obniżkę racji żywności +12”, choć po rozwiązaniu jednostki suwak stoi na 0 i jest zablokowany. Kandydat na błąd komunikatu/UI (już zgłoszony w r3).
+- Rozbieżność 12 między prognozą HUD Spichlerza a liczbą w komunikacie bramki (oba ziarna) — kandydat na osobny temat UI (nie naprawiano).
+- Raport `10-operator-claude.md` (r3) zawiera nieprawdziwe „bez haków zmieniających stan” i „readback zrobione”; korekta jest w tym raporcie i w dokumencie.
+
 DEPLOY/PUSH: NIE WYKONANO

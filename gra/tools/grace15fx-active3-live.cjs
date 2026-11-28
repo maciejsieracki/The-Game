@@ -1,14 +1,18 @@
 'use strict';
 // GRACE15FX-ACTIVE3 (R-WEB-GRACE15-EFFECTS-Q1, runda 3): WZNAWIALNY runner AKTYWNEGO gracza t1-30 na zywej grze (Chromium),
 // KONFIGURACJA MAKSYMALNA (jak active2: Trudny, barbarzyncy Trudny, kultura trudny, dyplomacja trudna, Wysoki x4, mapa Standardowy,
-// 1 rywal, 15 typow cywilizacji, 1 miasto-panstwo). ZERO hakow zmieniajacych stan gry:
+// 1 rywal, 15 typow cywilizacji, 1 miasto-panstwo). Glowna sciezka gracza to KLIKI w UI:
 //  - koniec tury WYLACZNIE klikiem przycisku „Zakończ turę”;
 //  - zakup obroncy klikiem w panelu miasta (zakladka „Jednostki do rekrutacji”);
-//  - suwaki (Wyzywienie, podzial podatku) wylacznie zdarzeniem 'input' na kontrolce w panelu miasta (jak przeciagniecie);
+//  - suwaki (Wyzywienie, podzial podatku) zdarzeniem 'input' na kontrolce w panelu miasta (jak przeciagniecie);
 //  - rozwiazanie jednostki: klik w miasto na mapie -> „JEDNOSTKA” -> przycisk „ROZWIĄŻ” (+ ewentualny confirm).
-//  Hak wolno uzyc TYLKO do odczytu (gateInfo, cityThreatProbe, resourceStock, snapshotJson) oraz do WZNOWIENIA po przerwie
-//  (__detHarness.loadJsonAsPauseLoad = produkcyjna sciezka „Wczytaj z menu pauzy”, patrz SAVEFIX FALA 932). Hak otwarcia panelu
-//  (openCityPanelForTest) jest tylko FALLBACKIEM, gdy klik w miasto na mapie sie nie powiedzie (log `openVia`).
+//  HAKI UZYTE W BIEGU (NIE zero hakow zmieniajacych stan; lista pelna, zarzut Evaluatora r3 nr 3):
+//  (a) tylko odczyt: gateInfo, cityThreatProbe, resourceStock, snapshotJson, getSettings;
+//  (b) zmieniajace stan poza klikami: __settingsLive.startNewGame (nowa gra z parametrami), __nnsMeasureDebug.foundFirstCity,
+//      w tidy(): rejectAwaitingAiOffers, acceptForcedPeace, flushBattles / closeBattleSummary (czyszczenie kolejek);
+//  (c) WZNOWIENIE po przerwie: __detHarness.loadJsonAsPauseLoad (produkcyjna sciezka „Wczytaj z menu pauzy”, SAVEFIX FALA 932);
+//  (d) WIDOK: focusCameraOnOwnerCapitalForTest (kamera przed klikiem w miasto); FALLBACK openCityPanelForTest (log `openVia`).
+//  Wplyw hakow (b) i (c) na wynik NIE zostal wykazany (brak biegu bez nich).
 //
 // WZNAWIANIE: stan zapisywany na POCZATKU kazdej tury (przed akcjami tury) do <stateDir>/state-s<seed>.json (snapshot gry + flagi
 // runnera). Wywolanie bez ukonczonej gry wznawia od ostatniej tury z zapisu. Segment konczy sie, gdy uplynie budzet czasu
