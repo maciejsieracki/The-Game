@@ -1,0 +1,24 @@
+[hotseat-drugi-fotel-tura-test] budowanie bundla (vite build, jedyna dozwolona komenda buildu, C-001)...
+[hotseat-drugi-fotel-tura-test] build OK -> /tmp/civ-hotseat-drugi-fotel-tura-23453-gnu8tu-23453-419123f9
+[hotseat-drugi-fotel-tura-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+[hotseat-drugi-fotel-tura-test] [main] próba 1/3 padła (locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('.civ-newgame .start')[22m
+) -- ponawiam ze świeżym browser.launch()...
+[hotseat-drugi-fotel-tura-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+[hotseat-drugi-fotel-tura-test] [main] próba 2/3 padła (locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('.civ-newgame .start')[22m
+) -- ponawiam ze świeżym browser.launch()...
+[hotseat-drugi-fotel-tura-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+[hotseat-drugi-fotel-tura-test] [main] próba 3/3 padła (locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('.civ-newgame .start')[22m
+) -- wyczerpano próby.
+[hotseat-drugi-fotel-tura-test] BLOCK: scenariusz nie zadziałał headless: locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('.civ-newgame .start')[22m
+
+    at runScenarioMain (/home/user/The-Game/.claude/worktrees/wf_158cc402-1b3-3/gra/tools/hotseat-drugi-fotel-tura-test.cjs:178:47)
+    at async runWithRetry (/home/user/The-Game/.claude/worktrees/wf_158cc402-1b3-3/gra/tools/hotseat-drugi-fotel-tura-test.cjs:709:14)
+    at async main (/home/user/The-Game/.claude/worktrees/wf_158cc402-1b3-3/gra/tools/hotseat-drugi-fotel-tura-test.cjs:737:15)

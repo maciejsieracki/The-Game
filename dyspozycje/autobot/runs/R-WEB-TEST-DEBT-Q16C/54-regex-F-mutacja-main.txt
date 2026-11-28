@@ -1,0 +1,7 @@
+Mutacja A2 (regex asercji F w ai-wojny-zwykle-cap-dwa-miasta-test.cjs, linia 304)
+Wejście: gra/src/main.ts (baza 8b98d9f41) oraz kopia /tmp/claude-0/main-mut-F.ts
+Mutacja: linia 47967 `peaceLocked: isPeaceLockedBetween(ownerId, targetId),` -> `peaceLocked: false,` (tylko w kopii)
+Wynik (node, wzorzec z testu, surowe wyjście):
+BASE match: true
+MUTANT match: false
+Kopia mutanta nie została wstawiona do gra/src. Źródło w repo bez zmian.

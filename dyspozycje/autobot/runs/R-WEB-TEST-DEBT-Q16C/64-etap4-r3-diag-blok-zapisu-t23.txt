@@ -1,0 +1,10 @@
+Wyjątek z sondy gra/tools/tdq16c-diag-etap4.cjs (żywy Chromium, baza 3607a4e2e, 2026-11-28 ok. 09:05 UTC), tura 22->23:
+[A] t22 turn=23 playerCities=1/11 units=26 overlays=[] toast="Szybki zapis (tura 22)"
+[A] SAVE FAIL t22: saveAndReadSnapshot: timeout czekania na zapis tury 23 w IndexedDB (ostatni odczyt: {"wersja":3,"tura":22,...
+POST-FAIL hint="Zapis niedostępny w trakcie bitwy"   (src/main.ts: notifySaveBlockedByBattle; isSaveBlockedByBattle = isBattleSceneOpen() || isPostBattleSummaryOpen())
+DOM-AT-FAIL {"pbPresent":false,...}  (okno przed bitwą .pb-overlay NIE jest otwarte; clickedAuto=false)
+AFTER-AUTO ovTxt: pbs-roster-col:"WOJSKA AI · 1 Po walce: 1 Wojownik szekelesz wojownik HP 28 -> 18/28 -36%"
+                  pbs-roster-col:"TWOJE WOJSKA · 2 Po walce: 0 · poległo: 2 Zwiadowca ... Wojownik ..."
+RETRY-SAVE FAIL (podsumowanie nadal otwarte)
+=> otwarte było PODSUMOWANIE BITWY (src/ui/postBattleSummary.ts: isPostBattleSummaryOpen() = overlayEl !== null), nie okno przed bitwą.
+Po realnym kliku przycisku „Kontynuuj” (footer button w overlayu podsumowania) Ctrl+S zapisuje: patrz 61 (30/30).

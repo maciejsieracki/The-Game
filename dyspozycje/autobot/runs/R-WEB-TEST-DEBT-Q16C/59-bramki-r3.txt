@@ -1,0 +1,3 @@
+tsc --noEmit: exit 0 (brak wyjscia)
+logic-test.cjs: LOGIC OK (213/213)
+ai-test.cjs: ai-test: 297 passed, 0 failed

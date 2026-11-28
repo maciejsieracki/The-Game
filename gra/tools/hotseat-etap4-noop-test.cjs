@@ -72,6 +72,7 @@
  */
 
 const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
+const { closeCivWelcome } = require('./_live-ready.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -144,6 +145,23 @@ function stableStringify(value) {
   if (Array.isArray(value)) return '[' + value.map(stableStringify).join(',') + ']';
   const keys = Object.keys(value).sort();
   return '{' + keys.map((k) => JSON.stringify(k) + ':' + stableStringify(value[k])).join(',') + '}';
+}
+
+// TDQ16C r3: DRUGI zegar ścienny w zapisie (poza meta.savedAt): `armyMerge.freshStackGroupId` buduje
+// 'sg<owner>_' + Date.now().toString(36) + '_' + <licznik> (src/game/armyMerge.ts:78-81). Od t5 (pierwszy podział/scalenie stosu)
+// dwa uruchomienia tego samego ziarna różnią się WYŁĄCZNIE tym segmentem czasu, nie strukturą grup (zmierzone:
+// 6 różnic units[].stackGroupId w t5, zero innych; tools/tdq16c-diag-etap4.cjs). Ten sam artefakt jest znany w
+// src/game/det-digest-normalize.ts. Normalizacja: segment czasu -> '<t>'; owner i licznik zostają, więc relacja
+// równości grup i kolejność ich tworzenia nadal są porównywane (nie osłabia testu: inne różnice wciąż go czerwienią).
+const STACK_GROUP_ID_RE = /^(sg\d+_)[0-9a-z]+(_[0-9a-z]+)$/;
+function normalizeStackGroupClocks(value) {
+  if (typeof value === 'string') {
+    const m = STACK_GROUP_ID_RE.exec(value);
+    return m ? m[1] + '<t>' + m[2] : value;
+  }
+  if (Array.isArray(value)) { for (let i = 0; i < value.length; i++) value[i] = normalizeStackGroupClocks(value[i]); return value; }
+  if (value && typeof value === 'object') { for (const k of Object.keys(value)) value[k] = normalizeStackGroupClocks(value[k]); return value; }
+  return value;
 }
 
 function sha256(text) {
@@ -220,6 +238,36 @@ async function startRealNewGame(page) {
   if (!(world0.citiesLen > 0 && world0.unitsLen > 0 && world0.turn === 1)) {
     throw new Error(`startRealNewGame: bootstrap niekompletny: ${JSON.stringify(world0)}`);
   }
+}
+
+// TDQ16C r3: po realnej bitwie w t22->t23 (barbarzyńcy po oknie łaski) gra pokazuje podsumowanie bitwy
+// (overlay .pbs-roster-col + przycisk „Kontynuuj”) lub okno przed bitwą (.pb-overlay, przycisk „Auto”).
+// Gra CELOWO blokuje Ctrl+S, dopóki jedno z nich jest otwarte (R-WEB-BATTLE-SAVE-DISABLED-DURING-BATTLE-Q1,
+// main.ts isSaveBlockedByBattle -> „Zapis niedostępny w trakcie bitwy”). Test zamykał tylko ekran powitalny,
+// więc zapis t23 przeterminowywał się (6/6 prób). Naprawa harnessu: realny klik UI jak w tools/ai-*-measure-run.cjs;
+// stan gry nie jest zmieniany poza tym, co robi sam gracz klikając „Auto”/„Kontynuuj”. Zwraca liczbę zamkniętych okien.
+async function closeBattleOverlays(page, maxRounds = 12) {
+  let closed = 0;
+  for (let i = 0; i < maxRounds; i += 1) {
+    const act = await page.evaluate(() => {
+      const auto = document.querySelector('.pb-overlay [data-act="auto"]');
+      if (auto) { auto.click(); return 'auto'; }
+      const col = document.querySelector('.pbs-roster-col');
+      if (col) {
+        const root = col.parentElement;
+        const btn = (root && root.querySelector('footer button')) || null;
+        if (btn) { btn.click(); return 'summary'; }
+        return 'summary-nobtn';
+      }
+      return null;
+    });
+    if (!act) return closed;
+    if (act === 'summary-nobtn') throw new Error('podsumowanie bitwy otwarte, ale brak przycisku Kontynuuj');
+    closed += 1;
+    await wait(250);
+    await closeCivWelcome(page);
+  }
+  throw new Error('okna bitwy nie zamknęły się po ' + maxRounds + ' próbach');
 }
 
 async function endTurnAndSettle(page) {
@@ -324,12 +372,16 @@ async function runOnce(chromium, label) {
 
     for (let i = 1; i <= TURNS; i++) {
       await endTurnAndSettle(page);
+      // TDQ16C r2: ekran 'Odkryłeś nową cywilizację' (civ-welcome-screen-root) zasłania UI i blokuje Ctrl+S -- zamknięcie wyłącznie UI, stan gry bez zmian.
+      await closeCivWelcome(page);
+      await closeBattleOverlays(page);
       const world = await page.evaluate(() => window.__eraTestDebug.getWorldState());
       const snapshot = await saveAndReadSnapshot(page, world.turn);
       // Normalizacja JEDYNEGO zegara ściennego w snapshotcie (main.ts:27805) -- patrz
       // docstring pkt 3. Bez tego 30/30 identycznych hashy jest strukturalnie
       // niemożliwe między dwoma osobnymi uruchomieniami procesu.
       if (snapshot.meta && typeof snapshot.meta === 'object') snapshot.meta.savedAt = '<normalized>';
+      normalizeStackGroupClocks(snapshot);
       const canon = stableStringify(snapshot);
       hashes.push(sha256(canon));
       log(`[${label}] tura ${i} (turn=${world.turn}): hash=${hashes[hashes.length - 1].slice(0, 12)}...`);

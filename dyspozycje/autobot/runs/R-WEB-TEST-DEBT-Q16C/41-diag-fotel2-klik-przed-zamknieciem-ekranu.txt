@@ -1,0 +1,16 @@
+[hotseat-drugi-fotel-tura-test] budowanie bundla (vite build, jedyna dozwolona komenda buildu, C-001)...
+[hotseat-drugi-fotel-tura-test] build OK -> /tmp/civ-hotseat-drugi-fotel-tura-28797-4ap5ha-28797-01f69757
+[hotseat-drugi-fotel-tura-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+[diag] humanOwnerIds=[0,49] seat2=49
+[diag] fotel1 founds: true
+[diag] fotel2 founds: true
+[diag] u0={"id":"diffbonus_1_49_1rn4xyf","ownerId":49,"typeId":"Zwiadowca","q":144,"r":68}
+[diag] cam={"x":308.30504374726013,"z":102,"dist":22} W=1400 H=900
+[diag] PRE selectedId=diffbonus_1_49_1rn4xyf planned=0 hint=Miasto Chengdu założone!
+[diag] CLICK (145,68) px=(776,450) ok=true top=H3#. | selectedId=diffbonus_1_49_1rn4xyf planned=0 unit=(144,68) hint=Miasto Chengdu założone!
+[diag] CLICK (145,67) px=(736,400) ok=true top=LI#. | selectedId=diffbonus_1_49_1rn4xyf planned=0 unit=(144,68) hint=Miasto Chengdu założone!
+[diag] CLICK (144,67) px=(664,400) ok=true top=LI#. | selectedId=diffbonus_1_49_1rn4xyf planned=0 unit=(144,68) hint=Miasto Chengdu założone!
+[diag] CLICK (143,68) px=(624,450) ok=true top=H3#. | selectedId=diffbonus_1_49_1rn4xyf planned=0 unit=(144,68) hint=Miasto Chengdu założone!
+[diag] CLICK (143,69) px=(660,504) ok=true top=H3#. | selectedId=diffbonus_1_49_1rn4xyf planned=0 unit=(144,68) hint=Miasto Chengdu założone!
+[diag] CLICK (144,69) px=(740,504) ok=true top=H3#. | selectedId=diffbonus_1_49_1rn4xyf planned=0 unit=(144,68) hint=Miasto Chengdu założone!
+[diag] pageErrors=0 
