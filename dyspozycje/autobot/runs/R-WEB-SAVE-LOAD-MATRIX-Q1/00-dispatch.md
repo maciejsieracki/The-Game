@@ -30,7 +30,7 @@ ZADANIE r2 (TYLKO maksimum: Trudny, Wysoki ×4, kultura trudny, dyplomacja trudn
 Allowlista/zakazy/bramki bez zmian (gra/src bez zmian; jeśli B≠A — odtwórz minimalnie i zwróć diagnozę; poprawka tylko minimalna z testem czerwony→zielony).
 
 ---
-# DODATEK — RUNDA 3/5 (data `date -u` 02:30 UTC 2026-11-28; BAZA = 101a616dca4c1d5c03930a529060c2c11c77d7bf (FC r2 FAIL, kod 819d43bea); Operator SONNET)
+# DODATEK — RUNDA 3/5 (data `date -u` 02:29 UTC 2026-11-28; BAZA = 101a616dca4c1d5c03930a529060c2c11c77d7bf (FC r2 FAIL, kod 819d43bea); Operator SONNET)
 UZASADNIENIE SONNET (CLAUDE.md, ZASADA MODELI): dwie kolejne rundy HAIKU tego samego ID zakończone FC FAIL (r1, r2) — kryterium binarne niedomknięte, w tym nierozstrzygnięty rozjazd bunt/t10 wymagający diagnozy w kodzie stanu miasta i harness UI wymagający naprawy zasiewu losowości. args.haikuFailures=2.
 KROK 0 (obowiązkowy): `git merge --no-edit 481e0ebf99ae2336be4ae5ee7454ad7e967c8cf8` (origin/main z FALĄ 936; gra/src/main.ts ma jedną zmienioną linię dźwigni racji; zero konfliktów oczekiwanych).
 ZOSTAJE (nie powtarzać): maksimum kreatora = rivals 9 (MAX_MIAST_PANSTWA), civTypesCount 14 dla epoki Brąz (źródło civs.json i newGameFlow.ts:2236), barbarzyńcy Trudny; 4 komórki max/{4242,7}/{t3,t10} B==A 6/6 (runner gra/tools/save-load-continuity-live.cjs, domyślnie już rivals=9/civTypes=14). Dane r2 na rivals=2 NIE są dowodem maksimum.
