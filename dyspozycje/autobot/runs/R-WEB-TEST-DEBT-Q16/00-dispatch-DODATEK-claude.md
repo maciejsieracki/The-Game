@@ -1,0 +1,16 @@
+# R-WEB-TEST-DEBT-Q16 (tag TDQ16) — dispatch (Operator HAIKU 5.5, runda 1/5; dług testowy, zero zmian logiki gry)
+DOMAIN: PROCESS/GAME-TEST (priorytet 3: konkretny czerwony test z binarnym kryterium; brak tematu z gry gotowego bez decyzji). Źródło: Evaluator i FC tematu ENDGATELEVER (FALA 936) potwierdzili, że gra/tools/no-negative-stocks-endturn-test.cjs jest CZERWONY (18 pass / 1 fail, asercja (f)) już na bazie c834d3eb8 — niezależnie od poprawki ENDGATELEVER.
+ZADANIE (binarne):
+1. Uruchom node tools/no-negative-stocks-endturn-test.cjs (w gra/, po npm ci --ignore-scripts) na bazie args.cand i wskaż DOKŁADNIE, która asercja (f) pada i dlaczego (cytat wzorca testu i odpowiadającego fragmentu gra/src/main.ts; test jest tekstowym pinem wzorców w kodzie, nie runtime). Ustal, od którego commitu pada (git log -S / bisect po gra/src/main.ts i testach; prawdopodobnie FALA 934: canPlayerInitiateEndTurn(quiet) lub inna zmiana sygnatur/komentarzy) — i czy zmiana kodu była zamierzona.
+2. Rozstrzygnij: (A) pin przestarzały względem zamierzonej zmiany kodu → zaktualizuj wzorzec testu tak, by nadal wykrywał regresję (bramka NNS nadal wywołana i blokuje; nie osłabiaj: wzorzec ma pozostać szczegółowy); udowodnij MUTACJĄ (cofnięcie bramki w kopii main.ts → test czerwony; po przywróceniu zielony); albo (B) regresja w kodzie gry (bramka naprawdę wyłączona/zmieniona) → NIE naprawiaj ręcznie: opisz minimalnie i zwróć DECISION_REQUIRED/BLOCK z diagnozą (poprawka kodu to osobny temat).
+3. Skan rodziny: uruchom wszystkie testy gra/tools/no-negative-stocks*-test.cjs oraz gra/tools/endturn-*-test.cjs oraz end-turn-gate-*-test.cjs (znajdź grep-em/ls; ciężkie testy wymagające bundla --dist pomiń z opisem) i podaj tabelę pass/fail PRZED i PO. Czerwone inne niż (f) — sklasyfikuj jak w pkt 2, napraw pin (A) lub opisz (B).
+4. Dokument krótki dyspozycje/analizy/DLUG-TESTOWY-Q16-2026-11-28.md (stan wiążący na górze; NIE ZMIERZONO tam, gdzie nie zmierzono).
+BAZA: args.cand = 481e0ebf99ae2336be4ae5ee7454ad7e967c8cf8 (origin/main); sprawdź git merge-base --is-ancestor, podaj git rev-parse HEAD.
+## Allowlista
+gra/tools/no-negative-stocks*-test.cjs, gra/tools/endturn-*-test.cjs, gra/tools/end-turn-gate-*-test.cjs (tylko wzorce/piny testów), dyspozycje/analizy/DLUG-TESTOWY-Q16-2026-11-28.md, dyspozycje/autobot/runs/R-WEB-TEST-DEBT-Q16/** (logi *.txt, NIE *.log).
+## Zakazy
+gra/src/**, gra/data/**, gra-robocza/, gra-kanon/, WERSJE.md, manifest, rust-port/, npm run build/dev w gra/ (vite do unikalnych katalogów w /tmp, po pracy usuń), osłabianie testów (usuwanie asercji, rozluźnianie wzorca do dowolnego dopasowania), git add -A, push, spawn_task/create_session/create_trigger/send_later/dismiss_task, run_in_background ORAZ nohup/& (Bash w pierwszym planie, timeout ≤ 590000 ms), zmiana konfiguracji podpisu commitów, --no-gpg-sign. Gdy guard blokuje commit — pliki w stage (git add ./ścieżka).
+## Bramki
+tsc 0, logic 213, ai-test 297/0 (kod gry bez zmian; git diff gra/src = 0), wszystkie testy rodziny z pkt 3 zielone po naprawie pinów lub jawnie opisane (B).
+## Binarne kryterium
+Test no-negative-stocks-endturn-test zielony z mutacją czerwoną albo (B) opisane z dowodem; tabela rodziny PRZED/PO; zero zmian gra/src.
