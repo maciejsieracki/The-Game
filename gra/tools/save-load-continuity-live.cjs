@@ -149,6 +149,8 @@ async function openSession(chromium, res) {
   });
   const page = await browser.newPage({ viewport: { width: Number(arg('vw', '1280')), height: Number(arg('vh', '800')) } });
   page.on('pageerror', (e) => res.pageErrors.push(String(e).slice(0, 300)));
+  res.consoleErrors = res.consoleErrors || [];
+  page.on('console', (m) => { if (m.type() === 'error') res.consoleErrors.push(m.text().slice(0, 200)); });
   page.on('dialog', (d) => d.dismiss().catch(() => {}));
   await page.addInitScript((s0) => {
     let s = s0 | 0;
@@ -274,6 +276,23 @@ async function main() {
       seg.rebuild = rp.rebuildByMode; seg.mapDiffers = rp.mapDiffers;
     }
     await wait(300);
+    const collectRender = async (label) => {
+      const info = await B.page.evaluate(() => {
+        const snap = JSON.parse(window.__detHarness.snapshotJson());
+        const ms = snap.mapSnapshot || {};
+        const full = JSON.parse(window.__detHarness.full());
+        const c = window.__turnSlowdownTestDebug.collections();
+        const ri = window.__turnSlowdownTestDebug.renderInfo();
+        const tiles = Array.isArray(ms.tiles) ? ms.tiles.length : (ms.q ? Object.keys(ms.q).length : null);
+        return { turn: window.__eraTestDebug.getWorldState().turn, mapSnapshotKeys: Object.keys(ms).slice(0, 8), hexCount: tiles, stateCities: full.cities.length, stateUnits: full.units.length,
+          villageMeshes: c.villageMeshes, campMeshes: c.campMeshes, improvementMeshes: c.improvementMeshes, render: ri,
+          canvas: (() => { const cv = document.querySelector('canvas'); return cv ? { w: cv.width, h: cv.height } : null; })() };
+      });
+      info.label = label; info.pageErrors = res.pageErrors.length; info.consoleErrors = res.consoleErrors.length;
+      seg.render = (seg.render || []).concat([info]);
+      log('render ' + JSON.stringify(info));
+    };
+    if (arg('render', '0') === '1') { await wait(1500); await collectRender('po-wczytaniu'); if (arg('shot', '')) await B.page.screenshot({ path: arg('shot', '') }); }
     seg.aiCsAtSave = ref.aiCsAtSave || null;
     seg.aiCsAfterLoad = await B.page.evaluate(() => { const c = window.__turnSlowdownTestDebug.collections(); return { fail: c.aiCsFailCount, trybut: c.aiCsTrybutSince, wasal: c.aiCsWasalSince }; });
     log('aiCs przy zapisie (A) ' + JSON.stringify(seg.aiCsAtSave) + ' | po wczytaniu (B) ' + JSON.stringify(seg.aiCsAfterLoad));
@@ -289,6 +308,7 @@ async function main() {
       if (!equal) anyDiff = true;
       flush();
     }
+    if (arg('render', '0') === '1') { try { await collectRender('po-ostatniej-turze'); } catch (e) { seg.renderErr = String(e).slice(0, 200); } }
   } finally { await B.browser.close(); }
   res.segments.push(seg);
   log('B zapis t' + ref.save + ' rebuild=' + seg.rebuild + ' tury: ' + seg.turns.map((x) => (x.equal ? 'OK' : 'ROZJAZD')).join(' '));

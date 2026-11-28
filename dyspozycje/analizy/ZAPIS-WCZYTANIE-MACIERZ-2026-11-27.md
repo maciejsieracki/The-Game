@@ -1,4 +1,91 @@
-# ZAPIS-WCZYTANIE-MACIERZ — macierz zapis/wczytanie na MAKSIMUM (R-WEB-SAVE-LOAD-MATRIX-Q1, runda 2, Operator HAIKU)
+# ZAPIS-WCZYTANIE-MACIERZ — macierz zapis/wczytanie na MAKSIMUM (R-WEB-SAVE-LOAD-MATRIX-Q1, runda 3, Operator SONNET)
+
+## 0A. STAN WIĄŻĄCY (runda 3, 2026-11-28; zastępuje sekcję „R2” niżej, która jest tylko historyczna: rivals=2, NIE maksimum)
+
+**Baza:** `286d594d3` (origin/main `481e0ebf9` = FALA 936 + WIP runnera). Kod gry w tej rundzie zmieniony JEDEN raz (poprawka z pkt 0A.1): `gra/src/main.ts` (+22 linii, tylko zapis/odtworzenie stanu). Build `vite build` do `/tmp` poza repo; zapisy mierzone na dwóch buildach: PRZED poprawką i PO poprawce.
+**Maksimum użyte WSZĘDZIE (odczyt `cfgUsed` w każdym JSON, `dane/r3b-READBACK.txt`):** barbarzyńcy Trudny, poziom Trudny, Wysoki ×4, kultura trudny (gracz i AI), dyplomacja trudna, `rivals=9`, `civTypesCount=14` (maksimum dla epoki Brąz).
+
+### 0A.1 Główny wynik: ZNALEZIONY I NAPRAWIONY PRAWDZIWY BŁĄD GRY (B≠A)
+
+Komórka **bunt/7/zapis po t7** (rivals=9) dała B≠A we **wszystkich 6 turach** po wczytaniu (powtórzone 2×, ten sam wynik). Różnica w turze 8: **106 miast-państw** zmienia właściciela na cywilizacje w przebiegu ciągłym (A: wchłonięcie przez AI), a po wczytaniu (B) zostają niezależne.
+
+**Przyczyna (zmierzona, nie założona):** trzy mapy stanu absorpcji miast-państw przez AI w `main.ts` — `aiCsTrybutSince`, `aiCsWasalSince`, `aiCsFailCount` — NIE były zapisywane i NIE były odtwarzane. `decideAiCsClusterAction` czyta je (`wasal_timer` → wchłonięcie, liczba odmów → wojna). Odczyt `__turnSlowdownTestDebug.collections()`: **przy zapisie (A) trybut=106, wasal=106; po wczytaniu (B) trybut=0, wasal=0** (`dane/bunt-7-t7-B-PRZED-poprawka-aiCs.json`). Traktat (`activeDeals`) wracał z zapisu, zegar nie, więc AI zaczynało odliczanie od nowa i wchłonięcia się spóźniały.
+
+**Skutek dla gracza:** zapis w trakcie wchłaniania miast-państw przez AI (tura ~7 na maksimum) po wczytaniu daje inny świat niż gra bez wczytania; dodatkowo wczytanie w tej samej sesji dziedziczyło zegary z bieżącej gry (mapy nie były czyszczone).
+
+**Poprawka (minimalna):** zapis trzech map w `meta` (`Array.from(mapa.entries())`), czyszczenie przy resecie świata i przy wczytaniu, odtworzenie z `saved.meta`; stary zapis bez pól = puste mapy jak dotąd (zachowanie bez zmian).
+
+**Test czerwony → zielony:**
+- na żywo (maksimum, rivals=9): bunt/7/t7 PRZED poprawką **0/6 tur równych** → PO poprawce **6/6 równych**; przy zapisie 106/106 par, po wczytaniu 106/106 (`dane/bunt-7-t7-B-PRZED-poprawka.json` vs `dane/bunt-7-t7-B-PO-poprawce.json`);
+- statyczny `gra/tools/save-load-ai-cs-absorption-state-test.cjs`: **12/0**, na źródle PRZED poprawką czerwony; 3 mutacje (wycięty zapis / odtworzenie / czyszczenie) każda czerwona.
+
+### 0A.2 Diagnoza bunt/t10 z r2 (różnica `cities[city3].podzialPracy`) — rozstrzygnięta: **(a) wyłącznie reprezentacja**
+
+- `resolveCityPodzialPracy` (`empire-city-defaults.ts`) czyta pole `city.podzialPracy` tylko gdy `podzialPracyOverride=true` albo gdy brak domyślnej właściciela; przy `override=false` pole jest martwe. `ensureCityPodzialDefaults` (wczytanie) dopisuje `{procentBudynki}`, przejęcie miasta w ciągłej grze je kasuje (`main.ts:6803`) — stąd różnica w zrzucie surowym, nie w stanie gry.
+- Test deterministyczny na funkcjach `gra/tools/save-load-podzial-pracy-representation-test.cjs`: **5 PASS / 0 FAIL** (18 kombinacji: domyślny podział właściciela × wypełniacz pola; efektywny podział PRZED = PO; przy `override=true` pole żywe; **mutacja** wycinająca gałąź domyślnej właściciela → 6/18 kombinacji różnych, test czerwony).
+- Na żywo przy rivals=9 komórka bunt/4242/zapis po t10: **B==A 6/6 BEZ normalizacji** — `rawDiffSummary.count=0` w każdej turze (`dane/bunt-4242-t10-B.json`). Różnicy z r2 nie odtworzono na maksimum. Runner od tej rundy porównuje wartość efektywną (`effPP`, ten sam resolver co silnik) i pomija martwe pole (normalizacja jawna; `--norm-pp raw` ją wyłącza); w danych zostaje `rawDiffSummary` (surowe różnice).
+- Zmian w `cities.ts` NIE wprowadzono (wariant (a): bez zmiany kodu gry).
+
+### 0A.3 Tabela komórek na MAKSIMUM (rivals=9, civTypes=14, barbarzyńcy Trudny): B==A tury po wczytaniu z pauzy (hak `loadJsonAsPauseLoad` → produkcyjne `loadGameFromSlot(slot,true)`)
+
+| Konfiguracja | Ziarno | Zapis po | Build | B==A | Plik |
+|---|---|---|---|---|---|
+| max | 4242 | t3 | wcześniejsza runda (przed poprawką) | 6/6 | `dane/r3-B-4242-t3.json` |
+| max | 4242 | t10 | j.w. | 6/6 | `dane/r3-B-4242-t10.json` |
+| max | 7 | t3 | j.w. | 6/6 | `dane/r3-B-7-t3.json` |
+| max | 7 | t10 | j.w. | 6/6 | `dane/r3-B-7-t10.json` |
+| max+bunt stolicy AI | 4242 | t3 | PRZED poprawką | 6/6 | `dane/bunt-4242-t3-B.json` |
+| max+bunt stolicy AI | 7 | t3 | PRZED poprawką | 6/6 | `dane/bunt-7-t3-B.json` |
+| max+bunt stolicy AI | 4242 | t10 | PRZED poprawką | 6/6 (0 surowych różnic) | `dane/bunt-4242-t10-B.json` |
+| max+bunt stolicy AI | 7 | **t7** (nie t10) | PRZED | **0/6 FAIL (błąd gry)** | `dane/bunt-7-t7-B-PRZED-poprawka.json` |
+| max+bunt stolicy AI | 7 | **t7** | **PO poprawce** | **6/6** | `dane/bunt-7-t7-B-PO-poprawce.json` |
+| aionly (kultura tylko AI) | 4242 | t3 | PRZED poprawką | 6/6 | `dane/aionly-4242-t3-B.json` |
+| aionly | 7 | t3 | PRZED poprawką | 6/6 | `dane/aionly-7-t3-B.json` |
+
+**Razem 10 komórek z B==A 6/6** (4 wcześniejsze + 6 tej rundy, w tym 1 po poprawce) oraz 1 komórka (bunt/7/t7) ujawniająca błąd, zielona po poprawce. Komórki PRZED poprawką dotyczą stanów, w których liczniki absorpcji są puste przy zapisie; poprawka zmienia wyłącznie zapis/odtworzenie tych liczników, więc te wyniki zostają ważne, ALE nie były powtórzone na buildzie PO poprawce (uczciwie: po poprawce zmierzono bunt/7/t7 oraz render max/4242/t10).
+
+**NIE ZMIERZONO:** aionly/{4242,7}/t10; bunt/7/t10 (dwa podejścia: bieg ciągły A do t16 przekracza limit 590 s narzędzia przy 20–50 s na turę na zajętej maszynie; zamiast tego zmierzono t7); bunt/4242/t7 i aionly/*/t7; powtórzenie wszystkich komórek „PRZED” na buildzie PO poprawce.
+
+### 0A.4 Ścieżka UI (klik „Zapisz grę” → „Wczytaj grę”, rivals=9; harness poprawiony: `--rivals`/`--civtypes`, domyślnie 9/14)
+
+Wczytanie KLIKIEM (`button.b-menu` → `[data-act=save]` → `Zapisz` → `[data-act=load]` → wiersz zapisu → `Wczytaj`), build PO poprawce, B porównane z przebiegiem A.
+
+| Zapis | Ziarno | Tury dalej przed wczytaniem (cofnięcie) | B==A | Uwaga |
+|---|---|---|---|---|
+| t3 | 4242 | 1 (wczytanie cofa t4→t3) | **5/5 OK** (t4–t8) | 6. tura nie zdążyła — limit 590 s narzędzia |
+| t3 | 4242 | 0 | **5/5 OK** (t4–t8) | j.w. |
+| t3 | 7 | 0 | **3/3 OK** (t4–t6) | j.w. |
+
+Strona: 0 błędów (`pageErrors`=0). **Kryterium „≥6 tur klikiem na 2 komórkach” NIE spełnione**: 0 rozjazdów w 13 zmierzonych turach, ale nie osiągnięto 6 tur w jednym biegu (start gry ~100–250 s, dojście do t3 + zapis + wczytanie z odbudową świata 3–6 min, tura 25–55 s przy obciążeniu maszyny 5–7).
+
+**FAIL „dirty3” z r2 (rozjazd od tury 7 po 3 turach dalej w tej samej grze):** nie sprawdzono hipotezy zasiewu `Math.random` osobnym eksperymentem. Zmierzone: po poprawce absorpcji (wczytanie w tej samej sesji nie dziedziczy już zegarów z cofanej przyszłości) wariant z cofnięciem dirty=1 daje 5/5 OK. Wariant dirty=3 NIE powtórzony po poprawce — NIE ZMIERZONO, więc rozstrzygnięcie „artefakt harnessu vs błąd gry” zostaje otwarte (najbardziej prawdopodobne wyjaśnienie z danych: ta sama klasa błędu co 0A.1, bo różnice dotyczyły miasta-państwa city15 i jednostek wiosek).
+
+### 0A.5 Render po wczytaniu (max/4242, zapis t10, rivals=9, build PO poprawce; `dane/render-max-4242-t10-B.json`, zrzut `dane/render-max-4242-t10-po-wczytaniu.png`)
+
+- po wczytaniu (t10): `hexCount=20160`; miasta w stanie 142, jednostki 194; siatki wiosek 81, ulepszeń 59; render: 185 wywołań rysowania, 372 246 trójkątów; `pageErrors`=0, `consoleErrors`=0;
+- po 6 turach (t16): `hexCount=20160` (bez zmian), miasta 151, jednostki 244, siatki wiosek 51 (zebrane), ulepszeń 184, 226 wywołań, 373 174 trójkąty; 0 błędów.
+- Zrzut (HUD, „TURA 10 · 3550 P.N.E.”, obszar gracza z mgłą wojny, minimapa z jednym skupiskiem) jest spójny z odczytem stanu. **Ograniczenie:** brak haka liczącego obiekty sceny miast/jednostek, więc „liczba widocznych w scenie = stan” NIE ZMIERZONO wprost (tylko siatki wiosek/ulepszeń i liczniki stanu).
+- Porównanie B z A w tym przebiegu pokazało „rozjazd” wyłącznie w polu `effPP` dodanym do runnera w tej rundzie (zrzut A z wcześniejszej rundy go nie ma; 143 różnice, tylko `effPP`, żadnego innego pola) — artefakt porównania, nie gry. Komórka NIE liczona w tabeli 0A.3.
+
+### 0A.6 A==A' (determinizm ciągły, maksimum rivals=9; `dane/r3b-AA-porownanie.txt`; zrzuty kanoniczne bez pola `effPP`)
+
+- max/4242 zapis t3: dwa nowe niezależne biegi A1, A2: **9 tur (t4–t12) identyczne bajt w bajt**; A1 kontra starszy bieg (inna wersja runnera i kodu), t4–t9: identyczne (6 tur). Nie osiągnięto 10 tur: A2 przerwany limitem 590 s na t12.
+- max/7 zapis t3: nowy bieg kontra starszy: **6 tur (t4–t9) identyczne**; drugi bieg 10-turowy NIE wykonany.
+- bunt/7 zapis t7: trzy niezależne biegi A (stary build, stary build k=2, nowy build): t8–t13 identyczne (6 tur); poprawka nie zmienia przebiegu ciągłego.
+- **Kryterium „≥10 tur × 2 ziarna” NIE spełnione w pełni**: 9 tur dla 4242 (+ dodatkowe porównania), 6 tur dla ziarna 7.
+
+### 0A.7 Bramki (z `gra/`, po poprawce)
+
+`npx tsc --noEmit` exit 0 · `logic-test` 213/213 · `tech-tree-test` 20/0 · `research-test` 33/0 · `unit-replace-test` 21/21 · `combat-test` 6/6 · `ai-test` 297/0 · `early-grace-15-test` 33/0 · `society-breakdown-test` 56/0 · `ai-city-order-need-wiring-test` 267/0 · `save-load-sort-test` 4/4 · `save-load-ledger-history-test` 4/0 · `save-load-budowa-priorytet-on-load-test` 6/0 · `determinism-save-load-resume-test` PASS · `save-load-roundtrip-state-drift-test --static-only 1` OK (warstwa dynamiczna tego testu NIE uruchomiona: ~5 min/ziarno) · nowe: `save-load-ai-cs-absorption-state-test` 12/0, `save-load-podzial-pracy-representation-test` 5/0. NIE uruchomione (wymagają przeglądarki/`--dist`): `save-load-deserialize-fields-audit`; `unit-power-test` (poza zakresem zmiany).
+
+### 0A.8 Uwagi procesu
+
+- Przy obciążeniu 5–7 na 4 rdzeniach tura gry trwa 20–55 s; start sesji (generowanie świata dla 9 rywali) 100–250 s. Biegi ciągłe A powyżej ~13 tur nie mieszczą się w jednym wywołaniu 590 s; dlatego zapis „późny” = t7 w komórce, gdzie t10 nie był osiągalny.
+- Runner `save-load-continuity-live.cjs` rozszerzony: efektywny podział Pracy (`effPP`), `rawDiffSummary` per tura, odczyt liczników absorpcji (`aiCsAtSave`/`aiCsAfterLoad`), tryb `--render 1` z `--shot`, `--dumpb`, `--vw/--vh`, `SM_ARGS`, czasy tur.
+
+---
+
+## R2 (historyczne, rivals=2 — NIE jest dowodem maksimum)
 
 ## 0. STAN WIĄŻĄCY (runda 2, 2026-11-28)
 

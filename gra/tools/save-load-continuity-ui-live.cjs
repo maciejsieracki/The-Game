@@ -42,9 +42,9 @@ const MAX_ADV = {
 };
 const MAX_PARAMS = {
   civId: 'rzymianie', civName: 'Rzymianie', epoch: 'Epoka Brazu', epochId: 'braz', difficulty: 'Trudny',
-  mapSize: 'Standardowy', rivals: '2', speed: 'Normalna', worldType: 'Kontynenty', typSwiata: 'kontynenty',
+  mapSize: 'Standardowy', rivals: String(arg('rivals', '9')), speed: 'Normalna', worldType: 'Kontynenty', typSwiata: 'kontynenty',
   mapQualityLabel: 'Wysoka', mapQuality: 'high', renderQualityLabel: 'Wysoka', mapDetailQualityLabel: 'Wysoka',
-  renderQuality: 'high', mapDetailQuality: 'high', civTypesCount: 15, cityStatesCount: 2,
+  renderQuality: 'high', mapDetailQuality: 'high', civTypesCount: Number(arg('civtypes', '14')), cityStatesCount: Number(arg('rivals', '9')),
   worldDensityLabels: { resources: 'Normalnie', rivers: 'Normalnie', desert: 'Normalnie', forest: 'Normalnie', relief: 'Normalnie' },
   advanced: MAX_ADV,
   villageRewardsEnabled: true,
@@ -158,10 +158,12 @@ async function main() {
     };
     const full = () => page.evaluate(() => window.__detHarness.full());
 
+    log('start gry gotowy');
     // gra do tury zapisu (przesuniecie tury hakiem; zapis i wczytanie KLIKIEM ponizej)
     while ((await turnNow()) < SAVE) await endTurn();
     await closeCivWelcome(page);
 
+    log('doszedl do t' + SAVE + ', zapis klikiem');
     // 2. ZAPIS KLIKIEM
     await openPause(page, res);
     await page.click('[data-act="save"]');
@@ -182,6 +184,7 @@ async function main() {
     res.dirtyTurn = await turnNow();
     await closeCivWelcome(page);
 
+    log('dirty gotowe t' + res.dirtyTurn + ', wczytanie klikiem');
     // 4. WCZYTANIE KLIKIEM
     await openPause(page, res);
     const loadEnabled = await page.$eval('[data-act="load"]', (b) => !b.disabled);
@@ -203,6 +206,7 @@ async function main() {
     }, SAVE, { timeout: 300000, polling: 500 });
     await wait(1500);
     res.loadedTurn = await turnNow();
+    log('wczytano, t' + res.loadedTurn);
 
     // 5. K tur po wczytaniu, porownanie z przebiegiem A
     let anyDiff = false;
@@ -214,6 +218,7 @@ async function main() {
       const equal = diffs.length === 0 && t === ref.turns[i];
       if (!equal) anyDiff = true;
       res.turns.push({ turn: t, expectedTurn: ref.turns[i], equal, diffs });
+      log('tura ' + t + (equal ? ' OK' : ' ROZJAZD'));
       flush();
     }
     if (SHOT) {
