@@ -1,42 +1,47 @@
-STATUS: BLOCK
+STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
-TEMAT: R-WEB-GRACE15-EFFECTS-Q1 (GRACE15FX), runda 2/5, Operator HAIKU 5.5
-GOAL: zmierzyc na maksimum (Trudny, barbarzyncy Trudny, kultura trudna, dyplomacja trudna, Wysoki x4) skutki okna lask 15 tur: AI t30/t60 (2 ziarna), przezycie aktywnego gracza t1-30 (min. 2 ziarna Z DREWNEM, z bramka tury), readback poziomu barbarzyncow, teksty; zero zmian gra/src.
-BAZA: f8a1396680ed300e0dc344d31af5765d0deb5964 (origin/main, detach w worktree). Zmian w gra/src i gra/data nie ma.
+TEMAT: R-WEB-GRACE15-EFFECTS-Q1 (GRACE15FX), runda 3/5, Operator SONNET 5.5 (uzasadnienie: dwie nieudane rundy Haiku tego samego ID, args haikuFailures 2)
+GOAL: wznawialny runner aktywnego gracza t1-30 klikiem; dźwignie po t16; readback barbarzyńców i barbarzyńcy po t16; dokument ze stanem wiążącym. Zero zmian gra/src i gra/data. Maksimum ustawień.
 
-ZMIANY/COMMIT: nowe narzedzie gra/tools/grace15fx-active2-live.cjs (kopia grace15fx-active-live.cjs: bez haka setTaxSplit, proba dzwigni UI suwaka Wyzywienia, zapis turns.jsonl na biezaco). Dane: dyspozycje/autobot/runs/R-WEB-GRACE15-EFFECTS-Q1/dane/aktywny-r2/ (turns-s11.jsonl, econ-s11.jsonl, econ-p2-s11-r1.txt, readback-s11.txt, s7-z-hakiem-podatku/). Dokument: dyspozycje/analizy/OKNO-LASKI-15-TUR-SKUTKI-2026-11-27.md (sekcja STAN WIAZACY na gorze). Commit: patrz sekcja DEPLOY/PUSH.
+ZMIANY/COMMIT: baza 055ad0b8e6a087d0c9773ca2989df007801f509b (origin/main). Commit tej rundy: patrz pole sha w zwrocie Operatora.
+- gra/tools/grace15fx-active3-live.cjs (nowy): wznawialny runner (zapis stanu na początku każdej tury, segmenty do ok. 430 s, wznowienie przez produkcyjną ścieżkę „Wczytaj z menu pauzy”); koniec tury wyłącznie klikiem; zakup obrońcy klikiem; suwaki Wyżywienia i podatku przez zdarzenie `input` w panelu miasta otwartym klikiem w miasto; rozwiązanie jednostki klikiem (miasto -> JEDNOSTKA -> ROZWIĄŻ); gałęzie pomiaru dźwigni osobno (`G15_ONLY`), ścieżka gracza (`G15_ALLOW`).
+- dyspozycje/analizy/OKNO-LASKI-15-TUR-SKUTKI-2026-11-27.md: nowy STAN WIĄŻĄCY (r3) na górze, sekcja 2.3 (tabele t1-30, 2 ziarna), poprzedni stan oznaczony jako historia.
+- dyspozycje/autobot/runs/R-WEB-GRACE15-EFFECTS-Q1/dane/aktywny-r3/ (turns/levers/readback/barblog/result dla ziaren 11 i 7 oraz gałęzi dźwigni; razem ok. 160 KB).
+- git diff gra/src gra/data = 0 (puste).
 
-TESTY (surowe wyniki, po npm ci --ignore-scripts w gra/):
-- npx tsc --noEmit: exit 0
-- node tools/logic-test.cjs: LOGIC OK (213/213)
-- node tools/ai-test.cjs: ai-test: 297 passed, 0 failed
-- node tools/early-grace-15-test.cjs: early-grace-15-test: 33 passed, 0 failed
+TESTY (surowe wyjście):
+- npx tsc --noEmit: exit 0 (TSC_EXIT=0)
+- logic-test: LOGIC OK (213/213)
+- ai-test: 297 passed, 0 failed
+- early-grace-15-test: 33 passed, 0 failed
+- node --check gra/tools/grace15fx-active3-live.cjs: OK
+Pomiary na żywo (maksimum: Trudny, dyplomacja trudna, kultura trudny, Wysoki x4 koszt jednostek i ludność, barbarzyńcy trudny, mapa Standardowy, 1 rywal, 15 typów cywilizacji, 1 miasto-państwo; podatek Skarb 100% suwakiem UI od t1):
+- Ziarno 11: Łucznik kupiony klikiem w t5; t16 blokada ŻYWNOŚCIOWA (prognoza Spichlerza −30, „zabraknie 18”); dźwignie na kopii zapisu t16: suwak Wyżywienia na minimum −30 -> −18, nadal blokada; rozwiązanie 1. jednostki (Wojownik) −30 -> −14, nadal blokada („zabraknie 2”); rozwiązanie 2. (Łucznik) −> +2, bramka otwarta; suwak Wyżywienia po rozwiązaniu 1. jednostki już na 0 (min = max = 0), więc „obniżka racji +12” z komunikatu bramki niewykonalna. Ścieżka gracza t16-30: obie jednostki rozwiązane, t17-30 bramka otwarta, miasto żyje w t31 (skarbiec 212, Spichlerz 15, 0 jednostek wojskowych).
+- Ziarno 7: Łucznik klikiem w t5; blokada t16 (−28) i t17 (−2); rozwiązanie po jednej jednostce w t16 i t17; t18-30 bramka otwarta, miasto żyje w t31 (skarbiec 166, Spichlerz 26, 0 jednostek wojskowych).
+- Barbarzyńcy: liczniki 0/0 w t1-16; log „Tura 17: nowe obozy: 12” (spawn na końcu t16); t17: 12 obozów/13 jednostek, t30: 42 (s11) i 40 (s7) jednostek; obce jednostki w promieniu 3 heksów od miasta = 0 w każdej turze 1-30 na obu ziarnach; pierwszy atak na gracza do t30: nie zaobserwowano.
+- Readback poziomu barbarzyńców: z zapisu stanu gry `meta.newGameParams.advanced.barbariansLevel = "trudny"` (readback-s11.txt, readback-s7.txt); `getSettings` pola nie zwraca.
 
-WYNIKI MIERZONE W TEJ RUNDZIE:
-1. AKTYWNY GRACZ (klik zakupu obroncy w panelu miasta; podatek na domyslnym podziale gry):
-   - seed 11 (Drewno jest), bieg 2, 15 tur zakonczonych, zatrzymanie w t16:
-     t1-6 skarbiec 0,2,4,6,8,10 (+2/tura); t7 zakup obroncy klikiem UI, skarbiec 12 -> 2 po zakupie; t8-14 +2/tura; t15 skarbiec 16 (prognoza +3), Spichlerz 0 (prognoza +1); t16 skarbiec 19 (prognoza po turze -10, czyli -29), Spichlerz 1 (prognoza -30, czyli -31); blokada „Zakoncz ture” z powodu Spichlerza (zywnosc), gate-komunikat: obnizka racji +12, rozwiazanie jednostek (zloto) +32, rozwiazanie jednostek (zywnosc) +32.
-     Jednostki wojskowe gracza: 1 (Wojownik) do t7, 2 od t8. Barbarzyncy w poblizu (foreignNear) w t1-16: brak.
-   - seed 7, bieg z PIERWSZEGO wywolania tej rundy (narzedzie grace15fx-active-live, PRZED usunieciem haka): zakup t5; t16 skarbiec 68, prognoza skarbu 46 (nie blokuje), Spichlerz 2, prognoza -16 -> blokada zywnosciowa („po zakonczeniu tury zabraknie 16”). TEN BIEG USTAWIL PODATEK HAKIEM setTaxSplit(100,0,0) w t1. To jest odstepstwo od zasad (hak zmieniajacy stan); dane oznaczone folderem s7-z-hakiem-podatku i NIE sluza do wnioskow o zwyklym graczu.
-   - Ustalenie: na obu ziarnach pierwsza blokada wypada w t16 i jest zywnosciowa. Na seed 11 skarbiec po turze tez wychodzi ujemny (-10). Wzrost kosztow w t16 (skarb -29, zywnosc -31 po turze) to powrot utrzymania jednostek po oknie 15 tur. Wartosci +32 z komunikatu bramki sugeruja ok. 32 zlota i 32 zywnosci na jednostke (WNIOSEK Z KOMUNIKATU, NIE ZMIERZONO w grze). Przy dwoch jednostkach rozwiazanie jednej dawaloby dodatni bilans obu zasobow (WNIOSEK ARYTMETYCZNY, NIE ZMIERZONO).
-   - Dzwignia „obnizka racji” (suwak Wyzywienia): PROBA NIEUDANA. Otwarty przez openCityPanelForTest panel (klasy civ-v-*) nie zawiera zadnego input[type=range] (dump: rangeDump=[]). Suwak istnieje w widoku .civ-cs .wyzwienie-w4-sliders, ktorego harness nie otwiera. NIE ZMIERZONO: t16-30 aktywnego gracza.
-   - Dzwignia „rozwiazanie jednostek”: NIE ZAIMPLEMENTOWANA (brak id jednostek w odczycie UI; przycisk rozwiazania to data-act="disband" w pasku akcji jednostki). NIE ZMIERZONO.
-   - Tabela t17-t30 aktywnego gracza: NIE ZMIERZONO (bramka t16 nie zostala przejsc w harnessie).
+ODPOWIEDŹ NA ZAKRES RUNDY (dispatch DODATEK r3):
+1. Wznawialny runner: ZROBIONY i użyty na 2 ziarnach z Drewnem (11, 7), t1-30, bez haków zmieniających stan; koniec tury wyłącznie klikiem. Wznowienia: 3 na ziarno, bez SIGSEGV (jedno wznowienie zakończyło się timeoutem oczekiwania 120 s na turę po wczytaniu — podniesiono limit do 330 s i powtórzono, kolejne wznowienia 150-300 s).
+2. Dźwignie po t16: zmierzone liczbowo (ziarno 11 osobno; ziarno 7 tylko rozwiązanie jednostek). Suwak Wyżywienia znaleziono: zakładka „Wyżywienie i wzrost — suwak 0–6” w panelu miasta (powodem niepowodzenia r2 był widok bez tej zakładki). Rozwiązanie jednostki: klik w miasto -> „JEDNOSTKA” -> „ROZWIĄŻ”. Podatek: już 100% Skarb od t1, dźwignia wyczerpana (tryb taxdef nie był mierzony). Budowa zwiększająca żywność: NIE ZMIERZONO (przyciski „Kup” przy budynkach żywnościowych nieaktywne, nic nie kliknięto).
+3. Readback i barbarzyńcy po t16: zrobione (patrz wyżej); pierwszy atak na AI: NIE ZMIERZONO.
+4. Dokument: zaktualizowany (stan wiążący + sekcja 2.3), bez sprzeczności z danymi r3.
 
-2. AI t30/t60: NIE PONOWIONO w tej rundzie. Dane r1 zostaja (puste miasta AI: s4242 t30 48,3%, t60 78,1%; s7 43,4% / 69,4%; PRZED 67,8% / 74,5% i 50% / 82,9%). Zastrzezenie: n=2, poziom barbarzyncow dominuje (kontrola PRZED z barbarzyncami „normalny”: 17% / 31,6%).
+ZASTRZEŻENIA / NIE ZMIERZONO:
+- Wznawianie z zapisu: ciągłość przebiegu na tych ziarnach nie była porównywana z ciągłym (opieram się na SAVEFIX, 6/6 tur, ziarno 4242). Po wczytaniu mapa odbudowana z zapisu (mapDiffers=true).
+- Hak tylko do widoku: ustawienie kamery na stolicę (`focusCameraOnOwnerCapitalForTest`) przed kliknięciem w miasto, oraz fallback `openCityPanelForTest` (użyty w nieudanej próbie 1 i sporadycznie; log `openVia`). To stan widoku, nie gry.
+- Suwak puli Pracy na ulepszenia = 100% nie ustawiany (pomiar dotyczy żywności/skarbca); NIE ZMIERZONO przy tym ustawieniu.
+- Tylko 2 ziarna, jeden wariant podatku (Skarb 100%); wynik rozwiązania jednostek jest zależny od ziarna (1 vs 2 jednostki).
+- Dane s11 w pliku levers-s11-PROBA1-klik-w-miasto-nieudany.jsonl to nieudana próba (nie dowód).
+- Ścieżka gracza w turach 17-30 nie obejmuje scenariusza „gracz dokupuje obronę po odblokowaniu” (poza zakresem).
 
-3. READBACK POZIOMU BARBARZYNCOW: NIE ZWERYFIKOWANO. __settingsLive.getSettings() nie zwraca barbariansLevel (zwraca: diplomacyWarLevel trudna, kulturaReligiaLevel trudny, kulturaReligiaLevelAI trudny, wzrostSurowcowZEpoka false, kosztJednostekPace wysoki, difficulty hard). Wartosc przekazana do startNewGame: advanced.barbariansLevel = trudny (zob. readback-s11.txt).
+BLOKADY: brak.
+RUNDY: 3/5 (r3 Operatora; po FAIL r1 i BLOCK/FAIL r2).
+NASTĘPNY KROK: Evaluator (Sonnet), następnie Obrona (Haiku) i Final Control; po FC integracja orkiestratora.
 
-4. BARBARZYNCY PO t16: NIE ZMIERZONO. Bieg seed 11 nie wszedl w faze po t16; w t1-16 foreignNear puste.
+UWAGI-DLA-ORKIESTRATORA:
+- Komunikat bramki „Pomogą: obniżka racji żywności: +12” bywa nieużyteczny: po rozwiązaniu jednej jednostki suwak Wyżywienia jest już na 0 i zablokowany (min = max = 0, „−10%”). Kandydat na błąd UI/komunikatu (decyzja i ewentualny temat po stronie orkiestratora; nic nie poprawiano).
+- Dla pytania ABC „co dalej po t16” fakty wiążące: po t16 jedyną skuteczną dźwignią jest rozwiązanie jednostek wojskowych (1 lub 2 w zależności od ziarna); miasto zostaje bez obrony wojskowej; barbarzyńcy (12 obozów, 13 jednostek) zaczynają od t17 i do t30 nie dotarli na 3 heksy od miasta (2 ziarna). Skutek dla gracza opisywać w słowach gry, bez nazw plików.
+- W pamięci podręcznej /tmp (katalog scratchpad) zostały stany zapisów (ok. 1 MB każdy); poza repo.
 
-5. TEKSTY: lista rozbieznosci z r1 (wiki §90.1-90.3, poradnik 00 l.18, 03 l.155, 08 l.28) zostaje. Tooltipy utrzymania NIE PRZEGLADNIETE w tej rundzie.
-
-BLOKADY:
-- Harness nie przechodzi bramki t16 dla aktywnego gracza. Brakuje: (a) dostepu do suwaka Wyzywienia w widoku .civ-cs (ustalic, jak gracz go otwiera, bez haka stanu); (b) dzwigni rozwiazania jednostki przez UI (zaznaczenie + data-act="disband", id jednostek tylko do odczytu).
-- Limit wywolania narzedzia 590 s: jeden bieg 20 tur trwa ok. 9-10 min (ustawienie swiata ok. 170 s, ok. 24 s na ture). 30 tur w jednym wywolaniu sie nie miesci. Potrzebny wznawialny zapis stanu lub bieg w krotszych segmentach (zakazane: nohup, &, run_in_background).
-- Odstepstwo zglaszane jawnie: bieg seed 7 z pierwszego wywolania uzyl haka setTaxSplit (zmiana stanu). Dane oznaczone.
-
-RUNDY: 2/5 (runda 2 Operator). FC r1 FAIL dotyczyl braku tabeli aktywnego gracza t1-30; ta runda jej nie domknela.
-NASTEPNY KROK: Operator runda 3 do TEGO SAMEGO ID: (1) ustalic widok panelu miasta z suwakiem Wyzywienia bez haka stanu; (2) dodac dzwignie rozwiazania jednostki przez UI; (3) tabela t1-30 aktywnego gracza na seed 11 i 7 (Drewno), segmenty wznawiane z turns.jsonl; (4) readback barbarzyncow zostaje NIE ZWERYFIKOWANO, chyba ze pojawi sie odczyt UI.
-UWAGI-DLA-ORKIESTRATORA: wynik r2 podwaza zalozenie „bramka skarbca” z dispatchu. Blokada t16 jest zywnosciowa, a przyczyna to powrot utrzymania jednostek po oknie. Pytanie ABC „co dalej po t16” zalezy od danych t17-30, ktorych jeszcze nie ma.
 DEPLOY/PUSH: NIE WYKONANO

@@ -1,0 +1,19 @@
+READBACK seed 7 (tryb tax100, MAKS)
+A) __settingsLive.getSettings():
+{
+ "diplomacyWarLevel": "trudna",
+ "kulturaReligiaLevel": "trudny",
+ "kulturaReligiaLevelAI": "trudny",
+ "wzrostSurowcowZEpoka": false,
+ "kosztJednostekPace": "wysoki",
+ "difficulty": "hard"
+}
+B) pola ustawien odczytane z ZAPISU STANU GRY (snapshotJson, produkcyjny buildSaveGameSnapshot):
+$.gracze.0.1.kosztJednostekPace="wysoki"
+$.gracze.0.1.wzrostLudnosciPace="wysoki"
+$.meta.newGameParams.advanced.barbariansLevel="trudny"
+$.meta.newGameParams.advanced.kosztJednostekPace="wysoki"
+$.meta.newGameParams.advanced.wzrostLudnosciPace="wysoki"
+$.meta.newGameParams.advanced.diplomacyWarLevel="trudna"
+$.meta.newGameParams.advanced.kulturaReligiaLevel="trudny"
+C) wartosc przekazana do startNewGame: advanced.barbariansLevel=trudny (to NIE jest odczyt)
