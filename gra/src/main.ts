@@ -42914,6 +42914,14 @@ async function boot(): Promise<void> {
           // do puli imperium -> zero ulepszen terenu) NA STALE. Format jak
           // `eliminatedOwners`/`typCityCopyOwners` nizej: plaska tablica ownerId.
           aiSurplusRedirectedOwners: Array.from(aiSurplusRedirectedOwners),
+          // R-WEB-SAVE-STATE-FIX-Q1 (FIX #1, wzorem aiCsFailCount): licznik „utykania" cudu AI
+          // (`aiWonderStuckTurnsByOwner`) steruje łagodzeniem progu opłacalności cudu
+          // (`relaxedWonderCostThreshold`). Był czyszczony przy wczytaniu, więc po wczytaniu
+          // cud AI opóźniał się o do 30 tur. Stary zapis (bez pola) = pusta mapa jak dotąd.
+          aiWonderStuckTurnsByOwner: Array.from(aiWonderStuckTurnsByOwner.entries()),
+          // R-WEB-SAVE-STATE-FIX-Q1 (FIX #2): typ garnizonu wybrany przez AI w bieżącej turze
+          // (`aiGarrisonUnitIdByOwner`) wpływa na rezerwę złota na garnizony (`aiGarrisonGoldReserve`).
+          aiGarrisonUnitIdByOwner: Array.from(aiGarrisonUnitIdByOwner.entries()),
           // P-AI-R5-FC4-SLIDER-STATE-NIE-PERSISTOWANY-Q1: stan AI-suwaków ekonomii
           // (procentBudynki/lastChangeTurn) NIE był zapisywany — powrót po komendzie
           // (isCommandResume) mógł jednorazowo trafić w wartość domyślną zamiast
@@ -51321,6 +51329,7 @@ async function boot(): Promise<void> {
       lastCityKulturaTick.clear();
       aiWonderPracaTickByCity.clear();
       aiWonderStuckTurnsByOwner.clear();
+      aiGarrisonUnitIdByOwner.clear(); // R-WEB-SAVE-STATE-FIX-Q1 (FIX #2): wpisy garnizonu nie przechodza do nowej gry
       aiResearchDone.clear();
       ownerEraByOwner.clear();
       ownerStartEraByOwner.clear();
@@ -53105,7 +53114,19 @@ async function boot(): Promise<void> {
       }
       ownerEraByOwner.clear();
       ownerStartEraByOwner.clear();
+      // R-WEB-SAVE-STATE-FIX-Q1 (FIX #1): odtworz licznik utykania cudu z zapisu (zamiast samego clear()).
+      // Stary zapis bez pola -> pusta mapa (dzisiejsze zachowanie); stan z poprzedniej gry nie przecieka.
       aiWonderStuckTurnsByOwner.clear();
+      const savedWonderStuck = saved.meta?.aiWonderStuckTurnsByOwner as Array<[number, number]> | undefined;
+      if (savedWonderStuck?.length) {
+        for (const [oid, t] of savedWonderStuck) aiWonderStuckTurnsByOwner.set(oid, t);
+      }
+      // R-WEB-SAVE-STATE-FIX-Q1 (FIX #2): garnizon AI -- zerowany przy wczytaniu, odtwarzany z zapisu.
+      aiGarrisonUnitIdByOwner.clear();
+      const savedGarrisonUnit = saved.meta?.aiGarrisonUnitIdByOwner as Array<[number, string]> | undefined;
+      if (savedGarrisonUnit?.length) {
+        for (const [oid, uid] of savedGarrisonUnit) aiGarrisonUnitIdByOwner.set(oid, uid);
+      }
       restoreAiRosterFromSave(saved);
       const loadStartEra = (() => {
         const eid = (saved.meta?.newGameParams as NewGameParams | undefined)?.epochId;
