@@ -117,10 +117,29 @@ function firstDiffs(a, b, max) {
   }
   return out;
 }
-const canonFull = (fullJson) => {
+// SAVEMAT r3 (diagnoza bunt/t10): city.podzialPracy NIE jest czytane, gdy podzialPracyOverride=false i istnieje domyslny
+// podzial wlasciciela (resolveCityPodzialPracy, empire-city-defaults.ts:74-91) -- pole jest wtedy martwa reprezentacja
+// (ensureCityPodzialDefaults przy wczytaniu dopisuje {procentBudynki:50}, a zmiana wlasciciela w ciaglej grze je kasuje,
+// main.ts:6803). Zamiast pola porownujemy WARTOSC EFEKTYWNA (effPP = __turnSlowdownTestDebug.getPodzialPracy per miasto,
+// ten sam resolver co silnik) -- ona zostaje w zrzucie i jest porownywana. --norm-pp raw wylacza pomijanie (odtworzenie r2).
+const NORM_PP = arg('norm-pp', 'inert');
+// Zrzut przechowywany SUROWO (z podzialPracy) + effPP; normalizacja pola martwego stosowana dopiero przy porownaniu (normPP).
+const canonFull = (fullJson, effPP) => {
   const o = JSON.parse(fullJson);
-  return { units: canon(o.units || []), cities: canon(o.cities || []) };
+  const cities = (o.cities || []).map((c) => {
+    const d = Object.assign({}, c);
+    if (effPP && effPP[d.id] !== undefined) d.effPP = effPP[d.id];
+    return d;
+  });
+  return { units: canon(o.units || []), cities: canon(cities) };
 };
+const normPP = (d) => ({ units: d.units, cities: (d.cities || []).map((c) => { if (c.podzialPracyOverride) return c; const e = Object.assign({}, c); delete e.podzialPracy; return e; }) });
+/** Podsumowanie surowych roznic: liczba i rozklad po nazwie pola (ostatni segment sciezki). */
+function rawDiffSummary(a, b) {
+  const all = firstDiffs(a, b, 1e9); const fields = {}; let effDiff = 0;
+  for (const d of all) { const f = d.path.split('.').pop(); fields[f] = (fields[f] || 0) + 1; if (f === 'effPP') effDiff++; }
+  return { count: all.length, fields, effPPdiffs: effDiff };
+}
 
 // --- sesja przegladarki ----------------------------------------------------------------------------------------
 async function openSession(chromium, res) {
@@ -173,13 +192,27 @@ async function openSession(chromium, res) {
     throw new Error('brak stolicy AI');
   });
   const full = () => page.evaluate(() => window.__detHarness.full());
-  return { browser, page, turnNow, endTurn, forceBunt, full };
+  // effPP: wartosc efektywna podzialu Pracy per miasto liczona tak jak resolveCityPodzialPracy (override&&pole -> pole;
+  // inaczej domyslna wlasciciela z __hotSeatTestDebug.snapshotOwnerSettingsForTest(owner).work; inaczej pole; inaczej 'FALLBACK').
+  const effPP = () => page.evaluate(() => {
+    const d = window.__hotSeatTestDebug; const o = {};
+    if (!d || !d.snapshotOwnerSettingsForTest) return null;
+    const cache = {};
+    for (const c of JSON.parse(window.__detHarness.full()).cities) {
+      if (cache[c.ownerId] === undefined) { try { const w = d.snapshotOwnerSettingsForTest(c.ownerId).work; cache[c.ownerId] = w ? w.procentBudynki : null; } catch (_) { cache[c.ownerId] = null; } }
+      const pp = c.podzialPracy ? c.podzialPracy.procentBudynki : null;
+      o[c.id] = (c.podzialPracyOverride && pp !== null) ? pp : (cache[c.ownerId] !== null ? cache[c.ownerId] : (pp !== null ? pp : 'FALLBACK'));
+    }
+    return o;
+  });
+  const dump = async () => canonFull(await full(), await effPP());
+  return { browser, page, turnNow, endTurn, forceBunt, full, effPP, dump };
 }
 
 async function main() {
   const { chromium } = require(PW);
   const res = { dist: DIST, cfg: CFG, seed: SEED, saves: SAVES, k: K, restore: RESTORE, expect: EXPECT, mode: MODE, pageErrors: [], segments: [],
-    cfgUsed: CFG === 'default' ? null : { barbariansLevel: MAX_ADV.barbariansLevel, difficulty: MAX_PARAMS.difficulty, rivals: MAX_PARAMS.rivals, civTypesCount: MAX_PARAMS.civTypesCount } };
+    normPP: NORM_PP, cfgUsed: CFG === 'default' ? null : { barbariansLevel: MAX_ADV.barbariansLevel, difficulty: MAX_PARAMS.difficulty, rivals: MAX_PARAMS.rivals, civTypesCount: MAX_PARAMS.civTypesCount } };
   const flush = () => fs.writeFileSync(OUT, JSON.stringify(res, null, 1));
   if (MODE === 'A') {
     // --- sesja A: ciagla gra; migawki w punktach zapisu, zrzuty K tur po kazdej migawce -> plik stanu (--state) ---
@@ -193,7 +226,7 @@ async function main() {
         for (let i = 0; i < K; i++) {
           if (BUNT && i === 0) ref.bunt = await A.forceBunt();
           const t = await A.endTurn();
-          ref.turns.push(t); ref.dumps.push(canonFull(await A.full()));
+          ref.turns.push(t); ref.dumps.push(await A.dump());
           fs.writeFileSync(STATE, JSON.stringify({ cfg: CFG, seed: SEED, k: K, refs: refs.concat([ref]) }));
         }
         refs.push(ref);
@@ -240,10 +273,11 @@ async function main() {
     for (let i = 0; i < kUse; i++) {
       if (BUNT && i === 0) await B.forceBunt();
       const t = await B.endTurn();
-      const cb = canonFull(await B.full());
-      const diffs = firstDiffs(ref.dumps[i], cb, 6);
+      const cb = await B.dump();
+      const rawSum = rawDiffSummary(ref.dumps[i], cb);
+      const diffs = NORM_PP === 'inert' ? firstDiffs(normPP(ref.dumps[i]), normPP(cb), 6) : firstDiffs(ref.dumps[i], cb, 6);
       const equal = diffs.length === 0 && t === ref.turns[i];
-      seg.turns.push({ turn: t, expectedTurn: ref.turns[i], equal, diffs });
+      seg.turns.push({ turn: t, expectedTurn: ref.turns[i], equal, diffs, rawDiffSummary: rawSum });
       if (!equal) anyDiff = true;
       flush();
     }
