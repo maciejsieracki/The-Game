@@ -1,0 +1,10 @@
+stuckRelaxTurMax=30 base=1
+A (licznik=12): efektywny próg = 1.6666666666666667
+B (licznik=0, po wczytaniu): efektywny próg = 1
+B!=A dla progu: TAK
+  licznik= 0 -> próg=1
+  licznik= 6 -> próg=1.25
+  licznik=12 -> próg=1.6666666666666667
+  licznik=18 -> próg=2.5
+  licznik=24 -> próg=5.000000000000001
+  licznik=30 -> próg=Infinity
