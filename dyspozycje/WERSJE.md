@@ -1,3 +1,9 @@
+## ROBOCZA 020cac3d -- 2026-11-28 -- FALA 939: Blokada zapisu przed założeniem pierwszego miasta (testowa)
+
+- zapis gry (menu, Ctrl+S, autozapis, szybki zapis) jest niedostępny do założenia pierwszego miasta, komunikat: Zapis niedostępny przed założeniem pierwszego miasta; wczytywanie bez zmian; format zapisu bez zmian (decyzja właściciela Q43=B)
+- Weryfikacja: FC PASS-WITH-NOTES (879e7848e); tsc 0; logic 213/213; save-block-pre-capital 26/0 (9 mutantów czerwonych); save-load-ai-state-fields 29/0; ai-test 297/0; live Obrony: przed stolicą saved=false, Ctrl+S bez zapisu, komunikat w DOM
+- Limity: live Ctrl+S po stolicy niestabilny w harnessie (2 z 4); menu pauzy i continuity B==A ≥6 tur NIE ZMIERZONO; hotseat: zapis zablokowany, dopóki każdy fotel ludzki nie założy stolicy (nie zmierzono live)
+
 ## ROBOCZA 7feed937 -- 2026-11-28 -- FALA 938: SAVESTATEFIX: wczytanie zapisu nie gubi licznika utykania cudow AI ani typu garnizonu AI (testowa)
 
 - R-WEB-SAVE-STATE-FIX-Q1: licznik 'utykania' cudu AI (aiWonderStuckTurnsByOwner, laczy kandydata na cud z lagodzeniem progu oplacalnosci, do 30 tur) i typ garnizonu AI (aiGarrisonUnitIdByOwner, rezerwa zlota na garnizon) sa zapisywane w zapisie gry i odtwarzane po wczytaniu (wczesniej po wczytaniu licznik wracal do zera: prog cudu 1,000 zamiast 1,667 przy liczniku 12, cud AI mogl powstac do 30 tur pozniej; garnizon liczony z domyslnym Wojownikiem); czyszczenie przy resecie swiata; main.ts +21 linii; stary zapis bez pol = puste mapy
