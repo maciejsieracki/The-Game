@@ -4,11 +4,11 @@
 
 - Błąd gry potwierdzony i naprawiony w kodzie: zegary `aiCsTrybutSince`, `aiCsWasalSince` oraz licznik `aiCsFailCount` (decyzje `decideAiCsClusterAction`: wasal_timer -> annex) były pomijane w zapisie i wczytaniu. Poprawka dfae6298c (gra/src/main.ts) zapisuje je w `meta`, czyści przy resecie świata i przy wczytaniu, odtwarza z zapisu. Stary zapis bez pól wczytuje się z pustymi mapami (jak dotąd).
 - Przegląd ścieżek: zapis, reset i wczytanie są symetryczne dla wszystkich trzech map; format klucza `ai:cs` i wartości liczbowe zgodne z użyciem. Jedyny producent zapisu i jedyny konsument wczytania (patrz sekcja 2).
-- Żywy dowód (bunt, seed 7, zapis t7, maksimum ustawień): przy zapisie 106 par trybut i 106 par wasal, po wczytaniu 106 i 106 (wcześniej 0). Przebieg po wczytaniu jest identyczny z ciągłym w 4 z 4 dostępnych tur (B==A, 0 różnic, 0 błędów strony). **Pełne 6/6 tur NIE osiągnięte**: runner nie jest wznawialny, a sesja A do t13 nie mieści się w jednym wywołaniu narzędzia (limit 600 s); zebrane tury 8–11. NIE ZMIERZONO: tury 12–13.
+- Żywy dowód (bunt, seed 7, zapis t7, maksimum ustawień): przy zapisie 106 par trybut i 106 par wasal, po wczytaniu 106 i 106 (wcześniej 0). Przebieg po wczytaniu jest identyczny z ciągłym w 6 z 6 tur (tury 8–13, B==A, 0 różnic, 0 błędów strony, `aics-bunt7-r2-A.txt` / `aics-bunt7-r2-B.txt`, wynik VERDICT PASS; dist zbudowany z gra/src identycznego z 6d623cea0, przed zmianą wyłącznie narzędzia testu statycznego; gra/src w tej rundzie nietknięte). Pierwsza próba (`aics-bunt7-A.txt`) przerwana po t11 limitem wywołania; powtórzona w jednym wywołaniu A (około 9 min, poniżej limitu 590 s), a B w osobnym wywołaniu.
 - Kontrole braku regresji (maksimum, zapis t3, 6/6 tur każda): max/4242, bunt/7, aionly/4242 — wszystkie B==A, 0 błędów strony. Uwaga: w kontrolach t3 pary trybut/wasal przy zapisie wynoszą 0 (kontrola formatu zapisu, nie ścieżki absorpcji).
-- Test statyczny gra/tools/save-load-ai-cs-absorption-state-test.cjs: 21/0 (9 sprawdzeń zapisu/odtworzenia/czyszczenia dla 3 map + 12 mutacji czerwonych, tabela w sekcji 4). Przed rozszerzeniem testu: 12/0 (3 mutacje).
+- Test statyczny gra/tools/save-load-ai-cs-absorption-state-test.cjs: 27/0 (9 sprawdzeń zapisu/odtworzenia/czyszczenia dla 3 map + 18 mutacji czerwonych, tabela w sekcji 4). Wartość 12/0 z dispatchu odpowiada stanowi przed rozszerzeniem testu (3 mutacje); po rozszerzeniu w r1 było 21/0, po wzmocnieniu kotwic T1/T2 w tej rundzie 27/0.
 - Bramki: tsc 0; logic 213/213; tech-tree 20/0; research 33/0; unit-replace 21/21; combat 6/6; ai-test 297/0; early-grace-15 33/0; society-breakdown 56/0; ai-city-order-need-wiring 267/0.
-- NIE ZMIERZONO w tej rundzie: A==A' (ciągłość bez wczytania), klik UI przy wczytaniu, render sceny 3D, pozostałe komórki macierzy SAVEMAT (aionly/bunt t10), pełne 6 tur dla bunt/7/t7.
+- NIE ZMIERZONO w tej rundzie: A==A' (ciągłość bez wczytania), klik UI przy wczytaniu, render sceny 3D, pozostałe komórki macierzy SAVEMAT (aionly/bunt t10).
 
 ## 1. Przegląd poprawki (dfae6298c)
 
@@ -42,33 +42,35 @@ Kryterium: zmienna modułowa `Map`/`Set` używana w decyzjach AI/dyplomacji, kt�
 
 Pozycje z obecnością w zapisie (nie są kandydatami): m.in. `aiTradeAgreementLastProposalTurn`, `aiAiTradeAgreementLastTurn`, `aiMarchPassageRequestTurn`, `aiResourceTradeLastProposalTurn`, `aiResourceBarterLastProposalTurn`, `aiAudienceLastRequestTurn`, `aiOneShotGiftLastTurn`, `aiSliderStateByOwner`, `aiPracaPoolByOwner`, `aiNaukaPoolByOwner`, `aiGeneralWarCampaignByOwner`, `aiAiPeaceRequestByPairKey`, `forcedWarWavesByPairKey`, `*ForceWarActiveByPairKey` (bronze/stone/iron), `forcedEraPeaceUntilNextEraByPairKey`, `eraWarCountByCivKey`, `regularWarCapturedByPairKey`, `diplomacyRelations`, `diplomacyFactorLog`, `wiarygodnosc*`, `nnsAiOverrides`, `eliminatedOwners`, `ownerEraByOwner`, `bronzeEraEnterTurnByOwner`, `ironEraEnterTurnByOwner`, `empireFoodStates`. Weryfikacja obecności: tylko przeszukanie tekstu obszaru zapisu, nie test żywy.
 
-## 3. Test żywy — tabela (gra/tools/save-load-continuity-live.cjs, dist zbudowany z d3b449ad2 poza repo)
+## 3. Test żywy — tabela (gra/tools/save-load-continuity-live.cjs; dist zbudowany poza repo w scratchpad z gra/src = 6d623cea0; komórki t3 z rundy 1)
 
 | Komórka | Zapis | Tury B==A | Pary trybut/wasal przy zapisie -> po wczytaniu | Błędy strony | Wynik |
 |---|---|---|---|---|---|
-| bunt / seed 7 | t7 | 4/4 dostępne (8–11), wymagane 6 | 106/106 -> 106/106 (wcześniej 0 po wczytaniu) | 0 | PASS na dostępnych turach; kryterium 6/6 NIE OSIĄGNIĘTE |
+| bunt / seed 7 | t7 | 6/6 (8–13) | 106/106 -> 106/106 (wcześniej 0 po wczytaniu) | 0 | PASS (runda 2, pliki `aics-bunt7-r2-*`) |
 | max / 4242 | t3 | 6/6 (4–9) | 0/0 -> 0/0 | 0 | PASS (kontrola) |
 | bunt / 7 | t3 | 6/6 (4–9) | 0/0 -> 0/0 | 0 | PASS (kontrola) |
 | aionly / 4242 | t3 | 6/6 (4–9) | 0/0 -> 0/0 | 0 | PASS (kontrola) |
 
 Konfiguracja użyta (cfgUsed z JSON): barbariansLevel trudny, difficulty Trudny, rivals 9, civTypesCount 14. Maksimum zdefiniowane w narzędziu (MAX_RIVALS = 9, MAX_CIV_TYPES_BRAZ = 14, barbarzyńcy Trudny). Wszystkie przebiegi na maksimum; dla komórki bunt/7/t7 próg był spełniony w 4 turach.
 
-Ograniczenie: sesja A (ciągła gra) przy zapisie t7 i K=6 wymaga ok. 13 tur i ponad 600 s w jednym wywołaniu (tury 1–7 ok. 50 s każda). Pierwszy bieg A został przerwany limitem 585 s po turze 11; zapisane zrzuty to tury 8–11 (`aics-bunt7-A.txt`, stan w scratchpad). Pełne 6 tur wymaga wznawialnego runnera (poza zakresem tego tematu).
+Ograniczenie (runda 1, bez zmiany kodu): sesja A przy zapisie t7 i K=6 została przerwana limitem wywołania po turze 11 (`aics-bunt7-A.txt`). W rundzie 2 ten sam bieg (`--mode A --cfg bunt --seed 7 --saves 7 --k 6`) zmieścił się w jednym wywołaniu (tury 1–7 po 42–49 s, 6 tur po zapisie po 17–23 s; łącznie około 9 min), a wczytanie i porównanie (`--mode B`) w osobnym wywołaniu (około 1 min). Zrzuty: `aics-bunt7-r2-A.json/.txt`, `aics-bunt7-r2-B.json/.txt`.
 
 Pliki wynikowe: dyspozycje/autobot/runs/R-WEB-SAVE-AICS-ABSORPTION-FIX-Q1/ (JSON i logi *.txt dla każdej komórki).
 
 ## 4. Test statyczny — tabela mutacji (gra/tools/save-load-ai-cs-absorption-state-test.cjs)
 
-Baza: 9/9 sprawdzeń PASS (T1 zapis, T2 odtworzenie, T3 czyszczenie ≥2 wystąpienia — dla każdej z trzech map).
+Baza: 9/9 sprawdzeń PASS. Runda 2 wzmocniła T1 (wpis zapisu musi być dokładnie `<mapa>: Array.from(<mapa>.entries()),` — kotwica na przecinku, bez `.slice`/`.filter`) i T2 (kolejność: drugie `.clear()` → odczyt `saved.meta?.<pole>` → `.set(` w odległości <400 znaków). Test wykrywa teraz mutację semantyczną z recenzji r1 (zapis obcięty do pustej tablicy), która wcześniej przechodziła przez regex prefiksowy.
 
-| Mutacja (usunięcie z gra/src/main.ts, w kopii w pamięci) | aiCsFailCount | aiCsTrybutSince | aiCsWasalSince |
+| Mutacja (w kopii w pamięci, gra/src/main.ts nietknięty) | aiCsFailCount | aiCsTrybutSince | aiCsWasalSince |
 |---|---|---|---|
 | wycięty zapis | czerwony (T1) | czerwony (T1) | czerwony (T1) |
+| zapis obcięty `.slice(0,0)` | czerwony (T1) | czerwony (T1) | czerwony (T1) |
 | wycięte odtworzenie | czerwony (T2) | czerwony (T2) | czerwony (T2) |
-| wycięte czyszczenie przy resecie świata | czerwony (T3) | czerwony (T3) | czerwony (T3) |
-| wycięte czyszczenie przy wczytaniu | czerwony (T3) | czerwony (T3) | czerwony (T3) |
+| wycięte czyszczenie przy resecie świata | czerwony (T2, T3) | czerwony (T2, T3) | czerwony (T2, T3) |
+| wycięte czyszczenie przy wczytaniu | czerwony (T2, T3) | czerwony (T2, T3) | czerwony (T2, T3) |
+| czyszczenie przeniesione po odtworzeniu | czerwony (T2) | czerwony (T2) | czerwony (T2) |
 
-WYNIK: 21 PASS / 0 FAIL (9 baz + 12 mutacji, wszystkie mutacje czerwienią test). Uwaga: T3 jest sprawdzeniem liczbowym (≥2 wystąpienia `.clear()`), więc wykrywa usunięcie każdego z dwóch czyszczeń, ale nie rozróżnia, które z nich zostało usunięte.
+WYNIK: 27 PASS / 0 FAIL (9 baz + 18 mutacji = 6 × 3 mapy, wszystkie mutacje czerwienią test). T3 nadal liczy wystąpienia `.clear()`; rozróżnienie resetu od wczytania realizuje T2 (indeks drugiego clear).
 
 ## 5. Pozostałe testy zapisu (headless)
 
