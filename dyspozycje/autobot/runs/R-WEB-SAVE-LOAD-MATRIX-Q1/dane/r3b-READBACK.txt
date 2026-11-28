@@ -1,0 +1,13 @@
+READBACK r3b (R-WEB-SAVE-LOAD-MATRIX-Q1, runda 3, Operator SONNET): ustawienia komorek MAKSIMUM, odczyt cfgUsed z KAZDEGO pliku JSON
+
+bunt-4242-t3-B: cfg=bunt seed=4242 cfgUsed={"barbariansLevel": "trudny", "difficulty": "Trudny", "rivals": "9", "civTypesCount": 14} tury_rowne=6/6 pageErrors=0 verdict=PASS
+bunt-7-t3-B: cfg=bunt seed=7 cfgUsed={"barbariansLevel": "trudny", "difficulty": "Trudny", "rivals": "9", "civTypesCount": 14} tury_rowne=6/6 pageErrors=0 verdict=PASS
+aionly-4242-t3-B: cfg=aionly seed=4242 cfgUsed={"barbariansLevel": "trudny", "difficulty": "Trudny", "rivals": "9", "civTypesCount": 14} tury_rowne=6/6 pageErrors=0 verdict=PASS
+aionly-7-t3-B: cfg=aionly seed=7 cfgUsed={"barbariansLevel": "trudny", "difficulty": "Trudny", "rivals": "9", "civTypesCount": 14} tury_rowne=6/6 pageErrors=0 verdict=PASS
+bunt-4242-t10-B: cfg=bunt seed=4242 cfgUsed={"barbariansLevel": "trudny", "difficulty": "Trudny", "rivals": "9", "civTypesCount": 14} tury_rowne=6/6 pageErrors=0 verdict=PASS
+bunt-7-t7-B-PRZED-poprawka: cfg=bunt seed=7 cfgUsed={"barbariansLevel": "trudny", "difficulty": "Trudny", "rivals": "9", "civTypesCount": 14} tury_rowne=0/6 pageErrors=0 verdict=FAIL
+bunt-7-t7-B-PO-poprawce: cfg=bunt seed=7 cfgUsed={"barbariansLevel": "trudny", "difficulty": "Trudny", "rivals": "9", "civTypesCount": 14} tury_rowne=6/6 pageErrors=0 verdict=PASS
+render-max-4242-t10-B: cfg=max seed=4242 cfgUsed={"barbariansLevel": "trudny", "difficulty": "Trudny", "rivals": "9", "civTypesCount": 14} tury_rowne=0/6 pageErrors=0 verdict=FAIL
+ui-max-4242-t3-dirty1-czesciowy: cfg=max(UI) seed=4242 cfgUsed={"barbariansLevel": "trudny", "difficulty": "Trudny", "rivals": "9", "civTypesCount": 14} tury_rowne=5/5 pageErrors=0 verdict=None
+ui-max-4242-t3-dirty0-czesciowy: cfg=max(UI) seed=4242 cfgUsed={"barbariansLevel": "trudny", "difficulty": "Trudny", "rivals": "9", "civTypesCount": 14} tury_rowne=5/5 pageErrors=0 verdict=None
+ui-max-7-t3-dirty0-czesciowy: cfg=max(UI) seed=7 cfgUsed={"barbariansLevel": "trudny", "difficulty": "Trudny", "rivals": "9", "civTypesCount": 14} tury_rowne=3/3 pageErrors=0 verdict=None

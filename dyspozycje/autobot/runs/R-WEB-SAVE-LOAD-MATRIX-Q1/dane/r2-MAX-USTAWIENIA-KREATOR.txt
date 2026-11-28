@@ -1,0 +1,8 @@
+MAKSYMALNE USTAWIENIA KREATORA NOWEJ GRY (kreator: gra/src/ui/newGameFlow.ts; runda r2 R-WEB-SAVE-LOAD-MATRIX-Q1)
+
+rivals (pole cityStatesCount, slider city_states_count -> Miasta-panstwa): MAKSIMUM = 9
+  zrodlo: gra/src/map/newGameMapDefaults.ts:528 export const MAX_MIAST_PANSTWA = 9; clampMiastaPanstwaCount (linia 539) ucina do tej wartosci
+civTypesCount (slider civ_types_count -> Liczba cywilizacji): MAKSIMUM = 15
+  zrodlo: gra/src/map/newGameMapDefaults.ts:547 export const MAX_TYPY_CYWILIZACJI_MENU = 15; newGameFlow.ts:2236-2238 epochCivMax = maxCivTypesForStartEpoch(epoka startowa, roster) gdy roster niepusty. Limit dla epoki Braz NIE ZOSTAL odczytany (NIE ZMIERZONO, czy jest nizszy niz 15).
+
+Uwaga: w r2 matrix (12 komorek) runner uzywal rivals=2 / cityStatesCount=2 (domyslne z MAX_PARAMS), czyli NIE maksimum. Jedna komorka sprawdzona na 9: max/4242/t3 PASS 6/6 (r2-READBACK-max-4242-t3-rivals9.txt).

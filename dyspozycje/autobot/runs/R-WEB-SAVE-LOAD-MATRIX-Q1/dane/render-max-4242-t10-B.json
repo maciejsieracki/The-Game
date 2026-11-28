@@ -1,0 +1,371 @@
+{
+ "dist": "/tmp/savemat-dist2",
+ "cfg": "max",
+ "seed": 4242,
+ "saves": [
+  10
+ ],
+ "k": 6,
+ "restore": "pause",
+ "expect": "equal",
+ "mode": "B",
+ "pageErrors": [],
+ "segments": [
+  {
+   "save": 10,
+   "restore": "pause",
+   "rebuild": false,
+   "turns": [
+    {
+     "turn": 11,
+     "expectedTurn": 11,
+     "equal": false,
+     "diffs": [
+      {
+       "path": "cities[city0].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city1].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city2].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city3].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city4].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city5].effPP",
+       "A": "(brak)",
+       "B": "50"
+      }
+     ],
+     "rawDiffSummary": {
+      "count": 143,
+      "fields": {
+       "effPP": 143
+      },
+      "effPPdiffs": 143
+     }
+    },
+    {
+     "turn": 12,
+     "expectedTurn": 12,
+     "equal": false,
+     "diffs": [
+      {
+       "path": "cities[city0].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city1].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city2].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city3].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city4].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city5].effPP",
+       "A": "(brak)",
+       "B": "50"
+      }
+     ],
+     "rawDiffSummary": {
+      "count": 144,
+      "fields": {
+       "effPP": 144
+      },
+      "effPPdiffs": 144
+     }
+    },
+    {
+     "turn": 13,
+     "expectedTurn": 13,
+     "equal": false,
+     "diffs": [
+      {
+       "path": "cities[city0].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city1].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city2].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city3].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city4].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city5].effPP",
+       "A": "(brak)",
+       "B": "50"
+      }
+     ],
+     "rawDiffSummary": {
+      "count": 144,
+      "fields": {
+       "effPP": 144
+      },
+      "effPPdiffs": 144
+     }
+    },
+    {
+     "turn": 14,
+     "expectedTurn": 14,
+     "equal": false,
+     "diffs": [
+      {
+       "path": "cities[city0].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city1].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city2].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city3].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city4].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city5].effPP",
+       "A": "(brak)",
+       "B": "50"
+      }
+     ],
+     "rawDiffSummary": {
+      "count": 144,
+      "fields": {
+       "effPP": 144
+      },
+      "effPPdiffs": 144
+     }
+    },
+    {
+     "turn": 15,
+     "expectedTurn": 15,
+     "equal": false,
+     "diffs": [
+      {
+       "path": "cities[city0].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city1].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city2].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city3].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city4].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city5].effPP",
+       "A": "(brak)",
+       "B": "50"
+      }
+     ],
+     "rawDiffSummary": {
+      "count": 148,
+      "fields": {
+       "effPP": 148
+      },
+      "effPPdiffs": 148
+     }
+    },
+    {
+     "turn": 16,
+     "expectedTurn": 16,
+     "equal": false,
+     "diffs": [
+      {
+       "path": "cities[city0].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city1].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city2].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city3].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city4].effPP",
+       "A": "(brak)",
+       "B": "50"
+      },
+      {
+       "path": "cities[city5].effPP",
+       "A": "(brak)",
+       "B": "50"
+      }
+     ],
+     "rawDiffSummary": {
+      "count": 151,
+      "fields": {
+       "effPP": 151
+      },
+      "effPPdiffs": 151
+     }
+    }
+   ],
+   "legacy": false,
+   "mapDiffers": true,
+   "render": [
+    {
+     "turn": 10,
+     "mapSnapshotKeys": [
+      "fmt",
+      "szerokoscQ",
+      "wysokoscR",
+      "seed",
+      "riverPaths",
+      "riverPathKinds",
+      "dict",
+      "n"
+     ],
+     "hexCount": 20160,
+     "stateCities": 142,
+     "stateUnits": 194,
+     "villageMeshes": 81,
+     "campMeshes": 0,
+     "improvementMeshes": 59,
+     "render": {
+      "calls": 185,
+      "triangles": 372246,
+      "points": 0,
+      "lines": 48
+     },
+     "canvas": {
+      "w": 960,
+      "h": 600
+     },
+     "label": "po-wczytaniu",
+     "pageErrors": 0,
+     "consoleErrors": 0
+    },
+    {
+     "turn": 16,
+     "mapSnapshotKeys": [
+      "fmt",
+      "szerokoscQ",
+      "wysokoscR",
+      "seed",
+      "riverPaths",
+      "riverPathKinds",
+      "dict",
+      "n"
+     ],
+     "hexCount": 20160,
+     "stateCities": 151,
+     "stateUnits": 244,
+     "villageMeshes": 51,
+     "campMeshes": 0,
+     "improvementMeshes": 184,
+     "render": {
+      "calls": 226,
+      "triangles": 373174,
+      "points": 0,
+      "lines": 48
+     },
+     "canvas": {
+      "w": 960,
+      "h": 600
+     },
+     "label": "po-ostatniej-turze",
+     "pageErrors": 0,
+     "consoleErrors": 0
+    }
+   ],
+   "aiCsAtSave": null,
+   "aiCsAfterLoad": {
+    "fail": 0,
+    "trybut": 0,
+    "wasal": 0
+   }
+  }
+ ],
+ "normPP": "inert",
+ "cfgUsed": {
+  "barbariansLevel": "trudny",
+  "difficulty": "Trudny",
+  "rivals": "9",
+  "civTypesCount": 14
+ },
+ "consoleErrors": [],
+ "anyDiff": true,
+ "verdict": "FAIL",
+ "done": true
+}

@@ -1,0 +1,110 @@
+{
+ "dist": "/tmp/savemat-dist2",
+ "cfg": "bunt",
+ "seed": 7,
+ "saves": [
+  7
+ ],
+ "k": 6,
+ "restore": "pause",
+ "expect": "equal",
+ "mode": "B",
+ "pageErrors": [],
+ "segments": [
+  {
+   "save": 7,
+   "restore": "pause",
+   "rebuild": false,
+   "turns": [
+    {
+     "turn": 8,
+     "expectedTurn": 8,
+     "equal": true,
+     "diffs": [],
+     "rawDiffSummary": {
+      "count": 0,
+      "fields": {},
+      "effPPdiffs": 0
+     }
+    },
+    {
+     "turn": 9,
+     "expectedTurn": 9,
+     "equal": true,
+     "diffs": [],
+     "rawDiffSummary": {
+      "count": 0,
+      "fields": {},
+      "effPPdiffs": 0
+     }
+    },
+    {
+     "turn": 10,
+     "expectedTurn": 10,
+     "equal": true,
+     "diffs": [],
+     "rawDiffSummary": {
+      "count": 0,
+      "fields": {},
+      "effPPdiffs": 0
+     }
+    },
+    {
+     "turn": 11,
+     "expectedTurn": 11,
+     "equal": true,
+     "diffs": [],
+     "rawDiffSummary": {
+      "count": 0,
+      "fields": {},
+      "effPPdiffs": 0
+     }
+    },
+    {
+     "turn": 12,
+     "expectedTurn": 12,
+     "equal": true,
+     "diffs": [],
+     "rawDiffSummary": {
+      "count": 0,
+      "fields": {},
+      "effPPdiffs": 0
+     }
+    },
+    {
+     "turn": 13,
+     "expectedTurn": 13,
+     "equal": true,
+     "diffs": [],
+     "rawDiffSummary": {
+      "count": 0,
+      "fields": {},
+      "effPPdiffs": 0
+     }
+    }
+   ],
+   "legacy": false,
+   "mapDiffers": true,
+   "aiCsAtSave": {
+    "fail": 0,
+    "trybut": 106,
+    "wasal": 106
+   },
+   "aiCsAfterLoad": {
+    "fail": 0,
+    "trybut": 106,
+    "wasal": 106
+   }
+  }
+ ],
+ "normPP": "inert",
+ "cfgUsed": {
+  "barbariansLevel": "trudny",
+  "difficulty": "Trudny",
+  "rivals": "9",
+  "civTypesCount": 14
+ },
+ "anyDiff": false,
+ "verdict": "PASS",
+ "done": true
+}

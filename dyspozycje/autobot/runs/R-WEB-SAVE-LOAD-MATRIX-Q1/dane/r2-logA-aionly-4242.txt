@@ -1,0 +1,2 @@
+00:05:09 aionly 4242 A zapis po t3 snapBytes=953160 zrzuty t4,5,6,7,8,9
+00:07:17 aionly 4242 A zapis po t10 snapBytes=944959 zrzuty t11,12,13,14,15,16

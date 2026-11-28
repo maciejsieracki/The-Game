@@ -1,0 +1,267 @@
+{
+ "dist": "/tmp/savemat-dist",
+ "cfg": "bunt",
+ "seed": 7,
+ "saves": [
+  7
+ ],
+ "k": 2,
+ "restore": "pause",
+ "expect": "equal",
+ "mode": "B",
+ "pageErrors": [],
+ "segments": [
+  {
+   "save": 7,
+   "restore": "pause",
+   "rebuild": false,
+   "turns": [
+    {
+     "turn": 8,
+     "expectedTurn": 8,
+     "equal": false,
+     "diffs": [
+      {
+       "path": "units[diffbonus_1_81_89oyal].q",
+       "A": "125",
+       "B": "119"
+      },
+      {
+       "path": "units[diffbonus_1_81_89oyal].r",
+       "A": "83",
+       "B": "85"
+      },
+      {
+       "path": "units[rec_4_city91_1rpzgvj].q",
+       "A": "125",
+       "B": "119"
+      },
+      {
+       "path": "units[rec_4_city91_1rpzgvj].r",
+       "A": "83",
+       "B": "85"
+      },
+      {
+       "path": "units[rec_5_city81_d8i6dp].q",
+       "A": "56",
+       "B": "54"
+      },
+      {
+       "path": "units[rec_5_city81_d8i6dp].r",
+       "A": "85",
+       "B": "87"
+      }
+     ],
+     "rawDiffSummary": {
+      "count": 494,
+      "fields": {
+       "q": 4,
+       "r": 4,
+       "ruchLeft": 2,
+       "units[wioska_8_93_62_1430hop]": 1,
+       "units[rec_6_city16_uvg81y]": 1,
+       "units[rec_6_city33_1j0mhpr]": 1,
+       "units[rec_6_city37_qpdgq0]": 1,
+       "units[rec_6_city74_ngkfd2]": 1,
+       "units[rec_6_city75_1c6945j]": 1,
+       "units[rec_6_city77_1d4tpzo]": 1,
+       "units[rec_6_city79_1m2q0v7]": 1,
+       "units[rec_8_city15_kckp1p]": 1,
+       "surowce": 6,
+       "ownerId": 106,
+       "poziomRacji": 106,
+       "manpower": 84,
+       "startCityState": 106,
+       "drewno": 67
+      },
+      "effPPdiffs": 0
+     }
+    },
+    {
+     "turn": 9,
+     "expectedTurn": 9,
+     "equal": false,
+     "diffs": [
+      {
+       "path": "units[diffbonus_1_81_89oyal].q",
+       "A": "122",
+       "B": "119"
+      },
+      {
+       "path": "units[diffbonus_1_81_89oyal].r",
+       "A": "84",
+       "B": "85"
+      },
+      {
+       "path": "units[diffbonus_1_81_89oyal].ruchLeft",
+       "A": "(brak)",
+       "B": "3"
+      },
+      {
+       "path": "units[rec_4_city72_dgl6qh].q",
+       "A": "32",
+       "B": "33"
+      },
+      {
+       "path": "units[rec_4_city91_1rpzgvj].q",
+       "A": "122",
+       "B": "119"
+      },
+      {
+       "path": "units[rec_4_city91_1rpzgvj].r",
+       "A": "84",
+       "B": "85"
+      }
+     ],
+     "rawDiffSummary": {
+      "count": 863,
+      "fields": {
+       "q": 5,
+       "r": 6,
+       "ruchLeft": 4,
+       "units[wioska_8_93_62_1430hop]": 1,
+       "units[rec_9_city12_o0pzko]": 1,
+       "units[rec_9_city13_1kxbe7e]": 1,
+       "units[rec_9_city14_1db6m53]": 1,
+       "units[rec_9_city15_gjtwi1]": 1,
+       "units[rec_9_city16_9un52p]": 1,
+       "units[rec_9_city17_upw2a4]": 1,
+       "units[rec_9_city18_2xld5f]": 1,
+       "units[rec_9_city23_7wn57s]": 1,
+       "units[rec_9_city31_5bgr7s]": 1,
+       "units[rec_9_city32_1eq35b4]": 1,
+       "units[rec_9_city33_9cmcz]": 1,
+       "units[rec_9_city34_16kfkzw]": 1,
+       "units[rec_9_city35_1lrsynr]": 1,
+       "units[rec_9_city36_azq0ds]": 1,
+       "units[rec_9_city37_2idj6x]": 1,
+       "units[rec_9_city38_1b9t2s0]": 1,
+       "units[rec_9_city43_tj7slx]": 1,
+       "units[rec_9_city44_sl9pqi]": 1,
+       "units[rec_9_city45_1toff5w]": 1,
+       "units[rec_9_city46_1uhb9mh]": 1,
+       "units[rec_9_city47_t36ubt]": 1,
+       "units[rec_9_city48_hzv8hr]": 1,
+       "units[rec_9_city49_1xu92yu]": 1,
+       "units[rec_9_city50_stfczt]": 1,
+       "units[rec_9_city52_1tg94qa]": 1,
+       "units[rec_9_city53_bi8le5]": 1,
+       "units[rec_9_city54_13ayqff]": 1,
+       "units[rec_9_city55_zof0ls]": 1,
+       "units[rec_9_city56_ra50y]": 1,
+       "units[rec_9_city57_xsklqd]": 1,
+       "units[rec_9_city58_wp6bb8]": 1,
+       "units[rec_9_city59_xzjaty]": 1,
+       "units[rec_9_city60_naloml]": 1,
+       "units[rec_9_city62_rk72j8]": 1,
+       "units[rec_9_city63_1r74yl1]": 1,
+       "units[rec_9_city64_jqqmt5]": 1,
+       "units[rec_9_city71_1kz7d76]": 1,
+       "units[rec_9_city72_v10pnu]": 1,
+       "units[rec_9_city73_cvfpkz]": 1,
+       "units[rec_9_city74_q9vrm4]": 1,
+       "units[rec_9_city75_zmnn3u]": 1,
+       "units[rec_9_city76_kguahe]": 1,
+       "units[rec_9_city82_3gvl42]": 1,
+       "units[rec_9_city83_15v7lxj]": 1,
+       "units[rec_9_city84_1impo7o]": 1,
+       "units[rec_9_city85_1p851l8]": 1,
+       "units[rec_9_city86_j34u1r]": 1,
+       "units[rec_9_city87_u9rogk]": 1,
+       "units[rec_9_city88_156ezfd]": 1,
+       "units[rec_9_city89_18f7owj]": 1,
+       "units[rec_9_city90_1gtkhrs]": 1,
+       "units[rec_9_city92_1rgufn]": 1,
+       "units[rec_9_city93_ab4dvw]": 1,
+       "units[rec_9_city94_io4yad]": 1,
+       "units[rec_9_city95_3hnclt]": 1,
+       "units[rec_9_city96_1efmt1p]": 1,
+       "units[rec_9_city97_1lizpin]": 1,
+       "units[rec_9_city98_bchs3f]": 1,
+       "units[rec_9_city99_1rrlj51]": 1,
+       "units[rec_9_city100_1n096c0]": 1,
+       "units[rec_9_city101_15z6o42]": 1,
+       "units[rec_9_city103_1s8x7r8]": 1,
+       "units[rec_9_city104_tarege]": 1,
+       "units[rec_9_city105_mo7q7o]": 1,
+       "units[rec_9_city106_1hicasf]": 1,
+       "units[rec_9_city107_1ti05e6]": 1,
+       "units[rec_9_city112_cq8g35]": 1,
+       "units[rec_9_city113_1f2k7ge]": 1,
+       "units[rec_9_city114_1hq2txe]": 1,
+       "units[rec_9_city115_a9lpk2]": 1,
+       "units[rec_9_city116_1jqt2aw]": 1,
+       "units[rec_9_city117_1a4ksg6]": 1,
+       "units[rec_9_city118_1amm7er]": 1,
+       "units[rec_9_city119_l50jge]": 1,
+       "units[rec_9_city120_df53wu]": 1,
+       "units[rec_9_city123_z1yy4m]": 1,
+       "units[rec_9_city124_5fseb6]": 1,
+       "units[rec_9_city125_m8aoh0]": 1,
+       "units[rec_9_city126_iu2fht]": 1,
+       "units[rec_9_city127_1p7od2b]": 1,
+       "units[rec_9_city128_14be2rg]": 1,
+       "units[rec_9_city129_jd9n4f]": 1,
+       "units[rec_9_city130_1s3b1u8]": 1,
+       "units[rec_9_city133_16bmm1h]": 1,
+       "units[rec_9_city134_2jvm4k]": 1,
+       "units[rec_9_city135_14wqgtz]": 1,
+       "units[rec_9_city136_awrysk]": 1,
+       "units[wioska_9_32_30_v9l2eu]": 1,
+       "units[wioska_9_59_91_1p170q5]": 1,
+       "units[rec_6_city16_uvg81y]": 1,
+       "units[rec_6_city33_1j0mhpr]": 1,
+       "units[rec_6_city37_qpdgq0]": 1,
+       "units[rec_6_city74_ngkfd2]": 1,
+       "units[rec_6_city75_1c6945j]": 1,
+       "units[rec_6_city77_1d4tpzo]": 1,
+       "units[rec_6_city79_1m2q0v7]": 1,
+       "units[rec_8_city15_kckp1p]": 1,
+       "units[rec_9_city17_6hwxgj]": 1,
+       "units[rec_9_city31_o0pzko]": 1,
+       "units[rec_9_city71_1kxbe7e]": 1,
+       "units[rec_9_city101_1db6m53]": 1,
+       "units[rec_9_city131_gjtwi1]": 1,
+       "units[rec_9_city132_9un52p]": 1,
+       "poziomRacji": 92,
+       "drewno": 13,
+       "glina": 13,
+       "kamien": 13,
+       "wzrostUlamkowy": 120,
+       "manpower": 93,
+       "ownerId": 106,
+       "pula": 78,
+       "startCityState": 106,
+       "surowce": 106,
+       "procentRozwoj": 3,
+       "ceramika": 1
+      },
+      "effPPdiffs": 0
+     }
+    }
+   ],
+   "legacy": false,
+   "mapDiffers": true,
+   "aiCsAtSave": {
+    "fail": 0,
+    "trybut": 106,
+    "wasal": 106
+   },
+   "aiCsAfterLoad": {
+    "fail": 0,
+    "trybut": 0,
+    "wasal": 0
+   }
+  }
+ ],
+ "normPP": "inert",
+ "cfgUsed": {
+  "barbariansLevel": "trudny",
+  "difficulty": "Trudny",
+  "rivals": "9",
+  "civTypesCount": 14
+ },
+ "anyDiff": true,
+ "verdict": "FAIL",
+ "done": true
+}

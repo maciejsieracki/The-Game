@@ -1,0 +1,10 @@
+A==A' max/4242 d14 (dwa niezalezne biegi A, saves 3,10): porownano 9 tur, identyczne 9
+turn 4 A(run1) vs A(run2) bajt-w-bajt: EQUAL
+turn 5 A(run1) vs A(run2) bajt-w-bajt: EQUAL
+turn 6 A(run1) vs A(run2) bajt-w-bajt: EQUAL
+turn 7 A(run1) vs A(run2) bajt-w-bajt: EQUAL
+turn 8 A(run1) vs A(run2) bajt-w-bajt: EQUAL
+turn 9 A(run1) vs A(run2) bajt-w-bajt: EQUAL
+turn 11 A(run1) vs A(run2) bajt-w-bajt: EQUAL
+turn 12 A(run1) vs A(run2) bajt-w-bajt: EQUAL
+turn 13 A(run1) vs A(run2) bajt-w-bajt: EQUAL

@@ -1,0 +1,13 @@
+10:53:48 bunt 7 A (dojscie) tura 2 48719ms
+10:54:31 bunt 7 A (dojscie) tura 3 42658ms
+10:55:14 bunt 7 A (dojscie) tura 4 41867ms
+10:55:57 bunt 7 A (dojscie) tura 5 42220ms
+10:56:39 bunt 7 A (dojscie) tura 6 41825ms
+10:57:21 bunt 7 A (dojscie) tura 7 41852ms
+10:57:48 bunt 7 A tura 8 endTurn 22566ms dump 1356ms
+10:58:06 bunt 7 A tura 9 endTurn 16807ms dump 1421ms
+10:58:25 bunt 7 A tura 10 endTurn 16998ms dump 1296ms
+10:58:42 bunt 7 A tura 11 endTurn 16359ms dump 1381ms
+10:59:01 bunt 7 A tura 12 endTurn 17361ms dump 1405ms
+10:59:22 bunt 7 A tura 13 endTurn 19559ms dump 1355ms
+10:59:22 bunt 7 A zapis po t7 snapBytes=2331443 zrzuty t8,9,10,11,12,13

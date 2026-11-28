@@ -1,0 +1,9 @@
+10:02:02 bunt 7 A (dojscie) tura 2 54240ms
+10:02:54 bunt 7 A (dojscie) tura 3 51031ms
+10:03:49 bunt 7 A tura 4 endTurn 49705ms dump 2023ms
+10:04:43 bunt 7 A tura 5 endTurn 52772ms dump 1494ms
+10:05:38 bunt 7 A tura 6 endTurn 52507ms dump 2165ms
+10:06:39 bunt 7 A tura 7 endTurn 58951ms dump 2188ms
+10:07:12 bunt 7 A tura 8 endTurn 30584ms dump 2126ms
+10:07:38 bunt 7 A tura 9 endTurn 24145ms dump 2028ms
+10:07:38 bunt 7 A zapis po t3 snapBytes=2280578 zrzuty t4,5,6,7,8,9

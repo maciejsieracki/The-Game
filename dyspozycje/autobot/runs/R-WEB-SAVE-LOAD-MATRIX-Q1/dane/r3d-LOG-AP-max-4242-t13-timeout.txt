@@ -1,0 +1,14 @@
+09:12:56 max 4242 A (dojscie) tura 2 57367ms
+09:13:49 max 4242 A (dojscie) tura 3 52753ms
+09:14:46 max 4242 A tura 4 endTurn 52003ms dump 2238ms
+09:15:40 max 4242 A tura 5 endTurn 51611ms dump 2015ms
+09:16:34 max 4242 A tura 6 endTurn 53067ms dump 1214ms
+09:17:27 max 4242 A tura 7 endTurn 50714ms dump 2235ms
+09:17:54 max 4242 A tura 8 endTurn 25225ms dump 1893ms
+09:18:19 max 4242 A tura 9 endTurn 23247ms dump 1968ms
+09:18:19 max 4242 A zapis po t3 snapBytes=2268541 zrzuty t4,5,6,7,8,9
+09:18:42 max 4242 A (dojscie) tura 10 22061ms
+09:19:09 max 4242 A tura 11 endTurn 22791ms dump 1689ms
+09:19:33 max 4242 A tura 12 endTurn 22041ms dump 1722ms
+09:19:57 max 4242 A tura 13 endTurn 22102ms dump 1748ms
+FATAL Error: page.evaluate: Target page, context or browser has been closed

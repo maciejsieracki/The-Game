@@ -1,0 +1,69 @@
+{
+ "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-r2",
+ "cfg": "aionly",
+ "seed": 4242,
+ "saves": [
+  10
+ ],
+ "k": 6,
+ "restore": "pause",
+ "expect": "equal",
+ "mode": "B",
+ "pageErrors": [],
+ "segments": [
+  {
+   "save": 10,
+   "restore": "pause",
+   "rebuild": false,
+   "turns": [
+    {
+     "turn": 11,
+     "expectedTurn": 11,
+     "equal": true,
+     "diffs": []
+    },
+    {
+     "turn": 12,
+     "expectedTurn": 12,
+     "equal": true,
+     "diffs": []
+    },
+    {
+     "turn": 13,
+     "expectedTurn": 13,
+     "equal": true,
+     "diffs": []
+    },
+    {
+     "turn": 14,
+     "expectedTurn": 14,
+     "equal": true,
+     "diffs": []
+    },
+    {
+     "turn": 15,
+     "expectedTurn": 15,
+     "equal": true,
+     "diffs": []
+    },
+    {
+     "turn": 16,
+     "expectedTurn": 16,
+     "equal": true,
+     "diffs": []
+    }
+   ],
+   "legacy": false,
+   "mapDiffers": true
+  }
+ ],
+ "cfgUsed": {
+  "barbariansLevel": "trudny",
+  "difficulty": "Trudny",
+  "rivals": "2",
+  "civTypesCount": 15
+ },
+ "anyDiff": false,
+ "verdict": "PASS",
+ "done": true
+}

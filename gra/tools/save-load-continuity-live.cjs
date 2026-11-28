@@ -47,17 +47,22 @@ const log = (...a) => console.log(new Date().toISOString().slice(11, 19), CFG, S
 const { closeCivWelcome, prepareEndTurnGate } = require('./_live-ready.cjs');
 
 const MAX_ADV = {
-  barbariansLevel: 'normalny', battleAlwaysManual: false, victoryMode: 'moc_i_dominacja', buildingCostPace: 'niski',
+  barbariansLevel: 'trudny', battleAlwaysManual: false, victoryMode: 'moc_i_dominacja', buildingCostPace: 'niski',
   wzrostSurowcowZEpoka: true,
   kosztJednostekPace: 'wysoki', wzrostLudnosciPace: 'wysoki', ruchSwiataPace: 'krotki', landFractionPercent: 30, landFractionCustom: false,
   cityStateDifficultyOverride: 'normal', cityLimitBase: 10, diplomacyWarLevel: 'trudna', kulturaReligiaLevel: 'trudny',
   kulturaReligiaLevelAI: 'trudny',
 };
+// MAKSIMUM kreatora (r3): rivals = MAX_MIAST_PANSTWA = 9 (newGameMapDefaults.ts:528);
+// civTypesCount = maksimum dla epoki startu Brąz = 14 (civs.json: 14 cywilizacji z epokaWejscia <= braz;
+// newGameFlow.ts:2236 clampuje do epochCivMax). Wartość 15 była zawyżona (dotyczy dopiero Żelaza).
+const MAX_RIVALS = 9;
+const MAX_CIV_TYPES_BRAZ = 14;
 const MAX_PARAMS = {
   civId: 'rzymianie', civName: 'Rzymianie', epoch: 'Epoka Brazu', epochId: 'braz', difficulty: 'Trudny',
-  mapSize: 'Standardowy', rivals: '2', speed: 'Normalna', worldType: 'Kontynenty', typSwiata: 'kontynenty',
+  mapSize: 'Standardowy', rivals: String(arg('rivals', String(MAX_RIVALS))), speed: 'Normalna', worldType: 'Kontynenty', typSwiata: 'kontynenty',
   mapQualityLabel: 'Wysoka', mapQuality: 'high', renderQualityLabel: 'Wysoka', mapDetailQualityLabel: 'Wysoka',
-  renderQuality: 'high', mapDetailQuality: 'high', civTypesCount: 15, cityStatesCount: 2,
+  renderQuality: 'high', mapDetailQuality: 'high', civTypesCount: MAX_CIV_TYPES_BRAZ, cityStatesCount: Number(arg('rivals', String(MAX_RIVALS))),
   worldDensityLabels: { resources: 'Normalnie', rivers: 'Normalnie', desert: 'Normalnie', forest: 'Normalnie', relief: 'Normalnie' },
   advanced: MAX_ADV,
   villageRewardsEnabled: true,
@@ -112,19 +117,40 @@ function firstDiffs(a, b, max) {
   }
   return out;
 }
-const canonFull = (fullJson) => {
+// SAVEMAT r3 (diagnoza bunt/t10): city.podzialPracy NIE jest czytane, gdy podzialPracyOverride=false i istnieje domyslny
+// podzial wlasciciela (resolveCityPodzialPracy, empire-city-defaults.ts:74-91) -- pole jest wtedy martwa reprezentacja
+// (ensureCityPodzialDefaults przy wczytaniu dopisuje {procentBudynki:50}, a zmiana wlasciciela w ciaglej grze je kasuje,
+// main.ts:6803). Zamiast pola porownujemy WARTOSC EFEKTYWNA (effPP = __turnSlowdownTestDebug.getPodzialPracy per miasto,
+// ten sam resolver co silnik) -- ona zostaje w zrzucie i jest porownywana. --norm-pp raw wylacza pomijanie (odtworzenie r2).
+const NORM_PP = arg('norm-pp', 'inert');
+// Zrzut przechowywany SUROWO (z podzialPracy) + effPP; normalizacja pola martwego stosowana dopiero przy porownaniu (normPP).
+const canonFull = (fullJson, effPP) => {
   const o = JSON.parse(fullJson);
-  return { units: canon(o.units || []), cities: canon(o.cities || []) };
+  const cities = (o.cities || []).map((c) => {
+    const d = Object.assign({}, c);
+    if (effPP && effPP[d.id] !== undefined) d.effPP = effPP[d.id];
+    return d;
+  });
+  return { units: canon(o.units || []), cities: canon(cities) };
 };
+const normPP = (d) => ({ units: d.units, cities: (d.cities || []).map((c) => { if (c.podzialPracyOverride) return c; const e = Object.assign({}, c); delete e.podzialPracy; return e; }) });
+/** Podsumowanie surowych roznic: liczba i rozklad po nazwie pola (ostatni segment sciezki). */
+function rawDiffSummary(a, b) {
+  const all = firstDiffs(a, b, 1e9); const fields = {}; let effDiff = 0;
+  for (const d of all) { const f = d.path.split('.').pop(); fields[f] = (fields[f] || 0) + 1; if (f === 'effPP') effDiff++; }
+  return { count: all.length, fields, effPPdiffs: effDiff };
+}
 
 // --- sesja przegladarki ----------------------------------------------------------------------------------------
 async function openSession(chromium, res) {
   const browser = await chromium.launch({
     headless: true, executablePath: CHROME,
-    args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'],
+    args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'].concat(process.env.SM_ARGS ? process.env.SM_ARGS.split(' ') : []),
   });
-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  const page = await browser.newPage({ viewport: { width: Number(arg('vw', '1280')), height: Number(arg('vh', '800')) } });
   page.on('pageerror', (e) => res.pageErrors.push(String(e).slice(0, 300)));
+  res.consoleErrors = res.consoleErrors || [];
+  page.on('console', (m) => { if (m.type() === 'error') res.consoleErrors.push(m.text().slice(0, 200)); });
   page.on('dialog', (d) => d.dismiss().catch(() => {}));
   await page.addInitScript((s0) => {
     let s = s0 | 0;
@@ -148,9 +174,12 @@ async function openSession(chromium, res) {
   await wait(300);
   const turnNow = () => page.evaluate(() => window.__eraTestDebug.getWorldState().turn);
   const endTurn = async () => {
+    const e0 = Date.now();
     await closeCivWelcome(page);
+    const e1 = Date.now();
     await prepareEndTurnGate(page).catch(() => null);
     const before = await turnNow();
+    if (process.env.SM_PHASES) console.log('phase welcome', e1 - e0, 'gate', Date.now() - e1);
     await page.evaluate(() => window.__eraTestDebug.endTurn());
     const t1 = Date.now();
     for (;;) {
@@ -168,12 +197,27 @@ async function openSession(chromium, res) {
     throw new Error('brak stolicy AI');
   });
   const full = () => page.evaluate(() => window.__detHarness.full());
-  return { browser, page, turnNow, endTurn, forceBunt, full };
+  // effPP: wartosc efektywna podzialu Pracy per miasto liczona tak jak resolveCityPodzialPracy (override&&pole -> pole;
+  // inaczej domyslna wlasciciela z __hotSeatTestDebug.snapshotOwnerSettingsForTest(owner).work; inaczej pole; inaczej 'FALLBACK').
+  const effPP = () => page.evaluate(() => {
+    const d = window.__hotSeatTestDebug; const o = {};
+    if (!d || !d.snapshotOwnerSettingsForTest) return null;
+    const cache = {};
+    for (const c of JSON.parse(window.__detHarness.full()).cities) {
+      if (cache[c.ownerId] === undefined) { try { const w = d.snapshotOwnerSettingsForTest(c.ownerId).work; cache[c.ownerId] = w ? w.procentBudynki : null; } catch (_) { cache[c.ownerId] = null; } }
+      const pp = c.podzialPracy ? c.podzialPracy.procentBudynki : null;
+      o[c.id] = (c.podzialPracyOverride && pp !== null) ? pp : (cache[c.ownerId] !== null ? cache[c.ownerId] : (pp !== null ? pp : 'FALLBACK'));
+    }
+    return o;
+  });
+  const dump = async () => canonFull(await full(), await effPP());
+  return { browser, page, turnNow, endTurn, forceBunt, full, effPP, dump };
 }
 
 async function main() {
   const { chromium } = require(PW);
-  const res = { dist: DIST, cfg: CFG, seed: SEED, saves: SAVES, k: K, restore: RESTORE, expect: EXPECT, mode: MODE, pageErrors: [], segments: [] };
+  const res = { dist: DIST, cfg: CFG, seed: SEED, saves: SAVES, k: K, restore: RESTORE, expect: EXPECT, mode: MODE, pageErrors: [], segments: [],
+    normPP: NORM_PP, cfgUsed: CFG === 'default' ? null : { barbariansLevel: MAX_ADV.barbariansLevel, difficulty: MAX_PARAMS.difficulty, rivals: MAX_PARAMS.rivals, civTypesCount: MAX_PARAMS.civTypesCount } };
   const flush = () => fs.writeFileSync(OUT, JSON.stringify(res, null, 1));
   if (MODE === 'A') {
     // --- sesja A: ciagla gra; migawki w punktach zapisu, zrzuty K tur po kazdej migawce -> plik stanu (--state) ---
@@ -181,13 +225,14 @@ async function main() {
     const A = await openSession(chromium, res);
     try {
       for (const sv of SAVES) {
-        while ((await A.turnNow()) < sv) await A.endTurn();
+        while ((await A.turnNow()) < sv) { const q0 = Date.now(); const q = await A.endTurn(); log('A (dojscie) tura ' + q + ' ' + (Date.now() - q0) + 'ms'); }
         const snap = await A.page.evaluate(() => window.__detHarness.snapshotJson());
-        const ref = { save: sv, snap, dumps: [], turns: [], bunt: null, snapBytes: snap.length };
+        const ref = { save: sv, snap, dumps: [], turns: [], bunt: null, snapBytes: snap.length, aiCsAtSave: await A.page.evaluate(() => { const c = window.__turnSlowdownTestDebug.collections(); return { fail: c.aiCsFailCount, trybut: c.aiCsTrybutSince, wasal: c.aiCsWasalSince }; }) };
         for (let i = 0; i < K; i++) {
           if (BUNT && i === 0) ref.bunt = await A.forceBunt();
-          const t = await A.endTurn();
-          ref.turns.push(t); ref.dumps.push(canonFull(await A.full()));
+          const tt0 = Date.now(); const t = await A.endTurn(); const tt1 = Date.now();
+          ref.turns.push(t); ref.dumps.push(await A.dump());
+          log('A tura ' + t + ' endTurn ' + (tt1 - tt0) + 'ms dump ' + (Date.now() - tt1) + 'ms');
           fs.writeFileSync(STATE, JSON.stringify({ cfg: CFG, seed: SEED, k: K, refs: refs.concat([ref]) }));
         }
         refs.push(ref);
@@ -231,16 +276,39 @@ async function main() {
       seg.rebuild = rp.rebuildByMode; seg.mapDiffers = rp.mapDiffers;
     }
     await wait(300);
+    const collectRender = async (label) => {
+      const info = await B.page.evaluate(() => {
+        const snap = JSON.parse(window.__detHarness.snapshotJson());
+        const ms = snap.mapSnapshot || {};
+        const full = JSON.parse(window.__detHarness.full());
+        const c = window.__turnSlowdownTestDebug.collections();
+        const ri = window.__turnSlowdownTestDebug.renderInfo();
+        const tiles = Array.isArray(ms.tiles) ? ms.tiles.length : (ms.q ? Object.keys(ms.q).length : null);
+        return { turn: window.__eraTestDebug.getWorldState().turn, mapSnapshotKeys: Object.keys(ms).slice(0, 8), hexCount: tiles, stateCities: full.cities.length, stateUnits: full.units.length,
+          villageMeshes: c.villageMeshes, campMeshes: c.campMeshes, improvementMeshes: c.improvementMeshes, render: ri,
+          canvas: (() => { const cv = document.querySelector('canvas'); return cv ? { w: cv.width, h: cv.height } : null; })() };
+      });
+      info.label = label; info.pageErrors = res.pageErrors.length; info.consoleErrors = res.consoleErrors.length;
+      seg.render = (seg.render || []).concat([info]);
+      log('render ' + JSON.stringify(info));
+    };
+    if (arg('render', '0') === '1') { await wait(1500); await collectRender('po-wczytaniu'); if (arg('shot', '')) await B.page.screenshot({ path: arg('shot', '') }); }
+    seg.aiCsAtSave = ref.aiCsAtSave || null;
+    seg.aiCsAfterLoad = await B.page.evaluate(() => { const c = window.__turnSlowdownTestDebug.collections(); return { fail: c.aiCsFailCount, trybut: c.aiCsTrybutSince, wasal: c.aiCsWasalSince }; });
+    log('aiCs przy zapisie (A) ' + JSON.stringify(seg.aiCsAtSave) + ' | po wczytaniu (B) ' + JSON.stringify(seg.aiCsAfterLoad));
     for (let i = 0; i < kUse; i++) {
       if (BUNT && i === 0) await B.forceBunt();
       const t = await B.endTurn();
-      const cb = canonFull(await B.full());
-      const diffs = firstDiffs(ref.dumps[i], cb, 6);
+      const cb = await B.dump();
+      if (arg('dumpb', '')) fs.writeFileSync(arg('dumpb', '') + '.t' + t + '.json', JSON.stringify(cb));
+      const rawSum = rawDiffSummary(ref.dumps[i], cb);
+      const diffs = NORM_PP === 'inert' ? firstDiffs(normPP(ref.dumps[i]), normPP(cb), 6) : firstDiffs(ref.dumps[i], cb, 6);
       const equal = diffs.length === 0 && t === ref.turns[i];
-      seg.turns.push({ turn: t, expectedTurn: ref.turns[i], equal, diffs });
+      seg.turns.push({ turn: t, expectedTurn: ref.turns[i], equal, diffs, rawDiffSummary: rawSum });
       if (!equal) anyDiff = true;
       flush();
     }
+    if (arg('render', '0') === '1') { try { await collectRender('po-ostatniej-turze'); } catch (e) { seg.renderErr = String(e).slice(0, 200); } }
   } finally { await B.browser.close(); }
   res.segments.push(seg);
   log('B zapis t' + ref.save + ' rebuild=' + seg.rebuild + ' tury: ' + seg.turns.map((x) => (x.equal ? 'OK' : 'ROZJAZD')).join(' '));

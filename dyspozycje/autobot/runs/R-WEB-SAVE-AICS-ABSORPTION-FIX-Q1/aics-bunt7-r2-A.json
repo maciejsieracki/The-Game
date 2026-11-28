@@ -1,0 +1,23 @@
+{
+ "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-aicsfix-r2",
+ "cfg": "bunt",
+ "seed": 7,
+ "saves": [
+  7
+ ],
+ "k": 6,
+ "restore": "pause",
+ "expect": "equal",
+ "mode": "A",
+ "pageErrors": [],
+ "segments": [],
+ "normPP": "inert",
+ "cfgUsed": {
+  "barbariansLevel": "trudny",
+  "difficulty": "Trudny",
+  "rivals": "9",
+  "civTypesCount": 14
+ },
+ "consoleErrors": [],
+ "done": true
+}

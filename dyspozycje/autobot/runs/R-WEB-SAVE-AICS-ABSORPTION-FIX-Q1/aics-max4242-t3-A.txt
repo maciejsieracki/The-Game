@@ -1,0 +1,9 @@
+09:46:32 max 4242 A (dojscie) tura 2 74236ms
+09:47:39 max 4242 A (dojscie) tura 3 66342ms
+09:48:33 max 4242 A tura 4 endTurn 49014ms dump 2641ms
+09:49:39 max 4242 A tura 5 endTurn 62920ms dump 2928ms
+09:50:46 max 4242 A tura 6 endTurn 64365ms dump 2586ms
+09:51:50 max 4242 A tura 7 endTurn 62396ms dump 2329ms
+09:52:24 max 4242 A tura 8 endTurn 31845ms dump 2060ms
+09:52:50 max 4242 A tura 9 endTurn 23675ms dump 1730ms
+09:52:50 max 4242 A zapis po t3 snapBytes=2268541 zrzuty t4,5,6,7,8,9

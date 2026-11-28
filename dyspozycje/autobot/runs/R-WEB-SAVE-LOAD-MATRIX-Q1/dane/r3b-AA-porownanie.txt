@@ -1,0 +1,38 @@
+A==A' max/4242 t3->t13: A1 vs A2 (dist2, rivals=9)
+tura 4 equal 95708 95708
+tura 5 equal 94761 94761
+tura 6 equal 97394 97394
+tura 7 equal 99356 99356
+tura 8 equal 95070 95070
+tura 9 equal 109953 109953
+tura 10 equal 114952 114952
+tura 11 equal 117722 117722
+tura 12 equal 120039 120039
+ALL_EQUAL True turns 9
+
+A==A' max/4242 t3: r3-STATE-A (starszy bieg) vs A1
+tura 4 equal 95708 95708
+tura 5 equal 94761 94761
+tura 6 equal 97394 97394
+tura 7 equal 99356 99356
+tura 8 equal 95070 95070
+tura 9 equal 109953 109953
+ALL_EQUAL True turns 6
+
+A==A' max/7 t3: r3-STATE-A (starszy bieg) vs nowy bieg
+tura 4 equal 96688 96688
+tura 5 equal 96214 96214
+tura 6 equal 99400 99400
+tura 7 equal 100690 100690
+tura 8 equal 95858 95858
+tura 9 equal 110399 110399
+ALL_EQUAL True turns 6
+
+A==A' bunt/7 t7: trzy niezalezne biegi (s7 vs s7f)
+tura 8 equal 95856 95856
+tura 9 equal 110423 110423
+tura 10 equal 114951 114951
+tura 11 equal 117118 117118
+tura 12 equal 120897 120897
+tura 13 equal 123456 123456
+ALL_EQUAL True turns 6

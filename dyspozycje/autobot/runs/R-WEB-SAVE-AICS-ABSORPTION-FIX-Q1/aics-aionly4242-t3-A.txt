@@ -1,0 +1,9 @@
+10:17:58 aionly 4242 A (dojscie) tura 2 58092ms
+10:18:52 aionly 4242 A (dojscie) tura 3 52822ms
+10:19:47 aionly 4242 A tura 4 endTurn 50869ms dump 2137ms
+10:20:41 aionly 4242 A tura 5 endTurn 51140ms dump 2091ms
+10:21:34 aionly 4242 A tura 6 endTurn 51880ms dump 1705ms
+10:22:20 aionly 4242 A tura 7 endTurn 43735ms dump 1879ms
+10:22:45 aionly 4242 A tura 8 endTurn 23709ms dump 1341ms
+10:23:04 aionly 4242 A tura 9 endTurn 17756ms dump 1372ms
+10:23:04 aionly 4242 A zapis po t3 snapBytes=2270061 zrzuty t4,5,6,7,8,9

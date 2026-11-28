@@ -1,0 +1,68 @@
+{
+ "dist": "/tmp/savemat-dist2",
+ "seed": 4242,
+ "save": 3,
+ "dirty": 0,
+ "k": 6,
+ "mode": "UI",
+ "pageErrors": [],
+ "consoleErrors": [],
+ "clicks": [
+  "hud:button.b-menu",
+  "pause[data-act=save]",
+  "saveDialog:#civ-sl-name=UI-SAVEMAT",
+  "saveDialog:Zapisz",
+  "saveDialog:still-open-after-wait",
+  "pause[data-act=resume]",
+  "hud:button.b-menu",
+  "pause[data-act=load]",
+  "loadDialog:row=UI-SAVEMAT",
+  "loadDialog:Wczytaj"
+ ],
+ "turns": [
+  {
+   "turn": 4,
+   "expectedTurn": 4,
+   "equal": true,
+   "diffs": []
+  },
+  {
+   "turn": 5,
+   "expectedTurn": 5,
+   "equal": true,
+   "diffs": []
+  },
+  {
+   "turn": 6,
+   "expectedTurn": 6,
+   "equal": true,
+   "diffs": []
+  },
+  {
+   "turn": 7,
+   "expectedTurn": 7,
+   "equal": true,
+   "diffs": []
+  },
+  {
+   "turn": 8,
+   "expectedTurn": 8,
+   "equal": true,
+   "diffs": []
+  }
+ ],
+ "cfgUsed": {
+  "barbariansLevel": "trudny",
+  "difficulty": "Trudny",
+  "rivals": "9",
+  "civTypesCount": 14
+ },
+ "dirtyTurn": 3,
+ "loadEnabled": true,
+ "loadRows": [
+  "UI-SAVEMAT-t3Tura 3 · 28.11.2026, 07:09 · ostatnio graneStandardowy · Kontynenty",
+  "Autozapis · Rzym · rok 3900 p.n.e. · tura 3 · Standardowy · TrudnyTura 3 · 28.11",
+  "Autozapis · Rzym · rok 3950 p.n.e. · tura 2 · Standardowy · TrudnyTura 2 · 28.11"
+ ],
+ "loadedTurn": 3
+}

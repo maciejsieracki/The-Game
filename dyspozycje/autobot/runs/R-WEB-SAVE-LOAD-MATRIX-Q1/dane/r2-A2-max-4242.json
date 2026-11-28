@@ -1,0 +1,22 @@
+{
+ "dist": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/dist-r2",
+ "cfg": "max",
+ "seed": 4242,
+ "saves": [
+  3,
+  10
+ ],
+ "k": 6,
+ "restore": "pause",
+ "expect": "equal",
+ "mode": "A",
+ "pageErrors": [],
+ "segments": [],
+ "cfgUsed": {
+  "barbariansLevel": "trudny",
+  "difficulty": "Trudny",
+  "rivals": "2",
+  "civTypesCount": 15
+ },
+ "done": true
+}
