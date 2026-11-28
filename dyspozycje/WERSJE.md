@@ -1,3 +1,9 @@
+## ROBOCZA 66d4ecc1 -- 2026-11-28 -- FALA 941: Koniec tury nie jest blokowany z powodu braku żywności (testowa)
+
+- ujemny bilans żywności nie blokuje już przycisku Zakończ turę gracza (decyzje właściciela Q42=C, Q44=A): zostaje istniejący głód wojska (osłabienie w walce, od 3. tury utrata zdrowia jednostek, zapas żywności nie spada poniżej 0); przy próbie zakończenia tury z ujemnym zapasem podpowiedź: Brak żywności: wojsko słabnie w walce, od 3. tury z rzędu jednostki tracą zdrowie; blokada skarbca i ścieżka AI bez zmian
+- Weryfikacja: FC PASS-WITH-NOTES (19568b215, kod 13065b634); tsc 0; logic 213/213; starvation-no-food-gate 31/0 (4 mutacje czerwone); endgate-lever-baseline 5/0; glod-wojska-karencja 40/0; army-hunger-combat 13/0; population-civ-matrix 122/0; ai-test 297/0; no-negative-stocks-c2 (AI) 44/0
+- Limity: test live Chromium (t16–t20, klik Zakończ turę) NIE ZMIERZONO; podpowiedź o głodzie to hint 6 s, widoczność w UI NIE ZMIERZONO; miasto nienakarmione (własny bilans ujemny) przy zapasie państwa 0 nadal traci 1 mieszkańca na turę (pomiar silnika) — do decyzji właściciela
+
 ## ROBOCZA 5488d5ea -- 2026-11-28 -- FALA 940: Kamera po wczytaniu zapisu wraca na stolicę (testowa)
 
 - po wczytaniu zapisu z przebudową mapy kamera wraca na stolicę gracza w normalnym dystansie (22), a nie oddalona do ok. 316 (mapa jak maleńka wyspa); format zapisu bez zmian, stary zapis OK

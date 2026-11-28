@@ -1,98 +1,98 @@
 {
   "releaseState": "DEPLOYED TO ROBOCZA AND PUSHED; publication186d0f03b; fresh Git artifact readback PASS",
   "bundle": "Gra-ROBOCZA.html",
-  "bundleMd5": "5488d5ea49c8bedc31e818f3501df571",
-  "bundleSha256": "182e7c25e60b722e7cc7d77851319e5e4c478f839208481cc6927e5335f89922",
-  "bundleBytes": 15050417,
+  "bundleMd5": "66d4ecc1907edf8a4a89a57fd4244f30",
+  "bundleSha256": "25f16f90ad567782e8fc6590b9019741a15f0636204073a444b42ef40f4488dd",
+  "bundleBytes": 15050827,
   "sourceSnapshot": {
-    "source": "origin/main 2b019d3e3 + merge FC 7c736ee1c (kod 0cae4381a); Vite direct outDir poza repo",
+    "source": "origin/main 22b62f79a + merge FC 19568b215 (kod 13065b634); Vite direct outDir poza repo",
     "build": "Vite direct, outDir poza repo; ROBOCZA stamp"
   },
   "scope": [
-    "FALA 940: po wczytaniu zapisu z przebudową mapy kamera wraca na stolicę gracza w normalnym dystansie (22), a nie oddalona do ok. 316 (mapa jak maleńka wyspa); format zapisu bez zmian, stary zapis OK"
+    "FALA 941: ujemny bilans żywności nie blokuje już przycisku Zakończ turę gracza (decyzje właściciela Q42=C, Q44=A): zostaje istniejący głód wojska (osłabienie w walce, od 3. tury utrata zdrowia jednostek, zapas żywności nie spada poniżej 0); przy próbie zakończenia tury z ujemnym zapasem podpowiedź: Brak żywności: wojsko słabnie w walce, od 3. tury z rzędu jednostki tracą zdrowie; blokada skarbca i ścieżka AI bez zmian"
   ],
   "verification": [
-    "FC PASS-WITH-NOTES (7c736ee1c, kod 0cae4381a); tsc 0; logic 213/213; load-camera-test PASS (mutacje M1-M7 czerwone); ai-test 297/0; save-load 27/0 i 29/0; live Chromium maks. seed 4242 zapis t3: kamera przed {dist 22}, po wczytaniu {dist 22}, pageErrors 0, zrzut w normalnej skali"
+    "FC PASS-WITH-NOTES (19568b215, kod 13065b634); tsc 0; logic 213/213; starvation-no-food-gate 31/0 (4 mutacje czerwone); endgate-lever-baseline 5/0; glod-wojska-karencja 40/0; army-hunger-combat 13/0; population-civ-matrix 122/0; ai-test 297/0; no-negative-stocks-c2 (AI) 44/0"
   ],
   "limits": [
-    "widok sprzed zapisu nie jest przywracany (zapis nie ma pola kamery; używany widok na stolicę); live tylko seed 4242, zapis w t3, wczytanie przez pauzę; klik w interfejsie i inne ziarna NIE ZMIERZONO"
+    "test live Chromium (t16–t20, klik Zakończ turę) NIE ZMIERZONO; podpowiedź o głodzie to hint 6 s, widoczność w UI NIE ZMIERZONO; miasto nienakarmione (własny bilans ujemny) przy zapasie państwa 0 nadal traci 1 mieszkańca na turę (pomiar silnika) — do decyzji właściciela"
   ],
-  "finalControl": "R-WEB-LOAD-CAMERA-Q1 r1 PASS-WITH-NOTES (Operator HAIKU; Evaluator PASS-WITH-NOTES; Obrona; FC PASS-WITH-NOTES)",
+  "finalControl": "R-WEB-STARVATION-IMPL-Q44A r1 PASS-WITH-NOTES (Operator HAIKU; Evaluator FAIL z 6 zarzutami; Obrona; FC PASS-WITH-NOTES)",
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-11-28T17:44:06",
+  "hubGeneratedAt": "2026-11-28T17:54:36",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "5488d5ea49c8bedc31e818f3501df571",
-      "sizeBytes": 15050417
+      "md5": "66d4ecc1907edf8a4a89a57fd4244f30",
+      "sizeBytes": 15050827
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "5488d5ea49c8bedc31e818f3501df571",
-      "sizeBytes": 15050417
+      "md5": "66d4ecc1907edf8a4a89a57fd4244f30",
+      "sizeBytes": 15050827
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "5488d5ea49c8bedc31e818f3501df571",
-      "sizeBytes": 15050417
+      "md5": "66d4ecc1907edf8a4a89a57fd4244f30",
+      "sizeBytes": 15050827
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "5488d5ea49c8bedc31e818f3501df571",
-      "sizeBytes": 15050417
+      "md5": "66d4ecc1907edf8a4a89a57fd4244f30",
+      "sizeBytes": 15050827
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "5488d5ea49c8bedc31e818f3501df571",
-      "sizeBytes": 15050417
+      "md5": "66d4ecc1907edf8a4a89a57fd4244f30",
+      "sizeBytes": 15050827
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "5488d5ea49c8bedc31e818f3501df571",
-      "sizeBytes": 15050417
+      "md5": "66d4ecc1907edf8a4a89a57fd4244f30",
+      "sizeBytes": 15050827
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "5488d5ea49c8bedc31e818f3501df571",
-      "sizeBytes": 15050417
+      "md5": "66d4ecc1907edf8a4a89a57fd4244f30",
+      "sizeBytes": 15050827
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "5488d5ea49c8bedc31e818f3501df571",
-      "sizeBytes": 15050417
+      "md5": "66d4ecc1907edf8a4a89a57fd4244f30",
+      "sizeBytes": 15050827
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "5488d5ea49c8bedc31e818f3501df571",
-      "sizeBytes": 15050417
+      "md5": "66d4ecc1907edf8a4a89a57fd4244f30",
+      "sizeBytes": 15050827
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "5488d5ea49c8bedc31e818f3501df571",
-      "sizeBytes": 15050417
+      "md5": "66d4ecc1907edf8a4a89a57fd4244f30",
+      "sizeBytes": 15050827
     }
   ],
-  "md5": "5488d5ea49c8bedc31e818f3501df571",
+  "md5": "66d4ecc1907edf8a4a89a57fd4244f30",
   "sizeBytes": 14440421,
   "publisher": "Codex AutoBot",
   "source": "d2ff370e79451de6411641a199bc554473caeb15",
