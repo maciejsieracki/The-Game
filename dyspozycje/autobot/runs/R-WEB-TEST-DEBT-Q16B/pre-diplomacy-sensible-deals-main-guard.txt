@@ -1,0 +1,26 @@
+R-WEB-DIPLO-DEALS-SENSIBLE-Q1 — main.ts wiring guard (R2)
+
+PASS: realne main.ts: import: flaga, bramki i reason z diplomacy-sensible-deals
+PASS: realne main.ts: filtr bilansu PW wywołany w enqueueNegotiationFromAiCmd (sensibleBalanceFilterApplies + isPlayerBalanceAcceptable)
+PASS: realne main.ts: bramka zakupu isBuyerDeficitJustified w pickResourceTradeRelOffer
+PASS: realne main.ts: bramka sprzedaży isSellerSurplusJustified (z warunkiem niedoboru partnera) w pickResourceTradeRelOffer
+PASS: realne main.ts: reason: sensibleReason zwracany z pickResourceTradeRelOffer
+PASS: realne main.ts: reason przenoszony do komendy (reasonHandlu: offer.reason) i na stół (entry.reason)
+FAIL: realne main.ts: blokada końca tury: canPlayerInitiateEndTurn zwraca false przy hasBlockingAiTradeOfferForPlayer()
+PASS: realne main.ts: siatka: healStaleEndTurnBlockers woła pruneStaleAiTradeOffersAwaitingPlayer()
+PASS: realne main.ts: kontroferta AI (resolveNegotiationEntryAt) podlega filtrowi bilansu PW gracza (B9)
+PASS: realne main.ts: hak __dealsLiveDebug (injectAiTradeOffer zmienia stan gry) wystawiany warunkowo: DEV albo ?playtest
+PASS: realne main.ts: opcja nowej gry: doStartGame ustawia dealsEndTurnGateEnabled z params (domyślnie ON)
+PASS: realne main.ts: zapis: meta.dealsEndTurnGate; odczyt: stary zapis = OFF
+PASS: realne main.ts: pkt 4: zerowy undershoot w zakresie flagi ON (pickResourceTradeRelOffer + koszyk umowy)
+PASS: realne main.ts: pkt 6: filtr potrzeby koszyka umowy (sensibleUmowaBasketCheck) przed ofertą + reason
+PASS: realne main.ts: pkt 7: mergedResourceRatesForOwner w pickResourceTradeRelOffer czytany tylko przy fladze ON
+PASS: mutacja "usunięcie wywołania filtru bilansu" -> czerwień (FAIL bramek: 2)
+PASS: mutacja "usunięcie bramki zakupu isBuyerDeficitJustified" -> czerwień (FAIL bramek: 2)
+PASS: mutacja "usunięcie bramki sprzedaży isSellerSurplusJustified" -> czerwień (FAIL bramek: 2)
+PASS: mutacja "usunięcie reason z pickResourceTradeRelOffer" -> czerwień (FAIL bramek: 2)
+FAIL: mutacja "usunięcie blokady końca tury": fragment nie istnieje w main.ts (bramka nieaktualna)
+PASS: mutacja "usunięcie filtru bilansu z kontrofert AI" -> czerwień (FAIL bramek: 2)
+PASS: mutacja "usunięcie siatki bezpieczeństwa w healStaleEndTurnBlockers" -> czerwień (FAIL bramek: 2)
+
+diplomacy-sensible-deals-main-guard-test: 20 passed, 2 failed

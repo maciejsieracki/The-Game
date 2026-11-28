@@ -179,7 +179,7 @@ function textChecks(V) {
 function sourceChecks() {
   const main = fs.readFileSync(path.join(SRC, 'main.ts'), 'utf8');
   const ui = fs.readFileSync(path.join(SRC, 'ui', 'diplomacyAudience.ts'), 'utf8');
-  const gateStart = main.indexOf('function canPlayerInitiateEndTurn(): boolean {');
+  const gateStart = main.indexOf('function canPlayerInitiateEndTurn(quiet = false): boolean {');
   const gateEnd = main.indexOf('function hintEndTurnBlocked', gateStart);
   const gate = gateStart >= 0 && gateEnd > gateStart ? main.slice(gateStart, gateEnd) : '';
   chk('g: bramka „Zakończ turę” sprawdza oczekujący pokój wymuszony', gate.includes('pendingForcedPeaceTreaties.length > 0'));

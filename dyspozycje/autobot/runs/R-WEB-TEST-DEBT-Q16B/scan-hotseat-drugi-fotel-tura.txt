@@ -1,0 +1,13 @@
+[hotseat-drugi-fotel-tura-test] budowanie bundla (vite build, jedyna dozwolona komenda buildu, C-001)...
+[hotseat-drugi-fotel-tura-test] build OK -> /tmp/civ-hotseat-drugi-fotel-tura-7339-4pdqcq-7339-0ab05115
+[hotseat-drugi-fotel-tura-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+[hotseat-drugi-fotel-tura-test] [main] próba 1/3 padła (locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('.civ-newgame .start')[22m
+) -- ponawiam ze świeżym browser.launch()...
+[hotseat-drugi-fotel-tura-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+[hotseat-drugi-fotel-tura-test] [main] próba 2/3 padła (locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('.civ-newgame .start')[22m
+) -- ponawiam ze świeżym browser.launch()...
+[hotseat-drugi-fotel-tura-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium

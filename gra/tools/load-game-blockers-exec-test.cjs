@@ -70,7 +70,7 @@ const FN_HEADERS = [
   'function scheduleDeferredPreBattleQueueWatchdog(): void {',
   'function maybeScheduleDeferredPreBattleQueueWatchdog(): void {',
   'function healStaleEndTurnBlockers(): void {',
-  'function canPlayerInitiateEndTurn(): boolean {',
+  'function canPlayerInitiateEndTurn(quiet = false): boolean {',
   'function hintEndTurnBlocked(): void {',
   'function healStuckDeferredPreBattleQueueOnEndTurnAttempt(): void {',
   'function resetEndTurnBlockers(reason: string): void {',
@@ -91,7 +91,16 @@ const STUBS = [
   'resetStuckInteractiveState', 'popOverlay', 'hideSiegeMapPanel', 'hideCityAttackChoice',
   'clearSiegeHtmlLabels', 'resetMapOverlayToggleDefaults', 'clearBuildModeVisuals', 'diagInfo',
   'pruneStaleAiTradeOffersAwaitingPlayer', 'hasBlockingAiTradeOfferForPlayer',
-].map((n) => 'const ' + n + ' = (..._a: any[]): void => {};').join('\n  ');
+  // Resety sesji z modułów (diplomacy-harder/zero-trust) i UI dodane po bazie pinu; nie dotyczą blokad tury.
+  'resetNeighborTenureSession', 'resetZeroTrustSession', 'resetEmpireRecruitPanelSession',
+  'resetArmyRecruitDraftsSession', 'resetEmpireMassRecruitmentMessage', 'resetPendingLedger', 'resetLedgerHistory',
+].map((n) => 'const ' + n + ' = (..._a: any[]): void => {};').join('\n  ')
+  // Kolejka powiadomień odroczonych (R-WEB-EVENTS-DEFER-TO-TURN-START-Q1): resetEndTurnBlockers czyści ją; poza pinem blokad.
+  + '\n  const eventDeferQueue: any = { clear(): void {}, size(): number { return 0; } };'
+  // Bramki dodane po bazie pinu (NNS-B: skarbiec/spichlerz; PENDING-FORCED-PEACE-Q1): w scenariuszach tego testu nieaktywne.
+  + '\n  const nnsGateForPlayer = (..._a: any[]): any => ({ blokada: false });'
+  + '\n  const prunePendingForcedPeace = (..._a: any[]): void => {};'
+  + '\n  let pendingForcedPeaceTreaties: any[] = [];';
 
 function buildFactory(mainSrc) {
   const esbuild = require(path.join(GRA, 'node_modules', 'esbuild'));

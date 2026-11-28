@@ -127,10 +127,10 @@ const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
 // A-order kontrola) canPlayerInitiateEndTurn SAMO tez wola healStaleEndTurnBlockers() na
 //     poczatku (niezalezna weryfikacja zlecenia -- "sprawdz to w kodzie, nie zakladaj").
 {
-  const cpitIdx = mainSrc.indexOf('function canPlayerInitiateEndTurn(): boolean {');
+  const cpitIdx = mainSrc.indexOf('function canPlayerInitiateEndTurn(quiet = false): boolean {');
   ok(cpitIdx >= 0, '[A-order-setup] znaleziono function canPlayerInitiateEndTurn(');
   const cpitHead = cpitIdx >= 0 ? mainSrc.slice(cpitIdx, cpitIdx + 150) : '';
-  ok(/function canPlayerInitiateEndTurn\(\): boolean \{\s*\n\s*healStaleEndTurnBlockers\(\);/.test(cpitHead),
+  ok(/function canPlayerInitiateEndTurn\(quiet = false\): boolean \{\s*\n\s*healStaleEndTurnBlockers\(\);/.test(cpitHead),
     '[A-order] canPlayerInitiateEndTurn woła healStaleEndTurnBlockers() jako pierwsza instrukcje -- potwierdza, ze ta funkcja i tak biegnie na kazdym wywolaniu canPlayerInitiateEndTurn (pasywnym i interaktywnym), wiec F1 (battleUiResolving) dziala identycznie jak w rundzie 3');
 }
 

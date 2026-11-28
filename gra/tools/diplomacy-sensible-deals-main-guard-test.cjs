@@ -29,7 +29,7 @@ function functionSlice(source, signature, nextSignature) {
 function guardResults(main) {
   const enqueue = functionSlice(main, 'function enqueueNegotiationFromAiCmd(', '\n    /**');
   const pickFn = functionSlice(main, 'function pickResourceTradeRelOffer(', '\n    function pickResourceSurplusForOwnerPair(');
-  const endTurn = functionSlice(main, 'function canPlayerInitiateEndTurn(): boolean {', '\n    function hintEndTurnBlocked(');
+  const endTurn = functionSlice(main, 'function canPlayerInitiateEndTurn(quiet = false): boolean {','\n    function hintEndTurnBlocked(');
   const healFn = functionSlice(main, 'function healStaleEndTurnBlockers(): void {', '\n    /** R-WEB-DIPLO-DEALS-SENSIBLE-Q1: oferta handlowa AI');
   const builder = functionSlice(main, 'function buildHandelSurowiecCmdFromOffer(', '\n    /** AI proaktywnie prosi');
   const resolveFn = functionSlice(main, 'function resolveNegotiationEntryAt(', '\n    /**');
@@ -118,8 +118,8 @@ const mutations = [
   },
   {
     name: 'usunięcie blokady końca tury',
-    from: "if (hasBlockingAiTradeOfferForPlayer()) {\n        console.warn('[EndTurn] blocked: oferta",
-    to: "if (false) {\n        console.warn('[EndTurn] blocked: oferta",
+    from: "if (hasBlockingAiTradeOfferForPlayer()) {\n        if (!quiet) console.warn('[EndTurn] blocked: oferta",
+    to: "if (false) {\n        if (!quiet) console.warn('[EndTurn] blocked: oferta",
   },
   {
     name: 'usunięcie filtru bilansu z kontrofert AI',
