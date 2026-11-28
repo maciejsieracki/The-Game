@@ -1,13 +1,20 @@
 STATUS: FAIL
 DOMAIN: GAME
 TEMAT: R-WEB-SAVE-LOAD-MATRIX-Q1
-GOAL: macierz zapis/wczytanie na MAKSIMUM (B==A >=6 tur, >=10 komorek), klik UI (2 komorki), A==A' (>=10 tur x 2 ziarna), spojnosc renderu z PNG.
-ZMIANY/COMMIT: kandydat 34e4b2db0; merge-base --is-ancestor ebaa23b03 34e4b2db0 = TAK. diff --stat: 16 plikow (+514/-2): gra/tools/save-load-continuity-live.cjs (barbariansLevel max 'normalny'->'trudny', pole cfgUsed), dok. analizy, 10-operator/30-obrona, dane/*.json. gra/src: 0 zmian (zweryfikowane diff --stat). Allowlista zachowana.
-TESTY (surowe, z plikow dane/): B-max-4242-t3-trudny PASS pageErrors 0 (cfgUsed: barbariansLevel trudny, difficulty Trudny, rivals "2", civTypesCount 15); B-max-4242-t3, B-max-7-t3, B-max-7-t10, B-bunt-4242-t3, B-bunt-7-t3 = PASS 0 bledow, ALE cfgUsed=null (zmierzone przy barbarzyncach 'normalny', czyli nie na maksimum). Bramki kodu: brak zmian gra/src -> tsc/logic/ai-test nie powtarzane (brak wplywu); nie uruchomiono wlasnych biegow na zywo (pojedynczy bieg 9-16 tur przekracza limit narzedzia, a wynik i tak nie domknalby kryterium).
-OCENA ZARZUTOW: 1 (7/12 zamiast >=10) NAPRAW - po korekcie maksimum na maksimum zmierzona 1 komorka z 12; 2 (klik UI) NAPRAW - brak harnessu; 3 (A==A') NAPRAW - nie zrobione; 4 (render+PNG) NAPRAW - nie zrobione, brak PNG; 5 (brak plikow max/4242/t10, aionly/7/t3) NAPRAW - brak dowodu w commicie; 6 (poziom maksimum) uznane po poprawce barbarzyncow na Trudny; rivals '2' / civTypesCount 15 nadal niepotwierdzone jako maksymalne - ODDAL jako uwaga; 7 (run_in_background) ODDAL - uwaga procesowa bez wplywu na wynik.
-Wszystkie 4 binarne kryteria dispatchu niespelnione; dokument ZAPIS-WCZYTANIE-MACIERZ zawiera tabele z niemaksymalnych komorek (barbarzyncy normalny) bez adnotacji - do skorygowania w kolejnej rundzie.
-BLOKADY: brak B==A dla 11/12 komorek na maksimum; klik UI, A==A', render NIE ZMIERZONO; zadnego B!=A nie zaobserwowano (brak sygnalu bledu gry).
-RUNDY: 2/5 zuzyte przed FC; to jest FC po rundzie 2; wraca do Operatora (runda 3).
-NASTEPNY KROK: runda 3 Operator (to samo ID): potwierdzic zakresy rivals/civTypesCount, jeden bieg A z wieloma punktami zapisu (--saves 3,10) per ziarno/cfg na barbarzyncach Trudny, 11 komorek, klik UI, A==A' 10 tur, render + PNG; zaktualizowac dokument z adnotacja cfgUsed.
-UWAGI-DLA-ORKIESTRATORA: bieg A t10 ~9-10 min jest na granicy limitu narzedzia - rozwazyc segmentowanie lub zapis wielu punktow w jednym biegu.
+GOAL: macierz zapisu/wczytania na maksimum (rivals=9, civTypesCount=14 dla Brazu, barbarzyncy Trudny), B==A >=6 tur, klik UI, A==A' >=10 tur x2 ziarna, render po wczytaniu.
+ZMIANY/COMMIT: kandydat 819d43beaf3a036ce866ee365b0fd6588f02deb2. Zweryfikowano: baza 193fadc8 jest przodkiem kandydata (merge-base --is-ancestor = tak). Wzgledem ca61257d (merge r2) zmiany poza dyspozycje/ to tylko gra/tools/save-load-continuity-live.cjs i save-load-continuity-ui-live.cjs; gra/src i gra/data bez zmian wzgledem ca61257d (diff --stat). Allowlista zachowana. Duzy diff wzgledem 193fadc8 pochodzi z merge'a ca61257d (dozwolony krokiem 0 dispatchu).
+TESTY: gra/src bez zmian wzgledem bazy merge, wiec tsc/logic/ai-test nie uruchamiane (powod pominiecia). Odczytano r3-READBACK-rivals9.txt: cfgUsed {barbariansLevel trudny, difficulty Trudny, rivals 9, civTypesCount 14}; max/4242/t3, max/4242/t10, max/7/t3, max/7/t10 PASS 6/6, pageErrors 0 (wg pliku; wlasnego pomiaru na zywo nie powtarzano).
+OCENA ZARZUTOW (bez etykiet rol):
+ 1. Uzasadniony, czesciowo naprawiony: na rivals=9 zmierzono 4 z 13 komorek; 8 komorek (bunt, aionly) NIE ZMIERZONO na maksimum. Kryterium (>=10 komorek na maksimum) NIESPELNIONE. NAPRAW.
+ 2. Uzasadniony, naprawiony (15 -> 14 dla Brazu, zgodnie z civs.json). ODDAL.
+ 3. Uzasadniony, nienaprawiony: bunt/t10 B!=A bez minimalnego odtworzenia i testu czerwony->zielony; pkt 5 dispatchu niespelniony. Wymaga decyzji orkiestratora (cities.ts poza allowlista albo akceptacja reprezentacji). NAPRAW/DECYZJA.
+ 4. Uzasadniony: dirty3 FAIL od t7 niezdiagnozowany; hipoteza artefaktu PRNG harnessu niesprawdzona. NAPRAW.
+ 5. Uzasadniony: klik UI na rivals=9 NIE ZMIERZONO (harness UI ma rivals=2). Pkt 2 niespelniony. NAPRAW.
+ 6. Uzasadniony: render po wczytaniu NIE ZMIERZONO. Pkt 4 niespelniony. NAPRAW.
+ 7. Uzasadniony, naprawiony w dokumencie.
+ 8. Uwaga: A==A' tylko na rivals=2; pkt 3 na maksimum NIE ZMIERZONO. NAPRAW.
+WNIOSEK: poprawne ustawienia maksimum i 4 komorki PASS to realny postep, lecz kryterium binarne (>=10 komorek, klik UI x2, A==A' x2 ziarna, render) jest niespelnione, a bunt/t10 B!=A pozostaje nierozstrzygniete. Brak zmian w kodzie gry, brak naruszen granic.
+BLOKADY: 8 komorek bunt/aionly na rivals=9; bunt/t10 B!=A (decyzja o cities.ts); klik UI na rivals=9; A==A' na rivals=9; render; dirty3.
+RUNDY: 3/5 (FC); pozostaja rundy 4-5.
+NASTEPNY KROK: orkiestrator rozstrzyga bunt/t10; runda 4 (Operator): 8 komorek na rivals=9, runner UI na rivals=9 (2 komorki), A==A' 10 tur na max/4242 i max/7, render + PNG, diagnoza dirty3 (zasiew PRNG po wczytaniu).
 DEPLOY/PUSH: NIE WYKONANO
