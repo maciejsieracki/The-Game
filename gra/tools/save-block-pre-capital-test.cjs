@@ -33,13 +33,26 @@ function check(name, ok, detail) {
   else { fail++; console.log('FAIL ' + name + (detail ? ' -- ' + detail : '')); }
 }
 
-/** Tekst funkcji od sygnatury do domknięcia na tym samym wcięciu. */
+/**
+ * Tekst funkcji od sygnatury do zrównoważonego domknięcia klamry (licznik { } od
+ * klamry otwierającej, którą kończy sygnatura). Nie zależy od wcięć ani od
+ * tekstu '\n    }\n' (poprzednia wersja była krucha przy innym wcięciu).
+ * Uwaga: licznik ignoruje klamry w literałach tekstowych; w ciałach badanych
+ * funkcji takich klamr nie ma (sprawdzone), a mutacje czerwieni test.
+ */
 function functionBody(text, signature) {
   const start = text.indexOf(signature);
   if (start < 0) return null;
-  const rest = text.slice(start);
-  const end = rest.indexOf('\n    }\n');
-  return end < 0 ? rest : rest.slice(0, end + 6);
+  let depth = 0;
+  for (let i = start + signature.length - 1; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) return text.slice(start, i + 1);
+    }
+  }
+  return text.slice(start);
 }
 
 /** Pozycja pierwszego wystąpienia bramki w funkcji (-1 = brak). */

@@ -215,6 +215,10 @@ async function liveStart(browser, html, advanced) {
   await page.waitForFunction(() => !!window.__settingsLive, null, { timeout: 60000 });
   await page.evaluate((p) => window.__settingsLive.startNewGame(p), LIVE_PARAMS(advanced));
   await page.waitForTimeout(8000);
+  // R-WEB-SAVE-BLOCK-PRE-CAPITAL-Q43B: zapis jest zablokowany przed stolicą -- zakładamy ją przed saveRoundTrip.
+  await page.waitForFunction(() => window.__nnsMeasureDebug.awaitingFirstCity() === true, null, { timeout: 600000, polling: 500 });
+  const founded = await page.evaluate(() => window.__nnsMeasureDebug.foundFirstCity());
+  assert.ok(founded, 'foundFirstCity=true (stolica przed zapisem)');
   return { context, page, errors };
 }
 async function liveMain() {
