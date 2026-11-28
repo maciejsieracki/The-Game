@@ -1,0 +1,49 @@
+MODEL R-WEB-STARVATION-DESIGN-Q42C (baseline = obecny silnik po zdjęciu blokady; G1 = dodatkowo -1 ludności za każdą turę głodu)
+Parametry: HP_FRAC=0.1 KARENCJA=3 FOOD_PER_UNIT=16 tury 16..30
+HP: Wojownik=22 Łucznik=10 (units.json)
+
+--- S0=14 (baseline) ---
+t16: koszt=32 GLOD atrycja=nie HP=[Lucznik:10 Wojownik:22] zgony=[]
+t17: koszt=32 GLOD atrycja=nie HP=[Lucznik:10 Wojownik:22] zgony=[]
+t18: koszt=32 GLOD atrycja=tak HP=[Lucznik:9 Wojownik:20] zgony=[]
+t19: koszt=32 GLOD atrycja=tak HP=[Lucznik:8 Wojownik:18] zgony=[]
+t20: koszt=32 GLOD atrycja=tak HP=[Lucznik:7 Wojownik:16] zgony=[]
+t21: koszt=32 GLOD atrycja=tak HP=[Lucznik:6 Wojownik:14] zgony=[]
+t22: koszt=32 GLOD atrycja=tak HP=[Lucznik:5 Wojownik:12] zgony=[]
+t23: koszt=32 GLOD atrycja=tak HP=[Lucznik:4 Wojownik:10] zgony=[]
+t24: koszt=32 GLOD atrycja=tak HP=[Lucznik:3 Wojownik:8] zgony=[]
+t25: koszt=32 GLOD atrycja=tak HP=[Lucznik:2 Wojownik:6] zgony=[]
+t26: koszt=32 GLOD atrycja=tak HP=[Lucznik:1 Wojownik:4] zgony=[]
+t27: koszt=32 GLOD atrycja=tak HP=[Lucznik:0 Wojownik:2] zgony=[Lucznik]
+t28: koszt=16 GLOD atrycja=tak HP=[Lucznik:0 Wojownik:0] zgony=[Wojownik]
+t29: koszt=0 ok atrycja=nie HP=[Lucznik:0 Wojownik:0] zgony=[]
+t30: koszt=0 ok atrycja=nie HP=[Lucznik:0 Wojownik:0] zgony=[]
+tury glodu=13 pierwszy zgon jednostki=t27 zgony do t30=2 tury atrycji=11 stat x0.75 od t16
+G2 rozwiązane: [t16:Lucznik, t16:Wojownik] tury glodu=0
+G1 pop t16=3: utrata ludności do t30 = 2 (tury glodu 13)
+G1 pop t16=5: utrata ludności do t30 = 4 (tury glodu 13)
+G1 pop t16=8: utrata ludności do t30 = 7 (tury glodu 13)
+
+--- S0=16 (baseline) ---
+t16: koszt=32 GLOD atrycja=nie HP=[Lucznik:10 Wojownik:22] zgony=[]
+t17: koszt=32 GLOD atrycja=nie HP=[Lucznik:10 Wojownik:22] zgony=[]
+t18: koszt=32 GLOD atrycja=tak HP=[Lucznik:9 Wojownik:20] zgony=[]
+t19: koszt=32 GLOD atrycja=tak HP=[Lucznik:8 Wojownik:18] zgony=[]
+t20: koszt=32 GLOD atrycja=tak HP=[Lucznik:7 Wojownik:16] zgony=[]
+t21: koszt=32 GLOD atrycja=tak HP=[Lucznik:6 Wojownik:14] zgony=[]
+t22: koszt=32 GLOD atrycja=tak HP=[Lucznik:5 Wojownik:12] zgony=[]
+t23: koszt=32 GLOD atrycja=tak HP=[Lucznik:4 Wojownik:10] zgony=[]
+t24: koszt=32 GLOD atrycja=tak HP=[Lucznik:3 Wojownik:8] zgony=[]
+t25: koszt=32 GLOD atrycja=tak HP=[Lucznik:2 Wojownik:6] zgony=[]
+t26: koszt=32 GLOD atrycja=tak HP=[Lucznik:1 Wojownik:4] zgony=[]
+t27: koszt=32 GLOD atrycja=tak HP=[Lucznik:0 Wojownik:2] zgony=[Lucznik]
+t28: koszt=16 ok atrycja=nie HP=[Lucznik:0 Wojownik:2] zgony=[]
+t29: koszt=16 ok atrycja=nie HP=[Lucznik:0 Wojownik:2] zgony=[]
+t30: koszt=16 ok atrycja=nie HP=[Lucznik:0 Wojownik:2] zgony=[]
+tury glodu=12 pierwszy zgon jednostki=t27 zgony do t30=1 tury atrycji=10 stat x0.75 od t16
+G2 rozwiązane: [t16:Lucznik] tury glodu=0
+G1 pop t16=3: utrata ludności do t30 = 2 (tury glodu 12)
+G1 pop t16=5: utrata ludności do t30 = 4 (tury glodu 12)
+G1 pop t16=8: utrata ludności do t30 = 7 (tury glodu 12)
+
+G3 (kara produkcji/Szczęścia) — bez liczb: magnitude NIE ZMIERZONO, model nie zawiera; wymaga wyłączenia atrycji HP, inaczej zgony jednostek jak w baseline.
