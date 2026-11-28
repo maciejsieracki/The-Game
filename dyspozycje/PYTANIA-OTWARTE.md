@@ -32705,3 +32705,7 @@ Pytanie: czy na najwyższym poziomie trudności gracz ma mieć realną szansę o
 ## R-WEB-POST-GRACE-UPKEEP-Q42 (2026-11-28 01:49 UTC, pytanie 42, turniej C-018 zakończony) · STATUS: **OTWARTE — pokazane właścicielowi w czacie; w nocy bez blokowania pracy (CZEKA NA RANO)**
 
 Pytanie: co ma się stać w 16. turze, gdy wojsko gracza znowu kosztuje jedzenie, a przycisk „Zakończ turę” blokuje z powodu żywności (A: pieniądze za wojsko wracają od 16. tury, jedzenie za wojsko darmowe jeszcze kilka tur (Rekomendowane); B: jak dziś, gracz rozwiązuje wojsko, poprawiony komunikat; C: bez blokady, głód zamiast zatrzymania tury). Pełny tekst: dyspozycje/autobot/runs/R-WEB-POST-GRACE-UPKEEP-Q42/PYTANIE-ABC-Q42.md; turniej: TURNIEJ-C018.md (zwycięzca: SYNTEZA); fakty: FAKTY.md. Do odpowiedzi literą dla pełnego ID.
+
+## R-WEB-SAVE-PRE-CAPITAL-Q43 (2026-11-28 11:41 UTC, pytanie 43, turniej C-018 zakończony) · STATUS: **OTWARTE — pokazane właścicielowi w czacie; do odpowiedzi literą dla pełnego ID**
+
+Pytanie: co ma się stać, gdy gracz zapisze grę przed założeniem pierwszego miasta, a potem ją wczyta (zaplanowane miasta-państwa, grupy AI, dodatkowi rywale i punkt startu nie są w zapisie; gra nie blokuje takiego zapisu) — A: zapisywać zaplanowane elementy razem z grą (Rekomendowane); B: zablokować zapis do założenia pierwszego miasta; C: nic nie zmieniać. Pełny tekst: dyspozycje/autobot/runs/R-WEB-SAVE-PRE-CAPITAL-Q43/PYTANIE-ABC-Q43.md; turniej: TURNIEJ-C018.md (zwycięzca: SYNTEZA); fakty: FAKTY.md (z czytania kodu, NIE zmierzone na żywo).
