@@ -11700,3 +11700,7 @@ R-WEB-MAP-ISLANDS-ORPHAN-FIX-Q1 (wf_d7ad9b86-4bd; Operator Haiku → Evaluator S
 - Kandydat błędu UI (niezbadany): komunikat bramki w t16 wymienia „obniżkę racji +12”, gdy suwak Wyżywienia stoi na minimum (0/0, zablokowany); przyczynowość suwaka nie wyizolowana (auto racji 1,5→0 po otwarciu panelu).
 - NIE ZMIERZONO: pula Pracy 100% (luka wobec zasady maksimum), budowa zwiększająca żywność (przyciski nieaktywne), pierwszy atak na gracza po t30, AI t30/t60 (tylko r1, n=2, niejednoznaczne). Pomiar użył haków zmieniających stan (startNewGame, foundFirstCity, tidy) — ujawnione.
 - Dalej: pytanie do właściciela Q42 „co po 15. turze” przez turniej C-018 (w nocy zapis „CZEKA NA RANO”, bez blokowania); diagnoza komunikatu bramki jako osobny temat R-WEB-*.
+
+### START R-WEB-ENDGATE-RATION-LEVER-Q1 (ENDGATELEVER) + turniej Q42 · 2026-11-28 01:50 UTC (zegar maszyny)
+- ENDGATELEVER r1 (HAIKU, baza c834d3eb8): diagnoza kandydata błędu UI z GRACE15FX r3 — komunikat bramki „Zakończ turę” po t16 wymienia „obniżkę racji żywności +12”, a suwak Wyżywienia stoi na minimum i jest zablokowany. Minimalna naprawa tylko po odtworzeniu (test z mutacją). Dispatch: runs/R-WEB-ENDGATE-RATION-LEVER-Q1/. Jeśli zmiana gra/src → FALA 936.
+- Q42 „co po 15. turze” (gracz po t16 ma jedno wyjście: rozwiązać wojsko): turniej C-018 w toku (wf_277f84b6-a57, 2 projekty Haiku + Sędzia Sonnet), fakty runs/R-WEB-POST-GRACE-UPKEEP-Q42/FAKTY.md. Wynik pokażę właścicielowi w czacie; w nocy zapis „CZEKA NA RANO”, bez blokowania pracy.
