@@ -11,7 +11,7 @@
 | `hotseat-drugi-fotel-tura-test.cjs` | 5/5 (już w main, nie powtarzano) | A | runs/…/43, 44 |
 | `hotseat-etap4-noop-test.cjs` | ZIELONY: PASS 30/30 identycznych hashy A vs B, jsExc 0/0, 0 restartów Chromium | A (DWA artefakty testu, zero błędu gry) | runs/…/61 (PASS), 60 (bez drugiej poprawki: 4/30 FAIL), 64 (przyczyna zapisu t23) |
 
-Pytanie B (−11 → −108): ROZSTRZYGNIĘTE na żywo. Zamierzone przez zasady gry, nie defekt (patrz niżej). Dowód: runs/…/62, 63.
+Pytanie B (−11 → −108): ZMIERZONE NA SANDBOXIE (pace 'niski', nie maksimum), wniosek „zamierzone” NIE POTWIERDZONY na maksimum. Dowód sandboxu: runs/…/62, 63. Pomiar na MAKSIMUM (obrona r3, zarzut nr 1, ziarna 11 i 7, nowa gra Bardzo ogromny): skoku −108 NIE odtworzono; spichlerz nie spada poniżej 0 przed t19 (runs/…/70, 71, 72). Szczegóły w sekcji „Pytanie B na maksimum (obrona r3)”.
 
 ## 1. hotseat-etap4-noop-test.cjs — klasa A, dwa osobne pinowe artefakty
 
@@ -67,3 +67,26 @@ Ograniczenia pomiaru (NIE ZMIERZONO): jedno miasto w sandboxie `?playtest=mapa` 
 - Dodane pomocniki `tdq16c-diag-etap4.cjs` i `tdq16c-diag-pytb.cjs` (tylko odczyt/diagnostyka); można je zostawić jako narzędzia lub usunąć przy integracji.
 - Znalezisko poza zakresem (kandydat do tematu): drugi zegar ścienny `Date.now()` w `freshStackGroupId` jest zapisywany do save; `det-digest-normalize.ts` normalizuje go tylko w digest testowym. Nie jest błędem gry, ale każdy test porównujący surowe snapshoty musi go normalizować (jak teraz etap4).
 - `git diff gra/src gra/data` = 0.
+
+## Pytanie B na maksimum (obrona r3, zarzut nr 1 Evaluatora)
+
+Zarzut: pytanie B nie zmierzone na maksimum ani na ziarnach 11 i 7. PRZYJĘTE; pomiar wykonany, wynik poniżej.
+
+Narzędzie: `gra/tools/tdq16c-pytb-max.cjs` (tylko odczyt + `setRationAll` + `prepareEndTurnGate`, ten sam wzór co `tdq16c-diag-pytb.cjs`). Start: nowa gra przez hak `__settingsLive.startNewGame` z parametrami MAX (Trudny; dyplomacja i wojna trudna; kultura i religia trudny; Koszty jednostek **Wysoki ×4**; wzrost ludności wysoki; mapa **Bardzo ogromny** = klucz `Super Huge`). Ziarno z parametru `seed` (11 i 7). Pasywny gracz: `pullPlayerUnitsHome` + `endTurn` do t19.
+
+Ustalenia dotyczące maksimum:
+- Maksimum mapy: `Super Huge` jest najwyższym rozmiarem w menu. Najpierw nie ładował świata (brak miasta gracza), po dodaniu kroku z `awaitingFirstCity` / `foundFirstCity` (procedura `grace15fx-active3-live.cjs`) świat ładuje się w ok. 17 s.
+- Koszty jednostek: `wysoki` (×4) to maksimum z listy `KosztJednostekPace`. Koszty budynków zostały na `niski` (wartość z istniejącego narzędzia max-measure); `wysoki` dla kosztów budynków NIE zmierzono. Pozostałe ustawienia jak w `live-playtest-gate-max-measure.cjs`.
+
+Wyniki (runs/…/70 seed 11 sweep; 71 seed 7 sweep; 72 seed 11 racja 0 od t17):
+- Start: 1 miasto, 2 jednostki (nie 3 jak w sandboxie). Racja automatyczna (`auto: true`), w sandboxie `auto: false`. Rozbieżność scenariusza, nie wnioskowana.
+- Seed 11 i seed 7 dają IDENTYCZNE liczby bilansu t1–t19 (ziarno jest ustawiane, ale bilans miasta startowego w tych turach nie zależy od mapy; przyczyny nie zbadano).
+- Prognoza Spichlerza przy racji 2 (sweep, t15): po turze 15 (obecny 14) = 15; t16 (obecny 15) = 0; racja 0 w t17: po turze 17 (obecny 16) = 17; t18 (obecny 17) = 18. Brak skoku −108. Przy sweepie t15 racja 0/1/6/12 → po 31/23/0/0; t16 → po 16/8/−16/−16 (racja 6 i 12 dają deficyt, ale to racje sweepu, nie trwały stan).
+- Blokada tury w t19: po stronie **Skarbca** (złoto: zabraknie 12, podatek +8, rozwiązanie jednostek +16), nie Spichlerza. Gate t19 przy racji 0 nadal `blokada: true` ze względu na skarbiec.
+- Tury bez błędów strony (`PAGEERRORS` 0).
+
+Wniosek (uczciwie): na maksimum, na ziarnach 11 i 7, w nowej grze, skok prognozy Spichlerza o −108 z sandboxu NIE występuje. Wniosek „zamierzone przez zasady gry (−133/turę)” z sandboxu pozostaje arytmetyką na pace 'niski' i 3 jednostkach; w maksimum NIE ZMIERZONO tej wartości (w nowej grze bilans food jest dodatni przy 2 jednostkach). Pytanie B zostaje otwarte jako „sandbox-only”: nie jest dowodem defektu gry ani dowodem zamierzonego zachowania na maksimum.
+
+NIE ZMIERZONO (jawnie): rozbicie `kosztArmii` per jednostka; koszty budynków na wysoki; sandbox `?playtest=mapa` na maksimum (sandbox nie ma suwaka Koszty jednostek); ziarno 7 z wynikiem różnym od 11 (wynik identyczny); t20+; `auto: false` na maksimum (sandbox ma ręczną racją).
+
+Odrzucenie zarzutu drugiego: brak (zarzut nr 1 jest jedynym). Kolejność: zarzut przyjęty w całości, dowody runs/…/70–72.

@@ -1,0 +1,35 @@
+SETUP {"seed":11,"mode":"r0","sec":6,"settings":{"diplomacyWarLevel":"trudna","kulturaReligiaLevel":"trudny","kulturaReligiaLevelAI":"trudny","wzrostSurowcowZEpoka":false,"kosztJednostekPace":"wysoki","difficulty":"hard"}}
+SNAP {"turn":1,"canEnd":true,"treasury":0,"granary":0,"forecast":{"turn":1,"skarbiecObecny":0,"skarbiecPo":2,"spichlerzObecny":0,"spichlerzPo":1},"gate":"","rations":[{"id":"city0","poziomRacji":2.5,"auto":true}],"units":2,"cities":1,"unitCount":2}
+SNAP {"turn":2,"canEnd":true,"treasury":2,"granary":1,"forecast":{"turn":2,"skarbiecObecny":2,"skarbiecPo":4,"spichlerzObecny":1,"spichlerzPo":2},"gate":"","rations":[{"id":"city0","poziomRacji":2.5,"auto":true}],"units":2,"cities":1,"unitCount":2}
+SNAP {"turn":3,"canEnd":true,"treasury":4,"granary":2,"forecast":{"turn":3,"skarbiecObecny":4,"skarbiecPo":6,"spichlerzObecny":2,"spichlerzPo":3},"gate":"","rations":[{"id":"city0","poziomRacji":2.5,"auto":true}],"units":2,"cities":1,"unitCount":2}
+SNAP {"turn":4,"canEnd":true,"treasury":6,"granary":3,"forecast":{"turn":4,"skarbiecObecny":6,"skarbiecPo":8,"spichlerzObecny":3,"spichlerzPo":4},"gate":"","rations":[{"id":"city0","poziomRacji":2.5,"auto":true}],"units":2,"cities":1,"unitCount":2}
+SNAP {"turn":5,"canEnd":true,"treasury":8,"granary":4,"forecast":{"turn":5,"skarbiecObecny":8,"skarbiecPo":10,"spichlerzObecny":4,"spichlerzPo":5},"gate":"","rations":[{"id":"city0","poziomRacji":2.5,"auto":true}],"units":2,"cities":1,"unitCount":2}
+SNAP {"turn":6,"canEnd":true,"treasury":10,"granary":5,"forecast":{"turn":6,"skarbiecObecny":10,"skarbiecPo":12,"spichlerzObecny":5,"spichlerzPo":6},"gate":"","rations":[{"id":"city0","poziomRacji":2.5,"auto":true}],"units":2,"cities":1,"unitCount":2}
+SNAP {"turn":7,"canEnd":true,"treasury":12,"granary":6,"forecast":{"turn":7,"skarbiecObecny":12,"skarbiecPo":14,"spichlerzObecny":6,"spichlerzPo":7},"gate":"","rations":[{"id":"city0","poziomRacji":2.5,"auto":true}],"units":2,"cities":1,"unitCount":2}
+SNAP {"turn":8,"canEnd":true,"treasury":14,"granary":7,"forecast":{"turn":8,"skarbiecObecny":14,"skarbiecPo":16,"spichlerzObecny":7,"spichlerzPo":8},"gate":"","rations":[{"id":"city0","poziomRacji":2.5,"auto":true}],"units":2,"cities":1,"unitCount":2}
+SNAP {"turn":9,"canEnd":true,"treasury":16,"granary":8,"forecast":{"turn":9,"skarbiecObecny":16,"skarbiecPo":18,"spichlerzObecny":8,"spichlerzPo":9},"gate":"","rations":[{"id":"city0","poziomRacji":2.5,"auto":true}],"units":2,"cities":1,"unitCount":2}
+SNAP {"turn":10,"canEnd":true,"treasury":18,"granary":9,"forecast":{"turn":10,"skarbiecObecny":18,"skarbiecPo":20,"spichlerzObecny":9,"spichlerzPo":10},"gate":"","rations":[{"id":"city0","poziomRacji":2.5,"auto":true}],"units":2,"cities":1,"unitCount":2}
+SNAP {"turn":11,"canEnd":true,"treasury":20,"granary":10,"forecast":{"turn":11,"skarbiecObecny":20,"skarbiecPo":22,"spichlerzObecny":10,"spichlerzPo":11},"gate":"","rations":[{"id":"city0","poziomRacji":2.5,"auto":true}],"units":2,"cities":1,"unitCount":2}
+SNAP {"turn":12,"canEnd":true,"treasury":22,"granary":11,"forecast":{"turn":12,"skarbiecObecny":22,"skarbiecPo":24,"spichlerzObecny":11,"spichlerzPo":12},"gate":"","rations":[{"id":"city0","poziomRacji":2.5,"auto":true}],"units":2,"cities":1,"unitCount":2}
+SNAP {"turn":13,"canEnd":true,"treasury":24,"granary":12,"forecast":{"turn":13,"skarbiecObecny":24,"skarbiecPo":28,"spichlerzObecny":12,"spichlerzPo":13},"gate":"","rations":[{"id":"city0","poziomRacji":2,"auto":true}],"units":2,"cities":1,"unitCount":2}
+SNAP {"turn":14,"canEnd":true,"treasury":28,"granary":13,"forecast":{"turn":14,"skarbiecObecny":28,"skarbiecPo":32,"spichlerzObecny":13,"spichlerzPo":14},"gate":"","rations":[{"id":"city0","poziomRacji":2,"auto":true}],"units":2,"cities":1,"unitCount":2}
+SNAP {"turn":15,"canEnd":true,"treasury":32,"granary":14,"forecast":{"turn":15,"skarbiecObecny":32,"skarbiecPo":36,"spichlerzObecny":14,"spichlerzPo":15},"gate":"","rations":[{"id":"city0","poziomRacji":2,"auto":true}],"units":2,"cities":1,"unitCount":2}
+  RACJA {"lvl":0,"spichlerzPo":31,"canEnd":true,"blokada":false}
+  RACJA {"lvl":1,"spichlerzPo":23,"canEnd":true,"blokada":false}
+  RACJA {"lvl":6,"spichlerzPo":0,"canEnd":true,"blokada":false}
+  RACJA {"lvl":12,"spichlerzPo":0,"canEnd":true,"blokada":false}
+SNAP {"turn":16,"canEnd":true,"treasury":36,"granary":15,"forecast":{"turn":16,"skarbiecObecny":36,"skarbiecPo":24,"spichlerzObecny":15,"spichlerzPo":0},"gate":"","rations":[{"id":"city0","poziomRacji":2,"auto":true}],"units":2,"cities":1,"unitCount":2}
+  RACJA {"lvl":0,"spichlerzPo":16,"canEnd":true,"blokada":false}
+  RACJA {"lvl":1,"spichlerzPo":8,"canEnd":true,"blokada":false}
+  RACJA {"lvl":6,"spichlerzPo":-16,"canEnd":true,"blokada":false}
+  RACJA {"lvl":12,"spichlerzPo":-16,"canEnd":true,"blokada":false}
+SNAP {"turn":17,"canEnd":true,"treasury":24,"granary":16,"forecast":{"turn":17,"skarbiecObecny":24,"skarbiecPo":12,"spichlerzObecny":16,"spichlerzPo":17},"gate":"","rations":[{"id":"city0","poziomRacji":0,"auto":true}],"units":2,"cities":1,"unitCount":2}
+  RACJA {"lvl":0,"spichlerzPo":17,"canEnd":true,"blokada":false}
+  RACJA {"lvl":1,"spichlerzPo":9,"canEnd":true,"blokada":false}
+  RACJA {"lvl":6,"spichlerzPo":-16,"canEnd":true,"blokada":false}
+  RACJA {"lvl":12,"spichlerzPo":-16,"canEnd":true,"blokada":false}
+  R0-PERSIST-ON {"turn":17}
+SNAP {"turn":18,"canEnd":true,"treasury":12,"granary":17,"forecast":{"turn":18,"skarbiecObecny":12,"skarbiecPo":0,"spichlerzObecny":17,"spichlerzPo":18},"gate":"","rations":[{"id":"city0","poziomRacji":0,"auto":true}],"units":2,"cities":1,"unitCount":2}
+SNAP {"turn":19,"canEnd":false,"treasury":0,"granary":18,"forecast":{"turn":19,"skarbiecObecny":0,"skarbiecPo":-12,"spichlerzObecny":18,"spichlerzPo":19},"gate":"Nie można zakończyć tury. Skarbiec (złoto): po zakończeniu tury zabraknie 12. Pomogą: podatek złota: +8 złota/turę; rozwiązanie jednostek (złoto): +16 złota/turę; rozwiązanie jednostek (żywność): +16 żywności/turę. Nawet maksymalny podatek nie wystarczy — zmniejsz wydatki (rozwiąż jednostki).","rations":[{"id":"city0","poziomRacji":0,"auto":true}],"units":2,"cities":1,"unitCount":2}
+PAGEERRORS {"n":0,"first":[]}
+RESULT {"ok":true,"err":null,"sec":16}

@@ -1,54 +1,38 @@
-STATUS: BLOCK
-DOMAIN: PROCESS/GAME-TEST
-TEMAT: R-WEB-TEST-DEBT-Q16C (obrona, runda 3; Operator HAIKU 5.5)
-GOAL: odpowiedzieć na zarzuty Evaluatora (4 pozycje) i domknąć trzy testy: ai-wojny (zielony z mutacją), hotseat-drugi-fotel (zielony), hotseat-etap4-noop (zielony albo sklasyfikowany B/C z dowodem); zero zmian gra/src.
-BAZA: f3bf0cee12b7bbfdf2a3f38f89cfaed2705ac835 (checkout --detach; zmiany w tej rundzie tylko w gra/tools/hotseat-etap4-noop-test.cjs, dyspozycje/analizy/DLUG-TESTOWY-Q16C-2026-11-28.md, runs/R-WEB-TEST-DEBT-Q16C/30-obrona-claude.md, runs/…/55–59)
-SHA (czubek pracy): patrz pole sha w StructuredOutput (commit obrony)
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME-TEST (pomiar, zero zmian gra/src i gra/data)
+TEMAT: R-WEB-TEST-DEBT-Q16C (obrona rundy 3, Operator SONNET)
+GOAL: odpowiedź na zarzut nr 1 Evaluatora: pytanie B zmierzyć na maksimum i na ziarnach 11 i 7, albo odrzucić z dowodem.
 
-## Odpowiedzi na zarzuty
+ODPOWIEDŹ NA ZARZUTY
+- Zarzut nr 1 (pytanie B nie zmierzone na maksimum ani na ziarnach 11 i 7): PRZYJMUJĘ. Pomiar wykonany: nowa gra z parametrami MAX (Trudny, dyplomacja trudna, kultura trudny, Koszty jednostek wysoki x4, mapa Bardzo ogromny = Super Huge), ziarna 11 i 7, pasywny gracz do t19, plus wariant racja 0 od t17 (ziarno 11). Wynik: skok −108 z sandboxu NIE odtworzono na maksimum. Szczegóły i ograniczenia w DLUG-TESTOWY-Q16C-2026-11-28.md, sekcja „Pytanie B na maksimum (obrona r3)”.
+- Dodatkowe ustalenie (nie był zarzutem): wniosek „zamierzone (−133/turę)” z sandboxu nie jest potwierdzony na maksimum. Dokument zmieniono: status pytania B to „sandbox-only, nie potwierdzone na maksimum”.
+- Brak rozbicia kosztArmii per jednostka: NIE ZMIERZONO (zaznaczone w dokumencie, bez zmiany wniosku).
 
-1. hotseat-etap4-noop: PRZYJMUJĘ (zarzut zasadny). Test NIE jest zielony i NIE jest sklasyfikowany jako B lub C z dowodem. Dodatkowe 6 prób (r2 + r3) kończy się na tej samej turze 23. Dowody: runs/…/45–49 (r2), runs/…/58 (sonda DOM r3, dwa przebiegi). Hipoteza „nakładki bitwy” NIE została potwierdzona: sonda DOM nie wykazała ani welcome, ani widocznego dialogu, ani widocznej nakładki bitwy (`civ-wiki-hub` jest ukryty, bez klasy `open`). Sonda tekstu „Zapis niedostępny w trakcie bitwy” nie rozstrzyga (komunikat nie widać w innerText także przy udanych zapisach). Status: NIE ZAMKNIĘTE, klasa nieustalona (nie A, nie C, nie B). Pozostaje otwarte.
-
-2. Pytanie B (Spichlerz −11 → −108): PRZYJMUJĘ (zarzut zasadny). Nie odtworzono live (NIE ZMIERZONO). Wynik analizy z kodu (bez zmian w grze): racja 0 nie może obniżyć `spichlerzStolicy` (`empire-food.ts`, bilans ≥ 0 dla każdego miasta, brak deficytów); `spichlerzPo = spichlerzStolicy − kosztArmii` (`no-negative-stocks.ts`, `projectEmpireFoodAfterTick`). Spadek o 97 wymaga więc skoku `kosztArmii` (zmiana zestawu jednostek lub ich tempa) między t17 a t18, nie samej racji. Łaska 15 tur (`paceUtrzymaniaWlasciciela`) nie obejmuje t17–18. Hipoteza (a) z r2 (produkcja → 0 przy racji 0) jest sprzeczna z kodem. Czy to defekt: NIE ROZSTRZYGNIĘTE. Do wyjaśnienia: zrzut `units` i `kosztArmii` w t16–18. Szczegóły w DLUG-TESTOWY-Q16C, sekcja „Pytanie B”.
-
-3. Mutacja regexu F: PRZYJMUJĘ, uzupełnione dowodem na poziomie testu. Mutant (kopia main.ts, linia 47967 `peaceLocked: isPeaceLockedBetween(...)` → `peaceLocked: false`) uruchomiony w CAŁYM teście: `21 PASS, 1 FAIL`, jedyny FAIL to asercja F (runs/…/57, RC 1, 205 s). Zastrzeżenie: F pozostaje pinem tekstowym źródła; mutacja czerwona dowodzi reakcji pinu na zmianę warunku, nie zachowania gry. Tę bramkę zachowania nie testuje F.
-
-4a. Wstawka modalDiag: PRZYJMUJĘ. Usunięta z hotseat-etap4-noop-test.cjs wraz z przywróceniem oryginalnego komunikatu błędu. Zostaje tylko import i wywołanie `closeCivWelcome` (zamknięcie ekranu powitalnego przed zapisem; legalna procedura z _live-ready.cjs).
-
-4b. Ustawienia na poziomie maksymalnym: PRZYJMUJĘ (brak dowodu). Test etap4 startuje z `kosztJednostekPace = niski`, `buildingCostPace = niski`, `wzrostLudnosciPace = wysoki` (runs/…/49). Nie zmieniano ich: zmiana zmienia hashe snapshotów, a test nie został jeszcze rozstrzygnięty. Uznany poziom maksymalny dla kosztów jednostek: „Wysoki ×4” (wg wpisu o UPKEEPPACE w rejestrze). NIE ZMIERZONO na maksimum.
-
-## Mutacja czerwona→zielona dla ai-wojny (dispatch pkt 3)
-- Baza (bez zmian): 22 PASS / 0 FAIL, 203 s (runs/…/55).
-- A1 (usunięte wywołanie prepareEndTurnGate w kopii testu, reszta bez zmian): RC 1, 148 s, `bramka Zakończ turę zamknięta po prepareEndTurnGate: {"canEnd":false}` (runs/…/56). Czerwony. Kopia usunięta z repo.
-- Przywrócenie: 22/0 (runs/…/55).
-- A2 (regex F, mutacja warunku w kopii main.ts): 21 PASS / 1 FAIL (runs/…/57).
-
-## Hotseat-drugi-fotel (bez zmian w tej rundzie)
-- Zielony w r2 (runs/…/43, 44; 5/5). Nie uruchomiony ponownie w r3 (poza zakresem zarzutów; wynik r2 stoi).
-
-## Bramki (r3, zmierzone)
-- `npx tsc --noEmit`: exit 0.
-- `node tools/logic-test.cjs`: LOGIC OK (213/213).
-- `node tools/ai-test.cjs`: 297 passed, 0 failed.
-(runs/…/59)
-
-## Zakazy
-- zero zmian gra/src i gra/data: potwierdzone (git diff tylko w gra/tools/hotseat-etap4-noop-test.cjs i plikach dokumentacji/runs).
-- brak spawn_task/create_session/create_trigger/send_later, brak run_in_background, brak nohup/&, brak --no-gpg-sign, bez zmian konfiguracji podpisu.
-- Tymczasowe kopie testów (tdq16c-mutA/mutF/etap4-diag) usunięte z gra/tools przed commitem.
-
-## Pliki zacommitowane
-- gra/tools/hotseat-etap4-noop-test.cjs (usunięty modalDiag i komunikat; zostaje closeCivWelcome)
-- dyspozycje/analizy/DLUG-TESTOWY-Q16C-2026-11-28.md (aktualizacja r3)
+ZMIANY-COMMIT
+- gra/tools/tdq16c-pytb-max.cjs (nowy, tylko odczyt i ustawienia testowe przez istniejące haki civTest; bez zmian gra/src)
+- dyspozycje/analizy/DLUG-TESTOWY-Q16C-2026-11-28.md (status pytania B zmieniony, nowa sekcja maksimum)
 - dyspozycje/autobot/runs/R-WEB-TEST-DEBT-Q16C/30-obrona-claude.md (ten raport)
-- dyspozycje/autobot/runs/R-WEB-TEST-DEBT-Q16C/55–59 (logi: baza 22/0, mutA, mutF, sonda etap4 r3, bramki)
+- dyspozycje/autobot/runs/R-WEB-TEST-DEBT-Q16C/70-pytb-max-s11-sweep.txt, 71-pytb-max-s7-sweep.txt, 72-pytb-max-s11-racja0.txt (surowe wyjścia)
+- Commit: patrz pole sha w odpowiedzi strukturalnej.
 
-TESTY: ai-wojny 22/0 (baza), A1 RC 1, A2 21/1; etap4 0/6 prób zielone (zawsze t23); tsc 0; logic 213/213; ai-test 297/0.
+TESTY (surowe wyniki z plików w runs/)
+- Seed 11, sweep, MAX, t1–t19: RESULT ok true, PAGEERRORS 0 (70). Spichlerz: po t15 = 15 (obecny 14), po t16 = 0 (obecny 15), po t17 = 17 (obecny 16), po t18 = 18 (obecny 17). Racja 0/1/6/12 w t15: po 31/23/0/0; w t16: po 16/8/−16/−16. Blokada tury t19: skarbiec (zabraknie 12 złota), nie spichlerz.
+- Seed 7, sweep, MAX (71): identyczne liczby jak seed 11 w całym przebiegu.
+- Seed 11, racja 0 trwale od t17, MAX (72): po t17 = 17, po t18 = 18, t19 blokada od skarbca. Brak skoku −108.
+- Bramki tsc / logic-test / ai-test: NIE URUCHOMIONO w tej rundzie. Zmiana to nowy plik narzędzia w gra/tools, poza gra/src; gra/src nie zmieniono (git diff gra/src gra/data = 0).
 
-BLOKADY: (1) hotseat-etap4-noop: zapis tury 23 nie działa; przyczyna nieustalona (nie A, nie C, nie B). Potrzebny pomiar isBattleSceneOpen()/isPostBattleSummaryOpen() w t23 przez hak testowy. (2) Pytanie B: wymaga live zrzutu units i kosztArmii w t16–18. (3) Maksimum ustawień dla etap4 i pytania B: nie zmierzono.
+BLOKADY
+- Maksimum mapy: w pierwszej próbie Super Huge nie ładował świata (brak miasta). Po dodaniu kroku foundFirstCity (wzorzec z grace15fx-active3-live.cjs) ładuje się. Brak niezależnej weryfikacji, że to pełne maksimum wszystkich suwaków.
+- Maksimum niejednoznaczne: uznano za maksimum wartości z MAX_PARAMS (istniejące narzędzie max-measure) oraz kosztJednostekPace = wysoki. Koszty budynków zostały na niski, wysoki NIE zmierzono.
+- Scenariusz różni się od sandboxu: 1 miasto, 2 jednostki (sandbox: 3), racja auto = true (sandbox: ręczna), inna mapa. Wynik nie jest bezpośrednim odpowiednikiem pomiaru z sandboxu.
+- Identyczne liczby dla ziaren 11 i 7: ziarno jest wpięte (params.seed > 0), przyczyna nie zbadana.
+- Pytanie B pozostaje otwarte jako „sandbox-only”. Nie jest dowodem defektu ani zamierzonego zachowania na maksimum.
 
-RUNDY: 3/5 (runda 3 = obrona; r1 FC FAIL, r2 FC FAIL → r3 obrona na zarzuty Evaluatora)
+RUNDY
+- Runda obrony 3 (Operator SONNET). Bez kolejnych rund.
 
-NASTĘPNY KROK: (a) w hotseat-etap4 zmierzyć w t23 przez hak testowy, czy `isBattleSceneOpen()` lub `isPostBattleSummaryOpen()` jest prawdą, i decyzja A/B; (b) zrzut `units` i `kosztArmii` w t16–18 dla pytania B. Oba wymagają osobnej rundy z live Chromium.
+NASTĘPNY KROK
+- Orkiestrator: decyzja o pytaniu B po pomiarze na maksimum. Do rozważenia: powtórzenie na ziarnie 7 z innym scenariuszem (ręczna racja, auto false, 3 jednostki), jeśli właściciel chce pełnego odpowiednika sandboxu. Oddzielnie: FC ma ocenić, czy identyczność ziaren 11 i 7 wymaga osobnego tematu.
+- UWAGI-DLA-ORKIESTRATORA: brak nowych znalezisk poza zakresem.
 
 DEPLOY/PUSH: NIE WYKONANO
