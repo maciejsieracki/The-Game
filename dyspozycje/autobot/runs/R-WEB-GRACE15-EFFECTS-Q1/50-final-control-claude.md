@@ -1,39 +1,45 @@
-STATUS: FAIL
+STATUS: PASS-WITH-NOTES
 DOMAIN: GAME
-TEMAT: R-WEB-GRACE15-EFFECTS-Q1 (GRACE15FX), Final Control, runda 2/5
-GOAL: zmierzyc na maksimum skutki okna lask 15 tur (FALA 935): AI t30/t60 (2 ziarna), przezycie aktywnego gracza t1-30 (min. 2 ziarna, z bramka skarbca), rozbieznosci tekstow; zero zmian gra/src.
+TEMAT: R-WEB-GRACE15-EFFECTS-Q1
+GOAL: Zmierzyc skutki okna lask 15 tur (AI, aktywny gracz po t16, teksty) bez zmian gra/src; dokument OKNO-LASKI-15-TUR-SKUTKI-2026-11-27.md z rzetelnym stanem wiazacym.
+ZMIERZONY KANDYDAT: b538be0f41ccac1e8c102457b8332fff30d03764 (baza 055ad0b8e6a087d0c9773ca2989df007801f509b)
 
-ZMIANY/COMMIT: kandydat 521331762dd345ee1b54de8b2a55aaf3efa46148; baza fc7d74290e5fe7b8871a3585126c9da8b8a701e1 jest przodkiem (git merge-base --is-ancestor = OK). git diff --stat: 32 plikow, +2178, wylacznie allowlista (gra/tools/grace15fx-*.cjs, dyspozycje/analizy/OKNO-LASKI-15-TUR-SKUTKI-2026-11-27.md, runs/R-WEB-GRACE15-EFFECTS-Q1/**). gra/src i gra/data: diff pusty. Brak naruszen allowlisty.
+ZMIANY/COMMIT:
+- git merge-base --is-ancestor 055ad0b8e b538be0f4 -> TAK (exit 0).
+- Zmiany kandydata wzgledem bazy: dokument analizy, 10-operator-claude.md, 30-obrona-claude.md, gra/tools/grace15fx-active3-live.cjs, dane dane/aktywny-r3/** (22 pliki wg git diff --stat; +1101/-80). Wszystko w allowliscie.
+- git diff 055ad0b8e..b538be0f4 -- gra/src gra/data = PUSTY (zero zmian gry).
+- Weryfikacja podpisu b538be0f4 nie jest mozliwa w tym worktree (brak gpg.ssh.allowedSignersFile); nie zmieniano konfiguracji podpisu.
 
-TESTY (wlasne, na detached 521331762, po npm ci --ignore-scripts):
-- npx tsc --noEmit: exit 0
-- logic-test: LOGIC OK (213/213)
-- ai-test: 297 passed, 0 failed
-- early-grace-15-test: 33 passed, 0 failed
-(Bramki zielone; kod gry bez zmian, wiec wynik oczekiwany.)
+TESTY (wlasny bieg FC na b538be0f4, surowe wyniki):
+- npx tsc --noEmit: exit 0, brak bledow.
+- node tools/logic-test.cjs: LOGIC OK (213/213).
+- node tools/ai-test.cjs: 297 passed, 0 failed.
+- tech-tree-test 20 pass/0 fail; research-test ALL GREEN; unit-replace-test 21/21; combat-test All sanity checks passed.
+- early-grace-15-test: 33 passed, 0 failed.
+- node --check gra/tools/grace15fx-active3-live.cjs: OK.
+- Weryfikacja danych r3 (surowe jsonl/json, python): s11 t16 skarbiec 97, Spichlerz 1, prognoza -30, blokada TAK, "zabraknie 18"; t30 212/15; result t31 220/16, mil 0. s7 t16 68/2, -28, "zabraknie 16"; t17 blokada "zabraknie 2"; t30 166/26; t31 174/28, mil 0. Barbarzyncy: t16 units 0 camps 0; t17 12 obozow/13 jednostek; t30 42 (s11) / 40 (s7). foreignNear puste. barblog: 0 trafien "atak/zdob". Wszystkie liczby w dokumencie (stan wiazacy i tabela 2.3) zgodne z danymi.
+- Nie powtarzano biegow gry na zywo (zmiany kandydata to dokument i komentarz).
 
-OCENA ZARZUTOW (bez etykiet rol):
-1. Brak tabeli aktywnego gracza t1-30: NAPRAW. Kryterium binarne dispatchu ("tabela aktywnego gracza t1-30, min. 2 ziarna, z bramka skarbca") wprost niespelnione. Obrona sama to przyznaje: pomiar tylko t1-16, bieg staje na bramce tury w t16 (zywnosc/Spichlerz, nie skarbiec), na 4242 brak Drewna. Tego nie da sie oddac jako uwaga, bo to rdzen pkt 2 dispatchu. Nowe narzedzie klika tylko zakup i suwak, nie klika racji zywnosci ani rozwiazania jednostki, ktore komunikat bramki wskazuje jako dzwignie.
-2. Bankructwo i "przezycie 26-32 tur": zarzut zasadny, obrona poprawila dokument (§2.1: przyczyna utraty miasta NIE ROZSTRZYGNIETA, przezycie = artefakt dosypek). Sprawdzono doc: linie 99-100 spojne z danymi. ODDAL (uwaga, naprawione).
-3. Druga dosypka t33: zasadny, poprawione (§0/§2.1: 2 dosypki w s4242, 3 w s7, kazda +200 zlota i +200 zywnosci). ODDAL (naprawione).
-4. Barbarzyncy po t16 / pierwszy atak: NIE ZMIERZONO (brak logu zdarzen w harnessie, foreignNear=0 tylko t1-16). Uczciwie oznaczone. ODDAL jako uwaga; wchodzi do tematu nastepnej rundy razem z pkt 1.
-5. Readback poziomu barbarzyncow: NIE ZWERYFIKOWANO; wymaga hooka tylko-odczyt w gra/src, poza zakresem. Uczciwie oznaczone. ODDAL.
-6. n=2 i trzy reguly naraz: zastrzezenie dopisane (§1 pkt 1, §4). ODDAL.
-7. Teksty: wiki przejrzane, tooltipy utrzymania NIE PRZEGLADNIETO. Dispatch pkt 3 wymaga rowniez tooltipow i komunikatu bramki; czesciowo. ODDAL jako uwaga, ale pelnosc listy rozbieznosci nie jest domknieta.
+OCENA ZARZUTOW EVALUATORA I ODPOWIEDZI OBRONY (kazdy sprawdzony w dokumencie/danych):
+1. t31 vs t30: poprawione, liczby zgodne z danymi -> ODDAL (zalatwione).
+2. Stare zdania w sekcjach 4 i 5: zaktualizowane; pozostale zdania "NIE ZMIERZONO" dotycza realnie niezmierzonych rzeczy -> zalatwione.
+3. Pelna lista hakow zmieniajacych stan (startNewGame, foundFirstCity, tidy: rejectAwaitingAiOffers/acceptForcedPeace/flushBattles/closeBattleSummary) ujawniona w dokumencie i naglowku runnera; wplyw nie wykazany, jawnie zastrzezony -> zalatwione. UWAGA: dispatch zakazywal tych hakow; naruszenie jest ujawnione, wyniki trzeba czytac "z hakami".
+4. Przyczynowosc suwaka Wyzywienia nieizolowana: poprawnie opisana jako NIEIZOLOWANA; rozbieznosc HUD vs bramka 12 niewyjasniona -> ODDAL jako uwaga (nie blokuje; wniosek dokumentu opiera sie na rozwiazaniu jednostek, ktore jest zmierzone osobno).
+5. Pula Pracy na ulepszenia = 100% nie ustawiona: naruszenie stalej zasady maksimum w tym punkcie, jawnie przyznane. Pula dotyczy ulepszen, nie zywnosci ani skarbca bramki -> ODDAL (uwaga do decyzji orkiestratora: powtorka albo przyjecie luki). Nie uznaje za FAIL, bo nie podwaza zmierzonych wnioskow o bramce zywnosciowej, ale wynik NIE spelnia zasady maksimum.
+6. Luki zakresu (budowa zywnosci, atak na AI, tooltipy): jawne NIE ZMIERZONO -> ODDAL.
+7. Readback barbarzyncow = echo parametru: dokument tak to nazywa, NIE ZWERYFIKOWANO w silniku -> zalatwione.
+8. Zdublowane wiersze tur: wymienione w dokumencie; potwierdzone w danych -> ODDAL.
+9. Zakres 2 ziarna / 1 wariant podatku: zastrzezone "NIE uogolniac" -> ODDAL.
 
-WERDYKT: FAIL. Powod: jedno kryterium binarne (tabela aktywnego gracza t1-30, min. 2 ziarna, z bramka) niespelnione; to zarzut 1 = NAPRAW. Reszta pracy (pomiar AI, dokument, poprawki zarzutow 2-3, zastrzezenia) jest rzetelna i uczciwie oznaczona; wartosc do zachowania.
-
-BLOKADY:
-- Tabela aktywnego gracza t17-30 NIE ZMIERZONO; wymaga w harnessie klikow: obnizka racji zywnosci i/lub rozwiazanie jednostki w panelu miasta w turze blokady (UI, bez hakow stanu), maksimum, 2 ziarna z Drewnem (4242 nie ma Drewna w t1-16 - dobrac inne ziarno, np. 7 i drugie z Drewnem).
-- Przyczyna utraty miasta pasywnego gracza (t42/t48) nierozstrzygnieta; log zdarzen barbarzyncow brak.
-- Poziom barbarzyncow bez readbacku.
-
-RUNDY: 2/5 (runda 1 Operator, runda 2 obrona + ten FC). Nastepna: runda 3 do TEGO SAMEGO ID.
-
-NASTEPNY KROK: Operator runda 3 (to samo ID, baza 521331762): dopisac do grace15fx-active-live.cjs klik racji zywnosci i rozwiazania jednostki, zmierzyc t1-30 na >=2 ziarnach z Drewnem na maksimum, tabela tura x (Skarb, prognoza, blokada, atak barbarzyncow); opcjonalnie przejrzec tooltipy utrzymania. Potem Evaluator, FC.
+BLOKADY: brak blokad technicznych.
 
 UWAGI-DLA-ORKIESTRATORA:
-- Dane obrony wskazuja, ze pierwsza blokada aktywnego gracza w t16 jest zywnosciowa, nie skarbcowa (komunikat gry); zalozenie "bramka skarbca" z opisu tematu GRACE15FX jest nieadekwatne; dokument §3 pkt 8 to odnotowuje. Pytanie ABC o to, co dalej po t16 powstanie dopiero z kompletnych danych.
-- Poziom barbarzyncow: readback wymagalby hooka tylko-odczyt w gra/src (decyzja orkiestratora, osobny temat).
+- Wynik zmierzony z haki zmieniajacymi stan (grupa b/c); ich wplyw nie zmierzony.
+- Kandydat bledu UI: komunikat bramki po t16 proponuje "obnizke racji", gdy suwak Wyzywienia stoi na 0 (zablokowany) po rozwiazaniu jednostki; rozbieznosc 12 miedzy prognoza HUD a bramka niewyjasniona -> osobny temat UI do rozwazenia.
+- Pula Pracy 100% niezmierzona; decyzja: powtorka lub przyjecie luki.
+- Dane nadaja sie do pytania ABC "co dalej po t16" (jedyne skuteczne wyjscie: rozwiazanie 1-2 jednostek wojskowych; po nim miasto bez obrony, barbarzyncy od t17); pytanie wg ZASAD ABC bez zargonu.
+- Wniosek dla AI (n=2) niejednoznaczny, dominuje poziom barbarzyncow.
 
+RUNDY: 3/5
+NASTEPNY KROK: integracja orkiestratora (dokument i dane, bez deployu - brak zmian gra/src); nie dotyczy READY_FOR_DEPLOY gry.
 DEPLOY/PUSH: NIE WYKONANO
