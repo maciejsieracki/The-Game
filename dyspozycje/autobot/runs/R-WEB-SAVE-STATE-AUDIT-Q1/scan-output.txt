@@ -1,0 +1,209 @@
+# save-state-audit-scan: gra/src/main.ts
+buildSaveGameSnapshot: linie 42678-43048; restoreGameFromSave: linie 52466-53802
+Deklaracje (let/const, wcięcie 4, typ Map/Set/Array/Obiekt/Licznik/Flaga): 330
+Nie występują w buildSaveGameSnapshot: 201
+
+nazwa	linia	typ	w_zapisie	w_restore	wstepna_klasa	odwolan
+seen	1977	Set	nie	nie	?	27
+_menuCivIdByOwner	2219	Map	nie	nie	D?	17
+_menuRivals	2221	Licznik	nie	nie	?	2
+_menuCivTypesCount	2222	Licznik	nie	nie	?	11
+_menuSelectedAiCivIds	2232	Array	nie	nie	D?	8
+_menuCityStates	2233	Licznik	nie	nie	?	10
+_menuCityLimitBase	2236	Licznik	nie	nie	?	10
+isAnimating	2267	Flaga	nie	nie	?	30
+d1bHudActive	2376	Flaga	nie	nie	S?	9
+objectivePowerByOwner	2477	Map	nie	nie	D?	18
+eliminationSpectacleByLabel	2489	Map	nie	tak (ciało restore)	?	10
+eraWarMeasureAttempts	2609	Array	nie	nie	S?	4
+eraWarMeasureDeclarations	2610	Array	nie	nie	S?	3
+eraWarMeasureRejections	2612	Array	nie	nie	S?	8
+empireEconDirty	3113	Flaga	nie	nie	?	17
+powerDirty	3114	Flaga	nie	nie	?	10
+playerStartHexByOwner	3305	Map	nie	nie	D?	9
+foundCityMode	3328	Flaga	nie	nie	?	23
+resourceOverlays	3331	Array	nie	nie	S?	18
+DEPOSIT_EDGE_R	3334	Licznik	nie	nie	?	2
+DEPOSIT_TARGET_SPAN	3335	Licznik	nie	nie	?	2
+DEPOSIT_EDGE_R_ELEVATED	3339	Licznik	nie	nie	?	2
+DEPOSIT_TARGET_SPAN_ELEVATED	3340	Licznik	nie	nie	?	2
+overlayDepositEra	3380	Licznik	nie	tak (ciało restore)	?	14
+OVERLAY_COLLAPSE_MIN_MESHES	3461	Licznik	nie	nie	?	2
+villageMeshes	3620	Map	nie	nie	S?	10
+campMeshes	3621	Map	nie	nie	S?	8
+fortQueueCleanupNotice	3735	Licznik	nie	tak (ciało restore)	S?	5
+tradeRouteBuildingBonusByCity	3744	Map	nie	nie	?	15
+tradeRouteResourceGrants	3754	Array	nie	nie	?	20
+lastReligionSpreadByCity	3755	Map	nie	nie	?	9
+_lastReligionSpreadTotal	3756	Licznik	nie	nie	?	2
+cityOrderState	5924	Map	nie	tak (ciało restore)	?	36
+cityOwnerChangeLogForTest	5930	Array	nie	nie	S?	4
+citizenUpkeepByOwner	5964	Map	nie	tak (ciało restore)	D?	17
+buildingResourceUpkeepByOwner	5976	Map	nie	tak (ciało restore)	D?	11
+converterProducedLastTurnByOwner	5982	Map	nie	tak (ciało restore)	D?	9
+unitResourceUpkeepByOwner	5983	Map	nie	tak (ciało restore)	D?	11
+militiaDefOverrides	5985	Map	nie	nie	?	6
+playerArmyFoodHintShown	6015	Flaga	nie	nie	S?	4
+lastCityKulturaTick	6019	Map	nie	nie	D?	8
+aiWonderPracaTickByCity	6026	Map	nie	nie	D?	7
+aiWonderStuckTurnsByOwner	6033	Map	nie	tak (ciało restore)	D?	10
+powerSnapshotsForTurn	6034	Array	nie	nie	S?	5
+territoryHexCountMemo	6524	Map	nie	nie	?	5
+unitSideDetailExpanded	7149	Flaga	nie	nie	?	11
+nnsAiLog	7798	Array	nie	nie	S?	4
+nnsPostBankLog	7799	Array	nie	nie	S?	4
+nnsAiTurnStats	7800	Array	nie	nie	D?	4
+_armyFoodUpkeepByLevel	10364	Map	nie	nie	D?	3
+pendingSameTypeRivalCount	10381	Licznik	nie	nie	?	4
+pendingSameTypeRivalHexes	10383	Array	nie	nie	?	5
+pendingSameTypeRivalOwnerIds	10384	Array	nie	nie	D?	5
+pendingSameTypeRivalCountSecond	10393	Licznik	nie	nie	?	4
+pendingSameTypeRivalOwnerIdsSecond	10394	Array	nie	nie	D?	5
+pendingForeignSpawnCities	10400	Array	nie	nie	?	9
+difficultyBonusGrantedOwners	10404	Set	nie	nie	D?	5
+clusterStartSeed	10409	Licznik	nie	nie	?	5
+ledgerAuditTickSeq	10571	Licznik	nie	nie	S?	3
+diploZeroTrustWarned	10779	Set	nie	nie	D?	5
+diplomacyDobraWolaActiveTura	10783	Set	nie	nie	D?	4
+wiarygodnoscCyclicDeliveryOkThisTurn	10830	Map	nie	nie	D?	7
+lastDiplomaticContactsSnapshot	10890	Set	nie	nie	S?	6
+pendingFirstContactCards	10892	Array	nie	nie	?	8
+diplomaticContactTrackingReady	10893	Flaga	nie	nie	S?	4
+barbarianCooperationGrace	10906	Array	nie	nie	?	8
+activeBattleUnitIds	10908	Set	nie	nie	?	9
+pendingAdministratorChanges	11008	Map	nie	tak (ciało restore)	S?	8
+aiNnsHoldOwners	11187	Set	nie	nie	D?	6
+aiNnsUncoveredOwners	11189	Set	nie	nie	D?	5
+aiGoldIncomeByOwner	11194	Map	nie	tak (ciało restore)	D?	8
+aiFoodTickNetByOwner	11197	Map	nie	tak (ciało restore)	D?	6
+aiImprovementBudgetByOwner	11222	Map	nie	nie	D?	6
+aiSurplusReportByOwner	11228	Map	nie	nie	D?	4
+_dipUnitSeq	11241	Licznik	nie	tak (ciało restore)	?	8
+warEventLog	11468	Array	nie	tak (ciało restore)	S?	95
+borderMarchEventTargets	11479	Map	nie	nie	?	15
+civElimEventDetails	11490	Map	nie	nie	?	16
+cityCaptureEventDetails	11548	Map	nie	nie	?	12
+gameOver	14008	Flaga	nie	tak (ciało restore)	?	20
+truceTestSuppressVictory	14010	Flaga	nie	nie	?	4
+playerAiAutopilotForTest	14014	Flaga	nie	nie	D?	4
+aiPhaseOwnersForTest	14017	Array	nie	nie	D?	4
+endTurnInProgress	14021	Flaga	nie	nie	D?	71
+activeWorldEndTurnPipeline	14061	Flaga	nie	nie	D?	8
+endTurnStartedAt	14063	Licznik	nie	nie	D?	7
+deferredPlayerUnitRevealIds	14065	Set	nie	nie	?	11
+deferredMergePrompts	14076	Array	nie	nie	?	6
+fogOn	14085	Flaga	nie	nie	?	33
+revealAllLand	14087	Flaga	nie	tak (ciało restore)	?	15
+galleryOn	14089	Flaga	nie	nie	?	28
+ALL_KEYS	14138	Set	nie	nie	?	12
+ALL_LAND_KEYS	14140	Set	nie	nie	?	3
+unitHealTotal	14383	Licznik	nie	nie	?	5
+rebelProtectionTestSkipVictoryCheck	14927	Flaga	nie	nie	?	5
+reachable	14933	Set	nie	tak (ciało restore)	?	37
+aiTurnAwaitingBattle	14948	Flaga	nie	nie	D?	28
+battleUiResolving	14970	Flaga	nie	nie	S?	26
+playtestWalkaActive	14972	Flaga	nie	nie	?	15
+bitwaDuzaActive	14974	Flaga	nie	nie	?	9
+playtestMiastoActive	14976	Flaga	nie	nie	?	7
+seatsFinishedThisRound	15032	Set	nie	nie	?	13
+playerCivTypeByHuman	15084	Map	nie	nie	?	9
+musicEnabled	15362	Flaga	nie	nie	?	9
+ambienceEnabled	15379	Flaga	nie	nie	?	7
+sfxUnitsEnabled	15396	Flaga	nie	nie	?	10
+gameMusicStartGeneration	15409	Licznik	nie	nie	?	3
+introGestureArmed	15440	Flaga	nie	nie	?	3
+introMusicStartedOnce	15464	Flaga	nie	nie	?	3
+_lastPraca	15519	Licznik	nie	tak (ciało restore)	D?	19
+_lastPracaUpkeep	15524	Licznik	nie	tak (ciało restore)	D?	9
+_lastPracaAutoUlepszeniaKoszt	15541	Licznik	nie	tak (ciało restore)	D?	8
+_lastPracaCudaKoszt	15549	Licznik	nie	tak (ciało restore)	D?	7
+_lastKultura	15550	Licznik	nie	nie	?	7
+_lastPracaRate	15551	Licznik	nie	tak (ciało restore)	D?	34
+_pracaRateFreshFromEndTurn	15592	Flaga	nie	nie	D?	9
+_lastKulturaRate	15593	Licznik	nie	tak (ciało restore)	?	9
+_lastPieniadzRate	15594	Licznik	nie	tak (ciało restore)	?	16
+_lastWealthLevel	15595	Licznik	nie	nie	?	6
+_lastWealthMnoznik	15596	Licznik	nie	nie	?	5
+_lastNaukaRate	15597	Licznik	nie	tak (ciało restore)	?	14
+_lastLudnoscRate	15598	Licznik	nie	tak (ciało restore)	?	9
+_lastBogactwoRate	15605	Licznik	nie	tak (ciało restore)	?	11
+_lastBogactwoHandel	15608	Licznik	nie	tak (ciało restore)	?	7
+_lastBogactwoUtrzymanieBudynkow	15609	Licznik	nie	tak (ciało restore)	?	7
+_lastBogactwoUtrzymanieJednostek	15610	Licznik	nie	tak (ciało restore)	?	7
+_lastBogactwoUtrzymanieAdministratorow	15612	Licznik	nie	tak (ciało restore)	?	7
+_lastBogactwoUtrzymanieSurowcow	15613	Obiekt	nie	tak (ciało restore)	?	7
+_liveFoodBrutto	15615	Licznik	nie	nie	?	4
+_maxSafeRationCache	15678	Map	nie	nie	S?	15
+AI_MARCH_PASSAGE_REQUEST_COOLDOWN_TURNS	15954	Licznik	nie	nie	D?	2
+buildModeOpen	16702	Flaga	nie	nie	?	29
+cultureRangeVisible	16709	Flaga	nie	nie	?	8
+religionRangeVisible	16710	Flaga	nie	nie	?	8
+territoryBorderVisible	16712	Flaga	nie	nie	?	15
+showTradeRoutesOverlay	16732	Flaga	nie	nie	S?	5
+showWorkerOverlay	16793	Flaga	nie	nie	S?	5
+showResourceDepositOverlay	16797	Flaga	nie	nie	S?	7
+lastMouseX	17045	Licznik	nie	nie	?	2
+lastMouseY	17046	Licznik	nie	nie	?	2
+chipOverCanvas	17047	Flaga	nie	nie	?	6
+ghostChipValid	17051	Flaga	nie	nie	?	7
+improvementMeshes	17339	Map	nie	nie	S?	16
+roadRenderedHexes	17347	Set	nie	nie	?	8
+bulkImprovementRebuild	17353	Flaga	nie	nie	?	9
+clearingMeshes	17354	Map	nie	nie	S?	10
+WATER_VIEW_RIVER_WEIGHT	18913	Licznik	nie	nie	?	2
+WATER_VIEW_MAX_SAMPLES	18916	Licznik	nie	nie	?	2
+aiCityGarrisonNeedByCityId	18980	Map	nie	nie	?	4
+siegeHtmlLabels	19027	Array	nie	nie	?	10
+siegeHtmlLabelAnchors	19028	Array	nie	nie	?	5
+siegeHtmlLabelCityIds	19030	Array	nie	nie	?	4
+siegeHtmlLabelBadgeEls	19031	Array	nie	nie	?	6
+villageEventLog	19880	Array	nie	nie	S?	16
+tradeRouteEventLog	19885	Array	nie	nie	S?	10
+tradeRouteEventPlayerCityIds	19908	Map	nie	nie	?	9
+rationAutoEventLog	19910	Array	nie	nie	S?	9
+borderMarchEventLog	19917	Array	nie	nie	S?	16
+deferredEotHints	19920	Array	nie	nie	S?	18
+prodEmptyDismissFp	19948	Map	nie	nie	?	5
+dismissedSidePanelEventIds	19951	Set	nie	nie	?	13
+TREATY_GATED_NEGOTIATION_ACTIONS	22017	Set	nie	nie	?	3
+_nnsZyskSkarbiec	23733	Licznik	nie	nie	?	3
+_nnsZyskSpichlerz	23734	Licznik	nie	nie	?	3
+_nnsPodatekZysk	23736	Licznik	nie	nie	?	6
+_nnsRacjeZysk	23737	Licznik	nie	nie	?	6
+_nnsPodatekPunkty	23745	Licznik	nie	nie	?	9
+_nnsTaxStepDeltas	23749	Array	nie	nie	?	8
+aiProdAllowedMemo	25290	Map	nie	nie	?	5
+aiProdAllowedMemoLive	25291	Flaga	nie	nie	?	8
+aiAiAllianceProbyLacznie	25996	Licznik	nie	nie	D?	3
+aiAiAllianceOdmowyLacznie	25997	Licznik	nie	nie	D?	3
+aiAiAllianceOdmowyPowody	25999	Map	nie	nie	D?	3
+TOKEN_LIFT	35970	Licznik	nie	nie	?	5
+ANIM_SEG_DUR	35973	Licznik	nie	nie	?	2
+marchStopNotified	35979	Map	nie	tak (ciało restore)	S?	10
+marchStopDetail	35981	Map	nie	tak (ciało restore)	?	13
+movedByPlayerThisTurn	35989	Set	nie	tak (ciało restore)	D?	7
+marchAttackTargets	35991	Map	nie	tak (ciało restore)	?	24
+marchExecQueue	35992	Array	nie	tak (ciało restore)	S?	13
+fps1s	37181	Licznik	nie	nie	?	3
+fpsAccumFrames	37182	Licznik	nie	nie	?	4
+fpsAccumTime	37183	Licznik	nie	nie	?	5
+ambWaterSampleAccum	37190	Licznik	nie	nie	?	4
+ambLastWaterVariant	37191	Licznik	nie	nie	D?	7
+mouseDownX	37269	Licznik	nie	nie	?	3
+mouseDownY	37270	Licznik	nie	nie	?	3
+galleryUnits	37808	Array	nie	nie	?	5
+galleryPositions	37812	Array	nie	nie	?	5
+galleryLabels	37815	Array	nie	nie	?	7
+GALLERY_LABEL_LIFT	37824	Licznik	nie	nie	?	2
+GALLERY_SPACING	37827	Licznik	nie	nie	?	5
+aiGarrisonUnitIdByOwner	40103	Map	nie	nie	D?	3
+AI_CAPITAL_THREAT_RADIUS	40423	Licznik	nie	nie	D?	4
+cityCaptureRenderSyncFramePending	41700	Flaga	nie	nie	D?	4
+DIPLO_MIASTO_ZASIEG_ZLOZ	41981	Licznik	nie	nie	?	5
+AUTOSAVE_ROT_COUNT	43132	Licznik	nie	nie	?	2
+autosaveInFlight	43151	Flaga	nie	nie	?	5
+fsaAutosaveDegradedNotified	43154	Flaga	nie	nie	S?	3
+autosaveFailureNotified	43160	Flaga	nie	nie	S?	5
+renderLoopStarted	50219	Flaga	nie	nie	?	3
+
+Pozycje zapisywane (kontrola): _detIdSeq, _autoBattleSeqTurn, _autoBattleSeq, _battleCombatSeqTurn, _battleCombatSeq, units, recruitFollowGeneralDefault, recruitGeneralNoticeShown, cities, siegeTurnByCity, siegeBesiegerByCity, siegeAiStateByKey, battlePowerPtsByOwner, ownerEraByOwner, ownerStartEraByOwner, capitalCityIdByOwner, zdobyczePowerByOwner, civChronicleByOwner, lootedVillageHexKeys, bronzeForceWarPendingOwners, bronzeEraEnterTurnByOwner, seaPeoplesNoticeShown, bronzeForceWarCycleOwners, bronzeForceWarRestUntilByOwner, bronzeForceWarActiveByPairKey, forcedWarWavesByPairKey, aiGeneralWarCampaignByOwner, regularWarCapturedByPairKey, aiAiPeaceRequestByPairKey, warWearinessByPairKey, pendingForcedPeaceTreaties, stoneForceWarPendingOwners, stoneForceWarCycleOwners, stoneForceWarRestUntilByOwner, stoneForceWarActiveByPairKey, forcedEraWarDeclaredByTag, eraWarCountByCivKey, forcedEraPeaceUntilNextEraByPairKey, ironForceWarPendingOwners, ironForceWarCycleOwners, ironForceWarRestUntilByOwner, ironForceWarActiveByPairKey, ironEraEnterTurnByOwner, playerEverOwnedCityByOwner, cityProd, cityBuilt, cityRelig, tradeRoutes, completedWorldWonders, placedWorldWonders, wonderBuildSites, growthMultMap, orderMultMap, orderValueMap, empireFoodStates, goldDeficitStates, ownerDefaultPodzialHandlu, ownerDefaultPodzialPracy, ownerDefaultOkolicaFocus, ownerDefaultBudowaProfil, ownerDefaultPoziomRacji, ulepszeniaEmpireByOwner, veteranEnemyEducationShown, fortNodes, nnsAiOverrides, aiResearchDone, eliminatedOwners, aiOwnerCivMap, ownerDisplayName, simplifiedDiplomacyOwners, foreignTypeOwners, typCityCopyOwners, clusterCapitalOwnerIds, diplomacyRelations, diplomacyPairMeta, diplomacyCrisisCounters, diplomacyTradeStreak, diplomacyFactorLog, wiarygodnoscZdarzeniaByOwner, wiarygodnoscStrumienByOwner, wiarygodnoscOstatniaWojnaTuraByOwner, wiarygodnoscP4MilestonesByOwner, wiarygodnoscN7ActivePairs, zlozeGrants, diplomaticContactEstablishedByHuman, diplomaticallyDiscoveredOwnersByHuman, diplomaticDiscoveryPopupShownByHuman, activeDeals, negotiationTable, negotiationSeq, dealsEndTurnGateEnabled, playerEpochWarEnabled, cityAdministratorNoticeShown, improvementAdministratorNoticeShown, rejectedOfferCooldowns, aiSkarbiecByOwner, aiTargetMemoryByOwner, aiSliderStateByOwner, aiPracaPoolByOwner, aiSurplusRedirectedOwners, aiNaukaPoolByOwner, aiBadanaByOwner, worldDiploNewsList, autoManageCities, barbCamps, clearedBarbCampHexes, explored, turn, exploredByHuman, playerStateByHuman, stateAdmByOwner, pracaPoolByHuman, playerPracaPool, pendingManualWorkTaxByOwner, allianceWarCallHistory, interHumanDiplomacyInbox, aiOneShotGiftLastTurn, aiTradeAgreementLastProposalTurn, aiAiTradeAgreementLastTurn, aiResourceTradeLastProposalTurn, aiResourceBarterLastProposalTurn, aiCsFailCount, aiCsTrybutSince, aiCsWasalSince, aiAudienceLastRequestTurn, aiMarchPassageRequestTurn, improvementOwnerByHex, hexClearingStates, plannedMarches
