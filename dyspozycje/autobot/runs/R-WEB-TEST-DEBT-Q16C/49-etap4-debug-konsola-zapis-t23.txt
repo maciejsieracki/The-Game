@@ -1,0 +1,1520 @@
+[hotseat-etap4-noop-test] budowanie bundla (vite build, jedyna dozwolona komenda buildu, C-001)...
+[hotseat-etap4-noop-test] build OK -> /tmp/civ-hotseat-etap4-noop-4607-8yi4a8-4607-c7c5e0f5
+[hotseat-etap4-noop-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+[hotseat-etap4-noop-test] [A] start realnej nowej gry (startNewGame + foundPlayerStartCity)...
+[page:A:log] [Diag:boot] start
+[page:A:startGroup] [The Game] Dane wczytane
+[page:A:log] Jednostki: 75, Technologie: 32
+[page:A:endGroup] console.groupEnd
+[page:A:info] [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[page:A:info] [civ] mapGen ms | prep=2 terrain=9 landSea=154 relief=90 coast=12 riversMain=440 riversFill=349 forest=5 deposits=9 starts=91 total=1161
+[page:A:warning] [.WebGL-0x291c001adc00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[page:A:info] [civ] riverRenderStage 3
+[page:A:info] [civ] buildScene ms | hexes=134 coast=13 overlays=11 rivers=34 tail=12 total=204 | hexCount=1008 overlaysN=10 riverStage=3
+[page:A:info] [civ] buildScene detail heksy | alokacja=43 pryzmy=23 instancjeReliefu=1 styledWPetli=1 brzegWPetli=9 pustynia=22 finalizacja=0
+[page:A:info] [civ] buildScene detail nakladki | scalMerge=11 instancjePlazaWydmy=0 collapsed=4 skipMerged=0 skipLight=6
+[page:A:log] [main] hodowla złoże meshes synced · resource overlays: 63
+[page:A:log] [Diag:session] resetStuckInteractiveState
+[page:A:warning] [.WebGL-0x291c001adc00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[page:A:log] [NewGame] Nacja gracza: Rzymianie (rzymianie)
+[page:A:log] [NewGame] AI nacje: {1: sumer, 2: harappa, 3: sumer, 4: harappa, 5: sumer, 6: harappa}
+[page:A:log] [NewGame] tempoGry = standardowa · kosztJednostekPace = niski · buildingCostPace = niski · wzrostLudnosciPace = wysoki · ruchSwiataPace = krotki · epoka= 2 (braz) · typSwiata= kontynenty (Kontynenty) · jakoscMapy= Wysoka → render=high, mapDetail=high · advanced={"barbariansLevel":"normalny","battleAlwaysManual":false,"victoryMode":"moc_i_dominacja","buildingCostPace":"niski","kosztJednostekPace":"niski","wzrostLudnosciPace":"wysoki","ruchSwiataPace":"krotki","landFractionPercent":30,"landFractionCustom":false,"cityStateDifficultyOverride":"normal","cityLimitBase":10,"wzrostSurowcowZEpoka":false}
+[page:A:log] [NewGame] Tech wcześniejszych epok: 12 · epoka start= braz
+[page:A:info] [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[page:A:info] [civ] mapGen ms | prep=9 terrain=56 landSea=854 relief=702 coast=198 riversMain=6151 riversFill=4183 forest=45 deposits=113 starts=597 total=12908
+[page:A:info] [civ] riverRenderStage 3
+[page:A:info] [civ] buildScene ms | hexes=259 coast=11 overlays=7 rivers=590 tail=11 total=878 | hexCount=7992 overlaysN=41 riverStage=3
+[page:A:info] [civ] buildScene detail heksy | alokacja=68 pryzmy=87 instancjeReliefu=13 styledWPetli=0 brzegWPetli=52 pustynia=22 finalizacja=0
+[page:A:info] [civ] buildScene detail nakladki | scalMerge=7 instancjePlazaWydmy=0 collapsed=10 skipMerged=0 skipLight=31
+[page:A:warning] [clusters] capital-sep: 16 niewykonalne dla 3 civ na 108x74, obnizono do 13
+[page:A:log] [ClusterStart] typ=rzymianie rywale=2 (deferred) foreignAI=6 (deferred) typow=3
+[page:A:info] [civ-perf] postScene — init sceny: 6 ms
+[page:A:info] [civ-perf] postScene — kamera: 3 ms
+[page:A:info] [civ-perf] postScene — renderery jednostek: 3 ms
+[page:A:info] [civ-perf] postScene — renderery miast: 3 ms
+[page:A:info] [civ-perf] postScene — markery oblężenia i cuda: 3 ms
+[page:A:info] [civ-perf] postScene — plan klastra startowego: 205 ms
+[page:A:info] [civ-perf] postScene — mgła startowa: 195 ms
+[page:A:info] [civ-perf] postScene — nakładki zasobów (defer): 5 ms
+[page:A:log] [NewGame] Mapa: 108x74 seed=778899 typ=kontynenty rywale=2 typy=3
+[page:A:info] [civ-perf] wall-clock Nowa gra → hide overlay: 14599 ms (postScene/finishLoading=423 ms)
+[page:A:info] [civ-perf] === Civ — raport czasów ładowania mapy ===
+Data: 28.11.2026, 07:27:17
+rozmiar: Maly · kształt: Kontynenty
+7992 heksów · nakładek 41
+
+GENERATOR (ms):
+  Rzeki (gen): GŁÓWNE + ŚREDNIE (riverGenPhase=main+medium)
+  Przygotowanie siatki: 9 ms
+  Klimat i teren bazowy: 56 ms
+  Ląd i ocean: 854 ms
+  Relief (góry i wzgórza): 702 ms
+  Płytkie morze: 198 ms
+  Rzeki — główne: 6151 ms
+  Rzeki — uzupełnianie: 4183 ms
+  Las i roślinność: 45 ms
+  Złoża mineralne: 113 ms
+  Pozycje startowe: 597 ms
+  RAZEM: 12908 ms
+
+SCENA (ms):
+  Heksy: 259 ms
+  Brzeg: 11 ms
+  Nakładki: 7 ms
+  Rzeki: 590 ms
+  Finał: 11 ms
+  RAZEM: 878 ms
+
+Heksy — podetapy (ms):
+  alokacja=68 pryzmy=87 relief=13
+  styled=0 brzeg=52 pustynia=22 fin=0
+
+Nakładki — podetapy (ms):
+  scalMerge=7 instancje=0 collapsed=10 skipMerged=0 skipLight=31
+
+RAZEM (generator + scena): 13786 ms
+
+PO SCENIE / CAŁOŚĆ (ms):
+  Przekazanie z workera (ponad fazy gen): 298 ms
+  Po scenie / finishLoading: 423 ms
+  WALL-CLOCK (Nowa gra → hide overlay): 14599 ms
+  Niemierzone (wall − suma faz): 92 ms
+
+POST-SCENE — podkroki (ms):
+  init sceny: 6 ms
+  kamera: 3 ms
+  renderery jednostek: 3 ms
+  renderery miast: 3 ms
+  markery oblężenia i cuda: 3 ms
+  plan klastra startowego: 205 ms
+  mgła startowa: 195 ms
+  nakładki zasobów (defer): 5 ms
+  RAZEM podkroki: 423 ms
+
+Stempel builda: CIV-BUILD-STAMP-PENDING
+[page:A:warning] [.WebGL-0x291c001adc00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[page:A:info] [civ-perf] deferred resourceOverlays (post-hide): 837 meshes in 449 ms
+[page:A:log] [ClusterStart] deferred same-type rivals=2/2 epokaStart=braz (actual player capital @ 29,49)
+[page:A:log] [ClusterStart] deferred foreign clusters=6/6
+[page:A:warning] [.WebGL-0x291c001adc00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 1
+[page:A:log] [Ekonomia] Tura 2: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=18 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Autosave] rotacyjny slot=autosave-1 tura=2
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Sparta · Grecy · miasto-państwo(2) (Relacja=190 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 2
+[page:A:log] [Save] autosave tura=2
+[hotseat-etap4-noop-test] [A] tura 1 (turn=2): hash=f7e1d0500c76...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 2
+[page:A:log] [Ekonomia] Tura 3: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=26 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Autosave] rotacyjny slot=autosave-2 tura=3
+[page:A:log] [Chatka] Owner 4: Chatka: +50 postępu badań (Wojskowość)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Korynt · Grecy · miasto-państwo(3) (Relacja=190 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 3
+[page:A:log] [Save] autosave tura=3
+[hotseat-etap4-noop-test] [A] tura 2 (turn=3): hash=181afb184b7a...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 3
+[page:A:log] [Ekonomia] Tura 4: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=26 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Autosave] rotacyjny slot=autosave-3 tura=4
+[page:A:log] [Rekrutacja] Ateny: Zwiadowca oplacone 4 — kolejka x1 (−0 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Zwiadowca
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Chińczycy(4) (Relacja=61.545103749999996 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 4
+[page:A:log] [Save] autosave tura=4
+[hotseat-etap4-noop-test] [A] tura 3 (turn=4): hash=be16d7dc61ef...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 4
+[page:A:log] [Ekonomia] Tura 5: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=52 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Rekrutacja] Tura 5 Ateny: Zwiadowca gotowa @ (68,37)
+[page:A:log] [Rekrutacja] Ateny: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [Chatka] Owner 1: Chatka (skarb): +90 złota
+[page:A:log] [Autosave] rotacyjny slot=autosave-4 tura=5
+[page:A:log] [Rekrutacja] Korynt: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 3] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [Rekrutacja] Xi'an: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Luoyang · Chińczycy · miasto-państwo(5) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 5
+[page:A:log] [Save] autosave tura=5
+[hotseat-etap4-noop-test] [A] tura 4 (turn=5): hash=0b711cdd9772...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 5
+[page:A:log] [Ekonomia] Tura 6: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=52 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Rekrutacja] Tura 6 Ateny: Wojownik gotowa @ (68,37)
+[page:A:log] [Rekrutacja] Tura 6 Korynt: Wojownik gotowa @ (63,42)
+[page:A:log] [Rekrutacja] Tura 6 Xi'an: Wojownik gotowa @ (25,20)
+[page:A:log] [Rekrutacja] Xi'an: Zwiadowca oplacone 4 — kolejka x1 (−0 MP)
+[page:A:log] [AI 4] Zakup jednostki za Skarbiec: Zwiadowca
+[page:A:log] [Autosave] rotacyjny slot=autosave-5 tura=6
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Pekin · Chińczycy · miasto-państwo(6) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 6
+[page:A:log] [Save] autosave tura=6
+[hotseat-etap4-noop-test] [A] tura 5 (turn=6): hash=ae2eba21d6a8...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 6
+[page:A:log] [Ekonomia] Tura 7: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=52 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Rekrutacja] Tura 7 Xi'an: Zwiadowca gotowa @ (25,20)
+[page:A:log] [Autosave] rotacyjny slot=autosave-6 tura=7
+[page:A:log] [Chatka] Owner 1: Chatka: dołączyła jednostka — Włócznik
+[page:A:log] [Chatka] Owner 4: Chatka: +50 postępu badań (Wojskowość)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Sparta · Grecy · miasto-państwo(2)-Korynt · Grecy · miasto-państwo(3) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 7
+[page:A:log] [Save] autosave tura=7
+[hotseat-etap4-noop-test] [A] tura 6 (turn=7): hash=5e294dc0aa82...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 7
+[page:A:log] [Ekonomia] Tura 8: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=60 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Autosave] rotacyjny slot=autosave-7 tura=8
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Sparta · Grecy · miasto-państwo(2)-Chińczycy(4) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 8
+[page:A:log] [Save] autosave tura=8
+[hotseat-etap4-noop-test] [A] tura 7 (turn=8): hash=041965d49f22...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 8
+[page:A:log] [Ekonomia] Tura 9: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=60 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Autosave] rotacyjny slot=autosave-8 tura=9
+[page:A:log] [Rekrutacja] Xi'an: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [Chatka] Owner 4: Chatka (skarb): +42 złota
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Sparta · Grecy · miasto-państwo(2)-Luoyang · Chińczycy · miasto-państwo(5) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 9
+[page:A:log] [Save] autosave tura=9
+[hotseat-etap4-noop-test] [A] tura 8 (turn=9): hash=3d4d0c84ba62...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 9
+[page:A:log] [Ekonomia] Tura 10: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=90 N=55 Praca=32 wzrost=0 głód=0
+[page:A:log] [Rekrutacja] Tura 10 Xi'an: Wojownik gotowa @ (25,20)
+[page:A:log] [Rekrutacja] Ateny: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [Autosave] rotacyjny slot=autosave-9 tura=10
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Sparta · Grecy · miasto-państwo(2)-Pekin · Chińczycy · miasto-państwo(6) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 10
+[page:A:log] [Save] autosave tura=10
+[hotseat-etap4-noop-test] [A] tura 9 (turn=10): hash=8610c02989a0...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 10
+[page:A:log] [Ekonomia] Tura 11: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=91 N=57 Praca=34 wzrost=0 głód=0
+[page:A:log] [Produkcja] Tura 11 Ateny: budynek palac
+[page:A:log] [Rekrutacja] Tura 11 Ateny: Wojownik gotowa @ (68,37)
+[page:A:log] [Produkcja] Tura 11 Korynt: budynek palac
+[page:A:log] [Porzadek] Tura 11 Xi'an: tier=order porPct=93.2 szPct=84.9 [osiedle: immunitet buntu]
+[page:A:log] [AI 1] Ulepszenie: warzelnia_soli @ (69,41) (-40 Pracy)
+[page:A:log] [Autosave] rotacyjny slot=autosave-10 tura=11
+[page:A:log] [AI 3] Ulepszenie: farma @ (62,44) (-40 Pracy)
+[page:A:log] [Chatka] Owner 4: Chatka: +50 postępu badań (Wojskowość)
+[page:A:log] [Chatka] Owner 4: Chatka (skarb): +42 złota
+[page:A:log] [Rekrutacja] Luoyang: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 5] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [AI 5] Wycinka @ (19,20) (-5 Pracy, +50 Drewna)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Korynt · Grecy · miasto-państwo(3)-Chińczycy(4) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 11
+[page:A:log] [Save] autosave tura=11
+[hotseat-etap4-noop-test] [A] tura 10 (turn=11): hash=ab9b26cff4d0...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 11
+[page:A:log] [Ekonomia] Tura 12: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=94 N=64 Praca=37 wzrost=0 głód=0
+[page:A:log] [Produkcja] Tura 12 Ostia: budynek palac
+[page:A:log] [Produkcja] Tura 12 Kapua: budynek palac
+[page:A:log] [Porzadek] Tura 12 Ateny: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 12 Korynt: tier=order porPct=107.8 szPct=90.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 12 Xi'an: tier=order porPct=93.2 szPct=84.9 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 12 Xi'an: budynek palac
+[page:A:log] [Produkcja] Tura 12 Luoyang: budynek palac
+[page:A:log] [Rekrutacja] Tura 12 Luoyang: Wojownik gotowa @ (20,20)
+[page:A:log] [Autosave] rotacyjny slot=autosave-1 tura=12
+[page:A:log] [Dyplomacja] AI1 → MP2: trybut 5 ¤/turę (pierwszy_krok)
+[page:A:log] [Dyplomacja] AI1 → MP3: trybut 5 ¤/turę (pierwszy_krok)
+[page:A:log] [Chatka] Owner 1: Chatka (skarb): +52 złota
+[page:A:log] [Rekrutacja] Korynt: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 3] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [Dyplomacja] AI4 → MP5: trybut 5 ¤/turę (pierwszy_krok)
+[page:A:log] [Dyplomacja] AI4 → MP6: trybut 5 ¤/turę (pierwszy_krok)
+[page:A:log] [AI 4] Ulepszenie: farma @ (28,17) (-40 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Korynt · Grecy · miasto-państwo(3)-Luoyang · Chińczycy · miasto-państwo(5) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 12
+[page:A:log] [Save] autosave tura=12
+[hotseat-etap4-noop-test] [A] tura 11 (turn=12): hash=16cd2f7b98a1...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 12
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 13: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=97 N=67 Praca=39 wzrost=0 głód=0
+[page:A:log] [Porzadek] Tura 13 Ateny: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 13 Korynt: tier=order porPct=108.8 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Rekrutacja] Tura 13 Korynt: Wojownik gotowa @ (63,42)
+[page:A:log] [Porzadek] Tura 13 Xi'an: tier=order porPct=120.0 szPct=90.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 13 Luoyang: tier=order porPct=104.8 szPct=84.9 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 13 Pekin: budynek palac
+[page:A:log] [AI 7] Ulepszenie: farma @ (31,52) (-40 Pracy)
+[page:A:log] [AI 8] Ulepszenie: farma @ (34,54) (-40 Pracy)
+[page:A:log] [Autosave] rotacyjny slot=autosave-2 tura=13
+[page:A:log] [Rekrutacja] Xi'an: Łucznik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 4] Zakup jednostki za Skarbiec: Łucznik
+[page:A:log] [Chatka] Owner 4: Chatka (skarb): +40 złota
+[page:A:log] [AI 5] Wycinka @ (20,19) (-5 Pracy, +50 Drewna)
+[page:A:log] [AI 6] Ulepszenie: kamieniolom @ (22,23) (-44 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Korynt · Grecy · miasto-państwo(3)-Pekin · Chińczycy · miasto-państwo(6) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 13
+[page:A:log] [Save] autosave tura=13
+[hotseat-etap4-noop-test] [A] tura 12 (turn=13): hash=31d41e9b3acc...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 13
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 14: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=139 N=88 Praca=51 wzrost=0 głód=0
+[page:A:log] [Porzadek] Tura 14 Ateny: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 14 Korynt: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 14 Xi'an: tier=order porPct=113.1 szPct=79.7 [osiedle: immunitet buntu]
+[page:A:log] [Rekrutacja] Tura 14 Xi'an: Łucznik gotowa @ (25,20)
+[page:A:log] [Porzadek] Tura 14 Luoyang: tier=order porPct=95.4 szPct=73.9 [osiedle: immunitet buntu]
+[page:A:log] [Cuda][AI] Tura 14 owner 1: pominięto Wyrocznia — brak żywności w zapasach państwa
+[page:A:log] [AI 1] Ulepszenie: farma @ (68,37) (-40 Pracy)
+[page:A:log] [Autosave] rotacyjny slot=autosave-3 tura=14
+[page:A:log] [AI 3] Ulepszenie: farma @ (59,44) (-40 Pracy)
+[page:A:log] [Rekrutacja] Luoyang: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 5] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Chińczycy(4)-Luoyang · Chińczycy · miasto-państwo(5) (Relacja=190 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 14
+[page:A:log] [Save] autosave tura=14
+[hotseat-etap4-noop-test] [A] tura 13 (turn=14): hash=93dcc35760fa...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 14
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 15: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=141 N=95 Praca=57 wzrost=0 głód=0
+[page:A:log] [Porzadek] Tura 15 Ateny: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 15 Sparta: budynek palac
+[page:A:log] [Porzadek] Tura 15 Korynt: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 15 Xi'an: tier=order porPct=120.0 szPct=79.7 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 15 Luoyang: tier=order porPct=95.4 szPct=73.9 [osiedle: immunitet buntu]
+[page:A:log] [Rekrutacja] Tura 15 Luoyang: Wojownik gotowa @ (20,20)
+[page:A:log] [Autosave] rotacyjny slot=autosave-4 tura=15
+[page:A:log] [AI 4] Ulepszenie: tartak @ (25,24) (-50 Pracy)
+[page:A:log] [AI 5] Ulepszenie: kamieniolom @ (19,23) (-44 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Chińczycy(4)-Pekin · Chińczycy · miasto-państwo(6) (Relacja=190 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 15
+[page:A:log] [Save] autosave tura=15
+[hotseat-etap4-noop-test] [A] tura 14 (turn=15): hash=9e673d9fdf53...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 15
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 16: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=142 N=95 Praca=57 wzrost=0 głód=0
+[page:A:log] [Porzadek] Tura 16 Ateny: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 16 Korynt: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 16 Xi'an: tier=order porPct=120.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 16 Luoyang: tier=order porPct=114.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 16 Luoyang: budynek stolarnia
+[page:A:log] [Autosave] rotacyjny slot=autosave-5 tura=16
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Luoyang · Chińczycy · miasto-państwo(5)-Pekin · Chińczycy · miasto-państwo(6) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 16
+[page:A:log] [Save] autosave tura=16
+[hotseat-etap4-noop-test] [A] tura 15 (turn=16): hash=ac47d934d22a...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 16
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 17: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=145 N=106 Praca=69 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 17 Ateny: tier=order porPct=120.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 17 Ateny: budynek stolarnia
+[page:A:log] [Porzadek] Tura 17 Korynt: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 17 Xi'an: tier=order porPct=119.9 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 17 Xi'an: budynek stolarnia
+[page:A:log] [Porzadek] Tura 17 Luoyang: tier=order porPct=105.6 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Autosave] rotacyjny slot=autosave-6 tura=17
+[page:A:log] [AI 7] Ulepszenie: kamieniolom @ (30,54) (-44 Pracy)
+[page:A:log] [AI 8] Ulepszenie: kamieniolom @ (33,55) (-44 Pracy)
+[page:A:log] [Dyplomacja] AI1 → MP2: wasalizacja (trybut_elapsed)
+[page:A:log] [Dyplomacja] AI1 → MP3: wasalizacja (trybut_elapsed)
+[page:A:log] [Rekrutacja] Ateny: Łucznik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Łucznik
+[page:A:log] [AI 1] Ulepszenie: farma @ (67,38) (-40 Pracy)
+[page:A:log] [Chatka] Owner 1: Chatka (skarb): +54 złota
+[page:A:log] [AI 2] Ulepszenie: farma @ (65,33) (-40 Pracy)
+[page:A:log] [AI 3] Ulepszenie: farma @ (59,45) (-40 Pracy)
+[page:A:log] [Dyplomacja] AI4 → MP5: wasalizacja (trybut_elapsed)
+[page:A:log] [Dyplomacja] AI4 → MP6: wasalizacja (trybut_elapsed)
+[page:A:log] [AI 5] Wycinka @ (21,19) (-5 Pracy, +55 Drewna)
+[page:A:log] [AI 6] Ulepszenie: farma @ (20,25) (-40 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Sparta · Grecy · miasto-państwo(2) (Relacja=190 >= 0, połączenie tras możliwe)
+[page:A:log] [Barbarzyncy] Tura 17: nowe obozy: 2
+[page:A:log] [Barbarzyncy] Spawn: Wojownik szekelesz @ (19,56)
+[page:A:log] [Barbarzyncy] Spawn: Wojownik szekelesz @ (16,12)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 17
+[page:A:log] [Save] autosave tura=17
+[hotseat-etap4-noop-test] [A] tura 16 (turn=17): hash=3d43c1791711...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 17
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 18: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=151 N=121 Praca=83 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 18 Ateny: tier=order porPct=120.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Rekrutacja] Tura 18 Ateny: Łucznik gotowa @ (68,37)
+[page:A:log] [Porzadek] Tura 18 Korynt: tier=order porPct=114.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 18 Xi'an: tier=order porPct=119.9 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 18 Luoyang: tier=order porPct=105.6 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Autosave] rotacyjny slot=autosave-7 tura=18
+[page:A:log] [AI 5] Ulepszenie: farma @ (20,20) (-40 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Korynt · Grecy · miasto-państwo(3) (Relacja=190 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 18
+[page:A:log] [Save] autosave tura=18
+[hotseat-etap4-noop-test] [A] tura 17 (turn=18): hash=abccd497e852...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 18
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 19: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=118 N=123 Praca=90 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 19 Ateny: tier=order porPct=120.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 19 Korynt: tier=order porPct=114.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 19 Xi'an: tier=order porPct=119.9 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 19 Xi'an: budynek stolarnia
+[page:A:log] [Porzadek] Tura 19 Luoyang: tier=order porPct=105.6 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 19 Luoyang: budynek spichlerz
+[page:A:log] [Autosave] rotacyjny slot=autosave-8 tura=19
+[page:A:log] [Cuda][AI] Tura 19 owner 1: pominięto Wyrocznia — brak żywności w zapasach państwa
+[page:A:log] [AI 1] Ulepszenie: farma @ (68,38) (-40 Pracy)
+[page:A:log] [Chatka] Owner 1: Chatka: dołączyła jednostka — Włócznik
+[page:A:log] [AI 3] Ulepszenie: owce @ (63,42) (-40 Pracy)
+[page:A:log] [AI 4] Ulepszenie: tartak @ (25,25) (-50 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Chińczycy(4) (Relacja=85.13354262838183 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 19
+[page:A:log] [Save] autosave tura=19
+[hotseat-etap4-noop-test] [A] tura 18 (turn=19): hash=8ed06abd82fd...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 19
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 20: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=163 N=134 Praca=95 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 20 Ateny: tier=order porPct=120.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 20 Korynt: tier=order porPct=114.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 20 Xi'an: tier=order porPct=109.8 szPct=61.5
+[page:A:log] [Porzadek] Tura 20 Luoyang: tier=order porPct=100.5 szPct=70.4
+[page:A:log] [Rekrutacja] Ateny: Rydwan (woły) oplacone 15 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Rydwan (woły)
+[page:A:log] [AI 1] Ulepszenie: farma @ (66,37) (-40 Pracy)
+[page:A:log] [Autosave] rotacyjny slot=autosave-9 tura=20
+[page:A:log] [AI 3] Ulepszenie: bydlo @ (62,44) (-40 Pracy)
+[page:A:log] [AI 5] Ulepszenie: tartak @ (16,20) (-50 Pracy)
+[page:A:log] [AI 6] Ulepszenie: tartak @ (24,26) (-50 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Luoyang · Chińczycy · miasto-państwo(5) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 20
+[page:A:log] [Save] autosave tura=20
+[hotseat-etap4-noop-test] [A] tura 19 (turn=20): hash=bc6bdf52f564...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 20
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 21: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=172 N=150 Praca=108 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 21 Ateny: tier=order porPct=120.0 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Rekrutacja] Tura 21 Ateny: Rydwan (woły) gotowa @ (68,37)
+[page:A:log] [Porzadek] Tura 21 Korynt: tier=order porPct=114.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 21 Xi'an: tier=order porPct=109.8 szPct=61.5
+[page:A:log] [Produkcja] Tura 21 Xi'an: budynek spichlerz
+[page:A:log] [Porzadek] Tura 21 Luoyang: tier=order porPct=100.5 szPct=70.4
+[page:A:log] [Produkcja] Tura 21 Luoyang: budynek garncarnia
+[page:A:log] [Autosave] rotacyjny slot=autosave-10 tura=21
+[page:A:log] [AI 7] Ulepszenie: farma @ (30,53) (-40 Pracy)
+[page:A:log] [AI 8] Ulepszenie: farma @ (33,54) (-40 Pracy)
+[page:A:log] [AI 1] Ulepszenie: bydlo @ (68,37) (-40 Pracy)
+[page:A:log] [Chatka] Owner 1: Chatka (skarb): +46 złota
+[page:A:log] [AI 2] Ulepszenie: farma @ (65,32) (-40 Pracy)
+[page:A:log] [Chatka] Owner 4: Chatka (skarb): +86 złota
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Pekin · Chińczycy · miasto-państwo(6) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 21
+[page:A:log] [Save] autosave tura=21
+[hotseat-etap4-noop-test] [A] tura 20 (turn=21): hash=b17820bb5525...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 21
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 22: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=179 N=167 Praca=123 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 22 Ateny: tier=order porPct=120.0 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 22 Korynt: tier=order porPct=105.6 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 22 Xi'an: tier=order porPct=109.3 szPct=67.4
+[page:A:log] [Produkcja] Tura 22 Xi'an: budynek garncarnia
+[page:A:log] [Porzadek] Tura 22 Luoyang: tier=order porPct=99.6 szPct=74.3
+[page:A:log] [Eliminacja] Usunięto 1 jednostek ownerId=2.
+[page:A:log] [Eliminacja] Cywilizacja ownerId=2 skasowana (utrata ostatniego miasta).
+[page:A:log] [Dyplomacja] AI1 wchłania miasto-państwo ownerId=2 (dyplomatyczne)
+[page:A:log] [Eliminacja] Usunięto 3 jednostek ownerId=3.
+[page:A:log] [Eliminacja] Cywilizacja ownerId=3 skasowana (utrata ostatniego miasta).
+[page:A:log] [Dyplomacja] AI1 wchłania miasto-państwo ownerId=3 (dyplomatyczne)
+[page:A:log] [Rekrutacja] Sparta: Oszczepnik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Oszczepnik
+[page:A:log] [Rekrutacja] Korynt: Oszczepnik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Oszczepnik
+[page:A:log] [Rekrutacja] Ateny: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [Rekrutacja] Sparta: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [Rekrutacja] Korynt: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [AI 1] Ulepszenie: farma @ (66,39) (-40 Pracy)
+[page:A:log] [AI 1] Ulepszenie: bydlo @ (67,38) (-40 Pracy)
+[page:A:log] [Eliminacja] Usunięto 3 jednostek ownerId=5.
+[page:A:log] [Eliminacja] Cywilizacja ownerId=5 skasowana (utrata ostatniego miasta).
+[page:A:log] [Dyplomacja] AI4 wchłania miasto-państwo ownerId=5 (dyplomatyczne)
+[page:A:log] [Eliminacja] Usunięto 1 jednostek ownerId=6.
+[page:A:log] [Eliminacja] Cywilizacja ownerId=6 skasowana (utrata ostatniego miasta).
+[page:A:log] [Dyplomacja] AI4 wchłania miasto-państwo ownerId=6 (dyplomatyczne)
+[page:A:log] [Rekrutacja] Luoyang: Oszczepnik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 4] Zakup jednostki za Skarbiec: Oszczepnik
+[page:A:log] [Rekrutacja] Pekin: Oszczepnik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 4] Zakup jednostki za Skarbiec: Oszczepnik
+[page:A:log] [AI 4] Wycinka @ (22,21) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (23,19) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (22,22) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (23,21) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (24,17) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (24,18) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (23,22) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (24,21) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (24,23) (-5 Pracy, +60 Drewna)
+[page:A:log] [Barbarzyncy] Obóz zniszczony (najechany): bc_532729_1
+[page:A:log] [Autosave] rotacyjny slot=autosave-1 tura=22
+[page:A:log] [Barbarzyncy] Tura 22: nowe obozy: 1
+[page:A:log] [Barbarzyncy] Spawn: Wojownik Sherden @ (57,36)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 22
+[page:A:log] [Save] autosave tura=22
+[hotseat-etap4-noop-test] [A] tura 21 (turn=22): hash=d94cbf351d27...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 22
+[page:A:log] [Ekonomia] Tura 23: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=176 N=170 Praca=131 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 23 Ateny: tier=order porPct=120.0 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Rekrutacja] Tura 23 Ateny: Wojownik gotowa @ (68,37)
+[page:A:log] [Rekrutacja] Tura 23 Sparta: Oszczepnik gotowa @ (63,37)
+[page:A:log] [Rekrutacja] Tura 23 Korynt: Oszczepnik gotowa @ (63,42)
+[page:A:log] [Produkcja] Tura 23 Xi'an: budynek targowisko
+[page:A:log] [Produkcja] Tura 23 Luoyang: budynek studnia
+[page:A:log] [Rekrutacja] Tura 23 Luoyang: Oszczepnik gotowa @ (20,20)
+[page:A:log] [Produkcja] Tura 23 Pekin: budynek spichlerz
+[page:A:log] [Rekrutacja] Tura 23 Pekin: Oszczepnik gotowa @ (20,25)
+[page:A:log] [AI 1] Zalozono miasto Teby @ (59,44)
+[page:A:log] [AI 1] Ulepszenie: kopalnia_miedzi @ (62,40) (-88 Pracy)
+[page:A:log] [Autosave] rotacyjny slot=autosave-2 tura=23
+[page:A:log] [AI 4] Zalozono miasto Nankin @ (18,15)
+[page:A:log] [Rekrutacja] Xi'an: Oszczepnik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 4] Zakup jednostki za Skarbiec: Oszczepnik
+[page:A:log] [AI 4] Ulepszenie: kopalnia_cyny @ (26,19) (-88 Pracy)
+[page:A:log] [AI 4] Ulepszenie: farma @ (24,21) (-40 Pracy)
+[page:A:log] [Barbarzyncy] Spawn: Wojownik szekelesz @ (23,32) [na wodzie]
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 23
+[hotseat-etap4-noop-test] [A] próba 1/3 padła (saveAndReadSnapshot: timeout czekania na zapis tury 23 w IndexedDB (modal={"welcome":false,"dialogs":1,"txt":["civ-wiki-hub :: "]}) (ostatni odczyt: {"wersja":3,"tura":22,"seed":778899,"resourceLedgerHistory":[{"0":{"byResource":{"glina":{"teren|city0":{"kind":"teren","label":"Teren i plony z mapy (Rzym)","amount":14},"obywatele|0":{"kind":"obywat...)) -- ponawiam ze świeżym browser.launch()...
+[hotseat-etap4-noop-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+[hotseat-etap4-noop-test] [A] start realnej nowej gry (startNewGame + foundPlayerStartCity)...
+[page:A:log] [Diag:boot] start
+[page:A:startGroup] [The Game] Dane wczytane
+[page:A:log] Jednostki: 75, Technologie: 32
+[page:A:endGroup] console.groupEnd
+[page:A:info] [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[page:A:info] [civ] mapGen ms | prep=2 terrain=8 landSea=133 relief=88 coast=28 riversMain=363 riversFill=268 forest=5 deposits=10 starts=85 total=989
+[page:A:warning] [.WebGL-0x34e400167a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[page:A:info] [civ] riverRenderStage 3
+[page:A:info] [civ] buildScene ms | hexes=28 coast=32 overlays=6 rivers=22 tail=5 total=93 | hexCount=1008 overlaysN=10 riverStage=3
+[page:A:info] [civ] buildScene detail heksy | alokacja=18 pryzmy=11 instancjeReliefu=3 styledWPetli=0 brzegWPetli=4 pustynia=8 finalizacja=0
+[page:A:info] [civ] buildScene detail nakladki | scalMerge=6 instancjePlazaWydmy=0 collapsed=4 skipMerged=0 skipLight=6
+[page:A:log] [main] hodowla złoże meshes synced · resource overlays: 63
+[page:A:log] [Diag:session] resetStuckInteractiveState
+[page:A:warning] [.WebGL-0x34e400167a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[page:A:log] [NewGame] Nacja gracza: Rzymianie (rzymianie)
+[page:A:log] [NewGame] AI nacje: {1: sumer, 2: harappa, 3: sumer, 4: harappa, 5: sumer, 6: harappa}
+[page:A:log] [NewGame] tempoGry = standardowa · kosztJednostekPace = niski · buildingCostPace = niski · wzrostLudnosciPace = wysoki · ruchSwiataPace = krotki · epoka= 2 (braz) · typSwiata= kontynenty (Kontynenty) · jakoscMapy= Wysoka → render=high, mapDetail=high · advanced={"barbariansLevel":"normalny","battleAlwaysManual":false,"victoryMode":"moc_i_dominacja","buildingCostPace":"niski","kosztJednostekPace":"niski","wzrostLudnosciPace":"wysoki","ruchSwiataPace":"krotki","landFractionPercent":30,"landFractionCustom":false,"cityStateDifficultyOverride":"normal","cityLimitBase":10,"wzrostSurowcowZEpoka":false}
+[page:A:log] [NewGame] Tech wcześniejszych epok: 12 · epoka start= braz
+[page:A:info] [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[page:A:info] [civ] mapGen ms | prep=9 terrain=47 landSea=688 relief=663 coast=90 riversMain=5545 riversFill=3374 forest=27 deposits=57 starts=530 total=11029
+[page:A:info] [civ] riverRenderStage 3
+[page:A:info] [civ] buildScene ms | hexes=385 coast=12 overlays=6 rivers=525 tail=7 total=936 | hexCount=7992 overlaysN=41 riverStage=3
+[page:A:info] [civ] buildScene detail heksy | alokacja=33 pryzmy=100 instancjeReliefu=7 styledWPetli=0 brzegWPetli=32 pustynia=11 finalizacja=0
+[page:A:info] [civ] buildScene detail nakladki | scalMerge=6 instancjePlazaWydmy=0 collapsed=10 skipMerged=0 skipLight=31
+[page:A:warning] [clusters] capital-sep: 16 niewykonalne dla 3 civ na 108x74, obnizono do 13
+[page:A:log] [ClusterStart] typ=rzymianie rywale=2 (deferred) foreignAI=6 (deferred) typow=3
+[page:A:info] [civ-perf] postScene — init sceny: 2 ms
+[page:A:info] [civ-perf] postScene — kamera: 0 ms
+[page:A:info] [civ-perf] postScene — renderery jednostek: 2 ms
+[page:A:info] [civ-perf] postScene — renderery miast: 2 ms
+[page:A:info] [civ-perf] postScene — markery oblężenia i cuda: 2 ms
+[page:A:info] [civ-perf] postScene — plan klastra startowego: 178 ms
+[page:A:info] [civ-perf] postScene — mgła startowa: 12 ms
+[page:A:info] [civ-perf] postScene — nakładki zasobów (defer): 4 ms
+[page:A:log] [NewGame] Mapa: 108x74 seed=778899 typ=kontynenty rywale=2 typy=3
+[page:A:info] [civ-perf] wall-clock Nowa gra → hide overlay: 12533 ms (postScene/finishLoading=204 ms)
+[page:A:info] [civ-perf] === Civ — raport czasów ładowania mapy ===
+Data: 28.11.2026, 07:32:23
+rozmiar: Maly · kształt: Kontynenty
+7992 heksów · nakładek 41
+
+GENERATOR (ms):
+  Rzeki (gen): GŁÓWNE + ŚREDNIE (riverGenPhase=main+medium)
+  Przygotowanie siatki: 9 ms
+  Klimat i teren bazowy: 47 ms
+  Ląd i ocean: 688 ms
+  Relief (góry i wzgórza): 663 ms
+  Płytkie morze: 90 ms
+  Rzeki — główne: 5545 ms
+  Rzeki — uzupełnianie: 3374 ms
+  Las i roślinność: 27 ms
+  Złoża mineralne: 57 ms
+  Pozycje startowe: 530 ms
+  RAZEM: 11029 ms
+
+SCENA (ms):
+  Heksy: 385 ms
+  Brzeg: 12 ms
+  Nakładki: 6 ms
+  Rzeki: 525 ms
+  Finał: 7 ms
+  RAZEM: 936 ms
+
+Heksy — podetapy (ms):
+  alokacja=33 pryzmy=100 relief=7
+  styled=0 brzeg=32 pustynia=11 fin=0
+
+Nakładki — podetapy (ms):
+  scalMerge=6 instancje=0 collapsed=10 skipMerged=0 skipLight=31
+
+RAZEM (generator + scena): 11965 ms
+
+PO SCENIE / CAŁOŚĆ (ms):
+  Przekazanie z workera (ponad fazy gen): 305 ms
+  Po scenie / finishLoading: 204 ms
+  WALL-CLOCK (Nowa gra → hide overlay): 12533 ms
+  Niemierzone (wall − suma faz): 59 ms
+
+POST-SCENE — podkroki (ms):
+  init sceny: 2 ms
+  kamera: 0 ms
+  renderery jednostek: 2 ms
+  renderery miast: 2 ms
+  markery oblężenia i cuda: 2 ms
+  plan klastra startowego: 178 ms
+  mgła startowa: 12 ms
+  nakładki zasobów (defer): 4 ms
+  RAZEM podkroki: 202 ms
+
+Stempel builda: CIV-BUILD-STAMP-PENDING
+[page:A:warning] [.WebGL-0x34e400167a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[page:A:info] [civ-perf] deferred resourceOverlays (post-hide): 837 meshes in 451 ms
+[page:A:log] [ClusterStart] deferred same-type rivals=2/2 epokaStart=braz (actual player capital @ 29,49)
+[page:A:log] [ClusterStart] deferred foreign clusters=6/6
+[page:A:warning] [.WebGL-0x34e400167a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 1
+[page:A:log] [Ekonomia] Tura 2: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=18 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Autosave] rotacyjny slot=autosave-1 tura=2
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Sparta · Grecy · miasto-państwo(2) (Relacja=190 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 2
+[page:A:log] [Save] autosave tura=2
+[hotseat-etap4-noop-test] [A] tura 1 (turn=2): hash=f7e1d0500c76...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 2
+[page:A:log] [Ekonomia] Tura 3: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=26 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Autosave] rotacyjny slot=autosave-2 tura=3
+[page:A:log] [Chatka] Owner 4: Chatka: +50 postępu badań (Wojskowość)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Korynt · Grecy · miasto-państwo(3) (Relacja=190 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 3
+[page:A:log] [Save] autosave tura=3
+[hotseat-etap4-noop-test] [A] tura 2 (turn=3): hash=181afb184b7a...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 3
+[page:A:log] [Ekonomia] Tura 4: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=26 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Autosave] rotacyjny slot=autosave-3 tura=4
+[page:A:log] [Rekrutacja] Ateny: Zwiadowca oplacone 4 — kolejka x1 (−0 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Zwiadowca
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Chińczycy(4) (Relacja=61.545103749999996 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 4
+[page:A:log] [Save] autosave tura=4
+[hotseat-etap4-noop-test] [A] tura 3 (turn=4): hash=be16d7dc61ef...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 4
+[page:A:log] [Ekonomia] Tura 5: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=52 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Rekrutacja] Tura 5 Ateny: Zwiadowca gotowa @ (68,37)
+[page:A:log] [Rekrutacja] Ateny: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [Chatka] Owner 1: Chatka (skarb): +90 złota
+[page:A:log] [Autosave] rotacyjny slot=autosave-4 tura=5
+[page:A:log] [Rekrutacja] Korynt: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 3] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [Rekrutacja] Xi'an: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Luoyang · Chińczycy · miasto-państwo(5) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 5
+[page:A:log] [Save] autosave tura=5
+[hotseat-etap4-noop-test] [A] tura 4 (turn=5): hash=0b711cdd9772...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 5
+[page:A:log] [Ekonomia] Tura 6: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=52 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Rekrutacja] Tura 6 Ateny: Wojownik gotowa @ (68,37)
+[page:A:log] [Rekrutacja] Tura 6 Korynt: Wojownik gotowa @ (63,42)
+[page:A:log] [Rekrutacja] Tura 6 Xi'an: Wojownik gotowa @ (25,20)
+[page:A:log] [Autosave] rotacyjny slot=autosave-5 tura=6
+[page:A:log] [Rekrutacja] Xi'an: Zwiadowca oplacone 4 — kolejka x1 (−0 MP)
+[page:A:log] [AI 4] Zakup jednostki za Skarbiec: Zwiadowca
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Pekin · Chińczycy · miasto-państwo(6) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 6
+[page:A:log] [Save] autosave tura=6
+[hotseat-etap4-noop-test] [A] tura 5 (turn=6): hash=41162457bea9...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 6
+[page:A:log] [Ekonomia] Tura 7: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=52 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Rekrutacja] Tura 7 Xi'an: Zwiadowca gotowa @ (25,20)
+[page:A:log] [Chatka] Owner 1: Chatka: dołączyła jednostka — Włócznik
+[page:A:log] [Autosave] rotacyjny slot=autosave-6 tura=7
+[page:A:log] [Chatka] Owner 4: Chatka: +50 postępu badań (Wojskowość)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Sparta · Grecy · miasto-państwo(2)-Korynt · Grecy · miasto-państwo(3) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 7
+[page:A:log] [Save] autosave tura=7
+[hotseat-etap4-noop-test] [A] tura 6 (turn=7): hash=e524fb1d3794...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 7
+[page:A:log] [Ekonomia] Tura 8: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=60 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Autosave] rotacyjny slot=autosave-7 tura=8
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Sparta · Grecy · miasto-państwo(2)-Chińczycy(4) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 8
+[page:A:log] [Save] autosave tura=8
+[hotseat-etap4-noop-test] [A] tura 7 (turn=8): hash=f51d3aaee00a...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 8
+[page:A:log] [Ekonomia] Tura 9: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=60 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Autosave] rotacyjny slot=autosave-8 tura=9
+[page:A:log] [Rekrutacja] Xi'an: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [Chatka] Owner 4: Chatka (skarb): +42 złota
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Sparta · Grecy · miasto-państwo(2)-Luoyang · Chińczycy · miasto-państwo(5) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 9
+[hotseat-etap4-noop-test] [A] tura 8 (turn=9): hash=36c241e91a14...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 9
+[page:A:log] [Save] autosave tura=9
+[page:A:log] [Ekonomia] Tura 10: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=90 N=55 Praca=32 wzrost=0 głód=0
+[page:A:log] [Rekrutacja] Tura 10 Xi'an: Wojownik gotowa @ (25,20)
+[page:A:log] [Rekrutacja] Ateny: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [Autosave] rotacyjny slot=autosave-9 tura=10
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Sparta · Grecy · miasto-państwo(2)-Pekin · Chińczycy · miasto-państwo(6) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 10
+[page:A:log] [Save] autosave tura=10
+[hotseat-etap4-noop-test] [A] tura 9 (turn=10): hash=a542f0093ad3...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 10
+[page:A:log] [Ekonomia] Tura 11: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=91 N=57 Praca=34 wzrost=0 głód=0
+[page:A:log] [Produkcja] Tura 11 Ateny: budynek palac
+[page:A:log] [Rekrutacja] Tura 11 Ateny: Wojownik gotowa @ (68,37)
+[page:A:log] [Produkcja] Tura 11 Korynt: budynek palac
+[page:A:log] [Porzadek] Tura 11 Xi'an: tier=order porPct=93.2 szPct=84.9 [osiedle: immunitet buntu]
+[page:A:log] [AI 1] Ulepszenie: warzelnia_soli @ (69,41) (-40 Pracy)
+[page:A:log] [Autosave] rotacyjny slot=autosave-10 tura=11
+[page:A:log] [AI 3] Ulepszenie: farma @ (62,44) (-40 Pracy)
+[page:A:log] [Chatka] Owner 4: Chatka: +50 postępu badań (Wojskowość)
+[page:A:log] [Chatka] Owner 4: Chatka (skarb): +42 złota
+[page:A:log] [Rekrutacja] Luoyang: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 5] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [AI 5] Wycinka @ (19,20) (-5 Pracy, +50 Drewna)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Korynt · Grecy · miasto-państwo(3)-Chińczycy(4) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 11
+[page:A:log] [Save] autosave tura=11
+[hotseat-etap4-noop-test] [A] tura 10 (turn=11): hash=7c1d09ad3726...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 11
+[page:A:log] [Ekonomia] Tura 12: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=94 N=64 Praca=37 wzrost=0 głód=0
+[page:A:log] [Produkcja] Tura 12 Ostia: budynek palac
+[page:A:log] [Produkcja] Tura 12 Kapua: budynek palac
+[page:A:log] [Porzadek] Tura 12 Ateny: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 12 Korynt: tier=order porPct=107.8 szPct=90.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 12 Xi'an: tier=order porPct=93.2 szPct=84.9 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 12 Xi'an: budynek palac
+[page:A:log] [Produkcja] Tura 12 Luoyang: budynek palac
+[page:A:log] [Rekrutacja] Tura 12 Luoyang: Wojownik gotowa @ (20,20)
+[page:A:log] [Dyplomacja] AI1 → MP2: trybut 5 ¤/turę (pierwszy_krok)
+[page:A:log] [Dyplomacja] AI1 → MP3: trybut 5 ¤/turę (pierwszy_krok)
+[page:A:log] [Chatka] Owner 1: Chatka (skarb): +52 złota
+[page:A:log] [Autosave] rotacyjny slot=autosave-1 tura=12
+[page:A:log] [Rekrutacja] Korynt: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 3] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [Dyplomacja] AI4 → MP5: trybut 5 ¤/turę (pierwszy_krok)
+[page:A:log] [Dyplomacja] AI4 → MP6: trybut 5 ¤/turę (pierwszy_krok)
+[page:A:log] [AI 4] Ulepszenie: farma @ (28,17) (-40 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Korynt · Grecy · miasto-państwo(3)-Luoyang · Chińczycy · miasto-państwo(5) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 12
+[page:A:log] [Save] autosave tura=12
+[hotseat-etap4-noop-test] [A] tura 11 (turn=12): hash=5f608d4fa0fe...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 12
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 13: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=97 N=67 Praca=39 wzrost=0 głód=0
+[page:A:log] [Porzadek] Tura 13 Ateny: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 13 Korynt: tier=order porPct=108.8 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Rekrutacja] Tura 13 Korynt: Wojownik gotowa @ (63,42)
+[page:A:log] [Porzadek] Tura 13 Xi'an: tier=order porPct=120.0 szPct=90.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 13 Luoyang: tier=order porPct=104.8 szPct=84.9 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 13 Pekin: budynek palac
+[page:A:log] [Autosave] rotacyjny slot=autosave-2 tura=13
+[page:A:log] [AI 7] Ulepszenie: farma @ (31,52) (-40 Pracy)
+[page:A:log] [AI 8] Ulepszenie: farma @ (34,54) (-40 Pracy)
+[page:A:log] [Rekrutacja] Xi'an: Łucznik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 4] Zakup jednostki za Skarbiec: Łucznik
+[page:A:log] [Chatka] Owner 4: Chatka (skarb): +40 złota
+[page:A:log] [AI 5] Wycinka @ (20,19) (-5 Pracy, +50 Drewna)
+[page:A:log] [AI 6] Ulepszenie: kamieniolom @ (22,23) (-44 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Korynt · Grecy · miasto-państwo(3)-Pekin · Chińczycy · miasto-państwo(6) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 13
+[page:A:log] [Save] autosave tura=13
+[hotseat-etap4-noop-test] [A] tura 12 (turn=13): hash=05252cbc828d...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 13
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 14: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=139 N=88 Praca=51 wzrost=0 głód=0
+[page:A:log] [Porzadek] Tura 14 Ateny: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 14 Korynt: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 14 Xi'an: tier=order porPct=113.1 szPct=79.7 [osiedle: immunitet buntu]
+[page:A:log] [Rekrutacja] Tura 14 Xi'an: Łucznik gotowa @ (25,20)
+[page:A:log] [Porzadek] Tura 14 Luoyang: tier=order porPct=95.4 szPct=73.9 [osiedle: immunitet buntu]
+[page:A:log] [Cuda][AI] Tura 14 owner 1: pominięto Wyrocznia — brak żywności w zapasach państwa
+[page:A:log] [AI 1] Ulepszenie: farma @ (68,37) (-40 Pracy)
+[page:A:log] [Autosave] rotacyjny slot=autosave-3 tura=14
+[page:A:log] [AI 3] Ulepszenie: farma @ (59,44) (-40 Pracy)
+[page:A:log] [Rekrutacja] Luoyang: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 5] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Chińczycy(4)-Luoyang · Chińczycy · miasto-państwo(5) (Relacja=190 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 14
+[page:A:log] [Save] autosave tura=14
+[hotseat-etap4-noop-test] [A] tura 13 (turn=14): hash=0f8c26d17542...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 14
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 15: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=141 N=95 Praca=57 wzrost=0 głód=0
+[page:A:log] [Porzadek] Tura 15 Ateny: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 15 Sparta: budynek palac
+[page:A:log] [Porzadek] Tura 15 Korynt: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 15 Xi'an: tier=order porPct=120.0 szPct=79.7 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 15 Luoyang: tier=order porPct=95.4 szPct=73.9 [osiedle: immunitet buntu]
+[page:A:log] [Rekrutacja] Tura 15 Luoyang: Wojownik gotowa @ (20,20)
+[page:A:log] [Autosave] rotacyjny slot=autosave-4 tura=15
+[page:A:log] [AI 4] Ulepszenie: tartak @ (25,24) (-50 Pracy)
+[page:A:log] [AI 5] Ulepszenie: kamieniolom @ (19,23) (-44 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Chińczycy(4)-Pekin · Chińczycy · miasto-państwo(6) (Relacja=190 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 15
+[page:A:log] [Save] autosave tura=15
+[hotseat-etap4-noop-test] [A] tura 14 (turn=15): hash=3836399612dd...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 15
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 16: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=142 N=95 Praca=57 wzrost=0 głód=0
+[page:A:log] [Porzadek] Tura 16 Ateny: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 16 Korynt: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 16 Xi'an: tier=order porPct=120.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 16 Luoyang: tier=order porPct=114.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 16 Luoyang: budynek stolarnia
+[page:A:log] [Autosave] rotacyjny slot=autosave-5 tura=16
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Luoyang · Chińczycy · miasto-państwo(5)-Pekin · Chińczycy · miasto-państwo(6) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 16
+[page:A:log] [Save] autosave tura=16
+[hotseat-etap4-noop-test] [A] tura 15 (turn=16): hash=bb1241b273c3...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 16
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 17: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=145 N=106 Praca=69 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 17 Ateny: tier=order porPct=120.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 17 Ateny: budynek stolarnia
+[page:A:log] [Porzadek] Tura 17 Korynt: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 17 Xi'an: tier=order porPct=119.9 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 17 Xi'an: budynek stolarnia
+[page:A:log] [Porzadek] Tura 17 Luoyang: tier=order porPct=105.6 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [AI 7] Ulepszenie: kamieniolom @ (30,54) (-44 Pracy)
+[page:A:log] [AI 8] Ulepszenie: kamieniolom @ (33,55) (-44 Pracy)
+[page:A:log] [Dyplomacja] AI1 → MP2: wasalizacja (trybut_elapsed)
+[page:A:log] [Dyplomacja] AI1 → MP3: wasalizacja (trybut_elapsed)
+[page:A:log] [Rekrutacja] Ateny: Łucznik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Łucznik
+[page:A:log] [AI 1] Ulepszenie: farma @ (67,38) (-40 Pracy)
+[page:A:log] [Chatka] Owner 1: Chatka (skarb): +54 złota
+[page:A:log] [Autosave] rotacyjny slot=autosave-6 tura=17
+[page:A:log] [AI 2] Ulepszenie: farma @ (65,33) (-40 Pracy)
+[page:A:log] [AI 3] Ulepszenie: farma @ (59,45) (-40 Pracy)
+[page:A:log] [Dyplomacja] AI4 → MP5: wasalizacja (trybut_elapsed)
+[page:A:log] [Dyplomacja] AI4 → MP6: wasalizacja (trybut_elapsed)
+[page:A:log] [AI 5] Wycinka @ (21,19) (-5 Pracy, +55 Drewna)
+[page:A:log] [AI 6] Ulepszenie: farma @ (20,25) (-40 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Sparta · Grecy · miasto-państwo(2) (Relacja=190 >= 0, połączenie tras możliwe)
+[page:A:log] [Barbarzyncy] Tura 17: nowe obozy: 2
+[page:A:log] [Barbarzyncy] Spawn: Wojownik szekelesz @ (19,56)
+[page:A:log] [Barbarzyncy] Spawn: Wojownik szekelesz @ (16,12)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 17
+[page:A:log] [Save] autosave tura=17
+[hotseat-etap4-noop-test] [A] tura 16 (turn=17): hash=ace98622da94...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 17
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 18: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=151 N=121 Praca=83 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 18 Ateny: tier=order porPct=120.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Rekrutacja] Tura 18 Ateny: Łucznik gotowa @ (68,37)
+[page:A:log] [Porzadek] Tura 18 Korynt: tier=order porPct=114.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 18 Xi'an: tier=order porPct=119.9 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 18 Luoyang: tier=order porPct=105.6 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Autosave] rotacyjny slot=autosave-7 tura=18
+[page:A:log] [AI 5] Ulepszenie: farma @ (20,20) (-40 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Korynt · Grecy · miasto-państwo(3) (Relacja=190 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 18
+[page:A:log] [Save] autosave tura=18
+[hotseat-etap4-noop-test] [A] tura 17 (turn=18): hash=a882b8c14eef...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 18
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 19: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=118 N=123 Praca=90 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 19 Ateny: tier=order porPct=120.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 19 Korynt: tier=order porPct=114.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 19 Xi'an: tier=order porPct=119.9 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 19 Xi'an: budynek stolarnia
+[page:A:log] [Porzadek] Tura 19 Luoyang: tier=order porPct=105.6 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 19 Luoyang: budynek spichlerz
+[page:A:log] [Cuda][AI] Tura 19 owner 1: pominięto Wyrocznia — brak żywności w zapasach państwa
+[page:A:log] [AI 1] Ulepszenie: farma @ (68,38) (-40 Pracy)
+[page:A:log] [Chatka] Owner 1: Chatka: dołączyła jednostka — Włócznik
+[page:A:log] [Autosave] rotacyjny slot=autosave-8 tura=19
+[page:A:log] [AI 3] Ulepszenie: owce @ (63,42) (-40 Pracy)
+[page:A:log] [AI 4] Ulepszenie: tartak @ (25,25) (-50 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Chińczycy(4) (Relacja=85.13354262838183 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 19
+[page:A:log] [Save] autosave tura=19
+[hotseat-etap4-noop-test] [A] tura 18 (turn=19): hash=872614041b24...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 19
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 20: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=163 N=134 Praca=95 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 20 Ateny: tier=order porPct=120.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 20 Korynt: tier=order porPct=114.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 20 Xi'an: tier=order porPct=109.8 szPct=61.5
+[page:A:log] [Porzadek] Tura 20 Luoyang: tier=order porPct=100.5 szPct=70.4
+[page:A:log] [Rekrutacja] Ateny: Rydwan (woły) oplacone 15 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Rydwan (woły)
+[page:A:log] [AI 1] Ulepszenie: farma @ (66,37) (-40 Pracy)
+[page:A:log] [Autosave] rotacyjny slot=autosave-9 tura=20
+[page:A:log] [AI 3] Ulepszenie: bydlo @ (62,44) (-40 Pracy)
+[page:A:log] [AI 5] Ulepszenie: tartak @ (16,20) (-50 Pracy)
+[page:A:log] [AI 6] Ulepszenie: tartak @ (24,26) (-50 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Luoyang · Chińczycy · miasto-państwo(5) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 20
+[page:A:log] [Save] autosave tura=20
+[hotseat-etap4-noop-test] [A] tura 19 (turn=20): hash=ed5965fdf5bd...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 20
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 21: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=172 N=150 Praca=108 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 21 Ateny: tier=order porPct=120.0 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Rekrutacja] Tura 21 Ateny: Rydwan (woły) gotowa @ (68,37)
+[page:A:log] [Porzadek] Tura 21 Korynt: tier=order porPct=114.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 21 Xi'an: tier=order porPct=109.8 szPct=61.5
+[page:A:log] [Produkcja] Tura 21 Xi'an: budynek spichlerz
+[page:A:log] [Porzadek] Tura 21 Luoyang: tier=order porPct=100.5 szPct=70.4
+[page:A:log] [Produkcja] Tura 21 Luoyang: budynek garncarnia
+[page:A:log] [AI 7] Ulepszenie: farma @ (30,53) (-40 Pracy)
+[page:A:log] [AI 8] Ulepszenie: farma @ (33,54) (-40 Pracy)
+[page:A:log] [AI 1] Ulepszenie: bydlo @ (68,37) (-40 Pracy)
+[page:A:log] [Chatka] Owner 1: Chatka (skarb): +46 złota
+[page:A:log] [Autosave] rotacyjny slot=autosave-10 tura=21
+[page:A:log] [AI 2] Ulepszenie: farma @ (65,32) (-40 Pracy)
+[page:A:log] [Chatka] Owner 4: Chatka (skarb): +86 złota
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Pekin · Chińczycy · miasto-państwo(6) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 21
+[page:A:log] [Save] autosave tura=21
+[hotseat-etap4-noop-test] [A] tura 20 (turn=21): hash=f3a0c43f2dd8...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 21
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 22: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=179 N=167 Praca=123 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 22 Ateny: tier=order porPct=120.0 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 22 Korynt: tier=order porPct=105.6 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 22 Xi'an: tier=order porPct=109.3 szPct=67.4
+[page:A:log] [Produkcja] Tura 22 Xi'an: budynek garncarnia
+[page:A:log] [Porzadek] Tura 22 Luoyang: tier=order porPct=99.6 szPct=74.3
+[page:A:log] [Autosave] rotacyjny slot=autosave-1 tura=22
+[page:A:log] [Eliminacja] Usunięto 1 jednostek ownerId=2.
+[page:A:log] [Eliminacja] Cywilizacja ownerId=2 skasowana (utrata ostatniego miasta).
+[page:A:log] [Dyplomacja] AI1 wchłania miasto-państwo ownerId=2 (dyplomatyczne)
+[page:A:log] [Eliminacja] Usunięto 3 jednostek ownerId=3.
+[page:A:log] [Eliminacja] Cywilizacja ownerId=3 skasowana (utrata ostatniego miasta).
+[page:A:log] [Dyplomacja] AI1 wchłania miasto-państwo ownerId=3 (dyplomatyczne)
+[page:A:log] [Rekrutacja] Sparta: Oszczepnik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Oszczepnik
+[page:A:log] [Rekrutacja] Korynt: Oszczepnik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Oszczepnik
+[page:A:log] [Rekrutacja] Ateny: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [Rekrutacja] Sparta: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [Rekrutacja] Korynt: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [AI 1] Ulepszenie: farma @ (66,39) (-40 Pracy)
+[page:A:log] [AI 1] Ulepszenie: bydlo @ (67,38) (-40 Pracy)
+[page:A:log] [Eliminacja] Usunięto 3 jednostek ownerId=5.
+[page:A:log] [Eliminacja] Cywilizacja ownerId=5 skasowana (utrata ostatniego miasta).
+[page:A:log] [Dyplomacja] AI4 wchłania miasto-państwo ownerId=5 (dyplomatyczne)
+[page:A:log] [Eliminacja] Usunięto 1 jednostek ownerId=6.
+[page:A:log] [Eliminacja] Cywilizacja ownerId=6 skasowana (utrata ostatniego miasta).
+[page:A:log] [Dyplomacja] AI4 wchłania miasto-państwo ownerId=6 (dyplomatyczne)
+[page:A:log] [Rekrutacja] Luoyang: Oszczepnik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 4] Zakup jednostki za Skarbiec: Oszczepnik
+[page:A:log] [Rekrutacja] Pekin: Oszczepnik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 4] Zakup jednostki za Skarbiec: Oszczepnik
+[page:A:log] [AI 4] Wycinka @ (22,21) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (23,19) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (22,22) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (23,21) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (24,17) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (24,18) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (23,22) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (24,21) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (24,23) (-5 Pracy, +60 Drewna)
+[page:A:log] [Barbarzyncy] Obóz zniszczony (najechany): bc_532729_1
+[page:A:log] [Barbarzyncy] Tura 22: nowe obozy: 1
+[page:A:log] [Barbarzyncy] Spawn: Wojownik Sherden @ (57,36)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 22
+[page:A:log] [Save] autosave tura=22
+[hotseat-etap4-noop-test] [A] tura 21 (turn=22): hash=88198aefaa13...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 22
+[page:A:log] [Ekonomia] Tura 23: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=176 N=170 Praca=131 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 23 Ateny: tier=order porPct=120.0 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Rekrutacja] Tura 23 Ateny: Wojownik gotowa @ (68,37)
+[page:A:log] [Rekrutacja] Tura 23 Sparta: Oszczepnik gotowa @ (63,37)
+[page:A:log] [Rekrutacja] Tura 23 Korynt: Oszczepnik gotowa @ (63,42)
+[page:A:log] [Produkcja] Tura 23 Xi'an: budynek targowisko
+[page:A:log] [Produkcja] Tura 23 Luoyang: budynek studnia
+[page:A:log] [Rekrutacja] Tura 23 Luoyang: Oszczepnik gotowa @ (20,20)
+[page:A:log] [Produkcja] Tura 23 Pekin: budynek spichlerz
+[page:A:log] [Rekrutacja] Tura 23 Pekin: Oszczepnik gotowa @ (20,25)
+[page:A:log] [Autosave] rotacyjny slot=autosave-2 tura=23
+[page:A:log] [AI 1] Zalozono miasto Teby @ (59,44)
+[page:A:log] [AI 1] Ulepszenie: kopalnia_miedzi @ (62,40) (-88 Pracy)
+[page:A:log] [AI 4] Zalozono miasto Nankin @ (18,15)
+[page:A:log] [Rekrutacja] Xi'an: Oszczepnik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 4] Zakup jednostki za Skarbiec: Oszczepnik
+[page:A:log] [AI 4] Ulepszenie: kopalnia_cyny @ (26,19) (-88 Pracy)
+[page:A:log] [AI 4] Ulepszenie: farma @ (24,21) (-40 Pracy)
+[page:A:log] [Barbarzyncy] Spawn: Wojownik szekelesz @ (23,32) [na wodzie]
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 23
+[hotseat-etap4-noop-test] [A] próba 2/3 padła (saveAndReadSnapshot: timeout czekania na zapis tury 23 w IndexedDB (modal={"welcome":false,"dialogs":1,"txt":["civ-wiki-hub :: "]}) (ostatni odczyt: {"wersja":3,"tura":22,"seed":778899,"resourceLedgerHistory":[{"0":{"byResource":{"glina":{"teren|city0":{"kind":"teren","label":"Teren i plony z mapy (Rzym)","amount":14},"obywatele|0":{"kind":"obywat...)) -- ponawiam ze świeżym browser.launch()...
+[hotseat-etap4-noop-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+[hotseat-etap4-noop-test] [A] start realnej nowej gry (startNewGame + foundPlayerStartCity)...
+[page:A:log] [Diag:boot] start
+[page:A:startGroup] [The Game] Dane wczytane
+[page:A:log] Jednostki: 75, Technologie: 32
+[page:A:endGroup] console.groupEnd
+[page:A:info] [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[page:A:info] [civ] mapGen ms | prep=2 terrain=8 landSea=102 relief=114 coast=14 riversMain=375 riversFill=287 forest=5 deposits=13 starts=94 total=1014
+[page:A:warning] [.WebGL-0x3fd40016fe00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[page:A:info] [civ] riverRenderStage 3
+[page:A:info] [civ] buildScene ms | hexes=121 coast=6 overlays=11 rivers=37 tail=10 total=185 | hexCount=1008 overlaysN=10 riverStage=3
+[page:A:info] [civ] buildScene detail heksy | alokacja=24 pryzmy=13 instancjeReliefu=2 styledWPetli=0 brzegWPetli=16 pustynia=10 finalizacja=0
+[page:A:info] [civ] buildScene detail nakladki | scalMerge=11 instancjePlazaWydmy=0 collapsed=4 skipMerged=0 skipLight=6
+[page:A:log] [main] hodowla złoże meshes synced · resource overlays: 63
+[page:A:log] [Diag:session] resetStuckInteractiveState
+[page:A:warning] [.WebGL-0x3fd40016fe00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[page:A:log] [NewGame] Nacja gracza: Rzymianie (rzymianie)
+[page:A:log] [NewGame] AI nacje: {1: sumer, 2: harappa, 3: sumer, 4: harappa, 5: sumer, 6: harappa}
+[page:A:log] [NewGame] tempoGry = standardowa · kosztJednostekPace = niski · buildingCostPace = niski · wzrostLudnosciPace = wysoki · ruchSwiataPace = krotki · epoka= 2 (braz) · typSwiata= kontynenty (Kontynenty) · jakoscMapy= Wysoka → render=high, mapDetail=high · advanced={"barbariansLevel":"normalny","battleAlwaysManual":false,"victoryMode":"moc_i_dominacja","buildingCostPace":"niski","kosztJednostekPace":"niski","wzrostLudnosciPace":"wysoki","ruchSwiataPace":"krotki","landFractionPercent":30,"landFractionCustom":false,"cityStateDifficultyOverride":"normal","cityLimitBase":10,"wzrostSurowcowZEpoka":false}
+[page:A:log] [NewGame] Tech wcześniejszych epok: 12 · epoka start= braz
+[page:A:info] [civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[page:A:info] [civ] mapGen ms | prep=9 terrain=50 landSea=618 relief=708 coast=131 riversMain=5095 riversFill=2844 forest=58 deposits=89 starts=519 total=10121
+[page:A:info] [civ] riverRenderStage 3
+[page:A:info] [civ] buildScene ms | hexes=188 coast=9 overlays=7 rivers=524 tail=7 total=735 | hexCount=7992 overlaysN=41 riverStage=3
+[page:A:info] [civ] buildScene detail heksy | alokacja=49 pryzmy=93 instancjeReliefu=5 styledWPetli=0 brzegWPetli=15 pustynia=14 finalizacja=0
+[page:A:info] [civ] buildScene detail nakladki | scalMerge=7 instancjePlazaWydmy=0 collapsed=10 skipMerged=0 skipLight=31
+[page:A:warning] [clusters] capital-sep: 16 niewykonalne dla 3 civ na 108x74, obnizono do 13
+[page:A:log] [ClusterStart] typ=rzymianie rywale=2 (deferred) foreignAI=6 (deferred) typow=3
+[page:A:info] [civ-perf] postScene — init sceny: 3 ms
+[page:A:info] [civ-perf] postScene — kamera: 0 ms
+[page:A:info] [civ-perf] postScene — renderery jednostek: 2 ms
+[page:A:info] [civ-perf] postScene — renderery miast: 2 ms
+[page:A:info] [civ-perf] postScene — markery oblężenia i cuda: 2 ms
+[page:A:info] [civ-perf] postScene — plan klastra startowego: 214 ms
+[page:A:info] [civ-perf] postScene — mgła startowa: 170 ms
+[page:A:info] [civ-perf] postScene — nakładki zasobów (defer): 4 ms
+[page:A:log] [NewGame] Mapa: 108x74 seed=778899 typ=kontynenty rywale=2 typy=3
+[page:A:info] [civ-perf] wall-clock Nowa gra → hide overlay: 11606 ms (postScene/finishLoading=398 ms)
+[page:A:info] [civ-perf] === Civ — raport czasów ładowania mapy ===
+Data: 28.11.2026, 07:37:04
+rozmiar: Maly · kształt: Kontynenty
+7992 heksów · nakładek 41
+
+GENERATOR (ms):
+  Rzeki (gen): GŁÓWNE + ŚREDNIE (riverGenPhase=main+medium)
+  Przygotowanie siatki: 9 ms
+  Klimat i teren bazowy: 50 ms
+  Ląd i ocean: 618 ms
+  Relief (góry i wzgórza): 708 ms
+  Płytkie morze: 131 ms
+  Rzeki — główne: 5095 ms
+  Rzeki — uzupełnianie: 2844 ms
+  Las i roślinność: 58 ms
+  Złoża mineralne: 89 ms
+  Pozycje startowe: 519 ms
+  RAZEM: 10121 ms
+
+SCENA (ms):
+  Heksy: 188 ms
+  Brzeg: 9 ms
+  Nakładki: 7 ms
+  Rzeki: 524 ms
+  Finał: 7 ms
+  RAZEM: 735 ms
+
+Heksy — podetapy (ms):
+  alokacja=49 pryzmy=93 relief=5
+  styled=0 brzeg=15 pustynia=14 fin=0
+
+Nakładki — podetapy (ms):
+  scalMerge=7 instancje=0 collapsed=10 skipMerged=0 skipLight=31
+
+RAZEM (generator + scena): 10856 ms
+
+PO SCENIE / CAŁOŚĆ (ms):
+  Przekazanie z workera (ponad fazy gen): 283 ms
+  Po scenie / finishLoading: 398 ms
+  WALL-CLOCK (Nowa gra → hide overlay): 11606 ms
+  Niemierzone (wall − suma faz): 69 ms
+
+POST-SCENE — podkroki (ms):
+  init sceny: 3 ms
+  kamera: 0 ms
+  renderery jednostek: 2 ms
+  renderery miast: 2 ms
+  markery oblężenia i cuda: 2 ms
+  plan klastra startowego: 214 ms
+  mgła startowa: 170 ms
+  nakładki zasobów (defer): 4 ms
+  RAZEM podkroki: 397 ms
+
+Stempel builda: CIV-BUILD-STAMP-PENDING
+[page:A:warning] [.WebGL-0x3fd40016fe00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[page:A:info] [civ-perf] deferred resourceOverlays (post-hide): 837 meshes in 404 ms
+[page:A:log] [ClusterStart] deferred same-type rivals=2/2 epokaStart=braz (actual player capital @ 29,49)
+[page:A:log] [ClusterStart] deferred foreign clusters=6/6
+[page:A:warning] [.WebGL-0x3fd40016fe00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 1
+[page:A:log] [Ekonomia] Tura 2: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=18 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Autosave] rotacyjny slot=autosave-1 tura=2
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Sparta · Grecy · miasto-państwo(2) (Relacja=190 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 2
+[page:A:log] [Save] autosave tura=2
+[hotseat-etap4-noop-test] [A] tura 1 (turn=2): hash=f7e1d0500c76...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 2
+[page:A:log] [Ekonomia] Tura 3: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=26 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Autosave] rotacyjny slot=autosave-2 tura=3
+[page:A:log] [Chatka] Owner 4: Chatka: +50 postępu badań (Wojskowość)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Korynt · Grecy · miasto-państwo(3) (Relacja=190 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 3
+[page:A:log] [Save] autosave tura=3
+[hotseat-etap4-noop-test] [A] tura 2 (turn=3): hash=181afb184b7a...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 3
+[page:A:log] [Ekonomia] Tura 4: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=26 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Autosave] rotacyjny slot=autosave-3 tura=4
+[page:A:log] [Rekrutacja] Ateny: Zwiadowca oplacone 4 — kolejka x1 (−0 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Zwiadowca
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Chińczycy(4) (Relacja=61.545103749999996 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 4
+[page:A:log] [Save] autosave tura=4
+[hotseat-etap4-noop-test] [A] tura 3 (turn=4): hash=be16d7dc61ef...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 4
+[page:A:log] [Ekonomia] Tura 5: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=52 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Rekrutacja] Tura 5 Ateny: Zwiadowca gotowa @ (68,37)
+[page:A:log] [Rekrutacja] Ateny: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [Chatka] Owner 1: Chatka (skarb): +90 złota
+[page:A:log] [Autosave] rotacyjny slot=autosave-4 tura=5
+[page:A:log] [Rekrutacja] Korynt: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 3] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [Rekrutacja] Xi'an: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Luoyang · Chińczycy · miasto-państwo(5) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 5
+[page:A:log] [Save] autosave tura=5
+[hotseat-etap4-noop-test] [A] tura 4 (turn=5): hash=0b711cdd9772...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 5
+[page:A:log] [Ekonomia] Tura 6: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=52 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Rekrutacja] Tura 6 Ateny: Wojownik gotowa @ (68,37)
+[page:A:log] [Rekrutacja] Tura 6 Korynt: Wojownik gotowa @ (63,42)
+[page:A:log] [Rekrutacja] Tura 6 Xi'an: Wojownik gotowa @ (25,20)
+[page:A:log] [Autosave] rotacyjny slot=autosave-5 tura=6
+[page:A:log] [Rekrutacja] Xi'an: Zwiadowca oplacone 4 — kolejka x1 (−0 MP)
+[page:A:log] [AI 4] Zakup jednostki za Skarbiec: Zwiadowca
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Pekin · Chińczycy · miasto-państwo(6) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 6
+[page:A:log] [Save] autosave tura=6
+[hotseat-etap4-noop-test] [A] tura 5 (turn=6): hash=3902a648822d...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 6
+[page:A:log] [Ekonomia] Tura 7: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=52 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Rekrutacja] Tura 7 Xi'an: Zwiadowca gotowa @ (25,20)
+[page:A:log] [Chatka] Owner 1: Chatka: dołączyła jednostka — Włócznik
+[page:A:log] [Autosave] rotacyjny slot=autosave-6 tura=7
+[page:A:log] [Chatka] Owner 4: Chatka: +50 postępu badań (Wojskowość)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Sparta · Grecy · miasto-państwo(2)-Korynt · Grecy · miasto-państwo(3) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 7
+[page:A:log] [Save] autosave tura=7
+[hotseat-etap4-noop-test] [A] tura 6 (turn=7): hash=6b12e9d9eec4...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 7
+[page:A:log] [Ekonomia] Tura 8: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=60 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Autosave] rotacyjny slot=autosave-7 tura=8
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Sparta · Grecy · miasto-państwo(2)-Chińczycy(4) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 8
+[page:A:log] [Save] autosave tura=8
+[hotseat-etap4-noop-test] [A] tura 7 (turn=8): hash=ea776e183a79...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 8
+[page:A:log] [Ekonomia] Tura 9: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=60 N=44 Praca=28 wzrost=0 głód=0
+[page:A:log] [Autosave] rotacyjny slot=autosave-8 tura=9
+[page:A:log] [Rekrutacja] Xi'an: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [Chatka] Owner 4: Chatka (skarb): +42 złota
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Sparta · Grecy · miasto-państwo(2)-Luoyang · Chińczycy · miasto-państwo(5) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 9
+[page:A:log] [Save] autosave tura=9
+[hotseat-etap4-noop-test] [A] tura 8 (turn=9): hash=ee2758754d5a...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 9
+[page:A:log] [Ekonomia] Tura 10: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=90 N=55 Praca=32 wzrost=0 głód=0
+[page:A:log] [Rekrutacja] Tura 10 Xi'an: Wojownik gotowa @ (25,20)
+[page:A:log] [Rekrutacja] Ateny: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [Autosave] rotacyjny slot=autosave-9 tura=10
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Sparta · Grecy · miasto-państwo(2)-Pekin · Chińczycy · miasto-państwo(6) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 10
+[page:A:log] [Save] autosave tura=10
+[hotseat-etap4-noop-test] [A] tura 9 (turn=10): hash=66bfcdef3806...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 10
+[page:A:log] [Ekonomia] Tura 11: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=91 N=57 Praca=34 wzrost=0 głód=0
+[page:A:log] [Produkcja] Tura 11 Ateny: budynek palac
+[page:A:log] [Rekrutacja] Tura 11 Ateny: Wojownik gotowa @ (68,37)
+[page:A:log] [Produkcja] Tura 11 Korynt: budynek palac
+[page:A:log] [Porzadek] Tura 11 Xi'an: tier=order porPct=93.2 szPct=84.9 [osiedle: immunitet buntu]
+[page:A:log] [Autosave] rotacyjny slot=autosave-10 tura=11
+[page:A:log] [AI 1] Ulepszenie: warzelnia_soli @ (69,41) (-40 Pracy)
+[page:A:log] [AI 3] Ulepszenie: farma @ (62,44) (-40 Pracy)
+[page:A:log] [Chatka] Owner 4: Chatka: +50 postępu badań (Wojskowość)
+[page:A:log] [Chatka] Owner 4: Chatka (skarb): +42 złota
+[page:A:log] [Rekrutacja] Luoyang: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 5] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [AI 5] Wycinka @ (19,20) (-5 Pracy, +50 Drewna)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Korynt · Grecy · miasto-państwo(3)-Chińczycy(4) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 11
+[page:A:log] [Save] autosave tura=11
+[hotseat-etap4-noop-test] [A] tura 10 (turn=11): hash=9f21cd3529ed...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 11
+[page:A:log] [Ekonomia] Tura 12: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=94 N=64 Praca=37 wzrost=0 głód=0
+[page:A:log] [Produkcja] Tura 12 Ostia: budynek palac
+[page:A:log] [Produkcja] Tura 12 Kapua: budynek palac
+[page:A:log] [Porzadek] Tura 12 Ateny: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 12 Korynt: tier=order porPct=107.8 szPct=90.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 12 Xi'an: tier=order porPct=93.2 szPct=84.9 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 12 Xi'an: budynek palac
+[page:A:log] [Produkcja] Tura 12 Luoyang: budynek palac
+[page:A:log] [Rekrutacja] Tura 12 Luoyang: Wojownik gotowa @ (20,20)
+[page:A:log] [Dyplomacja] AI1 → MP2: trybut 5 ¤/turę (pierwszy_krok)
+[page:A:log] [Dyplomacja] AI1 → MP3: trybut 5 ¤/turę (pierwszy_krok)
+[page:A:log] [Chatka] Owner 1: Chatka (skarb): +52 złota
+[page:A:log] [Autosave] rotacyjny slot=autosave-1 tura=12
+[page:A:log] [Rekrutacja] Korynt: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 3] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [Dyplomacja] AI4 → MP5: trybut 5 ¤/turę (pierwszy_krok)
+[page:A:log] [Dyplomacja] AI4 → MP6: trybut 5 ¤/turę (pierwszy_krok)
+[page:A:log] [AI 4] Ulepszenie: farma @ (28,17) (-40 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Korynt · Grecy · miasto-państwo(3)-Luoyang · Chińczycy · miasto-państwo(5) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 12
+[hotseat-etap4-noop-test] [A] tura 11 (turn=12): hash=14609bdaa194...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 12
+[page:A:log] [Save] autosave tura=12
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 13: gracz(1 os.) ¤=3 N=5 Praca=3 | mapa(9 os.) ¤=97 N=67 Praca=39 wzrost=0 głód=0
+[page:A:log] [Porzadek] Tura 13 Ateny: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 13 Korynt: tier=order porPct=108.8 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Rekrutacja] Tura 13 Korynt: Wojownik gotowa @ (63,42)
+[page:A:log] [Porzadek] Tura 13 Xi'an: tier=order porPct=120.0 szPct=90.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 13 Luoyang: tier=order porPct=104.8 szPct=84.9 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 13 Pekin: budynek palac
+[page:A:log] [AI 7] Ulepszenie: farma @ (31,52) (-40 Pracy)
+[page:A:log] [AI 8] Ulepszenie: farma @ (34,54) (-40 Pracy)
+[page:A:log] [Rekrutacja] Xi'an: Łucznik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 4] Zakup jednostki za Skarbiec: Łucznik
+[page:A:log] [Chatka] Owner 4: Chatka (skarb): +40 złota
+[page:A:log] [Autosave] rotacyjny slot=autosave-2 tura=13
+[page:A:log] [AI 5] Wycinka @ (20,19) (-5 Pracy, +50 Drewna)
+[page:A:log] [AI 6] Ulepszenie: kamieniolom @ (22,23) (-44 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Korynt · Grecy · miasto-państwo(3)-Pekin · Chińczycy · miasto-państwo(6) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 13
+[page:A:log] [Save] autosave tura=13
+[hotseat-etap4-noop-test] [A] tura 12 (turn=13): hash=8f5193c89df7...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 13
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 14: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=139 N=88 Praca=51 wzrost=0 głód=0
+[page:A:log] [Porzadek] Tura 14 Ateny: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 14 Korynt: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 14 Xi'an: tier=order porPct=113.1 szPct=79.7 [osiedle: immunitet buntu]
+[page:A:log] [Rekrutacja] Tura 14 Xi'an: Łucznik gotowa @ (25,20)
+[page:A:log] [Porzadek] Tura 14 Luoyang: tier=order porPct=95.4 szPct=73.9 [osiedle: immunitet buntu]
+[page:A:log] [Autosave] rotacyjny slot=autosave-3 tura=14
+[page:A:log] [Cuda][AI] Tura 14 owner 1: pominięto Wyrocznia — brak żywności w zapasach państwa
+[page:A:log] [AI 1] Ulepszenie: farma @ (68,37) (-40 Pracy)
+[page:A:log] [AI 3] Ulepszenie: farma @ (59,44) (-40 Pracy)
+[page:A:log] [Rekrutacja] Luoyang: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 5] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Chińczycy(4)-Luoyang · Chińczycy · miasto-państwo(5) (Relacja=190 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 14
+[page:A:log] [Save] autosave tura=14
+[hotseat-etap4-noop-test] [A] tura 13 (turn=14): hash=1f934da5afb0...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 14
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 15: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=141 N=95 Praca=57 wzrost=0 głód=0
+[page:A:log] [Porzadek] Tura 15 Ateny: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 15 Sparta: budynek palac
+[page:A:log] [Porzadek] Tura 15 Korynt: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 15 Xi'an: tier=order porPct=120.0 szPct=79.7 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 15 Luoyang: tier=order porPct=95.4 szPct=73.9 [osiedle: immunitet buntu]
+[page:A:log] [Rekrutacja] Tura 15 Luoyang: Wojownik gotowa @ (20,20)
+[page:A:log] [Autosave] rotacyjny slot=autosave-4 tura=15
+[page:A:log] [AI 4] Ulepszenie: tartak @ (25,24) (-50 Pracy)
+[page:A:log] [AI 5] Ulepszenie: kamieniolom @ (19,23) (-44 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Chińczycy(4)-Pekin · Chińczycy · miasto-państwo(6) (Relacja=190 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 15
+[page:A:log] [Save] autosave tura=15
+[hotseat-etap4-noop-test] [A] tura 14 (turn=15): hash=4a401486c5e7...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 15
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 16: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=142 N=95 Praca=57 wzrost=0 głód=0
+[page:A:log] [Porzadek] Tura 16 Ateny: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 16 Korynt: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 16 Xi'an: tier=order porPct=120.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 16 Luoyang: tier=order porPct=114.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 16 Luoyang: budynek stolarnia
+[page:A:log] [Autosave] rotacyjny slot=autosave-5 tura=16
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Luoyang · Chińczycy · miasto-państwo(5)-Pekin · Chińczycy · miasto-państwo(6) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 16
+[page:A:log] [Save] autosave tura=16
+[hotseat-etap4-noop-test] [A] tura 15 (turn=16): hash=27998e29d12b...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 16
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 17: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=145 N=106 Praca=69 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 17 Ateny: tier=order porPct=120.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 17 Ateny: budynek stolarnia
+[page:A:log] [Porzadek] Tura 17 Korynt: tier=order porPct=120.0 szPct=92.9 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 17 Xi'an: tier=order porPct=119.9 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 17 Xi'an: budynek stolarnia
+[page:A:log] [Porzadek] Tura 17 Luoyang: tier=order porPct=105.6 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [AI 7] Ulepszenie: kamieniolom @ (30,54) (-44 Pracy)
+[page:A:log] [AI 8] Ulepszenie: kamieniolom @ (33,55) (-44 Pracy)
+[page:A:log] [Dyplomacja] AI1 → MP2: wasalizacja (trybut_elapsed)
+[page:A:log] [Dyplomacja] AI1 → MP3: wasalizacja (trybut_elapsed)
+[page:A:log] [Rekrutacja] Ateny: Łucznik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Łucznik
+[page:A:log] [AI 1] Ulepszenie: farma @ (67,38) (-40 Pracy)
+[page:A:log] [Chatka] Owner 1: Chatka (skarb): +54 złota
+[page:A:log] [Autosave] rotacyjny slot=autosave-6 tura=17
+[page:A:log] [AI 2] Ulepszenie: farma @ (65,33) (-40 Pracy)
+[page:A:log] [AI 3] Ulepszenie: farma @ (59,45) (-40 Pracy)
+[page:A:log] [Dyplomacja] AI4 → MP5: wasalizacja (trybut_elapsed)
+[page:A:log] [Dyplomacja] AI4 → MP6: wasalizacja (trybut_elapsed)
+[page:A:log] [AI 5] Wycinka @ (21,19) (-5 Pracy, +55 Drewna)
+[page:A:log] [AI 6] Ulepszenie: farma @ (20,25) (-40 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Sparta · Grecy · miasto-państwo(2) (Relacja=190 >= 0, połączenie tras możliwe)
+[page:A:log] [Barbarzyncy] Tura 17: nowe obozy: 2
+[page:A:log] [Barbarzyncy] Spawn: Wojownik szekelesz @ (19,56)
+[page:A:log] [Barbarzyncy] Spawn: Wojownik szekelesz @ (16,12)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 17
+[hotseat-etap4-noop-test] [A] tura 16 (turn=17): hash=8309abca55b9...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 17
+[page:A:log] [Save] autosave tura=17
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 18: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=151 N=121 Praca=83 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 18 Ateny: tier=order porPct=120.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Rekrutacja] Tura 18 Ateny: Łucznik gotowa @ (68,37)
+[page:A:log] [Porzadek] Tura 18 Korynt: tier=order porPct=114.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 18 Xi'an: tier=order porPct=119.9 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 18 Luoyang: tier=order porPct=105.6 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Autosave] rotacyjny slot=autosave-7 tura=18
+[page:A:log] [AI 5] Ulepszenie: farma @ (20,20) (-40 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Korynt · Grecy · miasto-państwo(3) (Relacja=190 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 18
+[page:A:log] [Save] autosave tura=18
+[hotseat-etap4-noop-test] [A] tura 17 (turn=18): hash=fa1b58ce39ce...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 18
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 19: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=118 N=123 Praca=90 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 19 Ateny: tier=order porPct=120.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 19 Korynt: tier=order porPct=114.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 19 Xi'an: tier=order porPct=119.9 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 19 Xi'an: budynek stolarnia
+[page:A:log] [Porzadek] Tura 19 Luoyang: tier=order porPct=105.6 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Produkcja] Tura 19 Luoyang: budynek spichlerz
+[page:A:log] [Cuda][AI] Tura 19 owner 1: pominięto Wyrocznia — brak żywności w zapasach państwa
+[page:A:log] [AI 1] Ulepszenie: farma @ (68,38) (-40 Pracy)
+[page:A:log] [Chatka] Owner 1: Chatka: dołączyła jednostka — Włócznik
+[page:A:log] [Autosave] rotacyjny slot=autosave-8 tura=19
+[page:A:log] [AI 3] Ulepszenie: owce @ (63,42) (-40 Pracy)
+[page:A:log] [AI 4] Ulepszenie: tartak @ (25,25) (-50 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Chińczycy(4) (Relacja=85.13354262838183 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 19
+[page:A:log] [Save] autosave tura=19
+[hotseat-etap4-noop-test] [A] tura 18 (turn=19): hash=8ef2c2df30aa...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 19
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 20: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=163 N=134 Praca=95 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 20 Ateny: tier=order porPct=120.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 20 Korynt: tier=order porPct=114.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 20 Xi'an: tier=order porPct=109.8 szPct=61.5
+[page:A:log] [Porzadek] Tura 20 Luoyang: tier=order porPct=100.5 szPct=70.4
+[page:A:log] [Autosave] rotacyjny slot=autosave-9 tura=20
+[page:A:log] [Rekrutacja] Ateny: Rydwan (woły) oplacone 15 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Rydwan (woły)
+[page:A:log] [AI 1] Ulepszenie: farma @ (66,37) (-40 Pracy)
+[page:A:log] [AI 3] Ulepszenie: bydlo @ (62,44) (-40 Pracy)
+[page:A:log] [AI 5] Ulepszenie: tartak @ (16,20) (-50 Pracy)
+[page:A:log] [AI 6] Ulepszenie: tartak @ (24,26) (-50 Pracy)
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Luoyang · Chińczycy · miasto-państwo(5) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 20
+[page:A:log] [Save] autosave tura=20
+[hotseat-etap4-noop-test] [A] tura 19 (turn=20): hash=0a2b964d4fe5...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 20
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 21: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=172 N=150 Praca=108 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 21 Ateny: tier=order porPct=120.0 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Rekrutacja] Tura 21 Ateny: Rydwan (woły) gotowa @ (68,37)
+[page:A:log] [Porzadek] Tura 21 Korynt: tier=order porPct=114.0 szPct=81.6 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 21 Xi'an: tier=order porPct=109.8 szPct=61.5
+[page:A:log] [Produkcja] Tura 21 Xi'an: budynek spichlerz
+[page:A:log] [Porzadek] Tura 21 Luoyang: tier=order porPct=100.5 szPct=70.4
+[page:A:log] [Produkcja] Tura 21 Luoyang: budynek garncarnia
+[page:A:log] [Autosave] rotacyjny slot=autosave-10 tura=21
+[page:A:log] [AI 7] Ulepszenie: farma @ (30,53) (-40 Pracy)
+[page:A:log] [AI 8] Ulepszenie: farma @ (33,54) (-40 Pracy)
+[page:A:log] [AI 1] Ulepszenie: bydlo @ (68,37) (-40 Pracy)
+[page:A:log] [Chatka] Owner 1: Chatka (skarb): +46 złota
+[page:A:log] [AI 2] Ulepszenie: farma @ (65,32) (-40 Pracy)
+[page:A:log] [Chatka] Owner 4: Chatka (skarb): +86 złota
+[page:A:log] [Dyplomacja] AI↔AI Umowa Handlowa Grecy(1)-Pekin · Chińczycy · miasto-państwo(6) (Relacja=52 >= 0, połączenie tras możliwe)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 21
+[page:A:log] [Save] autosave tura=21
+[hotseat-etap4-noop-test] [A] tura 20 (turn=21): hash=839be50ec8ea...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 21
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 2 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 3 → 1
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 5 → 4
+[page:A:log] [Dyplomacja] Trybut 5 ¤: 6 → 4
+[page:A:log] [Ekonomia] Tura 22: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=179 N=167 Praca=123 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 22 Ateny: tier=order porPct=120.0 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 22 Korynt: tier=order porPct=105.6 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Porzadek] Tura 22 Xi'an: tier=order porPct=109.3 szPct=67.4
+[page:A:log] [Produkcja] Tura 22 Xi'an: budynek garncarnia
+[page:A:log] [Porzadek] Tura 22 Luoyang: tier=order porPct=99.6 szPct=74.3
+[page:A:log] [Eliminacja] Usunięto 1 jednostek ownerId=2.
+[page:A:log] [Eliminacja] Cywilizacja ownerId=2 skasowana (utrata ostatniego miasta).
+[page:A:log] [Dyplomacja] AI1 wchłania miasto-państwo ownerId=2 (dyplomatyczne)
+[page:A:log] [Eliminacja] Usunięto 3 jednostek ownerId=3.
+[page:A:log] [Eliminacja] Cywilizacja ownerId=3 skasowana (utrata ostatniego miasta).
+[page:A:log] [Dyplomacja] AI1 wchłania miasto-państwo ownerId=3 (dyplomatyczne)
+[page:A:log] [Rekrutacja] Sparta: Oszczepnik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Oszczepnik
+[page:A:log] [Rekrutacja] Korynt: Oszczepnik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Oszczepnik
+[page:A:log] [Rekrutacja] Ateny: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [Rekrutacja] Sparta: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [Rekrutacja] Korynt: Wojownik oplacone 5 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 1] Zakup jednostki za Skarbiec: Wojownik
+[page:A:log] [AI 1] Ulepszenie: farma @ (66,39) (-40 Pracy)
+[page:A:log] [AI 1] Ulepszenie: bydlo @ (67,38) (-40 Pracy)
+[page:A:log] [Eliminacja] Usunięto 3 jednostek ownerId=5.
+[page:A:log] [Eliminacja] Cywilizacja ownerId=5 skasowana (utrata ostatniego miasta).
+[page:A:log] [Dyplomacja] AI4 wchłania miasto-państwo ownerId=5 (dyplomatyczne)
+[page:A:log] [Eliminacja] Usunięto 1 jednostek ownerId=6.
+[page:A:log] [Eliminacja] Cywilizacja ownerId=6 skasowana (utrata ostatniego miasta).
+[page:A:log] [Dyplomacja] AI4 wchłania miasto-państwo ownerId=6 (dyplomatyczne)
+[page:A:log] [Rekrutacja] Luoyang: Oszczepnik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 4] Zakup jednostki za Skarbiec: Oszczepnik
+[page:A:log] [Rekrutacja] Pekin: Oszczepnik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 4] Zakup jednostki za Skarbiec: Oszczepnik
+[page:A:log] [AI 4] Wycinka @ (22,21) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (23,19) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (22,22) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (23,21) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (24,17) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (24,18) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (23,22) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (24,21) (-5 Pracy, +60 Drewna)
+[page:A:log] [AI 4] Wycinka @ (24,23) (-5 Pracy, +60 Drewna)
+[page:A:log] [Barbarzyncy] Obóz zniszczony (najechany): bc_532729_1
+[page:A:log] [Autosave] rotacyjny slot=autosave-1 tura=22
+[page:A:log] [Barbarzyncy] Tura 22: nowe obozy: 1
+[page:A:log] [Barbarzyncy] Spawn: Wojownik Sherden @ (57,36)
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 22
+[page:A:log] [Save] autosave tura=22
+[hotseat-etap4-noop-test] [A] tura 21 (turn=22): hash=28a6da74ca30...
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: START tura 22
+[page:A:log] [Ekonomia] Tura 23: gracz(1 os.) ¤=4 N=9 Praca=4 | mapa(9 os.) ¤=176 N=170 Praca=131 wzrost=0 głód=0
+[page:A:warning] [Ekonomia] Brak surowców na utrzymanie budynków: 3 Drewno
+[page:A:log] [Porzadek] Tura 23 Ateny: tier=order porPct=120.0 szPct=73.0 [osiedle: immunitet buntu]
+[page:A:log] [Rekrutacja] Tura 23 Ateny: Wojownik gotowa @ (68,37)
+[page:A:log] [Rekrutacja] Tura 23 Sparta: Oszczepnik gotowa @ (63,37)
+[page:A:log] [Rekrutacja] Tura 23 Korynt: Oszczepnik gotowa @ (63,42)
+[page:A:log] [Produkcja] Tura 23 Xi'an: budynek targowisko
+[page:A:log] [Produkcja] Tura 23 Luoyang: budynek studnia
+[page:A:log] [Rekrutacja] Tura 23 Luoyang: Oszczepnik gotowa @ (20,20)
+[page:A:log] [Produkcja] Tura 23 Pekin: budynek spichlerz
+[page:A:log] [Rekrutacja] Tura 23 Pekin: Oszczepnik gotowa @ (20,25)
+[page:A:log] [AI 1] Zalozono miasto Teby @ (59,44)
+[page:A:log] [AI 1] Ulepszenie: kopalnia_miedzi @ (62,40) (-88 Pracy)
+[page:A:log] [Autosave] rotacyjny slot=autosave-2 tura=23
+[page:A:log] [AI 4] Zalozono miasto Nankin @ (18,15)
+[page:A:log] [Rekrutacja] Xi'an: Oszczepnik oplacone 3 — kolejka x1 (−2000 MP)
+[page:A:log] [AI 4] Zakup jednostki za Skarbiec: Oszczepnik
+[page:A:log] [AI 4] Ulepszenie: kopalnia_cyny @ (26,19) (-88 Pracy)
+[page:A:log] [AI 4] Ulepszenie: farma @ (24,21) (-40 Pracy)
+[page:A:log] [Barbarzyncy] Spawn: Wojownik szekelesz @ (23,32) [na wodzie]
+[page:A:warning] [EndTurn] triggerPlayerEndTurn: DONE tura 23
+[hotseat-etap4-noop-test] [A] próba 3/3 padła (saveAndReadSnapshot: timeout czekania na zapis tury 23 w IndexedDB (modal={"welcome":false,"dialogs":1,"txt":["civ-wiki-hub :: "]}) (ostatni odczyt: {"wersja":3,"tura":22,"seed":778899,"resourceLedgerHistory":[{"0":{"byResource":{"glina":{"teren|city0":{"kind":"teren","label":"Teren i plony z mapy (Rzym)","amount":14},"obywatele|0":{"kind":"obywat...)) -- wyczerpano próby.
+[hotseat-etap4-noop-test] BLOCK: hak testowy end-turn/save nie zadziałał headless: Error: saveAndReadSnapshot: timeout czekania na zapis tury 23 w IndexedDB (modal={"welcome":false,"dialogs":1,"txt":["civ-wiki-hub :: "]}) (ostatni odczyt: {"wersja":3,"tura":22,"seed":778899,"resourceLedgerHistory":[{"0":{"byResource":{"glina":{"teren|city0":{"kind":"teren","label":"Teren i plony z mapy (Rzym)","amount":14},"obywatele|0":{"kind":"obywat...)
+    at saveAndReadSnapshot (/home/user/The-Game/.claude/worktrees/wf_add3a008-ad6-1/gra/tools/hotseat-etap4-noop-test.cjs:277:9)
+    at async runOnce (/home/user/The-Game/.claude/worktrees/wf_add3a008-ad6-1/gra/tools/hotseat-etap4-noop-test.cjs:332:24)
+    at async runOnceWithRetry (/home/user/The-Game/.claude/worktrees/wf_add3a008-ad6-1/gra/tools/hotseat-etap4-noop-test.cjs:371:14)
+    at async main (/home/user/The-Game/.claude/worktrees/wf_add3a008-ad6-1/gra/tools/hotseat-etap4-noop-test.cjs:400:12)
+RC=2

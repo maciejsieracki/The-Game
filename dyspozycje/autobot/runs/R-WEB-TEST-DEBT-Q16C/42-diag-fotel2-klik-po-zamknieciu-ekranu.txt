@@ -1,0 +1,25 @@
+[hotseat-drugi-fotel-tura-test] budowanie bundla (vite build, jedyna dozwolona komenda buildu, C-001)...
+[hotseat-drugi-fotel-tura-test] build OK -> /tmp/civ-hotseat-drugi-fotel-tura-29356-nmjve5-29356-4664e34a
+[hotseat-drugi-fotel-tura-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+[diag] humanOwnerIds=[0,49] seat2=49
+[diag] fotel1 founds: true
+[diag] fotel2 founds: true
+[diag] u0={"id":"diffbonus_1_49_1j6rnvw","ownerId":49,"typeId":"Zwiadowca","q":83,"r":39}
+[diag] cam={"x":177.5352077758099,"z":58.5,"dist":22} W=1400 H=900
+[diag] PRE selectedId=diffbonus_1_49_1j6rnvw planned=0 hint=Miasto Chengdu założone!
+[diag] OVERLAYS: DIV#civ-welcome-screen-root. z=9650 txt= Odkryłeś nową cywilizację Rzymianie ofensywna piechota + inżynieria ·
+[diag] CLOSED-BUTTON: Zamknij (of 1)
+[diag] closeCivWelcome n=3
+[diag] POSTCLOSE CLICK (84,39) top=CANVAS#. | selectedId=diffbonus_1_49_1j6rnvw planned=1 hint=Miasto Chengdu założone!
+[diag] POSTCLOSE CLICK (84,38) top=CANVAS#. | selectedId=diffbonus_1_49_aatfu planned=0 hint=Miasto Chengdu założone!
+[diag] POSTCLOSE CLICK (83,38) top=CANVAS#. | selectedId=diffbonus_1_49_1j6rnvw planned=1 hint=Miasto Chengdu założone!
+[diag] POSTCLOSE CLICK (82,39) top=CANVAS#. | selectedId=diffbonus_1_49_1j6rnvw planned=1 hint=Miasto Chengdu założone!
+[diag] POSTCLOSE CLICK (82,40) top=CANVAS#. | selectedId=diffbonus_1_49_1j6rnvw planned=1 hint=Miasto Chengdu założone!
+[diag] POSTCLOSE CLICK (83,40) top=CANVAS#. | selectedId=diffbonus_1_49_1j6rnvw planned=1 hint=Miasto Chengdu założone!
+[diag] CLICK (84,39) px=(776,450) ok=true top=CANVAS#. | selectedId=diffbonus_1_49_1j6rnvw planned=1 unit=(82,39) hint=Miasto Chengdu założone!
+[diag] CLICK (84,38) px=(736,400) ok=true top=CANVAS#. | selectedId=diffbonus_1_49_1j6rnvw planned=1 unit=(82,39) hint=Miasto Chengdu założone!
+[diag] CLICK (83,38) px=(664,400) ok=true top=CANVAS#. | selectedId=diffbonus_1_49_1j6rnvw planned=1 unit=(82,39) hint=Miasto Chengdu założone!
+[diag] CLICK (82,39) px=(624,450) ok=true top=CANVAS#. | selectedId=diffbonus_1_49_aatfu planned=1 unit=(82,39) hint=Miasto Chengdu założone!
+[diag] CLICK (82,40) px=(660,504) ok=true top=CANVAS#. | selectedId=diffbonus_1_49_1j6rnvw planned=1 unit=(82,39) hint=Miasto Chengdu założone!
+[diag] CLICK (83,40) px=(740,504) ok=true top=CANVAS#. | selectedId=diffbonus_1_49_1j6rnvw planned=1 unit=(82,39) hint=Miasto Chengdu założone!
+[diag] pageErrors=0 

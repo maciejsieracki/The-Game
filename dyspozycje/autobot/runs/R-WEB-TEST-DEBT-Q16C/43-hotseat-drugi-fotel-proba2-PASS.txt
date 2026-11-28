@@ -1,0 +1,24 @@
+[hotseat-drugi-fotel-tura-test] budowanie bundla (vite build, jedyna dozwolona komenda buildu, C-001)...
+[hotseat-drugi-fotel-tura-test] build OK -> /tmp/civ-hotseat-drugi-fotel-tura-29595-lrlp6k-29595-bb9fe8a7
+[hotseat-drugi-fotel-tura-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+[hotseat-drugi-fotel-tura-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+[hotseat-drugi-fotel-tura-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+[hotseat-drugi-fotel-tura-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+[hotseat-drugi-fotel-tura-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+
+=== SCENARIUSZ GŁÓWNY (a)-(g): hot-seat, oba fotele zakładają miasto, dowód przełączenia ===
+PASS: true
+
+=== SCENARIUSZ REGRESJI: gra jednoosobowa, zero dodatkowego kliknięcia ===
+PASS: true
+
+=== SCENARIUSZ EVALUATOR ZARZUT #1 (runda 2): "N" podczas aiTurnAwaitingBattle nie przełącza fotela ===
+PASS: true
+
+=== SCENARIUSZ EVALUATOR ZARZUT #2 (runda 2): load resetuje seatsFinishedThisRound ===
+PASS: true
+
+=== SCENARIUSZ R-HOTSEAT-RECZNY-RUCH-GRACZ2-Q1: fotel 2 zaznacza+marszuje REALNYM klikiem ===
+PASS: true
+
+hotseat-drugi-fotel-tura-test: PASS

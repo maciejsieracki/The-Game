@@ -72,6 +72,7 @@
  */
 
 const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
+const { closeCivWelcome } = require('./_live-ready.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -272,8 +273,9 @@ async function saveAndReadSnapshot(page, expectedTurn) {
     }
     await wait(150);
   }
+  const modalDiag = await page.evaluate(() => ({ welcome: !!document.querySelector("#civ-welcome-screen-root"), dialogs: document.querySelectorAll("[role=dialog]").length, txt: Array.from(document.querySelectorAll("[role=dialog]")).map((d) => (d.className + " :: " + (d.textContent || "")).replace(/\s+/g, " ").slice(0, 160)) })).catch(() => null);
   throw new Error(
-    `saveAndReadSnapshot: timeout czekania na zapis tury ${expectedTurn} w IndexedDB` +
+    `saveAndReadSnapshot: timeout czekania na zapis tury ${expectedTurn} w IndexedDB (modal=${JSON.stringify(modalDiag)})` +
     (lastRaw === null ? ' (klucz wciąż pusty)' : ' (ostatni odczyt: ' + lastRaw.slice(0, 200) + '...)'),
   );
 }
@@ -324,6 +326,8 @@ async function runOnce(chromium, label) {
 
     for (let i = 1; i <= TURNS; i++) {
       await endTurnAndSettle(page);
+      // TDQ16C r2: ekran 'Odkryłeś nową cywilizację' (civ-welcome-screen-root) zasłania UI i blokuje Ctrl+S -- zamknięcie wyłącznie UI, stan gry bez zmian.
+      await closeCivWelcome(page);
       const world = await page.evaluate(() => window.__eraTestDebug.getWorldState());
       const snapshot = await saveAndReadSnapshot(page, world.turn);
       // Normalizacja JEDYNEGO zegara ściennego w snapshotcie (main.ts:27805) -- patrz

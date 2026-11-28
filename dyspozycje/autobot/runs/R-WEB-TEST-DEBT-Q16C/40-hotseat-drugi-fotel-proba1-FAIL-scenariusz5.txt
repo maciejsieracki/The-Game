@@ -1,0 +1,26 @@
+[hotseat-drugi-fotel-tura-test] budowanie bundla (vite build, jedyna dozwolona komenda buildu, C-001)...
+[hotseat-drugi-fotel-tura-test] build OK -> /tmp/civ-hotseat-drugi-fotel-tura-27198-wxdsb2-27198-996aa64c
+[hotseat-drugi-fotel-tura-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+[hotseat-drugi-fotel-tura-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+[hotseat-drugi-fotel-tura-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+[hotseat-drugi-fotel-tura-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+[hotseat-drugi-fotel-tura-test] domyślny Chromium niedostępny, fallback na /opt/pw-browsers/chromium
+
+=== SCENARIUSZ GŁÓWNY (a)-(g): hot-seat, oba fotele zakładają miasto, dowód przełączenia ===
+PASS: true
+
+=== SCENARIUSZ REGRESJI: gra jednoosobowa, zero dodatkowego kliknięcia ===
+PASS: true
+
+=== SCENARIUSZ EVALUATOR ZARZUT #1 (runda 2): "N" podczas aiTurnAwaitingBattle nie przełącza fotela ===
+PASS: true
+
+=== SCENARIUSZ EVALUATOR ZARZUT #2 (runda 2): load resetuje seatsFinishedThisRound ===
+PASS: true
+
+=== SCENARIUSZ R-HOTSEAT-RECZNY-RUCH-GRACZ2-Q1: fotel 2 zaznacza+marszuje REALNYM klikiem ===
+PASS: false
+  FAIL: REALNY klik na sąsiedni heks przyjmuje rozkaz fotela 2 (plannedMarches albo natychmiastowy pierwszy segment) — got planned=false, moved=false
+  FAIL: zaplanowany marsz fotela 2 FAKTYCZNIE WYKONUJE SIĘ (executeMarchSegmentForUnit/executePlannedMarchesEndTurn) -- got before={"id":"diffbonus_1_49_13k69ll","ownerId":49,"typeId":"Zwiadowca","q":59,"r":66} after={"id":"diffbonus_1_49_13k69ll","ownerId":49,"typeId":"Zwiadowca","q":59,"r":66} (cel klikniętego heksu=null)
+
+hotseat-drugi-fotel-tura-test: FAIL

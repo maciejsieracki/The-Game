@@ -33,6 +33,7 @@
  */
 
 const { TMPDIR_RUN_ID } = require('./_tmp-unique.cjs');
+const { closeCivWelcome } = require('./_live-ready.cjs');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -643,6 +644,9 @@ async function runScenarioSeat2ManualMoveViaRealClicks(chromium) {
     // Przy prawidłowym owner-gate jednostka może od razu wykonać pierwszy segment,
     // więc plan może zniknąć po dotarciu; w takim przypadku sam ruch jest dowodem,
     // że plan został przyjęty i wykonany.
+    // TDQ16C r2: ekran 'Odkryłeś nową cywilizację' (civ-welcome-screen-root, z-index 9650) zasłania mapę;
+    // bez jego zamknięcia klik trafia w DOM ekranu, a nie w heks (diagnoza: tdq16c-diag-seat2-click.cjs).
+    await closeCivWelcome(page);
     const beforeClick = await page.evaluate(
       (uid) => (window).__cityStateStartUnitsTestDebug.dumpState().units.find((u) => u.id === uid),
       u0Id,
