@@ -1,0 +1,33 @@
+== Akn-s4242 (/tmp/g15fx-out/Akn-s4242) tury: 59
+  AI t30: civs=14 miasta=94 jednostki=149 puste=16 (17.0%) skarbiecSuma=7160
+  AI t60: civs=14 miasta=174 jednostki=173 puste=55 (31.6%) skarbiecSuma=8850.6
+  GRACZ (pasywny) tura: skarbiec | dosypka | prognoza | blokada | miasta | jedn
+  t2: 3 | 0 | 2 | false | 1 | 0
+  t3: 5 | 0 | 2 | false | 1 | 0
+  t4: 7 | 0 | 2 | false | 1 | 0
+  t5: 9 | 0 | 2 | false | 1 | 0
+  t6: 11 | 0 | 2 | false | 1 | 0
+  t7: 13 | 0 | 2 | false | 1 | 0
+  t8: 15 | 0 | 2 | false | 1 | 0
+  t9: 17 | 0 | 2 | false | 1 | 0
+  t10: 19 | 0 | 2 | false | 1 | 0
+  t11: 21 | 0 | 2 | false | 1 | 0
+  t12: 23 | 0 | 2 | false | 1 | 0
+  t13: 25 | 0 | 2 | false | 1 | 0
+  t14: 27 | 0 | 2 | false | 1 | 0
+  t15: 29 | 0 | 2 | false | 1 | 0
+  t16: 31 | 0 | 2 | false | 1 | 0
+  t17: 33 | 0 | 2 | false | 1 | 0
+  t18: 35 | 0 | 2 | false | 1 | 0
+  t19: 37 | 0 | 2 | false | 1 | 0
+  t20: 39 | 0 | 2 | false | 1 | 0
+  t21: 41 | 0 | 2 | false | 1 | 0
+  t22: 43 | 0 | 2 | false | 1 | 0
+  t23: 45 | 0 | 2 | false | 1 | 0
+  t24: 47 | 0 | 2 | false | 1 | 0
+  t25: 49 | 0 | 3 | false | 1 | 0
+  t26: 52 | 0 | 3 | false | 1 | 0
+  t27: 55 | 0 | 3 | false | 1 | 0
+  t28: 58 | 0 | 3 | false | 1 | 0
+  t29: 61 | 0 | 3 | false | 1 | 0
+  t30: 64 | 0 | 3 | false | 1 | 0

@@ -1,3 +1,9 @@
+## ROBOCZA 4c0d45e4 -- 2026-11-28 -- FALA 936: ENDGATELEVER: komunikat blokady zywnosci nie obiecuje niewykonalnej obnizki racji (testowa)
+
+- R-WEB-ENDGATE-RATION-LEVER-Q1: dzwignia 'obnizka racji zywnosci' w komunikacie bramki Zakoncz ture liczona od prognozy PO reakcji automatu (wczesniej liczona dwa razy, gdy suwak Wyzywienia stal zablokowany na minimum, komunikat obiecywal +12, ktorego gracz nie mogl wykonac); jedna linia w main.ts
+- Weryfikacja: FC PASS-WITH-NOTES; dep3: tsc 0, logic 213/213, endgate-lever-baseline 5/0, no-negative-stocks gate-levers 34/0, c2 44/0, test 25/0, projection 49/0, early-grace-15 33/0; live (seed 11, t16, maksimum): baza dzwignia +12 przy suwaku min=max=0, po poprawce dzwigni brak, komunikat spojny; mutacja testu czerwona 2-3 z 5
+- Limity: NIE ZMIERZONO: tury 17-30, inne ziarna, sciezka AI na zywo (rationZysk); no-negative-stocks-endturn (f) czerwony tez na bazie (pre-existing); test wiazania jest tekstowy
+
 ## ROBOCZA 97f663d7 -- 2026-11-27 -- FALA 935: Okno łaski 15 tur: barbarzyńcy nie atakują, utrzymanie jednostek gracza darmowe, Wojownik na starcie Trudny (testowa)
 
 - decyzja właściciela Q41-A rozszerzona: (1) na poziomie Trudny gracz startuje z jednym Wojownikiem (Łatwy 2, Normalny 1 bez zmian); (2) w turach 1–15 barbarzyńcy nie wykonują tury (nie atakują nikogo, na każdym poziomie trudności; obozy i ich aktywność startują najwcześniej przy domknięciu tury 16); (3) w turach 1–15 utrzymanie jednostek gracza-człowieka wynosi 0 na każdym poziomie trudności i przy każdym ustawieniu Koszty jednostek; od tury 16 normalnie; utrzymanie AI 1–40 i koszt zakupu bez zmian; parametry 15 w ai-params.json

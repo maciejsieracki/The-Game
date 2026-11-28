@@ -1,0 +1,53 @@
+{
+  "label": "PO",
+  "seed": 4242,
+  "bundle": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/po-build/Gra-LIVE.html",
+  "params": {
+    "civId": "rzymianie",
+    "civName": "Rzymianie",
+    "epoch": "Epoka Brązu",
+    "epochId": "braz",
+    "difficulty": "Trudny",
+    "mapSize": "Super Huge",
+    "rivals": "9",
+    "speed": "Długa",
+    "worldType": "Kontynenty",
+    "typSwiata": "kontynenty",
+    "seed": 4242,
+    "mapQualityLabel": "Wysoka",
+    "mapQuality": "high",
+    "renderQualityLabel": "Wysoka",
+    "mapDetailQualityLabel": "Wysoka",
+    "renderQuality": "high",
+    "mapDetailQuality": "high",
+    "civTypesCount": 15,
+    "cityStatesCount": 9,
+    "worldDensityLabels": {
+      "resources": "Normalnie",
+      "rivers": "Normalnie",
+      "desert": "Normalnie",
+      "forest": "Normalnie",
+      "relief": "Normalnie"
+    },
+    "advanced": {
+      "barbariansLevel": "trudny",
+      "battleAlwaysManual": false,
+      "victoryMode": "moc_i_dominacja",
+      "buildingCostPace": "wysoki",
+      "kosztJednostekPace": "wysoki",
+      "wzrostLudnosciPace": "wysoki",
+      "ruchSwiataPace": "dlugi",
+      "landFractionPercent": 30,
+      "landFractionCustom": false,
+      "cityStateDifficultyOverride": "normal",
+      "cityLimitBase": 20,
+      "diplomacyWarLevel": "trudna",
+      "kulturaReligiaLevel": "trudny"
+    },
+    "villageRewardsEnabled": true
+  },
+  "turns": [],
+  "state": null,
+  "errors": [],
+  "fatal": "page.waitForFunction: Target page, context or browser has been closed"
+}

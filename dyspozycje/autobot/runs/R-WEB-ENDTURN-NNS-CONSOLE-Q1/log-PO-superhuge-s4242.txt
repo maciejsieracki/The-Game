@@ -1,0 +1,4 @@
+2026-11-27T23:32:57.253Z goto ok
+2026-11-27T23:32:57.628Z startNewGame ok
+2026-11-27T23:42:57.819Z ClusterStart seen=0 after 600191 ms
+2026-11-27T23:42:57.820Z FATAL page.waitForFunction: Target page, context or browser has been closed

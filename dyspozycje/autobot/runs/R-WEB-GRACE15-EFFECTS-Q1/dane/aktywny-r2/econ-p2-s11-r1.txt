@@ -1,0 +1,106 @@
+REALDEFECON {"kind":"console","type":"log","text":"[Diag:boot] start"}
+REALDEFECON {"kind":"console","type":"log","text":"[Diag:session] resetStuckInteractiveState"}
+REALDEFECON {"kind":"console","type":"log","text":"[NewGame] tempoGry = standardowa · kosztJednostekPace = wysoki · buildingCostPace = niski · wzrostLudnosciPace = wysoki · ruchSwiataPace = krotki · epoka= 2 (braz) · typSwiata= kontynenty (Kontynenty) · jakoscMapy= Wysoka → render=high, map"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Ur: Oszczepnik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 4 Ur: Oszczepnik gotowa @ (47,54)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Xi'an: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Luoyang: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] uMgungundlovu: Wojownik oplacone 16 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 5 Xi'an: Zwiadowca gotowa @ (39,32)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 5 Luoyang: Zwiadowca gotowa @ (35,32)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 5 uMgungundlovu: Wojownik gotowa @ (134,32)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Ondini: Łucznik oplacone 8 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Harappa: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Mohenjo-daro: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Hattusa: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Hattusa: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Alaca Höyük: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 6 Ondini: Łucznik gotowa @ (130,32)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 6 Harappa: Zwiadowca gotowa @ (97,89)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 6 Mohenjo-daro: Zwiadowca gotowa @ (93,89)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 6 Hattusa: Wojownik gotowa @ (121,91)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 6 Alaca Höyük: Zwiadowca gotowa @ (117,91)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Aszur: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Ninive: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Ateny: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Sparta: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Byblos: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Cusco: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Bibracte: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Memfis: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Babilon: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Uruk: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Mattium: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Feddersen Wierde: Zwiadowca oplacone 16 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 7 Aszur: Zwiadowca gotowa @ (79,55)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 7 Ninive: Zwiadowca gotowa @ (75,55)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 7 Ateny: Zwiadowca gotowa @ (92,61)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 7 Sparta: Zwiadowca gotowa @ (88,61)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 7 Byblos: Zwiadowca gotowa @ (29,88)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 7 Cusco: Zwiadowca gotowa @ (138,90)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 7 Bibracte: Zwiadowca gotowa @ (97,30)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 7 Memfis: Zwiadowca gotowa @ (45,92)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 7 Babilon: Zwiadowca gotowa @ (51,54)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 7 Uruk: Zwiadowca gotowa @ (120,27)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 7 Hattusa: Zwiadowca gotowa @ (121,91)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 7 Mattium: Zwiadowca gotowa @ (27,27)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 7 Feddersen Wierde: Zwiadowca gotowa @ (23,27)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] uMgungundlovu: Zwiadowca oplacone 12 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Ondini: Zwiadowca oplacone 12 — kolejka x1 (−0 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Rzym: Łucznik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"p1-purchase","turn":7,"tab":true,"ok":true,"name":"Łucznik","panelClosed":true,"after":{"owner":0,"turn":7,"treasury":0,"stock":{"drewno":11,"kamien":6,"glina":54},"recruitQueue":["Łucznik"]}}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 8 Rzym: Łucznik gotowa @ (125,57)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 8 uMgungundlovu: Zwiadowca gotowa @ (134,32)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 8 Ondini: Zwiadowca gotowa @ (130,32)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Aszur: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Ateny: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Byblos: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Cusco: Wojownik z maczugą (Chaska) oplacone 52 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Gergowia: Oszczepnik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Babilon: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Uruk: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Mattium: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 9 Aszur: Wojownik gotowa @ (79,55)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 9 Ateny: Wojownik gotowa @ (92,61)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 9 Byblos: Wojownik gotowa @ (29,88)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 9 Cusco: Wojownik z maczugą (Chaska) gotowa @ (138,90)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 9 Gergowia: Oszczepnik gotowa @ (93,30)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 9 Babilon: Wojownik gotowa @ (51,54)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 9 Uruk: Wojownik gotowa @ (120,27)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 9 Mattium: Wojownik gotowa @ (27,27)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Ateny: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 14 Ateny: Wojownik gotowa @ (92,61)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Xi'an: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Byblos: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Memfis: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Babilon: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Mattium: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 15 Xi'an: Wojownik gotowa @ (39,32)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 15 Byblos: Wojownik gotowa @ (29,88)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 15 Memfis: Wojownik gotowa @ (45,92)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 15 Babilon: Wojownik gotowa @ (51,54)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 15 Mattium: Wojownik gotowa @ (27,27)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Aszur: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Xi'an: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Harappa: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Mohenjo-daro: Oszczepnik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Cusco: Wojownik z maczugą (Chaska) oplacone 52 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Machu Picchu: Łucznik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Memfis: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Teby: Oszczepnik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 16 Aszur: Wojownik gotowa @ (79,55)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 16 Xi'an: Wojownik gotowa @ (39,32)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 16 Harappa: Wojownik gotowa @ (97,89)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 16 Mohenjo-daro: Oszczepnik gotowa @ (93,89)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 16 Cusco: Wojownik z maczugą (Chaska) gotowa @ (138,90)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 16 Machu Picchu: Łucznik gotowa @ (134,90)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 16 Memfis: Wojownik gotowa @ (45,92)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Tura 16 Teby: Oszczepnik gotowa @ (41,92)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Sparta: Oszczepnik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Ollantaytambo: Łucznik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Cusco: Oszczepnik (Estólica) oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Uruk: Wojownik oplacone 20 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"console","type":"log","text":"[Rekrutacja] Lagasz: Oszczepnik oplacone 12 — kolejka x1 (−2000 MP)"}
+REALDEFECON {"kind":"lever-ration","turn":16,"ok":false,"why":"brak suwaka racji w panelu miasta","opened":true,"rangeDump":[],"civDump":["civ-v-top-stack","civ-v-top-flank-row","civ-v-w3-chips-flank","civ-v-w3-chip","civ-v-w3-chip-icon","civ-v-w3-chip-lbl","civ-v-w3-chip-val","civ-v-w3-chip-delta","civ-v-w3-chip-stock","civ-v-w3-city-col","civ-v-w3-city-badge","civ-v-w3-city-nav","civ-v-w3-city-name","civ-v-w3-city-pop","civ-v-w3-capital-badge","civ-v-garrison-inline","civ-v-garrison-label","civ-v-garrison-icon","civ-v-garrison-count","civ-cs","civ-v-left-main","civ-v-build-pane","civ-v-build-main","civ-v-icon-rail-mount","civ-v-icon-rail"],"panelClosed":true}
+REALDEFECON {"kind":"gate-stop","turn":16,"gate":{"blokada":true,"komunikat":"Nie można zakończyć tury. Skarbiec (złoto): po zakończeniu tury zabraknie 10; Spichlerz państwa (żywność): po zakończeniu tury zabraknie 18. Pomogą: podatek złota: +7 złota/turę; obniżka racji żywności: +12 żywności/turę; rozwiązanie jednostek (złoto): +32 złota/turę; rozwiązanie jednostek (żywność): +32 żywności/turę. Nawet maksymalny podatek nie wystarczy — zmniejsz wydatki (rozwiąż jednostki).","dzwignie":[{"id":"podatek-skarbiec","stock":"skarbiec","zysk":7,"opis":"podatek złota: +7 złota/turę"},{"id":"suwak-zywnosc","stock":"spichlerz","zysk":12,"opis":"obniżka racji żywności: +12 żywności/turę"},{"id":"rozwiaz-skarbiec","stock":"skarbiec","zysk":32,"opis":"rozwiązanie jednostek (złoto): +32 złota/turę"},{"id":"rozwiaz-spichlerz","stock":"spichlerz","zysk":32,"opis":"rozwiązanie jednostek (żywność): +32 żywności/turę"}],"zasob":"skarbiec","prognoza":-10,"propozycjaPodatku":null,"automatPoprawil":true,"niewystarczajace":true},"forecast":{"turn":16,"skarbiecObecny":19,"skarbiecPo":-10,"spichlerzObecny":1,"spichlerzPo":-30},"treasury":19,"granary":1,"taxSplit":{"procentNauka":60,"procentPieniadz":30,"procentLuksus":10},"rations":[{"id":"city0","poziomRacji":1.5,"auto":true}],"podatekPunkty":60}
+REALDEFECON {"kind":"result","runda":3,"policy":"p2","seed":11,"run":1,"barb":"trudny","turnsRequested":20,"turnsCompleted":15,"outcome":"zatrzymanie","turn":16,"gate":true,"cityOwnerAfter":0,"cityLost":false,"lossTurn":null,"survived":true,"conqueror":null,"firstGoldAffordTurn":7,"firstGoldAndStockAffordTurn":7,"purchaseTurn":7,"purchaseClick":{"turn":7,"tab":true,"ok":true,"name":"Łucznik","panelClosed":true,"after":{"owner":0,"turn":7,"treasury":0,"stock":{"drewno":11,"kamien":6,"glina":54},"recruitQueue":["Łucznik"]}},"taxProbe":null,"infraDiag":null,"navLog":[{"t":276,"url":"0-2a747b18a590/scratchpad/g15fx2/S11/Gra-LIVE.html?civTest=1"}],"worldWait":true,"mapGenLog":[{"t":1383,"mapGen":"total=735"},{"t":1538,"hexCount":"hexCount=1008"},{"t":138499,"mapGen":"total=136207"},{"t":141605,"hexCount":"hexCount=20160"}],"clusterStartSeen":4,"firstDefenderTurn":2,"lastBarbNear":0,"errors":0,"notes":["bramka tury: {\"gate\":{\"blokada\":true,\"komunikat\":\"Nie można zakończyć tury. Skarbiec (złoto): po zakończeniu tury zabraknie 10; Spichlerz państwa (żywność): po zakończeniu tury zabraknie 18. Pomogą: podatek złota: +7 złota/turę; obniżka racji żywności: +12 żywności/turę; rozwiązanie jednostek (złoto): +32 złota/turę; rozwiązanie jednostek (żywność): +32 żywności/turę. Nawet maksymalny podatek nie wystarczy — zmniejsz wydatki (rozwiąż jednostki).\",\"dzwignie\":[{\"id\":\"podatek-skarbiec\",\"stock\":\"skarbiec\",\"zysk\":7,\"opis\":\"podatek złota: +7 złota/turę\"},{\"id\":\"suwak-zywnosc\",\"stock\":\"spichlerz\",\"zysk\":12,\"opis\":\"obniżka racji żywności: +12 żywności/turę\"},{\"id\":\"rozwiaz-skarbiec\",\"stock\":\"skarbiec\",\"zysk\":32,\"opis\":\"rozwiązanie jednostek (złoto): +32 złota/turę\"},{\"id\":\"rozwiaz-spichlerz\",\"stock\":\"spichlerz\",\"zysk\":32,\"opis\":\"rozwiązanie jednostek (żywność): +32 żywności/turę\"}],\"zasob\":\"skarbiec\",\"progno"],"definicjaTury":"turn=gateInfo().turn; tura_utraty = turn odczytany po ukonczeniu tury, w ktorej miasto zmienilo wlasciciela (= ukonczone tury + 1)","infra":false,"powodNiewiarygodnosci":null}

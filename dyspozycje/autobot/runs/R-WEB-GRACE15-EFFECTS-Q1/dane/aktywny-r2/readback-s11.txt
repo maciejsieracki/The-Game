@@ -1,0 +1,11 @@
+READBACK (__settingsLive.getSettings, seed 11, run 1, 2 biegi nadpisane - ostatni bieg):
+{
+ "diplomacyWarLevel": "trudna",
+ "kulturaReligiaLevel": "trudny",
+ "kulturaReligiaLevelAI": "trudny",
+ "wzrostSurowcowZEpoka": false,
+ "kosztJednostekPace": "wysoki",
+ "difficulty": "hard"
+}
+
+UWAGA: barbariansLevel NIE występuje w odczycie getSettings -> poziom barbarzyńców NIE ZWERYFIKOWANO (przekazany do startNewGame: advanced.barbariansLevel=trudny).

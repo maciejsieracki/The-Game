@@ -1,0 +1,14 @@
+[tmpdir] TMPDIR_RUN_ID=1147-0e826c9a DIST=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/aiempty2/dist-f868 PROFILE=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/aiempty2/prof/nns-f868-7 (konsument recznie: TMPDIR_RUN_ID=<id> albo --dist/--profile)
+[readback] null pace=normalny resume=false
+[econ] seed=7 tura=6 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=0/0/0 czas=12s
+[econ] seed=7 tura=11 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=0/0/0 czas=22s
+[econ] seed=7 tura=16 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=0/0/0 czas=31s
+[econ] seed=7 tura=21 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=0/0/0 czas=43s
+[econ] seed=7 tura=26 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=0/0/0 czas=57s
+[econ] seed=7 tura=31 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=0/0/0 czas=72s
+[econ] seed=7 tura=36 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=0/0/0 czas=92s
+[econ] seed=7 tura=41 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=0/0/0 czas=118s
+[econ] seed=7 tura=46 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=0/0/0 czas=154s
+[econ] seed=7 tura=51 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=0/0/0 czas=201s
+[econ] seed=7 tura=56 gateAktywna=1 dosypki=1 zamkniete(aud/armia/techn)=0/0/0 czas=260s
+[econ] PODSUMOWANIE {"seed":7,"startTurn":1,"endTurn":60,"stop":null,"counters":{"gateActiveTurns":1,"bypassApplied":1,"stuckQueueHeals":0,"battlesAuto":0,"diploAudienceClosed":0,"armyMergeClosed":0,"techNoticeClosed":0,"aiOffersRejected":0,"aiOffersRejectAttempts":0,"forcedPeaceAccepted":0},"wallSec":314,"resumed":false,"rebalance":null,"unitCostPace":"normalny"}

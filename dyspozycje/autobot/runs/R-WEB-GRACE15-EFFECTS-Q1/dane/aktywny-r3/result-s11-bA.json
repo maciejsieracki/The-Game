@@ -1,0 +1,21 @@
+{
+ "outcome": "galaz-a-gotowa",
+ "turn": 16,
+ "canEndAfter": false,
+ "unblocked": null,
+ "seed": 11,
+ "mode": "tax100",
+ "completedThisSegment": [],
+ "leversOutcome": null,
+ "purchaseTurn": 5,
+ "last": {
+  "turn": 16,
+  "owner": 0,
+  "treasury": 97,
+  "granary": 1,
+  "mil": 2
+ },
+ "dialogs": [],
+ "errors": 0,
+ "elapsedSegmentS": 228
+}
