@@ -13,3 +13,6 @@ gra/src/ (WYŁĄCZNIE kamera/widok po wczytaniu i opcjonalne pole meta widoku; u
 gra/data/**, gra-robocza/, gra-kanon/, WERSJE.md, manifest, rust-port/, npm run build/dev w gra/ (vite do unikalnych katalogów w /tmp), osłabianie testów, zmiana formatu zapisu poza OPCJONALNYM polem meta, git add -A, push, spawn_task/create_session/create_trigger/send_later/dismiss_task, run_in_background ORAZ nohup/& (bieg >120 s w Bash może zostać przeniesiony w tło — dziel na ≤590 s), zmiana konfiguracji podpisu commitów, --no-gpg-sign. Gdy guard blokuje commit — pliki w stage (git add ./ścieżka).
 ## Binarne kryterium
 (a) przyczyna ustalona z cytatem; (b) po wczytaniu dystans kamery zgodny z sprzed zapisu (lub domyślny jak po nowej grze), stary zapis OK; (c) test z mutacjami czerwonymi; (d) test live albo NIE ZMIERZONO z opisem prób; (e) bramki zielone; (f) dokument.
+
+---
+# KOREKTA BAZY: args.cand = 2b019d3e308685f08860e872a733fe0010caa30b (origin/main po FALI 939; zawiera blokadę zapisu przed pierwszym miastem — nie cofaj jej). Reszta bez zmian.
