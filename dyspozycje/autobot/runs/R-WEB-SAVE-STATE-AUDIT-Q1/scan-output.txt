@@ -1,0 +1,394 @@
+# save-state-audit-scan: gra/src/main.ts
+buildSaveGameSnapshot: linie 42678-43048; restoreGameFromSave: linie 52466-53802
+Deklaracje let/const na wcięciu 4 (wszystkie typy inicjalizatora): 533
+Rozkład typów: Set=35, Wyrazenie=80, Licznik=72, Tekst=24, Map=120, Array=54, Brak=7, Obiekt=15, Null=63, Flaga=52, Instancja=9, Undefined=2
+Nie występują w buildSaveGameSnapshot (bez komentarzy): 384
+
+| nazwa | linia | typ | w zapisie | w restore | wstępna klasa | odwołań w pliku (z komentarzami) |
+|---|---|---|---|---|---|---|
+| seen | 1977 | Set | nie | nie | ? | 27 |
+| pushSurowiec | 1978 | Wyrazenie | nie | nie | ? | 3 |
+| data | 2139 | Wyrazenie | nie | tak (ciało restore) | ? | 407 |
+| SEED | 2156 | Wyrazenie | nie | nie | ? | 4 |
+| detIdSuffix | 2160 | Wyrazenie | nie | nie | ? | 9 |
+| autoBattleRng | 2166 | Wyrazenie | nie | nie | D? | 7 |
+| battleCombatRng | 2175 | Wyrazenie | nie | nie | ? | 6 |
+| unitSight | 2180 | Wyrazenie | nie | nie | ? | 12 |
+| unitFoodTbl | 2181 | Wyrazenie | nie | nie | ? | 14 |
+| _menuDifficulty | 2184 | Tekst | nie | tak (ciało restore) | ? | 187 |
+| _menuCitySupport | 2191 | Tekst | nie | nie | ? | 7 |
+| _menuCityStateDifficulty | 2200 | Tekst | nie | nie | ? | 12 |
+| _menuCityStateDifficultyVsPlayer | 2208 | Tekst | nie | nie | ? | 9 |
+| _menuCivIdByOwner | 2219 | Map | nie | nie | D? | 17 |
+| _menuRivals | 2221 | Licznik | nie | nie | ? | 2 |
+| _menuCivTypesCount | 2222 | Licznik | nie | nie | ? | 11 |
+| _menuSelectedAiCivIds | 2232 | Array | nie | nie | D? | 8 |
+| _menuCityStates | 2233 | Licznik | nie | nie | ? | 10 |
+| _menuEpochId | 2235 | Tekst | nie | nie | ? | 11 |
+| _menuCityLimitBase | 2236 | Licznik | nie | nie | ? | 10 |
+| _menuAdvanced | 2237 | Brak | nie | nie | ? | 6 |
+| _menuWorldDensity | 2238 | Obiekt | nie | nie | ? | 4 |
+| anim | 2266 | Null | nie | nie | ? | 54 |
+| isAnimating | 2267 | Flaga | nie | nie | ? | 30 |
+| hoverKey | 2268 | Null | nie | tak (ciało restore) | ? | 23 |
+| PERF_DEBUG | 2316 | Wyrazenie | nie | nie | ? | 8 |
+| canvas | 2325 | Wyrazenie | nie | nie | ? | 45 |
+| hintToast | 2338 | Wyrazenie | nie | nie | S? | 23 |
+| veteranBadgeTip | 2354 | Wyrazenie | nie | nie | ? | 9 |
+| d1bHudActive | 2376 | Flaga | nie | nie | S? | 9 |
+| diplomacyAudienceOwnerId | 2378 | Null | nie | nie | D? | 10 |
+| diplomacyAudienceSourceEventId | 2380 | Null | nie | nie | ? | 7 |
+| camCtrl | 2434 | Instancja | nie | nie | ? | 51 |
+| startPlacements | 2440 | Wyrazenie | nie | nie | ? | 5 |
+| unitRenderer | 2448 | Instancja | nie | tak (ciało restore) | ? | 91 |
+| cityRenderer | 2463 | Instancja | nie | nie | ? | 43 |
+| siegeMarkerRenderer | 2464 | Instancja | nie | nie | ? | 8 |
+| wonderRenderer | 2465 | Instancja | nie | nie | ? | 10 |
+| objectivePowerByOwner | 2477 | Map | nie | nie | D? | 18 |
+| eliminationSpectacleByLabel | 2489 | Map | nie | tak (ciało restore) | ? | 10 |
+| eraWarMeasureAttempts | 2609 | Array | nie | nie | S? | 4 |
+| eraWarMeasureDeclarations | 2610 | Array | nie | nie | S? | 3 |
+| eraWarMeasureRejections | 2612 | Array | nie | nie | S? | 8 |
+| ERA_ID_TO_NUM | 2645 | Obiekt | nie | nie | ? | 2 |
+| testEraFloorOverride | 2659 | Null | nie | nie | ? | 3 |
+| empireEconDirty | 3113 | Flaga | nie | nie | ? | 17 |
+| powerDirty | 3114 | Flaga | nie | nie | ? | 10 |
+| cityFogVisible | 3192 | Wyrazenie | nie | nie | ? | 8 |
+| cityBuiltIdsForRender | 3194 | Wyrazenie | nie | nie | ? | 6 |
+| cityProdForRender | 3196 | Wyrazenie | nie | nie | ? | 5 |
+| meForRender | 3203 | Wyrazenie | nie | nie | ? | 6 |
+| statChipHoverCityId | 3220 | Null | nie | nie | ? | 8 |
+| _cityRenderOpts | 3221 | Wyrazenie | nie | nie | ? | 33 |
+| playerStartHex | 3292 | Obiekt | nie | nie | ? | 26 |
+| playerStartHexByOwner | 3305 | Map | nie | nie | D? | 9 |
+| aiStartHexes | 3313 | Wyrazenie | nie | nie | ? | 24 |
+| startRevealRadius | 3315 | Wyrazenie | nie | nie | ? | 6 |
+| foundCityMode | 3328 | Flaga | nie | nie | ? | 23 |
+| resourceOverlays | 3331 | Array | nie | nie | S? | 18 |
+| DEPOSIT_EDGE_R | 3334 | Licznik | nie | nie | ? | 2 |
+| DEPOSIT_TARGET_SPAN | 3335 | Licznik | nie | nie | ? | 2 |
+| DEPOSIT_EDGE_R_ELEVATED | 3339 | Licznik | nie | nie | ? | 2 |
+| DEPOSIT_TARGET_SPAN_ELEVATED | 3340 | Licznik | nie | nie | ? | 2 |
+| overlayDepositEra | 3380 | Licznik | nie | tak (ciało restore) | ? | 14 |
+| OVERLAY_COLLAPSE_MIN_MESHES | 3461 | Licznik | nie | nie | ? | 2 |
+| villageMeshes | 3620 | Map | nie | nie | S? | 10 |
+| campMeshes | 3621 | Map | nie | nie | S? | 8 |
+| villageHexKeyCache | 3630 | Null | nie | nie | S? | 4 |
+| villageHexKeyCacheMap | 3631 | Null | nie | nie | S? | 3 |
+| fortQueueCleanupNotice | 3735 | Licznik | nie | tak (ciało restore) | S? | 5 |
+| tradeRouteBuildingBonusByCity | 3744 | Map | nie | nie | ? | 15 |
+| tradeRouteResourceGrants | 3754 | Array | nie | nie | ? | 20 |
+| lastReligionSpreadByCity | 3755 | Map | nie | nie | ? | 9 |
+| _lastReligionSpreadTotal | 3756 | Licznik | nie | nie | ? | 2 |
+| ownerScope | 3766 | Wyrazenie | nie | nie | ? | 5 |
+| aiDiploRatesCache | 3774 | Null | nie | nie | S? | 10 |
+| aiDiploTyAll | 3775 | Null | nie | nie | D? | 5 |
+| WONDER_PROD_PREFIX | 4360 | Tekst | nie | nie | ? | 3 |
+| wonderTechEpochMap | 4366 | Wyrazenie | nie | nie | ? | 3 |
+| wondersPickerEl | 4367 | Null | nie | nie | ? | 16 |
+| cityOrderState | 5924 | Map | nie | tak (ciało restore) | ? | 36 |
+| cityOwnerChangeLogForTest | 5930 | Array | nie | nie | S? | 4 |
+| citizenUpkeepByOwner | 5964 | Map | nie | tak (ciało restore) | D? | 17 |
+| buildingResourceUpkeepByOwner | 5976 | Map | nie | tak (ciało restore) | D? | 11 |
+| converterProducedLastTurnByOwner | 5982 | Map | nie | tak (ciało restore) | D? | 9 |
+| unitResourceUpkeepByOwner | 5983 | Map | nie | tak (ciało restore) | D? | 11 |
+| militiaDefOverrides | 5985 | Map | nie | nie | ? | 6 |
+| playerUnspentBudgetWarning | 6012 | Null | nie | nie | D? | 5 |
+| playerArmyFoodHintShown | 6015 | Flaga | nie | nie | S? | 4 |
+| VETERAN_ENEMY_EDU_EVENT_ID | 6018 | Tekst | nie | nie | ? | 4 |
+| lastCityKulturaTick | 6019 | Map | nie | nie | D? | 8 |
+| aiWonderPracaTickByCity | 6026 | Map | nie | nie | D? | 7 |
+| aiWonderStuckTurnsByOwner | 6033 | Map | nie | tak (ciało restore) | D? | 10 |
+| powerSnapshotsForTurn | 6034 | Array | nie | nie | S? | 5 |
+| placedImprovementsOwnerCache | 6105 | Wyrazenie | nie | nie | S? | 2 |
+| TRADE_GRANT_BRAZ_SYNTHETIC_KEY | 6117 | Tekst | nie | nie | ? | 3 |
+| territoryHexCountMemo | 6524 | Map | nie | nie | ? | 5 |
+| territoryHexCountMemoHexes | 6525 | Null | nie | nie | ? | 2 |
+| okolicaMapEditCityId | 6963 | Null | nie | nie | ? | 7 |
+| okolicaOverlayGroup | 6964 | Null | nie | nie | S? | 6 |
+| cityPanelViewSaved | 6966 | Null | nie | nie | ? | 6 |
+| cityPanelViewCityId | 6967 | Null | nie | nie | ? | 4 |
+| unitSideDetailExpanded | 7149 | Flaga | nie | nie | ? | 11 |
+| stackPickState | 7155 | Obiekt | nie | nie | ? | 10 |
+| nnsAiLog | 7798 | Array | nie | nie | S? | 4 |
+| nnsPostBankLog | 7799 | Array | nie | nie | S? | 4 |
+| nnsAiTurnStats | 7800 | Array | nie | nie | D? | 4 |
+| nnsUnitUpkeepTblCache | 7805 | Null | nie | nie | S? | 10 |
+| _armyFoodUpkeepByLevel | 10364 | Map | nie | nie | D? | 3 |
+| clusterPlayerStartCityName | 10379 | Wyrazenie | nie | nie | ? | 4 |
+| pendingSameTypeRivalCount | 10381 | Licznik | nie | nie | ? | 4 |
+| pendingSameTypeRivalHexes | 10383 | Array | nie | nie | ? | 5 |
+| pendingSameTypeRivalOwnerIds | 10384 | Array | nie | nie | D? | 5 |
+| pendingSameTypeRivalCountSecond | 10393 | Licznik | nie | nie | ? | 4 |
+| pendingSameTypeRivalOwnerIdsSecond | 10394 | Array | nie | nie | D? | 5 |
+| secondHumanCivIdForRivals | 10397 | Brak | nie | nie | ? | 4 |
+| secondPlayerOwnerIdForRivals | 10398 | Null | nie | nie | D? | 4 |
+| pendingForeignSpawnCities | 10400 | Array | nie | nie | ? | 9 |
+| difficultyBonusGrantedOwners | 10404 | Set | nie | nie | D? | 5 |
+| STARTING_SCOUT_UNIT_TYPE | 10406 | Tekst | nie | nie | ? | 3 |
+| clusterStartSeed | 10409 | Licznik | nie | nie | ? | 5 |
+| ledgerAuditLastTick | 10570 | Null | nie | nie | S? | 3 |
+| ledgerAuditTickSeq | 10571 | Licznik | nie | nie | S? | 3 |
+| diploZeroTrustWarned | 10779 | Set | nie | nie | D? | 5 |
+| diplomacyDobraWolaActiveTura | 10783 | Set | nie | nie | D? | 4 |
+| wiarygodnoscCyclicDeliveryOkThisTurn | 10830 | Map | nie | nie | D? | 7 |
+| lastDiplomaticContactsSnapshot | 10890 | Set | nie | nie | S? | 6 |
+| pendingFirstContactCards | 10892 | Array | nie | nie | ? | 8 |
+| diplomaticContactTrackingReady | 10893 | Flaga | nie | nie | S? | 4 |
+| barbarianCooperationGrace | 10906 | Array | nie | nie | ? | 8 |
+| activeBattleUnitIds | 10908 | Set | nie | nie | D? | 9 |
+| pendingAdministratorChanges | 11008 | Map | nie | tak (ciało restore) | S? | 8 |
+| aiNnsHoldOwners | 11187 | Set | nie | nie | D? | 6 |
+| aiNnsUncoveredOwners | 11189 | Set | nie | nie | D? | 5 |
+| aiGoldIncomeByOwner | 11194 | Map | nie | tak (ciało restore) | D? | 8 |
+| aiFoodTickNetByOwner | 11197 | Map | nie | tak (ciało restore) | D? | 6 |
+| aiSliderParams | 11209 | Wyrazenie | nie | nie | ? | 2 |
+| aiImprovementBudgetByOwner | 11222 | Map | nie | nie | D? | 6 |
+| aiSurplusReportByOwner | 11228 | Map | nie | nie | D? | 4 |
+| _dipUnitSeq | 11241 | Licznik | nie | tak (ciało restore) | ? | 8 |
+| _diplomacyParams | 11242 | Wyrazenie | nie | nie | ? | 45 |
+| aiMajorSameCivPairOpts | 11335 | Wyrazenie | nie | nie | ? | 3 |
+| warEventLog | 11468 | Array | nie | tak (ciało restore) | S? | 95 |
+| borderMarchEventTargets | 11479 | Map | nie | nie | ? | 15 |
+| civElimEventDetails | 11490 | Map | nie | nie | ? | 16 |
+| cityCaptureEventDetails | 11548 | Map | nie | nie | ? | 12 |
+| CITY_CAPTURE_EVENT_PREFIX | 11558 | Tekst | nie | nie | ? | 4 |
+| warEventDetailOwners | 11560 | Array | nie | nie | D? | 3 |
+| diploWarReasonCtx | 12337 | Null | nie | nie | D? | 5 |
+| diploWarEndLogOn | 12347 | Wyrazenie | nie | nie | S? | 2 |
+| diploTickP6 | 12641 | Wyrazenie | nie | nie | D? | 2 |
+| diploTickP7 | 12642 | Wyrazenie | nie | nie | D? | 2 |
+| barbParams | 14004 | Wyrazenie | nie | nie | ? | 2 |
+| barbGraceTurns | 14006 | Wyrazenie | nie | nie | D? | 3 |
+| gameOver | 14008 | Flaga | nie | tak (ciało restore) | ? | 20 |
+| truceTestSuppressVictory | 14010 | Flaga | nie | nie | ? | 4 |
+| playerAiAutopilotForTest | 14014 | Flaga | nie | nie | D? | 4 |
+| aiPhaseOwnersForTest | 14017 | Array | nie | nie | D? | 4 |
+| truceTestForcedAiDecision | 14020 | Null | nie | nie | D? | 5 |
+| endTurnInProgress | 14021 | Flaga | nie | nie | D? | 71 |
+| eventDeferQueue | 14031 | Wyrazenie | nie | nie | S? | 6 |
+| activeWorldEndTurnPipeline | 14061 | Flaga | nie | nie | D? | 8 |
+| endTurnStartedAt | 14063 | Licznik | nie | nie | D? | 7 |
+| deferredPlayerUnitRevealIds | 14065 | Set | nie | nie | ? | 11 |
+| deferredMergePrompts | 14076 | Array | nie | nie | ? | 6 |
+| explored | 14083 | Set | nie | tak (ciało restore) | ? | 67 |
+| fogOn | 14085 | Flaga | nie | nie | ? | 33 |
+| revealAllLand | 14087 | Flaga | nie | tak (ciało restore) | ? | 15 |
+| galleryOn | 14089 | Flaga | nie | nie | ? | 28 |
+| FOG_DEV_SHORTCUTS | 14111 | Wyrazenie | nie | nie | ? | 3 |
+| GALLERY_DEV_SHORTCUT | 14135 | Wyrazenie | nie | nie | ? | 2 |
+| ALL_KEYS | 14138 | Set | nie | nie | ? | 12 |
+| ALL_LAND_KEYS | 14140 | Set | nie | nie | ? | 3 |
+| visibleDiskMemo | 14235 | Instancja | nie | nie | ? | 3 |
+| unitHealTotal | 14383 | Licznik | nie | nie | ? | 5 |
+| lastHealHoverKey | 14384 | Tekst | nie | nie | ? | 2 |
+| deferRefreshFogUnitSync | 14765 | Wyrazenie | nie | nie | ? | 4 |
+| rebelProtectionTestSkipVictoryCheck | 14927 | Flaga | nie | nie | ? | 5 |
+| selectedId | 14930 | Null | nie | tak (ciało restore) | ? | 80 |
+| foreignUnitInspectId | 14932 | Null | nie | nie | ? | 15 |
+| reachable | 14933 | Set | nie | tak (ciało restore) | ? | 37 |
+| forceVisibleUnitId | 14935 | Null | nie | nie | ? | 13 |
+| aiUpkeepTickTurnOverride | 14939 | Null | nie | nie | D? | 6 |
+| aiCmdResume | 14947 | Null | nie | nie | D? | 48 |
+| aiTurnAwaitingBattle | 14948 | Flaga | nie | nie | D? | 28 |
+| battleUiResolving | 14970 | Flaga | nie | nie | S? | 26 |
+| playtestWalkaActive | 14972 | Flaga | nie | nie | ? | 15 |
+| bitwaDuzaActive | 14974 | Flaga | nie | nie | ? | 9 |
+| playtestMiastoActive | 14976 | Flaga | nie | nie | ? | 7 |
+| lastBHex | 14978 | Null | nie | nie | ? | 12 |
+| hexDetailHex | 14980 | Null | nie | nie | ? | 20 |
+| player | 15007 | Wyrazenie | nie | tak (ciało restore) | ? | 465 |
+| seatsFinishedThisRound | 15032 | Set | nie | nie | ? | 13 |
+| playerCivTypeByHuman | 15084 | Map | nie | nie | ? | 9 |
+| playerPracaCell | 15088 | Obiekt | nie | nie | D? | 3 |
+| _lastPracaSlot | 15123 | Wyrazenie | nie | nie | D? | 5 |
+| _lastPracaUpkeepSlot | 15127 | Wyrazenie | nie | nie | D? | 3 |
+| _lastPracaAutoUlepszeniaKosztSlot | 15131 | Wyrazenie | nie | nie | D? | 3 |
+| _lastPracaCudaKosztSlot | 15135 | Wyrazenie | nie | nie | D? | 3 |
+| _lastKulturaSlot | 15139 | Wyrazenie | nie | nie | ? | 3 |
+| _lastPracaRateSlot | 15143 | Wyrazenie | nie | nie | D? | 4 |
+| _lastKulturaRateSlot | 15147 | Wyrazenie | nie | nie | ? | 3 |
+| _musicPrefsAtBoot | 15361 | Wyrazenie | nie | nie | ? | 2 |
+| musicEnabled | 15362 | Flaga | nie | nie | ? | 9 |
+| musicVolumeState | 15363 | Wyrazenie | nie | nie | ? | 9 |
+| _ambiencePrefsAtBoot | 15378 | Wyrazenie | nie | nie | ? | 2 |
+| ambienceEnabled | 15379 | Flaga | nie | nie | ? | 7 |
+| ambienceVolumeState | 15380 | Wyrazenie | nie | nie | ? | 6 |
+| _sfxPrefsAtBoot | 15395 | Wyrazenie | nie | nie | ? | 2 |
+| sfxUnitsEnabled | 15396 | Flaga | nie | nie | ? | 10 |
+| sfxVolumeState | 15397 | Wyrazenie | nie | nie | ? | 9 |
+| introStartTimer | 15408 | Null | nie | nie | S? | 6 |
+| gameMusicStartGeneration | 15409 | Licznik | nie | nie | ? | 3 |
+| introGestureArmed | 15440 | Flaga | nie | nie | ? | 3 |
+| introMusicStartedOnce | 15464 | Flaga | nie | nie | ? | 3 |
+| PRACA_POOL_LOAD_SANITY_MAX | 15504 | Wyrazenie | nie | nie | ? | 4 |
+| _lastPraca | 15519 | Licznik | nie | tak (ciało restore) | D? | 19 |
+| _lastPracaUpkeep | 15524 | Licznik | nie | tak (ciało restore) | D? | 9 |
+| _lastPracaAutoUlepszeniaKoszt | 15541 | Licznik | nie | tak (ciało restore) | D? | 8 |
+| _lastPracaCudaKoszt | 15549 | Licznik | nie | tak (ciało restore) | D? | 7 |
+| _lastKultura | 15550 | Licznik | nie | nie | ? | 7 |
+| _lastPracaRate | 15551 | Licznik | nie | tak (ciało restore) | D? | 34 |
+| _pracaRateFreshFromEndTurn | 15592 | Flaga | nie | nie | D? | 9 |
+| _lastKulturaRate | 15593 | Licznik | nie | tak (ciało restore) | ? | 9 |
+| _lastPieniadzRate | 15594 | Licznik | nie | tak (ciało restore) | ? | 16 |
+| _lastWealthLevel | 15595 | Licznik | nie | nie | ? | 6 |
+| _lastWealthMnoznik | 15596 | Licznik | nie | nie | ? | 5 |
+| _lastNaukaRate | 15597 | Licznik | nie | tak (ciało restore) | ? | 14 |
+| _lastLudnoscRate | 15598 | Licznik | nie | tak (ciało restore) | ? | 9 |
+| _lastBogactwoRate | 15605 | Licznik | nie | tak (ciało restore) | ? | 11 |
+| _lastBogactwoHandel | 15608 | Licznik | nie | tak (ciało restore) | ? | 7 |
+| _lastBogactwoUtrzymanieBudynkow | 15609 | Licznik | nie | tak (ciało restore) | ? | 7 |
+| _lastBogactwoUtrzymanieJednostek | 15610 | Licznik | nie | tak (ciało restore) | ? | 7 |
+| _lastBogactwoUtrzymanieAdministratorow | 15612 | Licznik | nie | tak (ciało restore) | ? | 7 |
+| _lastBogactwoUtrzymanieSurowcow | 15613 | Obiekt | nie | tak (ciało restore) | ? | 7 |
+| _liveFoodBrutto | 15615 | Licznik | nie | nie | ? | 4 |
+| _livePracaForecast | 15622 | Null | nie | nie | D? | 6 |
+| _lastPlayerCityEcon | 15624 | Brak | nie | nie | ? | 17 |
+| _maxSafeRationCache | 15678 | Map | nie | nie | S? | 15 |
+| AI_MARCH_PASSAGE_REQUEST_COOLDOWN_TURNS | 15954 | Licznik | nie | nie | D? | 2 |
+| buildModeOpen | 16702 | Flaga | nie | nie | ? | 29 |
+| activeImprovementKey | 16703 | Null | nie | nie | ? | 37 |
+| activeWonderId | 16704 | Null | nie | nie | D? | 18 |
+| ulepszeniaHudCityId | 16706 | Null | nie | nie | S? | 6 |
+| cultureRangeVisible | 16709 | Flaga | nie | nie | ? | 8 |
+| religionRangeVisible | 16710 | Flaga | nie | nie | ? | 8 |
+| territoryBorderVisible | 16712 | Flaga | nie | nie | ? | 15 |
+| territoryBorderSavedBeforeCityPanel | 16714 | Null | nie | nie | ? | 7 |
+| cultureRangeGroup | 16715 | Null | nie | nie | ? | 8 |
+| religionRangeGroup | 16716 | Null | nie | nie | ? | 8 |
+| territoryBorderGroup | 16717 | Null | nie | nie | ? | 9 |
+| mineEligibleGroup | 16725 | Null | nie | nie | ? | 7 |
+| tradeRoutesOverlayGroup | 16728 | Null | nie | nie | S? | 7 |
+| showTradeRoutesOverlay | 16732 | Flaga | nie | nie | S? | 5 |
+| showWorkerOverlay | 16793 | Flaga | nie | nie | S? | 5 |
+| workerFieldOverlayGroup | 16794 | Null | nie | nie | S? | 10 |
+| showResourceDepositOverlay | 16797 | Flaga | nie | nie | S? | 7 |
+| territoryBorderSig | 16891 | Null | nie | nie | ? | 4 |
+| ghostGroup | 17041 | Null | nie | nie | ? | 11 |
+| ghostCityGroup | 17042 | Null | nie | nie | ? | 11 |
+| lastGhostKey | 17043 | Tekst | nie | nie | ? | 5 |
+| lastGhostCityKey | 17044 | Tekst | nie | nie | ? | 5 |
+| lastMouseX | 17045 | Licznik | nie | nie | ? | 2 |
+| lastMouseY | 17046 | Licznik | nie | nie | ? | 2 |
+| chipOverCanvas | 17047 | Flaga | nie | nie | ? | 6 |
+| ghostChipHex | 17049 | Null | nie | nie | ? | 8 |
+| ghostChipLabel | 17050 | Tekst | nie | nie | ? | 3 |
+| ghostChipValid | 17051 | Flaga | nie | nie | ? | 7 |
+| ghostChipReason | 17061 | Tekst | nie | nie | ? | 6 |
+| ghostChip | 17063 | Wyrazenie | nie | nie | ? | 18 |
+| IMPROVEMENT_CHIP | 17075 | Obiekt | nie | nie | ? | 2 |
+| improvedByFortOwner | 17321 | Wyrazenie | nie | nie | D? | 2 |
+| improvementMeshes | 17339 | Map | nie | nie | S? | 16 |
+| roadRenderedHexes | 17347 | Set | nie | nie | ? | 8 |
+| bulkImprovementRebuild | 17353 | Flaga | nie | nie | ? | 9 |
+| clearingMeshes | 17354 | Map | nie | nie | S? | 10 |
+| buildApi | 17357 | Null | nie | nie | ? | 15 |
+| hintOverrideTimer | 18677 | Null | nie | nie | S? | 7 |
+| pendingEraDiscoveryTech | 18730 | Null | nie | nie | ? | 4 |
+| PANEL_REFRESH_ROOTS | 18751 | Tekst | nie | nie | ? | 3 |
+| cameraGroundDirScratch | 18890 | Instancja | nie | nie | ? | 2 |
+| WATER_VIEW_RIVER_WEIGHT | 18913 | Licznik | nie | nie | ? | 2 |
+| WATER_VIEW_MAX_SAMPLES | 18916 | Licznik | nie | nie | ? | 2 |
+| aiCityGarrisonNeedByCityId | 18980 | Map | nie | nie | D? | 4 |
+| siegeHtmlLabels | 19027 | Array | nie | nie | ? | 10 |
+| siegeHtmlLabelAnchors | 19028 | Array | nie | nie | ? | 5 |
+| siegeHtmlLabelCityIds | 19030 | Array | nie | nie | ? | 4 |
+| siegeHtmlLabelBadgeEls | 19031 | Array | nie | nie | ? | 6 |
+| siegePanelActions | 19458 | Obiekt | nie | nie | ? | 5 |
+| villageEventLog | 19880 | Array | nie | nie | S? | 16 |
+| tradeRouteEventLog | 19885 | Array | nie | nie | S? | 10 |
+| tradeRouteEventPlayerCityIds | 19908 | Map | nie | nie | ? | 9 |
+| rationAutoEventLog | 19910 | Array | nie | nie | S? | 9 |
+| borderMarchEventLog | 19917 | Array | nie | nie | S? | 16 |
+| pendingAutoRationForNextTurn | 19918 | Null | nie | nie | D? | 6 |
+| deferredEotHints | 19920 | Array | nie | nie | S? | 18 |
+| pendingEraChangeToastForNextTurn | 19945 | Null | nie | nie | S? | 8 |
+| prodEmptyDismissFp | 19948 | Map | nie | nie | ? | 5 |
+| dismissedSidePanelEventIds | 19951 | Set | nie | nie | ? | 13 |
+| nnsEndTurnBlockAttemptTurn | 19955 | Null | nie | nie | D? | 5 |
+| turnEventsFrame | 20306 | Undefined | nie | nie | ? | 10 |
+| TRADE_ROUTE_RESOURCE_KEY_LABELS | 21371 | Obiekt | nie | nie | ? | 2 |
+| TREATY_GATED_NEGOTIATION_ACTIONS | 22017 | Set | nie | nie | ? | 3 |
+| CYW_ACTION_TO_UI_ID | 22547 | Obiekt | nie | nie | S? | 2 |
+| _nnsHumanForecast | 23732 | Null | nie | nie | ? | 16 |
+| _nnsZyskSkarbiec | 23733 | Licznik | nie | nie | ? | 3 |
+| _nnsZyskSpichlerz | 23734 | Licznik | nie | nie | ? | 3 |
+| _nnsPodatekZysk | 23736 | Licznik | nie | nie | ? | 6 |
+| _nnsRacjeZysk | 23737 | Licznik | nie | nie | ? | 6 |
+| _nnsAutoSpichlerzDelta | 23742 | Undefined | nie | nie | ? | 9 |
+| _nnsPodatekPunkty | 23745 | Licznik | nie | nie | ? | 9 |
+| _nnsTaxStepDeltas | 23749 | Array | nie | nie | ? | 8 |
+| EPOCH_LABELS_PL | 24767 | Array | nie | nie | ? | 3 |
+| diploHarderLeaderCache | 24960 | Null | nie | nie | S? | 4 |
+| aiDiploTradeGoodsCache | 25283 | Null | nie | nie | S? | 6 |
+| aiDiploQtyOptionsCache | 25284 | Null | nie | nie | S? | 6 |
+| aiProdAllowedMemo | 25290 | Map | nie | nie | ? | 5 |
+| aiProdAllowedMemoLive | 25291 | Flaga | nie | nie | ? | 8 |
+| aiProdAllowedOwnerInputs | 25292 | Brak | nie | nie | D? | 5 |
+| liderKoalicjiStan | 25986 | Wyrazenie | nie | nie | ? | 6 |
+| aiAiAllianceProbyLacznie | 25996 | Licznik | nie | nie | D? | 3 |
+| aiAiAllianceOdmowyLacznie | 25997 | Licznik | nie | nie | D? | 3 |
+| aiAiAllianceOdmowyPowody | 25999 | Map | nie | nie | D? | 3 |
+| aiAiAllianceOstatniaProby | 26001 | Null | nie | nie | D? | 6 |
+| HEX_NEIGHBOR_DIRS | 28501 | Array | nie | nie | ? | 2 |
+| savePresence | 29099 | Wyrazenie | nie | nie | ? | 10 |
+| TECH_DONE_EVENT_PREFIX | 29452 | Tekst | nie | nie | ? | 4 |
+| dealsLiveHookAllowed | 30983 | Wyrazenie | nie | nie | ? | 2 |
+| civTestOnRiver | 32879 | Wyrazenie | nie | nie | ? | 2 |
+| TOKEN_LIFT | 35970 | Licznik | nie | nie | ? | 5 |
+| ANIM_SEG_DUR | 35973 | Licznik | nie | nie | ? | 2 |
+| marchStopNotified | 35979 | Map | nie | tak (ciało restore) | S? | 10 |
+| marchStopDetail | 35981 | Map | nie | tak (ciało restore) | ? | 13 |
+| movedByPlayerThisTurn | 35989 | Set | nie | tak (ciało restore) | D? | 7 |
+| marchAttackTargets | 35991 | Map | nie | tak (ciało restore) | ? | 24 |
+| marchExecQueue | 35992 | Array | nie | tak (ciało restore) | S? | 13 |
+| pendingMarchHint | 35993 | Brak | nie | tak (ciało restore) | S? | 10 |
+| prevTime | 37179 | Wyrazenie | nie | nie | ? | 4 |
+| fps1s | 37181 | Licznik | nie | nie | ? | 3 |
+| fpsAccumFrames | 37182 | Licznik | nie | nie | ? | 4 |
+| fpsAccumTime | 37183 | Licznik | nie | nie | ? | 5 |
+| ambWaterSampleAccum | 37190 | Licznik | nie | nie | ? | 4 |
+| ambLastWaterVariant | 37191 | Licznik | nie | nie | D? | 7 |
+| mouseDownX | 37269 | Licznik | nie | nie | ? | 3 |
+| mouseDownY | 37270 | Licznik | nie | nie | ? | 3 |
+| DRAG_THRESHOLD | 37274 | Wyrazenie | nie | nie | ? | 2 |
+| galleryUnits | 37808 | Array | nie | nie | ? | 5 |
+| galleryPositions | 37812 | Array | nie | nie | ? | 5 |
+| galleryLabels | 37815 | Array | nie | nie | ? | 7 |
+| galleryTitle | 37818 | Null | nie | nie | ? | 8 |
+| GALLERY_LABEL_LIFT | 37824 | Licznik | nie | nie | ? | 2 |
+| GALLERY_SPACING | 37827 | Licznik | nie | nie | ? | 5 |
+| MUR_BONUS_PROC | 37961 | Wyrazenie | nie | nie | ? | 5 |
+| MUR_KAMIENNY_BONUS_PROC | 37962 | Wyrazenie | nie | nie | ? | 4 |
+| CYTADELA_BONUS_PROC | 37963 | Wyrazenie | nie | nie | ? | 5 |
+| BASZTA_BONUS_PROC | 37964 | Wyrazenie | nie | nie | ? | 5 |
+| PALISADA_BONUS_PROC | 37965 | Wyrazenie | nie | nie | ? | 4 |
+| cityDefenseBonusParams | 37967 | Obiekt | nie | nie | ? | 2 |
+| aiGarrisonUnitIdByOwner | 40103 | Map | nie | nie | D? | 3 |
+| AI_CAPITAL_THREAT_RADIUS | 40423 | Licznik | nie | nie | D? | 4 |
+| capitalCaptureResourceAccess | 40470 | Obiekt | nie | nie | ? | 6 |
+| capitalCaptureReportSlot | 40818 | Null | nie | nie | ? | 6 |
+| cityCaptureRenderSyncFramePending | 41700 | Flaga | nie | nie | D? | 4 |
+| cityCaptureRenderSyncPendingLeadId | 41701 | Null | nie | nie | D? | 4 |
+| DIPLO_MIASTO_ZASIEG_ZLOZ | 41981 | Licznik | nie | nie | ? | 5 |
+| mapFieldBattleDeps | 42020 | Obiekt | nie | nie | D? | 2 |
+| AUTOSAVE_ROT_COUNT | 43132 | Licznik | nie | nie | ? | 2 |
+| AUTOSAVE_ROT_IDX_KEY | 43133 | Tekst | nie | nie | ? | 4 |
+| AUTOSAVE_FREQ_KEY | 43134 | Tekst | nie | nie | ? | 3 |
+| autosaveInFlight | 43151 | Flaga | nie | nie | ? | 5 |
+| fsaAutosaveDegradedNotified | 43154 | Flaga | nie | nie | S? | 3 |
+| autosaveFailureNotified | 43160 | Flaga | nie | nie | S? | 5 |
+| FSA_HINT_SHOWN_KEY | 43178 | Tekst | nie | nie | ? | 3 |
+| deferredPreBattleWatchdogTimer | 43379 | Null | nie | nie | S? | 4 |
+| renderLoopStarted | 50219 | Flaga | nie | nie | ? | 3 |
+| playtestBitwaDuzaUrl | 53806 | Wyrazenie | nie | nie | ? | 3 |
+| playtestOblezenieDuzeUrl | 53807 | Wyrazenie | nie | nie | ? | 2 |
+| playtestBitwaDuzaAny | 53808 | Wyrazenie | nie | nie | ? | 5 |
+| playtestOdskokOblUrl | 53809 | Wyrazenie | nie | nie | ? | 4 |
+| playtestOdskokUrl | 53810 | Wyrazenie | nie | nie | ? | 3 |
+| playtestWalkaUrl | 53817 | Wyrazenie | nie | nie | ? | 2 |
+| playtestMiastoUrl | 53824 | Wyrazenie | nie | nie | ? | 2 |
+| playtestMapaUrl | 53828 | Wyrazenie | nie | nie | ? | 2 |
+| demoUlepszeniaUrl | 53835 | Wyrazenie | nie | nie | ? | 2 |
+
+Pozycje zapisywane (kontrola): _gameSeed, _detIdSeq, _autoBattleSeqTurn, _autoBattleSeq, _battleCombatSeqTurn, _battleCombatSeq, _menuCivId, _menuMapSize, _menuTypSwiata, _lastNewGameParams, _battleModeSettingVersion, _saveOrigin, _currentRenderOptions, map, units, recruitFollowGeneralDefault, recruitGeneralId, recruitGeneralNoticeShown, cities, siegeTurnByCity, siegeBesiegerByCity, siegeAiStateByKey, battlePowerPtsByOwner, ownerEraByOwner, ownerStartEraByOwner, capitalCityIdByOwner, zdobyczePowerByOwner, civChronicleByOwner, lootedVillageHexKeys, bronzeForceWarPendingOwners, bronzeEraEnterTurnByOwner, seaPeoplesNoticeShown, bronzeForceWarCycleOwners, bronzeForceWarRestUntilByOwner, bronzeForceWarActiveByPairKey, forcedWarWavesByPairKey, aiGeneralWarCampaignByOwner, regularWarCapturedByPairKey, aiAiPeaceRequestByPairKey, warWearinessByPairKey, pendingForcedPeaceTreaties, stoneForceWarPendingOwners, stoneForceWarCycleOwners, stoneForceWarRestUntilByOwner, stoneForceWarActiveByPairKey, forcedEraWarDeclaredByTag, eraWarCountByCivKey, forcedEraPeaceUntilNextEraByPairKey, ironForceWarPendingOwners, ironForceWarCycleOwners, ironForceWarRestUntilByOwner, ironForceWarActiveByPairKey, ironEraEnterTurnByOwner, playerEverOwnedCityByOwner, lossCounters, cityProd, cityBuilt, cityRelig, tradeRoutes, completedWorldWonders, placedWorldWonders, wonderBuildSites, growthMultMap, orderMultMap, orderValueMap, empireFoodStates, goldDeficitStates, ownerDefaultPodzialHandlu, ownerDefaultPodzialPracy, ownerDefaultOkolicaFocus, ownerDefaultBudowaProfil, ownerDefaultPoziomRacji, ulepszeniaEmpireByOwner, mennicaZlotoGraceState, veteranEnemyEducationShown, fortNodes, nnsAiOverrides, aiResearchDone, eliminatedOwners, aiOwnerCivMap, ownerDisplayName, simplifiedDiplomacyOwners, foreignTypeOwners, typCityCopyOwners, clusterCapitalOwnerIds, clusterPlacement, diplomacyRelations, diplomacyPairMeta, diplomacyCrisisCounters, diplomacyTradeStreak, diplomacyFactorLog, wiarygodnoscZdarzeniaByOwner, wiarygodnoscStrumienByOwner, wiarygodnoscOstatniaWojnaTuraByOwner, wiarygodnoscP4MilestonesByOwner, wiarygodnoscN7ActivePairs, zlozeGrants, diplomaticContactEstablishedByHuman, diplomaticallyDiscoveredOwnersByHuman, diplomaticDiscoveryPopupShownByHuman, activeDeals, negotiationTable, negotiationSeq, dealsEndTurnGateEnabled, playerEpochWarEnabled, administratorsEnabled, fogRevealKeyFEnabled, cityAdministratorNoticeShown, improvementAdministratorNoticeShown, rejectedOfferCooldowns, aiSkarbiecByOwner, aiTargetMemoryByOwner, aiSliderStateByOwner, aiPracaPoolByOwner, aiSurplusRedirectedOwners, aiNaukaPoolByOwner, aiBadanaByOwner, basketTransferCtx, worldDiploNewsList, autoManageCities, barbCamps, clearedBarbCampHexes, turn, humanSeats, exploredByHuman, playerStateByHuman, stateAdmByOwner, pracaPoolByHuman, playerPracaPool, pendingManualWorkTaxByOwner, budowaListaBiblioteka, pendingDiplomacyInbox, allianceWarCallHistory, interHumanDiplomacyInbox, aiOneShotGiftLastTurn, aiTradeAgreementLastProposalTurn, aiAiTradeAgreementLastTurn, aiResourceTradeLastProposalTurn, aiResourceBarterLastProposalTurn, aiCsFailCount, aiCsTrybutSince, aiCsWasalSince, aiAudienceLastRequestTurn, aiMarchPassageRequestTurn, placedImprovements, improvementOwnerByHex, hexClearingStates, pendingImprovementsTurn, plannedMarches
