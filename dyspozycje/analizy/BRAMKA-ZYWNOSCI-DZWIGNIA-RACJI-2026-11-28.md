@@ -1,9 +1,9 @@
 # Bramka żywności: dźwignia „obniżka racji żywności” (ENDGATELEVER, R-WEB-ENDGATE-RATION-LEVER-Q1)
 
 **Data:** 2026-11-28 · **Baza:** c834d3eb8 (origin/main) · **Operator:** runda 1/5 (Haiku 5.5)
-**Stan wiążący:** TAK (komunikat bramki obiecuje obniżkę racji, której suwak nie wykona) — naprawa minimalna w `gra/src/main.ts` (miejsce wyliczenia `extra.suwakZywnosc`), test z mutacją czerwoną/zieloną. Brak deployu i brak pushu (bramka orkiestratora).
+**Stan wiążący:** TAK, POTWIERDZONY NA ŻYWO (runda 2, sekcja 8): w bazie c834d3eb8 komunikat bramki obiecuje „obniżkę racji żywności: +12”, której suwak nie wykona (min = max = 0). Naprawa minimalna w `gra/src/main.ts` (wyliczenie `extra.suwakZywnosc`, jedna linia), test wiązania z mutacją czerwoną/zieloną. Brak deployu i brak pushu (bramka orkiestratora).
 
-NIE ZMIERZONO: odtworzenia na żywo (przeglądarka, tura 16, ziarno 11) — w tej rundzie nie wykonano (brak zainstalowanego środowiska Playwright/bundla gry w worktree; `npm ci --ignore-scripts` wykonano, build nie). Wynik poniżej opiera się na (1) czytaniu kodu, (2) deterministycznym teście wiązania, (3) danych z pomiaru GRACE15FX r3 (`dyspozycje/analizy/OKNO-LASKI-15-TUR-SKUTKI-2026-11-27.md`, sekcja „Dźwignie”), które NIE są ponownie zmierzone tutaj.
+Runda 1 (Operator) opierała wynik na kodzie i danych r3. Runda 2 (obrona) odtworzyła błąd na żywo (sekcja 8: ziarno 11, t16, maksimum); pozycje oznaczone poniżej „NIE ZMIERZONO” nadal nie są zmierzone.
 
 ## 1. Skąd bierze się „obniżka racji +12”
 
@@ -29,7 +29,7 @@ Zgodność z dokumentacją kodu: komentarz `decideEndTurnGate` mówi „NAJPIERW
 
 - **Test wiązania (deterministyczny):** `gra/tools/endgate-lever-baseline-test.cjs` — 5/5 zielone po poprawce; mutacja (cofnięcie bazy do `_nnsHumanForecast.spichlerzPo`) → 3 FAIL (a, b, c), 2/5 zielone. Przywrócenie → 5/5.
 - **Dane z pomiaru (NIE ZMIERZONO ponownie):** w OKNO-LASKI-15-TUR-SKUTKI-2026-11-27 (r3, t16, ziarno 11): dźwignia „obniżka racji +12”; po otwarciu panelu miasta poziom racji 1,5 → 0 i prognoza Spichlerza −30 → −18 (zmiana +12 = ta sama wielkość co dźwignia). To zgadza się z hipotezą: zysk racji zostaje zrealizowany przez automat/clamp, a bramka pokazuje go jako dodatkową dźwignię.
-- Konkretne liczby `_nnsAutoSpichlerzDelta` i `_nnsRacjeZysk` w biegu NIE ZMIERZONO (brak uruchomienia gry w tej rundzie).
+- Konkretne wartości w biegu (runda 2, sekcja 8): dźwignia `_nnsRacjeZysk` = 12 w bazie, prognoza −30 → −18 po przycięciu racji 1,5 → 0. Wartość `_nnsAutoSpichlerzDelta` nie jest logowana wprost; wynika z różnicy prognoz (+12).
 
 ## 4. Naprawa (minimalna, jedno miejsce)
 
@@ -69,8 +69,9 @@ Zmiana NIE dotyka balansu, reguł utrzymania ani pytania Q42.
 
 ## 6. Zakres i nieobjęte
 
-- NIE ZMIERZONO na żywo: czy komunikat bramki w grze po poprawce znika (wymaga biegu na żywo, tura 16, ziarno 11, maksimum); czy zachowanie tury 17–30 jest poprawne.
-- NIE ZMIERZONO: wpływ na AI (`buildAiLevers` dostaje `suwakZywnosc: rationZysk` z osobnej ścieżki AI, l.7959 — tej ścieżki nie zmieniano; jej baza może mieć ten sam problem: NIE SPRAWDZONO, do osobnej oceny).
+- ZMIERZONE na żywo (sekcja 8): komunikat bramki po poprawce nie zawiera dźwigni racji (t16, ziarno 11, maksimum).
+- NIE ZMIERZONO: tury 17–30, inne ziarna, inne tryby podatku.
+- Ścieżka AI (`rationZysk`, l. 7945–7991): przeanalizowana w kodzie (sekcja 8) — bez członu automatu, bez podwójnego liczenia; pomiar AI na żywo NIE ZMIERZONO.
 - Opcjonalnie (poza zakresem tej rundy): komunikat `cityPanel.ts` mógłby wskazywać zablokowany suwak. Nie zmieniano.
 - Pytanie Q42 (co po 15. turze) — osobne, nie ruszane.
 
@@ -78,3 +79,35 @@ Zmiana NIE dotyka balansu, reguł utrzymania ani pytania Q42.
 
 - Pre-existing czerwony test `no-negative-stocks-endturn-test` (f) jest w bazie c834d3eb8; nie wynika z tej zmiany. Warto przydzielić osobny temat.
 - Tymczasowe pliki `endgate-lever-baseline-entry/bundle` są usuwane przez test; `gra/node_modules` zainstalowano (`npm ci --ignore-scripts`), nie jest śledzone przez git.
+
+## 8. Pomiar na żywo (runda 2, obrona) — ZMIERZONE
+
+**Warunki:** Chromium headless, runner `gra/tools/grace15fx-active3-live.cjs` bez zmian (konfiguracja maksymalna jak GRACE15FX r3: Trudny, barbarzyńcy Trudny, kultura trudny, dyplomacja trudna, Wysoki ×4, mapa Standardowy, 1 rywal), ziarno 11, tryb `tax100`, tura 16 (blokada „Zakończ turę”). Baza: `c834d3eb8` wyeksportowana przez `git archive` do katalogu poza repo (bundle z tego samego runnera). Poprawka: `a447f25ac` (worktree). Surowe logi: `runs/R-WEB-ENDGATE-RATION-LEVER-Q1/31-*` (baza) i `32-*` (poprawka).
+
+**Odczyt przy blokadzie (t16, tura od początku blokady, przed otwarciem panelu miasta):**
+
+| Wielkość | Baza c834d3eb8 | Poprawka a447f25ac |
+|---|---|---|
+| Dźwignie w komunikacie bramki | obniżka racji żywności **+12**; rozwiązanie jednostek (złoto) +32; rozwiązanie jednostek (żywność) +32 | rozwiązanie jednostek (złoto) +32; rozwiązanie jednostek (żywność) +32 (**brak** dźwigni racji) |
+| Komunikat | „…po zakończeniu tury zabraknie 18. Pomogą: obniżka racji żywności: +12 …” | „…po zakończeniu tury zabraknie 18. Pomogą: rozwiązanie jednostek (złoto) +32 …; (żywność) +32 …” |
+| Wartość `extra.suwakZywnosc` (`_nnsRacjeZysk`) | 12 | 0 (pominięta) |
+| Racje miasta `city0` | 1,5 (auto) | 1,5 (auto) |
+| Pole `forecast.spichlerzPo` (prognoza gracza, bez reakcji automatu) | −30 | −30 |
+
+**Odczyt po otwarciu panelu miasta i ustawieniu suwaka Wyżywienie na minimum (lever `a-wyzywienie-min`):**
+
+| Wielkość | Baza | Poprawka |
+|---|---|---|
+| Suwak Wyżywienie: min / max / wartość | 0 / 0 / 0 (zablokowany na limicie) | 0 / 0 / 0 (zablokowany na limicie) |
+| Racje `city0` po otwarciu panelu | 0 (automat przyciął 1,5 → 0) | 0 |
+| Prognoza Spichlerza po otwarciu panelu | −18 (+12 względem −30) | −18 (+12 względem −30) |
+
+**Po użyciu dźwigni „rozwiązanie jednostek (żywność)” (+32):** prognoza Spichlerza −2 po pierwszej jednostce, 14 po drugiej — identycznie w bazie i w poprawce.
+
+**WERDYKT (pytanie z sekcji 0 runda 1, „czy komunikat obiecuje obniżkę racji, której gracz nie może wykonać”): TAK w bazie.** Dźwignia +12 jest liczona jako różnica „racje = 0” minus „prognoza bez reakcji automatu”, a jednocześnie prognoza −18, na której stoi komunikat „zabraknie 18”, już zawiera te +12 (automat przyciął racje do limitu Spichlerza). Suwak Wyżywienia jest zablokowany na 0 (min = max = 0), więc gracz nie może wykonać tej dźwigni; efekt +12 pojawia się tylko przez automat. Poprawka usuwa dźwignię, a liczby komunikatu są spójne: −18 + 32 = 14 ≥ 0.
+
+**Mechanizm (kod, poprawka):** `_nnsRacjeZysk = max(0, fZero.spichlerzPo − (_nnsHumanForecast.spichlerzPo + (_nnsAutoSpichlerzDelta ?? 0)))` (`gra/src/main.ts`, wyliczenie przy `fZero`). Gdy automat nie zmienił racji, `_nnsAutoSpichlerzDelta` jest `undefined` i wynik jest jak dotąd.
+
+**Ścieżka AI (`gra/src/main.ts` ok. l. 7945–7991):** NIE DOUBLE-COUNT. `rationZysk = project({ rationsZero: true }).spPo − cur.spPo`, gdzie `project()` to zwykła projekcja bez członu automatu; po zastosowaniu dźwigni racji (`ov.rations`, racje = 0) pętla przelicza `cur = project()`. Dźwignia AI jest więc zastosowana realnie w stanie, a nie obiecana. Pomiar AI na żywo: NIE ZMIERZONO.
+
+**Zakres pomiaru:** jedno ziarno (11), jedna tura (16), jeden tryb podatku (`tax100`). Tury 17–30 i ziarna inne niż 11 NIE ZMIERZONO.

@@ -14,6 +14,8 @@
  *  (c) korekta używa ?? 0 (brak reakcji automatu = baza bez zmian),
  *  (d) wywołanie dźwigni nadal trafia do bramki jako suwakZywnosc (kontrakt c2-testu).
  *  (e) funkcja bramki decideEndTurnGate: dźwignia racji o zysku 0 NIE pojawia się w liście dźwigni.
+ *      UWAGA: (e) jest strażnikiem zachowania bramki, NIE zależy od poprawki (przechodzi też na bazie) —
+ *      dowodem naprawy są (a)–(c) oraz pomiar na żywo w dyspozycje/analizy/BRAMKA-ZYWNOSCI-DZWIGNIA-RACJI-2026-11-28.md.
  *
  * Mutacja: cofnięcie poprawki (stara baza) musi czerwienić (a)/(b).
  * Run: node tools/endgate-lever-baseline-test.cjs
@@ -37,9 +39,10 @@ const przypisanie = src.split('\n').find(l => l.includes('_nnsRacjeZysk = Math.m
 ok(!!przypisanie && /fZero\.spichlerzPo\s*-\s*\(\s*_nnsHumanForecast\.spichlerzPo\s*\+\s*\(\s*_nnsAutoSpichlerzDelta\s*\?\?\s*0\s*\)\s*\)/.test(przypisanie || ''),
   '(a) _nnsRacjeZysk mierzy od prognozy PO automacie (forecast + _nnsAutoSpichlerzDelta ?? 0)');
 
-// (b) stara baza nie występuje
-ok(!/_nnsRacjeZysk\s*=\s*Math\.max\(0,\s*fZero\.spichlerzPo\s*-\s*_nnsHumanForecast\.spichlerzPo\)/.test(src),
-  '(b) stara baza bez korekty automatu usunięta');
+// (b) stara baza nie występuje w przypisaniu — także w wariancie z nawiasem wokół samej prognozy
+//     (częściowe cofnięcie korekty: `fZero - (_nnsHumanForecast.spichlerzPo)`).
+ok(!!przypisanie && !/fZero\.spichlerzPo\s*-\s*\(?\s*_nnsHumanForecast\.spichlerzPo\s*\)?\s*\)/.test(przypisanie),
+  '(b) stara baza bez korekty automatu usunięta (także wariant z nawiasem)');
 
 // (c) ?? 0 jest w wyrażeniu (brak automatu = baza bez zmian) — sprawdzone w (a)
 ok(/_nnsAutoSpichlerzDelta\s*\?\?\s*0/.test(przypisanie || ''), '(c) brak reakcji automatu = baza bez zmian (?? 0)');
